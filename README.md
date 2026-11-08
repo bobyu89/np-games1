@@ -4,5 +4,6 @@
 
 - 第一章：ICU Sepsis。核心設計是「Bundle 就是羈絆」
 - 設計文件：[`docs/GDD-v0.md`](docs/GDD-v0.md)
+- 灰盒原型：[`prototypes/sepsis-greybox/`](prototypes/sepsis-greybox/README.md)（用瀏覽器打開 `index.html` 就能玩）
 
 > 本遊戲為教學用的簡化模型，不能取代臨床判斷和院內 protocol。
