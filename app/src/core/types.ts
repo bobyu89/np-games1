@@ -1,7 +1,10 @@
-// 病例格式（第 2 版）和一場對局的狀態。
+// 病例格式（第 3 版）和一場對局的狀態。
 // 規則核心只用這些型別，不碰畫面，之後可以原封不動搬到伺服器。
 
 export interface Vitals { bp: string; hr: number; rr: number; spo2: number; bt: number }
+
+/** 一條線索對某個真身的意義：dir 是 1 表示更像，-1 表示比較不像 */
+export interface Tell { form: string; dir: 1 | -1 }
 
 /** 一條線索：問到的、看到的、量到的事實 */
 export interface Clue {
@@ -12,6 +15,12 @@ export interface Clue {
   key?: boolean;
   /** 這條線索能推開多少霧。沒寫的話，關鍵線索 3，其他 1 */
   fog?: number;
+  /** 有寫的線索，拿到之後要玩家自己解讀：它讓哪個真身更像或比較不像 */
+  tell?: Tell;
+  /** 也算對的其他解讀 */
+  alsoOk?: Tell[];
+  /** 岑禾的一句話：為什麼這樣解讀 */
+  why?: string;
 }
 
 export type QuestionGroup = 'open' | 'cc' | 'hx' | 'ros';
@@ -50,54 +59,76 @@ export interface TestDef {
   clue?: string;
 }
 
-export interface Hypothesis {
+/** 真身：同一隻症影底下可能的病。一個主訴固定四個 */
+export interface TrueForm {
   id: string;
   name: string;
-  /** 支持這個假設的線索 */
-  support: string[];
-  /** 讓這個假設比較不像的線索 */
-  against: string[];
+  /** 畫在燈籠上的一個字 */
+  mark: string;
+  /** 不能漏掉的危險診斷 */
+  danger: boolean;
+  blurb: string;
 }
 
 export interface Choice { id: string; text: string; note: string }
 
+/** 安全行動：每個病例自己宣告哪些事一定要做到 */
+export type SafetyRule =
+  | { type: 'call'; points: number }                            // 病況變差之前通報
+  | { type: 'order'; test: string; by: number; points: number } // 幾秒之內提出某項檢查
+  | { type: 'exclude'; forms: string[]; points: number }        // 每個危險的真身，都要有一條讓它比較不像的線索
+  | { type: 'explain'; id: string; points: number }             // 說明裡一定要有的那一句
+  | { type: 'calm'; points: number };                           // 病人穩定，不需要敲值班鐘
+
 export interface CaseDef {
-  format: 2;
+  format: 3;
   id: string;
-  title: string;
+  /** 屬於哪個主訴模組 */
   complaint: string;
+  complaintName: string;
+  /** 示範：第一次遇到；變體：同一隻症影、不同的真身；遷移：沒看過的說法 */
+  kind: '示範' | '變體' | '遷移';
+  title: string;
   review: { state: '未審查' | '已審查'; note: string };
-  patient: { name: string; age: number; sex: string; job: string };
+  patient: { name: string; age: number; sex: string; job: string; look: string; pronoun: string };
   shadow: { name: string; lore: string };
+  forms: TrueForm[];
   reading: { lines: string[]; prompts: string[] };
-  vitals: { base: Vitals; worse: Vitals };
+  vitals: { base: Vitals; worse?: Vitals };
   clues: Clue[];
   questions: Question[];
   exams: Exam[];
   tests: TestDef[];
-  hypotheses: Hypothesis[];
-  answer: { likely: string; exclude: Record<string, number> };
+  answer: { truth: string; exclude: Record<string, number> };
   summaries: (Choice & { score: number })[];
   sbar: {
     assessments: (Choice & { score: number })[];
-    requests: (Choice & { ok: boolean })[];
+    /** orders：選了這一句，等於提出那項檢查 */
+    requests: (Choice & { ok: boolean; orders?: string })[];
   };
   explain: (Choice & { ok: boolean; needsClue?: string; concern?: boolean })[];
-  /** 劇本上的時間點（模擬的秒數） */
-  timeline: { worsenAt: number; stepInAt: number; ecgBy: number; ecgTest: string; doctorDelay: number };
+  /** 劇本上的時間點（模擬的秒數）。沒寫 worsenAt 表示這個病人不會變差 */
+  timeline: { worsenAt?: number; stepInAt?: number; doctorDelay: number };
+  safety: SafetyRule[];
+  /** 解讀對幾條線索，「支持和反對的證據」就拿滿 */
+  readsNeeded: number;
   lines: {
     opening: string[];
-    worsen: string;
-    stepIn: string;
+    watch: string;
+    watchWorse?: string;
+    worsen?: string;
+    stepIn?: string;
     called: string;
     doctorArrives: string;
     reportGood: string;
     reportWeak: string;
-    ecgRead: string;
+    testRead?: string;
+    explainOk: string;
+    explainConcern: string;
+    explainBad: string;
     closing: string;
     hintNoExplain: string;
   };
-  hints: { id: string; text: string }[];
   debrief: {
     alternatives: string[];
     teaching: { text: string; ref: string }[];
@@ -105,13 +136,7 @@ export interface CaseDef {
   };
 }
 
-export interface Board {
-  summary: string | null;
-  likely: string | null;
-  exclude: string[];
-  support: string[];
-  against: string[];
-}
+export interface Board { summary: string | null; likely: string | null; exclude: string[] }
 
 export interface LogEntry { t: number; type: string; id?: string; note?: string; clue?: string }
 
@@ -126,16 +151,25 @@ export interface Session {
   /** 結果已經回來的檢查 */
   results: string[];
   clues: string[];
+  /** 拿到了、還沒解讀的線索 */
+  pending: string[];
+  reads: { clue: string; form: string; ok: boolean; t: number }[];
+  /** 岑禾中途問「你最擔心哪一個」，和結案時的答案 */
+  commits: { t: number; form: string }[];
+  needCommit: boolean;
   /** 最後一次量到的生命徵象。沒量過是 null：不知道的就是不知道 */
   vitalsSeen: { at: number; v: Vitals } | null;
   vitalsLog: number[];
   worsenedAt: number | null;
+  /** 有人知道這裡需要幫忙的時間：敲鐘，或是直接回報 */
   calledAt: number | null;
   calledBy: 'you' | 'mentor' | null;
+  /** 敲過值班鐘 */
+  bell: boolean;
   doctorAt: number | null;
   doctorHere: boolean;
   report: { at: number; a: string; r: string[] } | null;
-  ecgRead: boolean;
+  testRead: boolean;
   board: Board;
   explained: string[] | null;
   hints: number;
@@ -149,6 +183,8 @@ export type Action =
   | { type: 'exam'; id: string; explain: boolean }
   | { type: 'watch' }
   | { type: 'test'; id: string }
+  | { type: 'read'; clue: string; form: string }
+  | { type: 'commit'; form: string }
   | { type: 'board'; board: Board }
   | { type: 'call' }
   | { type: 'report'; a: string; r: string[] }
@@ -160,6 +196,7 @@ export type Action =
 export type GameEvent =
   | { type: 'say'; who: 'you' | 'patient' | 'mentor' | 'doctor' | 'sys'; text: string; bad?: boolean }
   | { type: 'clue'; id: string; key: boolean }
+  | { type: 'read'; id: string; ok: boolean }
   | { type: 'vitals'; v: Vitals; changed: boolean }
   | { type: 'worsen' }
   | { type: 'bell'; by: 'you' | 'mentor' }

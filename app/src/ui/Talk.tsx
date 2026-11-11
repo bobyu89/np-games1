@@ -6,11 +6,11 @@ export type Who = 'you' | 'patient' | 'mentor' | 'doctor' | 'mo' | 'sys';
 export interface Line { who: Who; text: string; bad?: boolean }
 export interface TalkHandle { say(lines: Line[], done?: () => void): void; finish(): void; busy(): boolean }
 
-const NAMES: Partial<Record<Who, string>> = { patient: '林秋', mentor: '岑禾', doctor: '沈渡', mo: '眠墨' };
+const NAMES: Partial<Record<Who, string>> = { mentor: '岑禾', doctor: '沈渡', mo: '眠墨' };
 
-interface Props { onSpeaker(who: Who | null): void; onTap?: () => void; more?: boolean }
+interface Props { onSpeaker(who: Who | null): void; onTap?: () => void; more?: boolean; patient?: string }
 
-export const Talk = forwardRef<TalkHandle, Props>(function Talk({ onSpeaker, onTap, more }, ref) {
+export const Talk = forwardRef<TalkHandle, Props>(function Talk({ onSpeaker, onTap, more, patient }, ref) {
   const st = useRef({ lines: [] as Line[], li: 0, ci: 0, over: true, done: undefined as undefined | (() => void), timer: 0 });
   const [, bump] = useState(0);
   const box = useRef<HTMLDivElement>(null), speak = useRef(onSpeaker);
@@ -51,7 +51,7 @@ export const Talk = forwardRef<TalkHandle, Props>(function Talk({ onSpeaker, onT
     <div className="paper talk" ref={box} aria-live="polite" onScroll={(e) => e.currentTarget.classList.toggle('scrolled', e.currentTarget.scrollTop > 2)} onClick={() => { if (!s.over) finish(); else onTap?.(); }}>
       {s.lines.map((ln, i) => {
         if (i > s.li) return null;
-        const text = i < s.li ? ln.text : ln.text.slice(0, s.ci), name = NAMES[ln.who];
+        const text = i < s.li ? ln.text : ln.text.slice(0, s.ci), name = ln.who === 'patient' ? patient : NAMES[ln.who];
         const tail = s.over && more && i === s.lines.length - 1 ? <span className="more" aria-hidden="true"> ▾</span> : null;
         // 自己說過的話，等對方開口之後收成一行
         if (ln.who === 'you') return <p key={i} className={'you' + (i < s.li && i < s.lines.length - 1 ? ' past' : '')}>你：{text}{tail}</p>;

@@ -186,6 +186,6 @@ export function createHall(canvas) {
       const p = who === 'cen' ? [CEN.x - 1, CEN.y - 146] : who === 'mo' ? [MO.x, MO.y - 84] : who === 'board' ? [PAPER.x, PAPER.y - 30] : null;
       return p && base.css(p[0], p[1]);
     },
-    clue() {}, ring() {}, jolt() {},
+    clue() {}, ring() {}, jolt() {}, setLights() {},
   };
 }

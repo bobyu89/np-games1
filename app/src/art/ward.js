@@ -9,7 +9,7 @@ const LIN = { x: 90, y: 219 }, CEN = { x: 298, y: 264 }, SHEN = { x: 322, y: 268
 const BIG = 1.14, MOTH_BIG = 1.28;   // 人物比家具大一點，表情在手機上才看得清楚
 
 // ════════ 不會動的背景 ════════
-function drawBack(g) {
+function drawBack(g, who) {
   K.seed = 100;
   // 牆和壁紙
   fillRect(g, X0, Y0, X1 - X0, FLOOR_Y - Y0, C.wall);
@@ -91,6 +91,14 @@ function drawBack(g) {
   shape(g, [[243, 195], [254, 195], [253, 204], [244, 204]], { fill: C.cream, lw: 1.3 }); wline(g, [[244, 199], [253, 199]], C.teal, 1.6);
   shape(g, rect(226, 200.5, 11, 3.5), { fill: C.brass, lw: 1.2 }); shape(g, rect(229.5, 190, 4.5, 10.5), { fill: C.cream, lw: 1.2 });
 
+  if (who === 'jian') {
+    // 簡晴的東西：一只綁著麻繩的木箱、一雙工作手套
+    oval(g, 66, 282, 32, 3.6, { fill: C.shadow, stroke: null });
+    shape(g, rect(42, 258, 40, 24), { fill: C.wood });
+    wline(g, [[42, 266], [82, 266]], C.wood2, 1.2); wline(g, [[42, 274], [82, 274]], C.wood2, 1.2);
+    wline(g, [[58, 257], [57, 283]], C.cream, 2.4); wline(g, [[68, 257], [69, 283]], C.cream, 2.4);
+    shape(g, ell(98, 279, 8, 4, 10, 0.2), { fill: C.mustard, lw: 1.2, step: 99 }); shape(g, ell(108, 281, 7, 3.6, 10, -0.3), { fill: C.mustard, lw: 1.2, step: 99 });
+  } else {
   // 林秋搬到一半的三盞燈：兩盞放好了，第三盞倒在地上
   const lamp = (x, y, rot, shade) => {
     g.save(); g.translate(x, y); g.rotate(rot);
@@ -103,6 +111,7 @@ function drawBack(g) {
   };
   oval(g, 62, 278, 30, 3.6, { fill: C.shadow, stroke: null });
   lamp(46, 277, 0, C.glow); lamp(66, 279, 0, C.paper); lamp(93, 274, 1.42, C.paper);
+  }
   // 拖鞋
   shape(g, ell(152, 259, 7, 3.2, 10, -0.15), { fill: C.rust, lw: 1.2, step: 99 }); shape(g, ell(167, 261, 7, 3.2, 10, 0.1), { fill: C.rust, lw: 1.2, step: 99 });
   wline(g, [[148, 258], [152, 256.4], [156, 258.6]], C.cream, 1.4); wline(g, [[163, 260], [167, 258.4], [171, 260.6]], C.cream, 1.4);
@@ -132,9 +141,12 @@ function drawMid(g) {
   dot(g, 207.5, 185, 3.4, C.wood); oval(g, 207.5, 185, 3.4, 3.4, { lw: 1.2, double: false });
 }
 
-export function createWard(canvas) {
-  const base = createBase(canvas, { back: drawBack, mid: drawMid }), ctx = base.ctx;
-  const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0 };
+export function createWard(canvas, opts = {}) {
+  // 病人長什麼樣子。lin：林秋，冒冷汗的老燈匠；jian：簡晴，坐得很直的搬運工
+  const who = opts.patient === 'jian' ? 'jian' : 'lin', calm = who === 'jian';
+  const LOOK = calm ? { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairDark, brow: C.hairDark } : { shirt: C.shirt, shirt2: C.shirt2, hair: C.hairGrey, brow: C.hairGrey };
+  const base = createBase(canvas, { back: (g) => drawBack(g, who), mid: drawMid }), ctx = base.ctx;
+  const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [] };
   let T = 0, dustClock = 0;
   const sparks = [], dust = [];
   const PUFFS = [
@@ -237,42 +249,50 @@ export function createWard(canvas) {
     K.seed = 1000;
     const slump = state.slumpShown, wince = state.wince, breath = Math.sin(t * 2.5);
     const talking = state.talker === 'lin', blink = (t * 0.9 + 0.4) % 3.6 < 0.13;
-    g.save(); g.translate(LIN.x, LIN.y); g.scale(BIG, BIG); g.rotate(-0.07 + slump * 0.3 + wince * 0.035);
+    g.save(); g.translate(LIN.x, LIN.y); g.scale(BIG, BIG); g.rotate((calm ? -0.02 : -0.07) + slump * 0.3 + wince * 0.035);
     // 後面那隻手
-    limb(g, [[10, -36], [19, -19], [21, -4]], 7.5, C.shirt2, { boil: true });
+    limb(g, [[10, -36], [19, -19], [21, -4]], 7.5, LOOK.shirt2, { boil: true });
     // 身體，跟著呼吸起伏
     g.save(); g.scale(1 + breath * 0.012, 1 + breath * 0.022 + wince * 0.01);
-    shape(g, [[-15, 3], [-17, -22], [-15, -37], [-7, -44], [6, -44], [13, -38], [16, -20], [16, 3]], { fill: C.shirt, boil: true });
+    shape(g, [[-15, 3], [-17, -22], [-15, -37], [-7, -44], [6, -44], [13, -38], [16, -20], [16, 3]], { fill: LOOK.shirt, boil: true });
     wline(g, [[-4, -43], [1, -35], [6, -43]], C.ink, 1.3, { boil: true });
     shape(g, [[-4, -43.5], [1, -36], [6, -43.5], [3, -46], [-2, -46]], { fill: C.cream, lw: 1.1, boil: true });
     dot(g, 2, -14, 1.1, C.ink); dot(g, 2.4, -6, 1.1, C.ink);
     g.restore();
     // 按著胸口的手：慢慢揉，痛的時候壓得更緊
     const rub = t * 2.2, hx = 3 + Math.cos(rub) * 1.6 - wince * 1.5, hy = -26 + Math.sin(rub) * 1.3 + wince;
-    limb(g, [[-11, -36], [-15, -18 + wince * 2], [hx - 2, hy + 1]], 8, C.shirt, { boil: true });
+    limb(g, [[-11, -36], [-15, -18 + wince * 2], [hx - 2, hy + 1]], 8, LOOK.shirt, { boil: true });
     oval(g, hx, hy, 4.2, 3.8, { fill: C.skin, lw: 1.3, boil: true });
     if (wince > 0.3) { g.globalAlpha = clamp((wince - 0.3) * 2.5); [[9, -33, 14, -37], [10, -27, 16, -27], [9, -21, 14, -17]].forEach(([a, b, c, d]) => wline(g, [[a, b], [c, d]], C.rust, 1.6, { amp: 0.2, boil: true })); g.globalAlpha = 1; }
     // 脖子
     limb(g, [[0, -44], [1, -49]], 6, C.skin, { amp: 0 });
     // 頭
     g.save(); g.translate(1, -59 - breath * 0.5); g.rotate(slump * 0.35 + wince * 0.1 + (talking ? Math.sin(t * 9) * 0.02 : 0));
+    if (calm) {   // 簡晴：綁在腦後的馬尾
+      limb(g, [[-17, -8], [-27, -2], [-29, 12 + Math.sin(t * 1.4) * 1.5]], 7, LOOK.hair, { boil: true });
+      wline(g, [[-19, -9], [-23, -5]], C.rust, 2.6);
+    }
     oval(g, -17.5, 2, 4, 5, { fill: C.skin, lw: 1.3, boil: true });
     shape(g, ell(0, 0, 20, 19, 14), { fill: C.skin, boil: true, step: 99 });
-    shape(g, [[-19.5, 4], [-21, -8], [-16, -17], [-5, -21], [7, -20], [14, -14], [7, -13.5], [-3, -14.5], [-10, -10], [-13, -2], [-14.5, 5]], { fill: C.hairGrey, boil: true });
-    wline(g, [[-14, -13], [-9, -16]], C.cream, 1); wline(g, [[-16, -6], [-13, -10]], C.cream, 1);
+    if (calm) shape(g, [[-19.5, 6], [-21, -8], [-16, -17], [-5, -21.5], [8, -20.5], [17, -14], [19.5, -6], [14, -11], [5, -13.5], [-5, -12], [-12, -7], [-14, 4]], { fill: LOOK.hair, boil: true });
+    else {
+      shape(g, [[-19.5, 4], [-21, -8], [-16, -17], [-5, -21], [7, -20], [14, -14], [7, -13.5], [-3, -14.5], [-10, -10], [-13, -2], [-14.5, 5]], { fill: LOOK.hair, boil: true });
+      wline(g, [[-14, -13], [-9, -16]], C.cream, 1); wline(g, [[-16, -6], [-13, -10]], C.cream, 1);
+    }
     // 臉頰、眼睛、眉毛
-    g.globalAlpha = 0.42 - slump * 0.2; leaf(g, -4, 6, 4, 2.4, 0, C.blush); leaf(g, 17, 6, 2.8, 2.2, 0, C.blush); g.globalAlpha = 1;
+    g.globalAlpha = (calm ? 0.62 : 0.42) - slump * 0.2; leaf(g, -4, 6, 4, 2.4, 0, C.blush); leaf(g, 17, 6, 2.8, 2.2, 0, C.blush); g.globalAlpha = 1;
     const mode = wince > 0.45 ? 'wince' : (blink || slump > 0.6) ? 'blink' : 'open', look = talking ? [0.9, 0.2] : [1.2, 0.9];
     eye(g, 3, -2.5, 4.2, look, mode, -1); eye(g, 13.5, -2.5, 3.9, look, mode, 1);
     const w = 1.2 + wince * 2;   // 眉頭往上皺
-    wline(g, [[-2.5, -8 + w * 0.3], [6, -10 - w]], C.hairGrey, 2.2, { amp: 0.15, boil: true }); wline(g, [[10.5, -10 - w], [18, -8 + w * 0.3]], C.hairGrey, 2.2, { amp: 0.15, boil: true });
+    wline(g, [[-2.5, -8 + w * 0.3], [6, -10 - w]], LOOK.brow, calm ? 1.6 : 2.2, { amp: 0.15, boil: true }); wline(g, [[10.5, -10 - w], [18, -8 + w * 0.3]], LOOK.brow, calm ? 1.6 : 2.2, { amp: 0.15, boil: true });
     // 鼻子、鬍子、嘴
     wline(g, [[9, 1], [12.4, 4.2], [9.4, 6]], C.ink, 1.3, { amp: 0.15, boil: true });
     const mo = talking ? Math.abs(Math.sin(t * 11)) * 2.6 : wince * 1.2;
-    if (mo > 0.4) { g.beginPath(); g.ellipse(9, 13.6, 2.6, mo, 0, 0, TAU); g.fillStyle = '#5b2f28'; g.fill(); }
-    shape(g, [[0, 9.5], [4.5, 6.6], [9, 7.6], [13.5, 6.6], [18, 9.5], [14, 12.4], [9, 10.6], [4, 12.4]], { fill: C.hairGrey, lw: 1.2, boil: true });
+    if (mo > 0.4) { g.beginPath(); g.ellipse(9, calm ? 11.5 : 13.6, 2.6, mo, 0, 0, TAU); g.fillStyle = '#5b2f28'; g.fill(); }
+    else if (calm) wline(g, [[5.5, 11], [9, 12], [12.5, 11]], C.ink, 1.3, { amp: 0.1, boil: true });
+    if (!calm) shape(g, [[0, 9.5], [4.5, 6.6], [9, 7.6], [13.5, 6.6], [18, 9.5], [14, 12.4], [9, 10.6], [4, 12.4]], { fill: LOOK.hair, lw: 1.2, boil: true });
     // 冷汗
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < (calm ? 0 : 2); i++) {
       const k = (t * 0.33 + i * 0.5) % 1, sx = -9 + i * 26, sy = -9 + k * 13;
       g.globalAlpha = Math.sin(k * Math.PI);
       shape(g, [[sx, sy - 3.4], [sx + 2.1, sy + 0.6], [sx, sy + 2.6], [sx - 2.1, sy + 0.6]], { fill: C.sweat, lw: 1, step: 99, boil: true });
@@ -315,6 +335,25 @@ export function createWard(canvas) {
     eye(g, -4.6, -13.5, r, [-1.3, 1.3], blink ? 'blink' : 'open'); eye(g, 4.6, -13.5, r, [-1.3, 1.3], blink ? 'blink' : 'open');
     g.restore();
     return { x, y };
+  }
+
+  function drawLights(g, t, m) {
+    const list = state.lights;
+    if (!list.length) return;
+    K.seed = 2500;
+    list.forEach((it, i) => {
+      const n = list.length, lx = m.x + (i - (n - 1) / 2) * 27 + Math.sin(t * 1.1 + i) * 1.2, ly = m.y + 52 + Math.cos(t * 1.3 + i * 1.7) * 1.2 + Math.abs(i - (n - 1) / 2) * -3;
+      it.shown = (it.shown ?? 0) + (it.level - (it.shown ?? 0)) * 0.12;
+      const lv = it.shown, on = Math.max(0, lv), off = Math.max(0, -lv);
+      wline(g, [[m.x + (i - (n - 1) / 2) * 6, m.y + 26], [lx, ly - 10]], C.ink, 1, { amp: 0.3, boil: true });
+      if (on > 0.05) { g.globalAlpha = on * (0.3 + 0.08 * Math.sin(t * 4 + i)); dot(g, lx, ly, 15 + on * 4, C.glow); g.globalAlpha = 1; }
+      shape(g, [[lx - 5, ly - 9.5], [lx + 5, ly - 9.5], [lx + 4, ly - 7.5], [lx - 4, ly - 7.5]], { fill: C.brass, lw: 1, step: 99 });
+      const paper = on > 0.05 ? (on > 0.5 ? C.ochre : C.glow) : off > 0.05 ? '#b9b6a8' : C.cream;
+      shape(g, ell(lx, ly, 8.6, 8.2, 12), { fill: paper, lw: 1.3, boil: true, step: 99 });
+      g.globalAlpha = off > 0.05 ? 0.45 : 0.92; g.fillStyle = C.ink; g.font = '700 9.5px "LXGW WenKai TC", "Noto Serif TC", serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(it.mark, lx, ly + 0.6); g.globalAlpha = 1;
+      if (off > 0.3) { g.globalAlpha = Math.min(1, off * 1.4); wline(g, [[lx - 6.5, ly - 6], [lx + 6.5, ly + 6]], C.ink, 1.5, { amp: 0.3, boil: true }); g.globalAlpha = 1; }
+    });
   }
 
   function puff(g, x, y, r, i, t) {
@@ -380,7 +419,7 @@ export function createWard(canvas) {
     state.bell *= Math.exp(-dt * 1.5); state.shake *= Math.exp(-dt * 7);
     state.nod = Math.max(0, state.nod - dt * 1.6); state.flinch = Math.max(0, state.flinch - dt * 2.4);
     const ph = (t + 2.2) % 5.6;
-    state.wince = still ? 0 : Math.max(ph < 1 ? Math.sin(ph * Math.PI) : 0, state.slumpShown * 0.7);
+    state.wince = still ? 0 : Math.max((ph < 1 ? Math.sin(ph * Math.PI) : 0) * (calm ? 0.5 : 1), state.slumpShown * 0.7);
     if (still) { sparks.length = 0; dust.length = 0; return; }
     // 鐵翅蛾翅膀掉下來的鱗粉
     dustClock += dt;
@@ -404,6 +443,7 @@ export function createWard(canvas) {
     base.paste('mid', sx, sy); base.world(sx, sy);
     const m = drawMoth(g, t);
     drawFog(g, t, m);
+    drawLights(g, t, m);
     // 值班醫師到了，岑禾往旁邊讓一步
     const d = state.doctorShown;
     drawCen(g, t, { x: CEN.x - 34 * d, y: CEN.y, talking: state.talker === 'cen', nod: state.nod });
@@ -432,11 +472,13 @@ export function createWard(canvas) {
     /** 角色頭頂的位置，給對話泡泡和標籤用（CSS 像素） */
     anchor(who) {
       const d = state.doctorShown;
-      const p = who === 'lin' ? [LIN.x + 1, LIN.y - 84 * BIG] : who === 'cen' ? [CEN.x - 1 - 34 * d, CEN.y - 128 * BIG] : who === 'shen' ? [SHEN.x - 1, SHEN.y - 150] : who === 'fog' ? [MOTH.x, MOTH.y + 54] : null;
+      const p = who === 'lin' ? [LIN.x + 1, LIN.y - 84 * BIG] : who === 'cen' ? [CEN.x - 1 - 34 * d, CEN.y - 128 * BIG] : who === 'shen' ? [SHEN.x - 1, SHEN.y - 150] : null;
       return p && base.css(p[0], p[1]);
     },
     /** 拿到一條線索：症影往後縮、岑禾點頭、星星散開 */
     clue(key) { state.flinch = 1; state.nod = 1; burst(key ? 12 : 7, key); },
+    /** 四盞燈：[{ mark, level }]，level 從 -1（比較不像）到 1（更像） */
+    setLights(list) { state.lights = list.map((it, i) => ({ ...it, shown: state.lights[i]?.shown ?? 0 })); },
     ring() { state.bell = 1; },
     jolt() { state.shake = 1; },
   };

@@ -13,14 +13,15 @@
 | 2. 架構：遊戲規則 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認，可以玩的空殼做好了：[`game/`](game/README.md) |
 | 2. 架構：整體系統 | [`docs/04-system-design.md`](docs/04-system-design.md) | 🟡 草稿。玩家身分和主機已定，等遊戲企劃確認後再做 |
 | 3. 內容：美術方向 | [繪本版](prototypes/style-frame-storybook/README.md) | ✅ 定案：手繪繪本風（2026-11-12）。[3D 像素版](prototypes/style-frame/README.md)留著當紀錄 |
-| 3. 內容：互動原型 | [`app/`](app/README.md) | 🟡 一張委託可以從公會玩到回顧，等你試玩 |
-| 3. 內容：病例 | 只有一個示範關卡，還沒經過專家審查 | ⏸ |
+| 3. 內容：互動原型 | [`app/`](app/README.md) | 🟡 第一章兩張委託（同一隻症影、兩個真身），有解讀線索和圖鑑，等你試玩 |
+| 3. 內容：長期的推進 | [`docs/06-progression.md`](docs/06-progression.md) | 🟡 故事線、圖鑑、階級的設計。前兩章以外是提案，等你確認 |
+| 3. 內容：病例 | [怎麼寫新病例](app/src/data/README.md) | 🟡 病例模組做好了；兩個胸痛病例是草稿，還沒經過臨床老師審查 |
 
 ## 互動原型
 
-![公會、病室、推理板、回顧](docs/art/app-prototype.jpg)
+![解讀線索、第二位病人、想法怎麼變、圖鑑](docs/art/app-prototype.jpg)
 
-繪本畫風的第一個可以玩的版本：在公會接下林秋的委託，進病室問診、評估、提檢查、排推理板、通報、向病人說明，結案之後看回顧。
+繪本畫風的可以玩的版本。第一章有兩張委託：林秋和簡晴，同樣是胸痛，真身不一樣。症影底下掛著四盞燈，拿到關鍵的線索要判斷它讓哪一盞更像、哪一盞比較不像；解讀對的線索會寫回圖鑑，故事跟著圖鑑往下走。
 
 ```bash
 cd app

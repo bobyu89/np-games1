@@ -1,28 +1,29 @@
 import { useState } from 'react';
-import type { Session } from '../core/types.ts';
+import type { CaseDef, Session } from '../core/types.ts';
 import { scoreSession } from '../core/scoring.ts';
-import { C01A } from '../data/c01a.ts';
 import { Hall } from './Hall.tsx';
 import { Ward } from './Ward.tsx';
 import { Debrief } from './Debrief.tsx';
 import { load, store, type Save } from './store.ts';
+import { newReads, record } from './progress.ts';
 
-type Screen = { name: 'hall' } | { name: 'ward'; n: number } | { name: 'debrief'; session: Session };
+type Screen = { name: 'hall' } | { name: 'ward'; c: CaseDef; n: number } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number };
 
 export function App() {
-  const c = C01A;   // 互動原型只有這一張委託
   const [save, setSave] = useState<Save>(load);
   const [screen, setScreen] = useState<Screen>({ name: 'hall' });
   const keep = (s: Save) => { setSave(s); store(s); };
 
-  if (screen.name === 'ward') return <Ward key={screen.n} c={c} takeaway={save.takeaway} onQuit={() => setScreen({ name: 'hall' })} onDone={(session) => setScreen({ name: 'debrief', session })} />;
+  if (screen.name === 'ward') {
+    return <Ward key={screen.n} c={screen.c} takeaway={save.takeaways[0] ?? null} onQuit={() => setScreen({ name: 'hall' })}
+      onDone={(session, seconds) => setScreen({ name: 'debrief', c: screen.c, session, seconds })} />;
+  }
   if (screen.name === 'debrief') {
-    return <Debrief c={c} session={screen.session} onFinish={(score, takeaway) => {
-      const old = save.results[c.id], safety = scoreSession(c, screen.session).safety;
-      const better = !old || score > old.best;
-      keep({ ...save, takeaway: takeaway ?? save.takeaway, results: { ...save.results, [c.id]: { best: better ? score : old.best, safety: better ? safety : old.safety, plays: (old?.plays ?? 0) + 1 } } });
+    const { c, session, seconds } = screen;
+    return <Debrief c={c} session={session} seconds={seconds} fresh={newReads(save, c, session)} onFinish={(takeaway) => {
+      keep(record(save, c, session, scoreSession(c, session), seconds, takeaway));
       setScreen({ name: 'hall' });
     }} />;
   }
-  return <Hall c={c} save={save} onIntroSeen={() => keep({ ...save, introSeen: true })} onStart={() => setScreen({ name: 'ward', n: Date.now() })} />;
+  return <Hall save={save} onBeatSeen={(id) => keep({ ...save, beats: save.beats.includes(id) ? save.beats : [...save.beats, id] })} onStart={(c) => setScreen({ name: 'ward', c, n: Date.now() })} />;
 }

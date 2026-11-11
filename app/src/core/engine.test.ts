@@ -1,157 +1,222 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { CASES, COMPLAINTS, caseById } from '../data/index.ts';
 import { C01A } from '../data/c01a.ts';
-import { createSession, perform, replay, stability, veil, hintFor } from './engine.ts';
-import { scoreSession, moments, takeaways } from './scoring.ts';
+import { resolveCase } from './module.ts';
+import { createSession, perform, stability, veil, lights, hintFor, COMMIT_AFTER } from './engine.ts';
+import { scoreSession, moments, takeaways, trajectory, harvest } from './scoring.ts';
 import { validateCase } from './validate.ts';
-import type { Action, Board } from './types.ts';
+import { idealActions, run, step } from './autoplay.ts';
+import type { Action } from './types.ts';
 
-const c = C01A;
+const A = caseById('c01a'), B = caseById('c01b');
 const ask = (id: string): Action => ({ type: 'ask', id });
 const exam = (id: string, explain = true): Action => ({ type: 'exam', id, explain });
-const goodBoard: Board = { summary: 's-best', likely: 'acs', exclude: ['dissection', 'pe'], support: ['c-onset', 'c-pressure', 'c-sweat'], against: ['c-notear', 'c-botharms'] };
+const row = (c: typeof A, actions: Action[], id: string, wrong = false) => scoreSession(c, run(c, actions, wrong)).rows.find((r) => r.id === id)!;
 
-// 理想的打法：先量生命徵象、敲鐘、提心電圖，再補病史和評估
-const ideal: Action[] = [
-  ask('q-intro'), { type: 'vitals' }, ask('q-onset'), { type: 'call' }, { type: 'test', id: 't-ecg' }, ask('q-quality'), ask('q-radiate'), ask('q-assoc'),
-  { type: 'report', a: 'a-acs', r: ['r-come', 'r-ecg', 'r-monitor'] }, ask('q-tear'), exam('x-look'), exam('x-botharms'), exam('x-heart'), exam('x-lungs'), exam('x-perfusion'),
-  { type: 'vitals' }, ask('q-provoke'), ask('q-pmh'), ask('q-meds'), ask('q-family'), ask('q-smoke'), ask('q-immob'), ask('q-concern'), ask('q-worse'), ask('q-sob'),
-  exam('x-jvp'), exam('x-legs'), exam('x-chestwall'), { type: 'test', id: 't-blood' },
-  { type: 'board', board: goodBoard }, { type: 'explain', ids: ['e-why', 'e-plan', 'e-warn', 'e-concern'] }, { type: 'close' },
-];
+// ── 病例模組 ──
+test('每個病例都通過檢查器', () => { for (const c of CASES) assert.deepEqual(validateCase(c), [], c.id); });
 
-test('示範病例通過檢查器', () => assert.deepEqual(validateCase(c), []));
-
-test('檢查器抓得到指錯的線索', () => {
-  const bad = { ...c, questions: [...c.questions, { ...c.questions[2], id: 'q-x', clue: 'c-nope' }] };
-  assert.ok(validateCase(bad).some((e) => e.includes('c-nope')));
+test('每個病例照理想的打法，都能安全達成、九十分以上', () => {
+  for (const c of CASES) {
+    const s = run(c, idealActions(c)), sc = scoreSession(c, s);
+    assert.equal(sc.safety, 'met', c.id + ' ' + sc.safetyNote);
+    assert.ok(sc.total >= 90, c.id + ' 總分 ' + sc.total + ' ' + sc.rows.map((r) => r.id + ' ' + r.got).join(' '));
+    assert.equal(sc.rows.reduce((n, r) => n + r.max, 0), 100);
+    assert.ok(sc.data <= 55 && sc.reason <= 45);
+    assert.equal(veil(c, s), 0);
+  }
 });
 
-test('同樣的行動順序，結果一模一樣', () => {
-  assert.deepEqual(replay(c, ideal), replay(c, ideal));
-  assert.deepEqual(scoreSession(c, replay(c, ideal)), scoreSession(c, replay(c, ideal)));
+test('同一個主訴的病例，畫面上的選項一模一樣', () => {
+  const shape = (c: typeof A) => JSON.stringify([c.questions.map((q) => [q.id, q.label, q.ask]), c.exams.map((e) => [e.id, e.label]), c.tests.map((t) => [t.id, t.label]), c.forms.map((f) => f.id)]);
+  assert.equal(shape(A), shape(B));
+  assert.notEqual(A.answer.truth, B.answer.truth);
 });
 
-test('行動不會改到原本的對局', () => {
-  const s0 = createSession(c), snap = JSON.stringify(s0);
-  perform(c, s0, ask('q-onset'));
+test('病例少寫一題的回答，合併的時候就會報錯', () => {
+  const { 'q-onset': _drop, ...rest } = C01A.answers; void _drop;
+  assert.throws(() => resolveCase(COMPLAINTS[0], { ...C01A, answers: rest }), /q-onset/);
+  assert.throws(() => resolveCase(COMPLAINTS[0], { ...C01A, answers: { ...C01A.answers, 'q-nope': { say: 'x' } } }), /q-nope/);
+});
+
+test('檢查器抓得到常見的錯', () => {
+  const has = (c: typeof A, word: string) => assert.ok(validateCase(c).some((e) => e.includes(word)), word + ' → ' + validateCase(c).join('｜'));
+  has({ ...A, safety: [{ type: 'call', points: 5 }] }, '9 分');
+  has({ ...A, answer: { ...A.answer, truth: 'nope' } }, 'nope');
+  has({ ...A, clues: A.clues.map((k) => (k.id === 'c-tear' ? { ...k, why: undefined } : k)) }, '為什麼');
+  has({ ...B, clues: B.clues.map((k) => (k.tell?.form === 'dissection' ? { ...k, tell: undefined, why: undefined } : k)) }, '比較不像');
+  has({ ...A, forms: A.forms.slice(0, 3) }, '四個真身');
+});
+
+// ── 規則 ──
+test('同樣的行動順序，結果一模一樣；行動不會改到原本的對局', () => {
+  assert.deepEqual(run(A, idealActions(A)), run(A, idealActions(A)));
+  const s0 = createSession(A), snap = JSON.stringify(s0);
+  perform(A, s0, ask('q-onset'));
   assert.equal(JSON.stringify(s0), snap);
 });
 
-test('理想的打法：安全行動達成，分數在九成以上', () => {
-  const s = replay(c, ideal), sc = scoreSession(c, s);
-  assert.equal(sc.safety, 'met');
-  assert.equal(s.worsenedAt, null);
-  assert.ok(sc.total >= 90, '總分 ' + sc.total);
-  assert.ok(sc.data <= 55 && sc.reason <= 45);
-  assert.equal(sc.rows.reduce((n, r) => n + r.max, 0), 100);
-  assert.ok(s.ecgRead, '醫師判讀了心電圖');
-});
-
 test('沒量過生命徵象就是不知道', () => {
-  const s = replay(c, [ask('q-onset')]);
-  assert.equal(s.vitalsSeen, null);
-  assert.equal(replay(c, [{ type: 'vitals' }]).vitalsSeen!.v.bp, '103/68');
+  assert.equal(run(A, [ask('q-intro')]).vitalsSeen, null);
+  assert.equal(run(A, [{ type: 'vitals' }]).vitalsSeen!.v.bp, '103/68');
 });
 
-test('拖過第 4 分鐘還沒通報：病況變差，之後通報算延遲補救', () => {
-  const eight = ['q-onset', 'q-quality', 'q-radiate', 'q-assoc', 'q-pmh', 'q-meds', 'q-family', 'q-smoke'].map(ask);
-  let s = replay(c, eight.slice(0, 7));
-  assert.equal(s.worsenedAt, null);
-  const r = perform(c, s, eight[7]); s = r.session;
-  assert.equal(s.worsenedAt, 240);
-  assert.ok(r.events.some((e) => e.type === 'worsen'));
-  // 手上的數字還是舊的，要重測才知道
-  const v = perform(c, perform(c, replay(c, [{ type: 'vitals' }, ...eight]), { type: 'vitals' }).session, { type: 'call' }).session;
-  assert.equal(v.vitalsSeen!.v.bp, '86/58');
-  const sc = scoreSession(c, replay(c, [{ type: 'vitals' }, ...eight, { type: 'call' }, { type: 'test', id: 't-ecg' }, { type: 'close' }]));
-  assert.equal(sc.safety, 'late');
+test('拿到要解讀的線索，要先解讀才能做下一件事；解讀不扣時間', () => {
+  const s = perform(A, createSession(A), ask('q-onset')).session;
+  assert.deepEqual(s.pending, ['c-onset']);
+  assert.equal(perform(A, s, ask('q-quality')).events[0].type, 'reject');
+  const r = perform(A, s, { type: 'read', clue: 'c-onset', form: 'acs' });
+  assert.equal(r.session.time, s.time);
+  assert.deepEqual(r.session.reads.map((k) => k.ok), [true]);
+  assert.equal(perform(A, s, { type: 'read', clue: 'c-onset', form: 'msk' }).session.reads[0].ok, false);
 });
 
-test('一直不通報：第 8 分鐘岑禾接手，安全狀態是需要複核', () => {
-  const many = c.questions.slice(0, 17).map((q) => ask(q.id));
-  const s = replay(c, many);
-  assert.equal(s.calledBy, 'mentor');
-  assert.equal(scoreSession(c, replay(c, [...many, { type: 'close' }])).safety, 'review');
+test('解讀對了霧才全散，解讀錯只散一半；燈照著線索亮', () => {
+  const right = run(A, [ask('q-onset')]), wrong = run(A, [ask('q-onset')], true), none = perform(A, createSession(A), ask('q-onset')).session;
+  assert.ok(veil(A, right) < veil(A, wrong) && veil(A, wrong) < veil(A, none));
+  assert.equal(veil(A, none), 1);
+  const l = lights(A, run(A, [ask('q-onset'), ask('q-tear')]));
+  assert.ok(l.acs > 0 && l.dissection < 0 && l.pe === 0);
 });
 
-test('及時通報就不會變差', () => {
-  const s = replay(c, [{ type: 'call' }, ...c.questions.map((q) => ask(q.id))]);
-  assert.equal(s.worsenedAt, null);
-  assert.ok(s.doctorHere);
+test('解讀到第三條，岑禾會問你最擔心哪一個；回答之前不能做別的', () => {
+  let s = createSession(A);
+  for (const id of ['q-onset', 'q-quality', 'q-radiate']) { s = perform(A, s, ask(id)).session; s = perform(A, s, { type: 'read', clue: s.pending[0], form: 'acs' }).session; }
+  assert.equal(s.reads.length, COMMIT_AFTER);
+  assert.ok(s.needCommit);
+  assert.equal(perform(A, s, ask('q-assoc')).events[0].type, 'reject');
+  s = perform(A, s, { type: 'commit', form: 'msk' }).session;
+  assert.ok(!s.needCommit);
+  assert.deepEqual(s.commits.map((k) => k.form), ['msk']);
 });
 
 test('重複問同一題不會多拿線索，但時間照扣', () => {
-  const s = replay(c, [ask('q-onset'), ask('q-onset')]);
+  const s = run(A, [ask('q-pmh'), ask('q-pmh')]);
   assert.equal(s.clues.length, 1);
-  assert.equal(s.asked.length, 1);
   assert.equal(s.time, 60);
 });
 
-test('心電圖提出 2 分鐘後才有結果', () => {
-  let s = replay(c, [{ type: 'call' }, { type: 'test', id: 't-ecg' }]);
-  assert.ok(!s.results.includes('t-ecg'));
-  s = replay(c, [{ type: 'call' }, { type: 'test', id: 't-ecg' }, { type: 'watch' }, { type: 'watch' }, { type: 'watch' }, { type: 'watch' }]);
-  assert.ok(s.results.includes('t-ecg') && s.clues.includes('c-ecg'));
+// ── 會變差的病人（C01A）──
+test('拖過第 4 分鐘還沒通報：病況變差，要重測才看得到新的數字', () => {
+  const eight = ['q-pmh', 'q-meds', 'q-family', 'q-smoke', 'q-ros-cv', 'q-ros-resp', 'q-ros-gi', 'q-trauma'].map(ask);
+  assert.equal(run(A, eight.slice(0, 7)).worsenedAt, null);
+  const s = run(A, [{ type: 'vitals' }, ...eight]);
+  assert.ok(s.worsenedAt !== null);
+  assert.equal(s.vitalsSeen!.v.bp, '103/68');
+  assert.equal(step(A, s, { type: 'vitals' }).vitalsSeen!.v.bp, '86/58');
+  assert.equal(scoreSession(A, run(A, [...eight, { type: 'call' }, { type: 'test', id: 't-ecg' }, { type: 'close' }])).safety, 'late');
 });
 
-test('回報裡要求心電圖，等於提出心電圖', () => {
-  const s = replay(c, [{ type: 'call' }, { type: 'report', a: 'a-acs', r: ['r-ecg'] }]);
+test('一直不通報：第 8 分鐘岑禾接手，安全狀態是需要複核', () => {
+  const many = A.questions.slice(0, 17).map((q) => ask(q.id));
+  assert.equal(run(A, many).calledBy, 'mentor');
+  assert.equal(scoreSession(A, run(A, [...many, { type: 'close' }])).safety, 'review');
+});
+
+test('及時通報就不會變差；回報本身也算通報', () => {
+  const s = run(A, [{ type: 'call' }, ...A.questions.map((q) => ask(q.id))]);
+  assert.equal(s.worsenedAt, null);
+  assert.ok(s.doctorHere);
+  const viaReport = run(A, [{ type: 'report', a: 'a-acs', r: ['r-ecg'] }]);
+  assert.equal(viaReport.calledBy, 'you');
+  assert.ok(!viaReport.bell);
+  assert.ok(viaReport.ordered.some((o) => o.id === 't-ecg'));
+});
+
+test('心電圖提出 2 分鐘後才有結果，結果也要解讀', () => {
+  const s0 = run(A, [{ type: 'call' }, { type: 'test', id: 't-ecg' }]);
+  assert.ok(!s0.results.includes('t-ecg'));
+  let s = s0;
+  for (let i = 0; i < 4; i++) s = perform(A, s, { type: 'watch' }).session;
+  assert.ok(s.results.includes('t-ecg'));
+  assert.deepEqual(s.pending, ['c-ecg']);
+});
+
+// ── 穩定的病人（C01B）──
+test('穩定的病人不會變差，岑禾也不會接手', () => {
+  const s = run(B, B.questions.map((q) => ask(q.id)));
+  assert.equal(s.worsenedAt, null);
+  assert.equal(s.calledBy, null);
+  assert.equal(stability(B, s), stability(B, createSession(B)));
+});
+
+test('穩定的病人敲了值班鐘：安全行動只算部分達成', () => {
+  const acts = idealActions(B), i = acts.findIndex((a) => a.type === 'report');
+  const sc = scoreSession(B, run(B, [...acts.slice(0, i), { type: 'call' }, ...acts.slice(i)]));
+  assert.equal(sc.safety, 'late');
+  assert.ok(sc.safetyNote.includes('不需要敲值班鐘'));
+});
+
+test('沒有把危險的真身排除就說沒事：需要複核', () => {
+  const quick: Action[] = [ask('q-intro'), { type: 'vitals' }, ask('q-quality'), exam('x-chestwall'), { type: 'test', id: 't-ecg' },
+    { type: 'board', board: { summary: 's-best', likely: 'msk', exclude: [] } }, { type: 'explain', ids: ['e-why', 'e-warn'] }, { type: 'close' }];
+  const sc = scoreSession(B, run(B, quick));
+  assert.equal(sc.safety, 'review');
+  assert.ok(sc.safetyNote.includes('主動脈剝離') && sc.safetyNote.includes('肺栓塞'));
+});
+
+test('回報穩定的病人不會把醫師叫來', () => {
+  const s = run(B, [{ type: 'report', a: 'a-msk', r: ['r-read', 'r-plan'] }]);
+  assert.equal(s.calledAt, null);
   assert.ok(s.ordered.some((o) => o.id === 't-ecg'));
 });
 
-test('還沒敲鐘不能回報；結案之後不能再行動', () => {
-  assert.equal(perform(c, createSession(c), { type: 'report', a: 'a-acs', r: [] }).events[0].type, 'reject');
-  const done = replay(c, [{ type: 'close' }]);
-  assert.equal(perform(c, done, ask('q-onset')).events[0].type, 'reject');
-});
-
-test('沒問他擔心什麼，就沒有那一句說明可以選', () => {
-  const s = replay(c, [{ type: 'explain', ids: ['e-why', 'e-concern'] }]);
-  assert.deepEqual(s.explained, ['e-why']);
-});
-
+// ── 評分 ──
 test('不說明就動手：同意與說明那一項拿不到評估的分', () => {
-  const told = scoreSession(c, replay(c, [ask('q-intro'), exam('x-heart', true)])).rows.find((r) => r.id === 'consent')!.got;
-  const silent = scoreSession(c, replay(c, [ask('q-intro'), exam('x-heart', false)])).rows.find((r) => r.id === 'consent')!.got;
-  assert.equal(told, 10); assert.equal(silent, 4);
+  assert.equal(row(A, [ask('q-intro'), exam('x-heart', true)], 'consent').got, 10);
+  assert.equal(row(A, [ask('q-intro'), exam('x-heart', false)], 'consent').got, 4);
+});
+
+test('線索都解讀錯：證據那一項是零分', () => {
+  const acts = idealActions(A);
+  assert.equal(row(A, acts, 'evidence').got, 10);
+  assert.equal(row(A, acts, 'evidence', true).got, 0);
+});
+
+test('沒問擔心什麼，就沒有那一句說明可以選', () => {
+  assert.deepEqual(run(A, [{ type: 'explain', ids: ['e-why', 'e-concern'] }]).explained, ['e-why']);
 });
 
 test('什麼都不做就結案：分數很低，需要複核', () => {
-  const sc = scoreSession(c, replay(c, [{ type: 'close' }]));
-  assert.ok(sc.total <= 5, '總分 ' + sc.total);
-  assert.equal(sc.safety, 'review');
+  for (const c of CASES) {
+    const sc = scoreSession(c, run(c, [{ type: 'close' }]));
+    assert.ok(sc.total <= 5, c.id + ' 總分 ' + sc.total);
+    assert.equal(sc.safety, 'review');
+  }
 });
 
-test('太早認定是拉傷：推理的分數拿不到', () => {
-  const wrong: Board = { summary: 's-anchor', likely: 'msk', exclude: [], support: ['c-onset'], against: [] };
-  const sc = scoreSession(c, replay(c, [ask('q-onset'), { type: 'board', board: wrong }, { type: 'close' }]));
-  assert.equal(sc.rows.find((r) => r.id === 'ddx')!.got, 0);
-  assert.equal(sc.rows.find((r) => r.id === 'evidence')!.got, 0);
+test('結案之後不能再行動', () => {
+  assert.equal(perform(A, run(A, [{ type: 'close' }]), ask('q-onset')).events[0].type, 'reject');
 });
 
-test('霧和穩定度', () => {
-  const s0 = createSession(c);
-  assert.equal(veil(c, s0), 1);
-  assert.ok(veil(c, replay(c, ideal.slice(0, 8))) < 0.8);
-  assert.equal(veil(c, replay(c, ideal)), 0);
-  const late = replay(c, c.questions.slice(0, 10).map((q) => ask(q.id)));
-  const early = replay(c, [{ type: 'call' }, ...c.questions.slice(0, 10).map((q) => ask(q.id))]);
-  assert.ok(stability(c, early) > stability(c, late) + 20);
+// ── 提示和回顧 ──
+test('提示會跟著狀況變，而且不講出真身', () => {
+  assert.ok(hintFor(A, createSession(A)).includes('血壓'));
+  assert.ok(hintFor(A, run(A, [{ type: 'vitals' }])).includes('叫人'));
+  assert.ok(hintFor(A, run(A, [{ type: 'vitals' }, { type: 'call' }])).includes('心電圖'));
+  assert.ok(hintFor(B, run(B, [{ type: 'vitals' }, { type: 'test', id: 't-ecg' }])).includes('那盞燈'));
+  for (const c of CASES) assert.ok(hintFor(c, run(c, idealActions(c).slice(0, -1))).includes('提交'));
 });
 
-test('提示會跟著狀況變', () => {
-  assert.equal(hintFor(c, createSession(c)), c.hints.find((h) => h.id === 'h-vitals')!.text);
-  assert.equal(hintFor(c, replay(c, [{ type: 'vitals' }])), c.hints.find((h) => h.id === 'h-call')!.text);
-  assert.equal(hintFor(c, replay(c, [{ type: 'vitals' }, { type: 'call' }])), c.hints.find((h) => h.id === 'h-ecg')!.text);
-  assert.equal(hintFor(c, replay(c, ideal.slice(0, -1))), c.hints.find((h) => h.id === 'h-close')!.text);
-});
-
-test('回顧：時間點照順序，下次要做到的事不超過四項', () => {
-  const s = replay(c, ideal), m = moments(c, s);
-  assert.ok(m.length >= 3);
+test('回顧：時間點照順序；看得出想法有沒有跟著線索變', () => {
+  const s = run(A, idealActions(A)), m = moments(A, s);
+  assert.ok(m.length >= 4);
   assert.deepEqual(m.map((k) => k.t), [...m.map((k) => k.t)].sort((a, b) => a - b));
-  assert.ok(m.find((k) => k.id === 'call')!.clues.includes('c-onset'));
-  const t = takeaways(c, replay(c, [{ type: 'close' }]), scoreSession(c, replay(c, [{ type: 'close' }])));
-  assert.ok(t.length >= 3 && t.length <= 4);
+  assert.ok(trajectory(A, s).verdict.includes('一開始的判斷就對了'));
+  // 中途說是拉傷，結案改成急性冠心症
+  let cur = createSession(A);
+  for (const id of ['q-onset', 'q-quality', 'q-radiate']) { cur = perform(A, cur, ask(id)).session; cur = perform(A, cur, { type: 'read', clue: cur.pending[0], form: 'acs' }).session; }
+  cur = perform(A, cur, { type: 'commit', form: 'msk' }).session;
+  cur = perform(A, cur, { type: 'board', board: { summary: 's-best', likely: 'acs', exclude: [] } }).session;
+  cur = perform(A, cur, { type: 'close' }).session;
+  assert.ok(trajectory(A, cur).verdict.includes('跟著線索改了想法'));
+  assert.ok(takeaways(A, cur, scoreSession(A, cur)).length <= 4);
+});
+
+test('可以寫進圖鑑的：解讀對的線索、有沒有認出真身', () => {
+  const h = harvest(B, run(B, idealActions(B)));
+  assert.ok(h.found && h.concern);
+  assert.ok(h.reads.some((r) => r.form === 'msk' && r.dir === 1) && h.reads.some((r) => r.form === 'acs' && r.dir === -1));
+  assert.equal(harvest(B, run(B, idealActions(B), true)).reads.length, 0);
 });

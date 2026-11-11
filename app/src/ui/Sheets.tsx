@@ -20,40 +20,35 @@ export function Sheet({ title, onClose, children, footer }: { title: string; onC
 const clueOf = (c: CaseDef, id: string) => c.clues.find((k) => k.id === id)!;
 const toggle = (list: string[], id: string, max = 99) => (list.includes(id) ? list.filter((k) => k !== id) : list.length >= max ? list : [...list, id]);
 const KIND: Record<Clue['kind'], string> = { pos: '有的', neg: '沒有的', info: '背景' };
+/** 解讀過的線索，後面標上它指向哪一盞燈 */
+const markOf = (c: CaseDef, s: Session, k: Clue) => (k.tell && s.reads.some((r) => r.clue === k.id) ? '　' + (k.tell.dir > 0 ? '＋' : '－') + c.forms.find((f) => f.id === k.tell!.form)!.mark : '');
 
 function Pick({ on, onClick, children, tone = '' }: { on: boolean; onClick(): void; children: ReactNode; tone?: string }) {
   return <button type="button" className={'pick ' + tone + (on ? ' on' : '')} aria-pressed={on} onClick={() => { sfx.tap(); onClick(); }}>{children}</button>;
 }
 
-/** 推理板：一句問題摘要 → 最可能的、還要排除的 → 支持和反對的線索 */
+/** 推理板：一句問題摘要 → 最可能的真身、還要排除的真身。證據是你一路解讀下來的線索 */
 export function BoardSheet({ c, s, onSave, onClose }: { c: CaseDef; s: Session; onSave(b: Board): void; onClose(): void }) {
   const [b, setB] = useState<Board>(s.board);
-  const likely = c.hypotheses.find((h) => h.id === b.likely), ex = c.hypotheses.find((h) => h.id === b.exclude[0]);
-  const mine = s.clues.map((id) => clueOf(c, id));
   const unasked = c.questions.filter((q) => q.weight > 0 && !s.asked.includes(q.id)).map((q) => q.label);
-  const chips = (list: string[], set: (v: string[]) => void, max: number) => (
-    mine.length ? <div className="chips wrap">{mine.map((k) => <Pick key={k.id} tone={k.kind} on={list.includes(k.id)} onClick={() => set(toggle(list, k.id, max))}>{k.text}</Pick>)}</div> : <p className="dim">還沒有線索。先去問診或評估。</p>
-  );
+  const readsOf = (form: string) => s.reads.map((r) => ({ r, k: clueOf(c, r.clue) })).filter((x) => x.k.tell!.form === form);
   return (
     <Sheet title="推理板" onClose={onClose} footer={<button type="button" className="act demo" onClick={() => onSave(b)}>記下來</button>}>
       <h3>一、用一句話說出問題</h3>
       <div className="stack">{c.summaries.map((k) => <Pick key={k.id} on={b.summary === k.id} onClick={() => setB({ ...b, summary: k.id })}>{k.text}</Pick>)}</div>
 
-      <h3>二、最可能的是什麼？還要排除什麼？</h3>
-      <p className="dim">最可能的選一個；還要排除的最多三個。</p>
+      <h3>二、最可能的是哪一個？還要排除哪幾個？</h3>
+      <p className="dim">底下是你解讀過的線索：＋ 讓它更像，－ 讓它比較不像。</p>
       <div className="hyps">
-        {c.hypotheses.map((h) => (
-          <div key={h.id} className="hyp">
-            <span>{h.name}</span>
-            <Pick tone="likely" on={b.likely === h.id} onClick={() => setB({ ...b, likely: b.likely === h.id ? null : h.id, exclude: b.exclude.filter((k) => k !== h.id), support: [] })}>最可能</Pick>
-            <Pick tone="exclude" on={b.exclude.includes(h.id)} onClick={() => setB({ ...b, exclude: toggle(b.exclude, h.id, 3), likely: b.likely === h.id ? null : b.likely, against: [] })}>要排除</Pick>
+        {c.forms.map((f) => (
+          <div key={f.id} className="hyp">
+            <span><i className="mark" aria-hidden="true">{f.mark}</i>{f.name}</span>
+            <Pick tone="likely" on={b.likely === f.id} onClick={() => setB({ ...b, likely: b.likely === f.id ? null : f.id, exclude: b.exclude.filter((k) => k !== f.id) })}>最可能</Pick>
+            <Pick tone="exclude" on={b.exclude.includes(f.id)} onClick={() => setB({ ...b, exclude: toggle(b.exclude, f.id, 3), likely: b.likely === f.id ? null : b.likely })}>要排除</Pick>
+            <ul>{readsOf(f.id).map(({ k }) => <li key={k.id} className={k.tell!.dir > 0 ? 'up' : 'down'}>{k.tell!.dir > 0 ? '＋' : '－'} {k.text}</li>)}{!readsOf(f.id).length && <li className="none">還沒有線索談到它</li>}</ul>
           </div>
         ))}
       </div>
-
-      <h3>三、證據</h3>
-      {likely ? <><p>哪些線索<b>支持</b>「{likely.name}」？（最多五條）</p>{chips(b.support, (v) => setB({ ...b, support: v }), 5)}</> : <p className="dim">先選一個最可能的問題。</p>}
-      {ex ? <><p>哪些線索讓「{ex.name}」<b>比較不像</b>？（最多四條）</p>{chips(b.against, (v) => setB({ ...b, against: v }), 4)}</> : <p className="dim">先選一個還要排除的問題。</p>}
 
       <h3>還不知道的</h3>
       <p className="dim">{unasked.length ? '還沒問：' + unasked.join('、') + '。' : '病史都問過了。'}{s.vitalsSeen ? '' : ' 生命徵象還沒量。'}</p>
@@ -71,7 +66,7 @@ export function ReportSheet({ c, s, onSend, onClose }: { c: CaseDef; s: Session;
     <Sheet title="向值班醫師回報" onClose={onClose} footer={<button type="button" className="act urgent" disabled={!a} onClick={() => a && onSend(a, r)}>回報</button>}>
       <p className="dim">現況和背景是用你手上的線索組成的。沒問到的，回報裡就沒有。</p>
       <h3>現況</h3>
-      <p className="quote">{c.patient.name}，{c.patient.age} 歲{c.patient.sex}性，{c.complaint}。{now.length ? now.join('；') + '。' : '細節還沒問。'}{v ? '血壓 ' + v.bp + '、心跳 ' + v.hr + '、呼吸 ' + v.rr + '、血氧 ' + v.spo2 + '%。' : '生命徵象還沒量。'}</p>
+      <p className="quote">{c.patient.name}，{c.patient.age} 歲{c.patient.sex}性，{c.complaintName}。{now.length ? now.join('；') + '。' : '細節還沒問。'}{v ? '血壓 ' + v.bp + '、心跳 ' + v.hr + '、呼吸 ' + v.rr + '、血氧 ' + v.spo2 + '%。' : '生命徵象還沒量。'}</p>
       <h3>背景</h3>
       <p className="quote">{bg.length ? bg.join('；') + '。' : '過去病史、用藥和過敏都還沒問。'}</p>
       <h3>評估：你認為是什麼狀況？</h3>
@@ -103,7 +98,7 @@ export function CluesSheet({ c, s, onClose }: { c: CaseDef; s: Session; onClose(
       {!mine.length && <p className="dim">還沒有線索。</p>}
       {(['pos', 'neg', 'info'] as const).map((kind) => {
         const list = mine.filter((k) => k.kind === kind);
-        return list.length ? <div key={kind}><h3>{KIND[kind]}</h3><div className="chips wrap">{list.map((k) => <span key={k.id} className={'chip ' + kind + (k.key ? ' key' : '')}>{k.key ? '★ ' : ''}{k.text}</span>)}</div></div> : null;
+        return list.length ? <div key={kind}><h3>{KIND[kind]}</h3><div className="chips wrap">{list.map((k) => <span key={k.id} className={'chip ' + kind + (k.key ? ' key' : '')}>{k.key ? '★ ' : ''}{k.text}{markOf(c, s, k)}</span>)}</div></div> : null;
       })}
       {ready.length > 0 && <><h3>資料和檢查結果</h3>{ready.map((t) => <p key={t.id} className="quote"><b>{t.label}</b>：{t.result}</p>)}</>}
     </Sheet>

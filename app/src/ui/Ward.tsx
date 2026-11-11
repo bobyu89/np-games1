@@ -2,7 +2,7 @@
 // 規則全部在 core/engine，這裡只負責把行動送進去、把發生的事演出來。
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Action, CaseDef, QuestionGroup, Session } from '../core/types.ts';
-import { createSession, perform, stability, testReady, veil } from '../core/engine.ts';
+import { clueOf, createSession, lights, perform, stability, testReady, veil } from '../core/engine.ts';
 import { Stage, type StageHandle } from './Stage.tsx';
 import { Talk, type Line, type TalkHandle, type Who } from './Talk.tsx';
 import { BoardSheet, CluesSheet, ConfirmSheet, ExplainSheet, ReportSheet } from './Sheets.tsx';
@@ -26,7 +26,12 @@ function Sub({ title, children, extra, onBack }: { title?: string; children: Rea
   );
 }
 
-interface Props { c: CaseDef; takeaway: string | null; onDone(s: Session): void; onQuit(): void }
+/** 四個真身的按鈕：解讀線索和回答岑禾都用這一組 */
+function Forms({ c, onPick }: { c: CaseDef; onPick(id: string): void }) {
+  return <div className="forms">{c.forms.map((f) => <button key={f.id} type="button" className="form" onClick={() => onPick(f.id)}><i aria-hidden="true">{f.mark}</i>{f.name}</button>)}</div>;
+}
+
+interface Props { c: CaseDef; takeaway: string | null; onDone(s: Session, seconds: number): void; onQuit(): void }
 
 export function Ward({ c, takeaway, onDone, onQuit }: Props) {
   const [session, setSession] = useState(() => createSession(c));
@@ -37,15 +42,17 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
   const [explainOn, setExplainOn] = useState(false);
   const [banner, setBanner] = useState<{ text: string; bad: boolean; show: boolean }>({ text: '', bad: false, show: false });
   const [soundOn, setSoundOn] = useState(sound.on);
-  const live = useRef(session), nudged = useRef(false), bannerTimer = useRef(0);
+  const live = useRef(session), nudged = useRef(false), bannerTimer = useRef(0), began = useRef(performance.now());
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null);
   const bubble = useRef<HTMLDivElement>(null), veilTag = useRef<HTMLDivElement>(null), speaker = useRef<Who | null>(null);
+  const who = c.patient.name;
 
   const toast = (text: string, bad = false) => {
     setBanner({ text, bad, show: true });
     window.clearTimeout(bannerTimer.current);
     bannerTimer.current = window.setTimeout(() => setBanner((b) => ({ ...b, show: false })), 1800);
   };
+  const finish = () => onDone(live.current, Math.round((performance.now() - began.current) / 1000));
 
   // 進門：岑禾的第一句話
   useEffect(() => {
@@ -56,19 +63,21 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
     return () => window.clearTimeout(bannerTimer.current);
   }, [c, takeaway]);
 
-  // 把對局的狀況交給場景：霧、病人的姿勢、醫師到了沒
+  // 把對局的狀況交給場景：霧、四盞燈、病人的姿勢、醫師到了沒
   useEffect(() => {
-    const st = stage.current?.state;
-    if (!st) return;
-    st.veil = session.closedAt !== null ? -0.4 : veil(c, session); st.slump = session.worsenedAt !== null ? 1 : 0; st.doctor = session.doctorHere ? 1 : 0;
+    const s = stage.current;
+    if (!s) return;
+    s.state.veil = session.closedAt !== null ? -0.4 : veil(c, session); s.state.slump = session.worsenedAt !== null ? 1 : 0; s.state.doctor = session.doctorHere ? 1 : 0;
+    const l = lights(c, session);
+    s.setLights(c.forms.map((f) => ({ mark: f.mark, level: Math.max(-1, Math.min(1, l[f.id] / 4)) })));
   }, [c, session]);
 
   const onFrame = (s: StageHandle) => {
-    const who = speaker.current, key = who === 'patient' ? 'lin' : who === 'mentor' ? 'cen' : who === 'doctor' ? 'shen' : null;
+    const sp = speaker.current, key = sp === 'patient' ? 'lin' : sp === 'mentor' ? 'cen' : sp === 'doctor' ? 'shen' : null;
     s.state.talker = key;
-    const at = key ? s.anchor(key) : null, b = bubble.current, v = veilTag.current, fog = s.anchor('fog');
+    const at = key ? s.anchor(key) : null, b = bubble.current, v = veilTag.current;
     if (b) { b.hidden = !at; if (at) { b.style.left = Math.round(at.x) + 'px'; b.style.top = Math.round(at.y) + 'px'; } }
-    if (v && fog) { v.style.left = Math.round(fog.x) + 'px'; v.style.top = Math.round(fog.y) + 'px'; const named = live.current.closedAt !== null; v.textContent = named ? '症影：' + c.shadow.name : '霧 ' + Math.max(0, Math.round((s.state.veilShown as number) * 100)) + '%'; v.classList.toggle('named', named); }
+    if (v) { const named = live.current.closedAt !== null; v.textContent = named ? c.shadow.name : '霧 ' + Math.max(0, Math.round((s.state.veilShown as number) * 100)) + '%'; v.classList.toggle('named', named); }
   };
 
   /** 做一個行動：規則核心算結果，這裡把事件演出來 */
@@ -84,16 +93,18 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
     if (a.type === 'exam' && !a.explain && !nudged.current) { nudged.current = true; lines.push({ who: 'mentor', text: c.lines.hintNoExplain }); }
     // 馬上演的
     for (const e of events) {
-      if (e.type === 'bell') { sfx.bell(); buzz([40, 60, 40]); stage.current?.ring(); toast(e.by === 'you' ? '已呼叫支援' : '岑禾敲了值班鐘', e.by !== 'you'); }
-      if (e.type === 'worsen') { sfx.alarm(); buzz([60, 40, 60]); stage.current?.jolt(); toast('林秋的狀況變了', true); }
+      if (e.type === 'bell') { sfx.bell(); buzz([40, 60, 40]); stage.current?.ring(); toast(e.by === 'you' ? '值班鐘響了' : '岑禾敲了值班鐘', e.by !== 'you'); }
+      if (e.type === 'worsen') { sfx.alarm(); buzz([60, 40, 60]); stage.current?.jolt(); toast(who + '的狀況變了', true); }
       if (e.type === 'doctor') toast('沈渡醫師到了');
+      if (e.type === 'read') { if (e.ok) { sfx.key(); buzz(20); stage.current?.clue(true); toast('解讀正確'); } else { sfx.miss(); toast('再想一下', true); } }
     }
     // 等話說完才演的
     talk.current?.say(lines, () => {
       for (const e of events) {
         if (e.type === 'clue') {
-          stage.current?.clue(e.key); setGain((g) => ({ text: c.clues.find((k) => k.id === e.id)!.text, key: e.key, n: (g?.n ?? 0) + 1 }));
-          if (e.key) { sfx.key(); buzz(30); toast('關鍵線索'); } else sfx.clue();
+          const k = clueOf(c, e.id);
+          setGain((g) => ({ text: k.text, key: e.key, n: (g?.n ?? 0) + 1 }));
+          if (!k.tell) { stage.current?.clue(false); sfx.clue(); }
         }
         if (e.type === 'toast') toast(e.text, !!e.bad);
         if (e.type === 'closed') sfx.done();
@@ -107,13 +118,14 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
   const seenRecord = (id: string) => session.log.some((l) => l.type === 'record' && l.id === id);
   const open = (p: Panel) => { sfx.page(); setPanel(p); };
   const back = () => open('main');
-  const missing = [session.calledAt === null && '還沒有通報。', !session.board.likely && '推理板還是空的。', !session.explained && '還沒有向' + c.patient.name + '說明。'].filter(Boolean) as string[];
+  const missing = [c.safety.some((r) => r.type === 'call') && session.calledAt === null && '還沒有通報。', !session.report && '還沒有向值班醫師回報。', !session.board.likely && '推理板還是空的。', !session.explained && '還沒有向' + who + '說明。'].filter(Boolean) as string[];
+  const reading = session.pending[0] ? clueOf(c, session.pending[0]) : null;
 
   return (
     <div className="screen ward">
       <div className="left">
-        <Stage kind="ward" stage={stage} onFrame={onFrame} label="霧脈公會的病室：林秋坐在床上按著胸口，岑禾拿著紀錄板站在旁邊，房間中間飄著被霧裹住的症影">
-          <button type="button" className="tag tag-back" onClick={() => (closed ? onDone(session) : setSheet('quit'))}>‹ 公會</button>
+        <Stage kind="ward" patient={c.patient.look} stage={stage} onFrame={onFrame} label={'霧脈公會的病室：' + who + '坐在床上，岑禾拿著紀錄板站在旁邊，房間中間飄著被霧裹住的症影，底下掛著四盞燈'}>
+          <button type="button" className="tag tag-back" onClick={() => (closed ? finish() : setSheet('quit'))}>‹ 公會</button>
           <span className="tag tag-clock" aria-label={'已經過了 ' + mmss(session.time)}>{mmss(session.time)}</span>
           <div className="bubble" ref={bubble} hidden>…</div>
           <div className="veil" ref={veilTag} />
@@ -122,7 +134,7 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
           <div className={'stab' + (stab < 40 ? ' low' : '')} aria-label={'穩定度 ' + stab}><span>穩定度</span><i><b style={{ width: stab + '%' }} /></i></div>
         </Stage>
         {v ? (
-          <button type="button" className={'vitals' + (stale && !closed ? ' stale' : '')} disabled={closed} onClick={() => act({ type: 'vitals' })} aria-label={'生命徵象：血壓 ' + v.v.bp + '、心跳 ' + v.v.hr + '、呼吸 ' + v.v.rr + '、血氧 ' + v.v.spo2 + '%。點一下重測'}>
+          <button type="button" className={'vitals' + (stale && !closed ? ' stale' : '')} disabled={closed || !!reading || session.needCommit} onClick={() => act({ type: 'vitals' })} aria-label={'生命徵象：血壓 ' + v.v.bp + '、心跳 ' + v.v.hr + '、呼吸 ' + v.v.rr + '、血氧 ' + v.v.spo2 + '%。點一下重測'}>
             <span><b>BP</b>{v.v.bp}</span>
             <span><b><i className="heart" style={{ animationDuration: (60 / v.v.hr).toFixed(2) + 's' }}>{HEART}</i>HR</b>{v.v.hr}</span>
             <span><b>RR</b>{v.v.rr}</span>
@@ -130,15 +142,27 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
             {stale && !closed && <em>舊了，點一下重測</em>}
           </button>
         ) : (
-          <button type="button" className="vitals unknown" disabled={closed} onClick={() => act({ type: 'vitals' })}><span>生命徵象還沒量<b>點一下測量</b></span></button>
+          <button type="button" className="vitals unknown" disabled={closed || !!reading || session.needCommit} onClick={() => act({ type: 'vitals' })}><span>生命徵象還沒量<b>點一下測量</b></span></button>
         )}
       </div>
 
       <div className="right">
-        <Talk ref={talk} onSpeaker={(w) => { speaker.current = w; }} more />
+        <Talk ref={talk} patient={who} onSpeaker={(w) => { speaker.current = w; }} more />
         <div className="panel">
           {closed ? (
-            <div className="acts one"><button type="button" className="act demo" onClick={() => onDone(session)}>看這一關的回顧</button></div>
+            <div className="acts one"><button type="button" className="act demo" onClick={finish}>看這一關的回顧</button></div>
+          ) : reading ? (
+            <div className="ask-read">
+              <p><b>「{reading.text}」</b></p>
+              <p>這條線索，讓哪一個真身{reading.tell!.dir > 0 ? <em className="up">更像</em> : <em className="down">比較不像</em>}？</p>
+              <Forms c={c} onPick={(form) => act({ type: 'read', clue: reading.id, form })} />
+            </div>
+          ) : session.needCommit ? (
+            <div className="ask-read">
+              <p><b>岑禾在等你回答。</b></p>
+              <p>到目前為止，你最擔心哪一個？</p>
+              <Forms c={c} onPick={(form) => act({ type: 'commit', form })} />
+            </div>
           ) : panel === 'main' ? (
             <div className="acts">
               <button type="button" className={'act demo' + (session.log.length === 0 ? ' hint' : '')} onClick={() => open('ask')}>問診</button>
@@ -167,20 +191,20 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
             </Sub>
           ) : panel === 'call' ? (
             <Sub onBack={back} title="通報">
-              <Opt cls="urgent" done={session.calledAt !== null} onClick={() => act({ type: 'call' })}>敲值班鐘</Opt>
-              <Opt done={!!session.report} onClick={() => (session.calledAt === null || session.report ? act({ type: 'report', a: '', r: [] }) : (sfx.page(), setSheet('report')))}>向值班醫師回報</Opt>
+              <Opt cls="urgent" done={session.bell} onClick={() => act({ type: 'call' })}>敲值班鐘</Opt>
+              <Opt done={!!session.report} onClick={() => (session.report ? act({ type: 'report', a: '', r: [] }) : (sfx.page(), setSheet('report')))}>向值班醫師回報</Opt>
               <Opt onClick={() => act({ type: 'vitals' })}>重測生命徵象</Opt>
             </Sub>
           ) : (
             <Sub onBack={back} title="說明與結案">
-              <Opt done={!!session.explained} onClick={() => (session.explained ? act({ type: 'explain', ids: [] }) : (sfx.page(), setSheet('explain')))}>向{c.patient.name}說明</Opt>
+              <Opt done={!!session.explained} onClick={() => (session.explained ? act({ type: 'explain', ids: [] }) : (sfx.page(), setSheet('explain')))}>向{who}說明</Opt>
               <Opt cls="urgent" onClick={() => { sfx.page(); setSheet('confirm'); }}>提交摘要，結案</Opt>
             </Sub>
           )}
         </div>
         <div className="foot">
           <button type="button" onClick={() => { sfx.page(); setSheet('clues'); }}>線索 {session.clues.length}</button>
-          {!closed && <button type="button" onClick={() => act({ type: 'hint' })}>問岑禾</button>}
+          {!closed && !reading && !session.needCommit && <button type="button" onClick={() => act({ type: 'hint' })}>問岑禾</button>}
           <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
         </div>
       </div>
