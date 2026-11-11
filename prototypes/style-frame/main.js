@@ -50,7 +50,9 @@ const ASKS = [
 ];
 const VITALS = [['BP', '103/68'], ['HR', '108'], ['RR', '24'], ['SpO₂', '96%']];
 
-const ui = { asked: 0, called: false, worse: false, seconds: 0, busy: false };
+const ui = { asked: 0, called: false, worse: false, seconds: 0, flat: false, shown: null };
+try { ui.flat = localStorage.getItem('mist-guild.view') === 'flat'; } catch (e) { /* 記不住也沒關係 */ }
+const HEART = '<svg viewBox="0 0 7 6" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 0h2v1h1V0h2v1h1v2H6v1H5v1H4v1H3V5H2V4H1V3H0V1h1z"/></svg>';
 let stage, refs, typing = null;
 
 function build() {
@@ -73,6 +75,8 @@ function build() {
     clock: el('span', { class: 'clock' }),
     banner: el('div', { class: 'banner' }),
     veil: el('div', { class: 'veil' }),
+    bubble: el('div', { class: 'bubble', hidden: true, text: '…' }),
+    view: el('button', { type: 'button', onclick: toggleView }),
     vitals: el('div', { class: 'box vitals' }),
     talk: el('div', { class: 'box talk', 'aria-live': 'polite' }),
     clues: el('div', { class: 'chips' }),
@@ -83,7 +87,7 @@ function build() {
   root.replaceChildren(
     el('div', { class: 'left' },
       el('div', { class: 'box top' }, el('span', { class: 'who', text: '林秋｜胸痛' }), refs.clock),
-      el('div', { class: 'scene' }, canvas, refs.banner, refs.veil),
+      el('div', { class: 'scene' }, canvas, refs.bubble, refs.banner, refs.veil),
       refs.vitals),
     el('div', { class: 'right' },
       refs.talk, el('div', { class: 'clues' }, el('span', { class: 'label', text: '已知線索' }), refs.clues),
@@ -91,34 +95,72 @@ function build() {
       el('div', { class: 'foot' },
         el('button', { type: 'button', onclick: reset, text: '重來' }),
         el('button', { type: 'button', onclick: (e) => { soundOn = !soundOn; e.target.textContent = soundOn ? '聲音：開' : '聲音：關'; }, text: '聲音：開' }),
-        el('span', { text: '風格定稿' }))));
+        refs.view)));
 
   stage = createStage(canvas);
   stage.resize(sceneW, sceneH);
   stage.state.still = still();
+  stage.setFlat(ui.flat); stage.state.flatShown = ui.flat ? 1 : 0;
+  ui.shown = null;
   paint();
   if (!refs.talk.childElementCount) say([['name', '岑禾'], ['line', '「你現在最想知道什麼？有什麼要同時處理？」']]);
 }
 
+const VITALS_WORSE = [['BP', '86/58'], ['HR', '118'], ['RR', '26'], ['SpO₂', '95%']];
+const nums = (v) => v.map(([, val]) => val.match(/\d+/g).map(Number));
+function drawVitals(v, hot) {
+  refs.vitals.replaceChildren(...v.map(([k, val], i) => {
+    // 心跳不寫「HR」，改放一顆照心跳速度跳動的心
+    if (k === 'HR') { const h = el('i', { class: 'heart' }); h.innerHTML = HEART; h.style.animationDuration = (60 / Number(val)).toFixed(2) + 's'; return el('span', { class: hot ? 'alert' : '', 'aria-label': '心跳每分鐘 ' + val + ' 下' }, h, val); }
+    return el('span', { class: hot && i < 2 ? 'alert' : '' }, el('b', { text: k }), val);
+  }));
+}
 function paint() {
   const m = Math.floor(ui.seconds / 60), s = ui.seconds % 60;
   refs.clock.textContent = '委託　' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-  const v = ui.worse ? [['BP', '86/58'], ['HR', '118'], ['RR', '26'], ['SpO₂', '95%']] : VITALS;
-  refs.vitals.replaceChildren(...v.map(([k, val], i) => el('span', { class: ui.worse && i < 2 ? 'alert' : '' }, el('b', { text: k }), val)));
+  const goal = ui.worse ? VITALS_WORSE : VITALS;
+  if (ui.shown === null || still()) { ui.shown = goal; drawVitals(goal, ui.worse); }
+  else if (ui.shown !== goal) {
+    // 數字從舊的一路跳到新的
+    const from = nums(ui.shown), to = nums(goal), t0 = performance.now();
+    ui.shown = goal;
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / 700);
+      drawVitals(goal.map(([key, val], i) => { let j = 0; return [key, val.replace(/\d+/g, () => String(Math.round(from[i][j] + (to[i][j++] - from[i][j - 1]) * k)))]; }), ui.worse);
+      if (k < 1 && ui.shown === goal) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
   refs.veil.textContent = '霧 ' + Math.round(stage.state.veil * 100) + '%';
   refs.ask.disabled = ui.asked >= ASKS.length; refs.call.disabled = ui.called;
+  refs.ask.classList.toggle('hint', ui.asked === 0 && !ui.called);
+  refs.view.textContent = ui.flat ? '視角：平面' : '視角：立體';
+}
+function toggleView() {
+  ui.flat = !ui.flat; sfx.tap(); stage.setFlat(ui.flat);
+  try { localStorage.setItem('mist-guild.view', ui.flat ? 'flat' : 'iso'); } catch (e) { /* 記不住也沒關係 */ }
+  paint();
 }
 
 // 對話：一個字一個字打出來，點一下對話框可以直接看完
+const WHO = { 林秋: 'lin', 岑禾: 'cen' };
 function say(lines, done) {
   if (typing) typing.finish();
-  const nodes = lines.map(([cls, text]) => ({ node: el('p', { class: cls === 'line' ? '' : cls }), text }));
+  let who = null;
+  const nodes = lines.map(([cls, text]) => { if (cls === 'name') who = WHO[text] || null; return { node: el('p', { class: cls === 'line' ? '' : cls }), text, who: cls === 'line' ? who : null }; });
   refs.talk.replaceChildren(...nodes.map((n) => n.node));
   let li = 0, ci = 0, timer = null, over = false;
-  const finish = () => { if (over) return; over = true; clearTimeout(timer); nodes.forEach((n) => { n.node.textContent = n.text; }); refs.talk.scrollTop = refs.talk.scrollHeight; typing = null; if (done) done(); };
+  const finish = () => {
+    if (over) return; over = true; clearTimeout(timer);
+    nodes.forEach((n) => { n.node.textContent = n.text; });
+    if (nodes.length) nodes[nodes.length - 1].node.append(el('span', { class: 'more', text: ' ▼' }));
+    refs.talk.scrollTop = refs.talk.scrollHeight; typing = null; stage.state.talker = null;
+    if (done) done();
+  };
   const step = () => {
     if (li >= nodes.length) return finish();
     const n = nodes[li];
+    stage.state.talker = n.who;
     ci += 1; n.node.textContent = n.text.slice(0, ci);
     refs.talk.scrollTop = refs.talk.scrollHeight;
     if (ci % 2 === 0) sfx.type();
@@ -182,6 +224,9 @@ async function main() {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     stage.update(now / 1000, dt); stage.render();
     refs.veil.textContent = '霧 ' + Math.round(stage.state.veilShown * 100) + '%';
+    const at = stage.state.talker && stage.anchor(stage.state.talker);
+    refs.bubble.hidden = !at;
+    if (at) { refs.bubble.style.left = 'calc(var(--u) * ' + Math.round(at.x) + ')'; refs.bubble.style.top = 'calc(var(--u) * ' + Math.round(at.y) + ')'; }
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);

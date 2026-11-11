@@ -120,16 +120,29 @@ export function createStage(canvas) {
   [[-40, 44], [-12, 52], [40, 48], [-30, 30], [44, 26]].forEach(([x, y]) => box(room, 9, 4, 1, x, y, -44.6, '#2f5f8a', { flat: true }));
   [[-20, 46], [22, 30], [-36, 26]].forEach(([z, y]) => box(room, 1, 4, 9, -56.6, y, z, '#2f5f8a', { flat: true }));
 
-  // 窗：外面是夜色、港口的燈和雨
-  const win = group(room, 20, 28, -44.8);
-  box(win, 26, 22, 0.6, 0, 0, 0, '#0f1826', { glow: true });
+  // 窗：外面是夜色、遠處的燈塔和雨
+  const win = group(room, 4, 28, -44.8);
+  const glass = box(win, 26, 22, 0.6, 0, 0, 0, '#0f1826', { glow: true });
   box(win, 30, 2, 2, 0, 22, 0.6, '#8a5a2b'); box(win, 30, 2, 3, 0, -2, 1, '#8a5a2b');
   box(win, 2, 22, 2, -14, 0, 0.6, '#8a5a2b'); box(win, 2, 22, 2, 14, 0, 0.6, '#8a5a2b');
   box(win, 1, 22, 1, 0, 0, 0.6, '#5a3a1c'); box(win, 26, 1, 1, 0, 11, 0.6, '#5a3a1c');
-  box(win, 2, 2, 0.4, 7, 6, 0.4, '#f7dc8a', { glow: true }); box(win, 4, 1, 0.4, 7, 4, 0.4, '#b9803d', { glow: true });
+  box(win, 2, 9, 0.4, 7, 2, 0.35, '#1f3a5c', { glow: true }); box(win, 3, 1, 0.4, 7, 1, 0.35, '#1f3a5c', { glow: true });
+  const beacon = box(win, 2, 2, 0.4, 7, 11, 0.4, '#f7dc8a', { glow: true });
+  box(win, 12, 1, 0.4, -5, 1, 0.35, '#14243a', { glow: true });
   const rain = [];
   for (let i = 0; i < 14; i++) rain.push(box(win, 0.7, 3.5, 0.3, -12 + (i * 37 % 25), (i * 53) % 22, 0.5, '#5a93b8', { glow: true }));
-  box(room, 5, 4, 4, 30, 30, -43, '#6b4a33'); box(room, 3, 4, 3, 30, 34, -43, '#087e78'); box(room, 5, 2, 2, 31, 37, -43, '#3fb3a8');
+  box(win, 34, 1.4, 1.4, 0, 25, 2, '#b9803d');
+  const curtains = [-1, 1].map((sd) => {
+    const c = group(win, sd * 15, 25, 2.2);
+    for (let i = 0; i < 3; i++) box(c, 2, 26, 1.2, sd * (i * 1.9 - 1), -26, 0, i % 2 ? '#044a48' : '#087e78', { flat: true });
+    box(c, 6.4, 1.6, 1.6, sd * 0.9, -17, 0.4, '#e0b060', { flat: true });
+    return c;
+  });
+  box(room, 5, 4, 4, 14, 30, -43, '#6b4a33'); box(room, 3, 4, 3, 14, 34, -43, '#087e78'); box(room, 5, 2, 2, 15, 37, -43, '#3fb3a8');
+
+  // 地板的縫、地毯的花紋
+  for (let i = 1; i < 10; i++) box(room, 114, 0.3, 0.5, 0, 0, -45 + i * 9, '#2e1f1a', { flat: true });
+  [[-30, -31], [22, -13], [-8, 5], [38, 23], [-40, 32], [10, 41]].forEach(([x, z]) => box(room, 0.5, 0.3, 9, x, 0, z, '#2e1f1a', { flat: true }));
 
   // 牆上的架子和藥瓶
   box(room, 24, 1.5, 6, -22, 40, -43, '#8f6a47');
@@ -143,10 +156,34 @@ export function createStage(canvas) {
     box(board, 0.4, 0.8, w - 3, 1.3, y + h - 3, z, '#515a6b', { flat: true }); box(board, 0.4, 0.8, w - 4, 1.3, y + h - 5.5, z, '#515a6b', { flat: true });
   });
   box(board, 0.8, 2, 2, 1.1, 13, 4, '#a12635', { flat: true });
-  const bellArm = group(room, -55, 52, -22);
-  box(bellArm, 8, 1.5, 1.5, 2, 0, 0, '#5a3a1c');
-  const bell = group(bellArm, 5, 0, 0);
+  const bellArm = group(room, 30, 60, -45);
+  box(bellArm, 1.5, 1.5, 8, 0, 0, 3, '#5a3a1c');
+  const bell = group(bellArm, 0, 0, 6);
   box(bell, 1, 3, 1, 0, -3, 0, '#5a3a1c'); box(bell, 4, 2, 4, 0, -5, 0, '#b9803d'); box(bell, 6, 4, 6, 0, -9, 0, '#b9803d'); box(bell, 7.4, 2, 7.4, 0, -11, 0, '#e0b060'); box(bell, 1.6, 2, 1.6, 0, -13, 0, '#5a3a1c');
+
+  // 公會的旗幟
+  const banner = group(room, 46, 54, -44.4);
+  box(banner, 14, 1.4, 1.4, 0, 0, 0.4, '#b9803d');
+  box(banner, 12, 22, 0.6, 0, -22, 0, '#087e78', { flat: true }); box(banner, 12, 2, 0.8, 0, -24, 0.1, '#e0b060', { flat: true });
+  box(banner, 2, 2, 0.5, 0, -12, 0.5, '#f7dc8a', { flat: true }); box(banner, 6, 1, 0.5, 0, -11.5, 0.5, '#e0b060', { flat: true });
+  box(banner, 1, 5, 0.5, 0, -15, 0.5, '#e0b060', { flat: true }); box(banner, 4, 1, 0.5, -3, -9, 0.5, '#e0b060', { flat: true }); box(banner, 4, 1, 0.5, 3, -9, 0.5, '#e0b060', { flat: true });
+
+  // 藥櫃：一格一格的抽屜
+  const cab = group(room, 44, 0, -39);
+  box(cab, 24, 24, 9, 0, 0, 0, '#6b4a33'); box(cab, 26, 1.6, 10, 0, 24, 0, '#8f6a47'); box(cab, 26, 2, 10, 0, 0, 0, '#4a3226');
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) {
+    box(cab, 4.8, 5.6, 0.8, -8.4 + c * 5.6, 3.4 + r * 6.8, 4.6, '#8f6a47', { flat: true });
+    box(cab, 1.2, 1.2, 0.8, -8.4 + c * 5.6, 5.4 + r * 6.8, 5.2, '#e0b060', { flat: true });
+    box(cab, 2.6, 1, 0.3, -8.4 + c * 5.6, 7.4 + r * 6.8, 5.1, '#f5f2ea', { flat: true });
+  }
+  box(cab, 5, 3, 5, -6, 25.6, 0, '#a3b3b8'); box(cab, 1.2, 5, 1.2, -4.5, 27, 1, '#8f6a47'); // 研缽
+  box(cab, 6, 0.8, 4, 5, 25.6, 0, '#b9803d'); box(cab, 0.8, 4, 0.8, 5, 26.4, 0, '#b9803d'); box(cab, 7, 0.6, 0.8, 5, 30.4, 0, '#e0b060'); // 秤
+
+  // 牆上的乾燥藥草、床邊的蠟燭、凳子、一疊書
+  [[-50, 50, '#3fb3a8'], [-46, 52, '#8f6a47'], [-42, 50, '#087e78']].forEach(([x, y, c]) => { box(room, 0.6, 3, 0.6, x, y + 6, -44.4, '#6b4a33', { flat: true }); box(room, 2.6, 6, 1.6, x, y, -44.2, c, { flat: true }); });
+  box(room, 2, 3.4, 2, 0.4, 13.5, -40, '#f5f2ea'); const flame = box(room, 1.2, 2, 1.2, 0.4, 17, -40, '#f7dc8a', { glow: true });
+  box(room, 9, 1.6, 9, 44, 8, 26, '#8f6a47'); [[-3, -3], [3, -3], [-3, 3], [3, 3]].forEach(([x, z]) => box(room, 1.6, 8, 1.6, 44 + x, 0, 26 + z, '#6b4a33'));
+  box(room, 9, 2, 6.4, 14, 0, 34, '#a12635'); box(room, 8, 2, 6, 14.6, 2, 34, '#1f3a5c'); box(room, 7, 1.6, 5.6, 14, 4, 34.2, '#b48a5e');
 
   // 床
   const bed = group(room, -30, 0, -30);
@@ -156,6 +193,10 @@ export function createStage(canvas) {
   box(bed, 14, 2, 25, 14, 12, 0, '#087e78'); box(bed, 3, 8, 25, 21.6, 5, 0, '#087e78'); box(bed, 14, 1, 25.4, 14, 13.6, 0, '#3fb3a8', { flat: true });
   box(bed, 5, 0.6, 3.4, 4, 12, 7, '#f5f2ea', { flat: true }); box(bed, 1.2, 0.5, 1.2, 4, 12.5, 7, '#a12635', { flat: true }); // 沒寄出的信
   box(room, 44, 0.6, 26, -24, 0, -2, '#5e1620', { flat: true }); box(room, 40, 0.5, 22, -24, 0.5, -2, '#a12635', { flat: true }); // 地毯
+  box(room, 34, 0.4, 1, -24, 0.9, -11, '#e0b060', { flat: true }); box(room, 34, 0.4, 1, -24, 0.9, 7, '#e0b060', { flat: true });
+  box(room, 1, 0.4, 17, -41, 0.9, -2, '#e0b060', { flat: true }); box(room, 1, 0.4, 17, -7, 0.9, -2, '#e0b060', { flat: true });
+  [[-33, 0], [-24, 0], [-15, 0]].forEach(([x]) => { const d = box(room, 4, 0.4, 4, x, 0.9, -2, '#e0606a', { flat: true }); d.rotation.y = Math.PI / 4; });
+  box(room, 3, 1.4, 5, -14, 0, 3, '#8f6a47'); box(room, 3, 1.4, 5, -10, 0, 4, '#8f6a47'); // 拖鞋
 
   // 床邊桌
   box(room, 12, 12, 10, 6, 0, -38, '#6b4a33'); box(room, 14, 1.5, 12, 6, 12, -38, '#8f6a47');
@@ -182,8 +223,10 @@ export function createStage(canvas) {
     const eyes = [box(head, 2.2, o.eyeH, 0.6, -2.8, 4.6, 5.1, '#0a0d14', { glow: true }), box(head, 2.2, o.eyeH, 0.6, 2.8, 4.6, 5.1, '#0a0d14', { glow: true })];
     const bl = box(head, 3.4, 1.2, 0.6, -2.8, 7.6, 5.1, o.brow, { flat: true }), br = box(head, 3.4, 1.2, 0.6, 2.8, 7.6, 5.1, o.brow, { flat: true });
     bl.rotation.z = -o.browTilt; br.rotation.z = o.browTilt;
-    box(head, o.mouthW, 1, 0.6, 0, 1.8, 5.1, '#7a4a3a', { flat: true });
-    return eyes;
+    const mouth = box(head, o.mouthW, 1, 0.6, 0, 1.8, 5.1, '#7a4a3a', { flat: true });
+    const shine = [box(head, 0.8, 0.8, 0.3, -3.3, 4.6 + o.eyeH - 0.9, 5.5, '#f5f2ea', { glow: true }), box(head, 0.8, 0.8, 0.3, 2.3, 4.6 + o.eyeH - 0.9, 5.5, '#f5f2ea', { glow: true })];
+    box(head, 2, 1, 0.3, -4.2, 2.8, 5.1, '#c98a6a', { flat: true }); box(head, 2, 1, 0.3, 4.2, 2.8, 5.1, '#c98a6a', { flat: true });
+    return { eyes, brows: [bl, br], mouth, shine, tilt: o.browTilt };
   }
 
   // 林秋：坐在床邊，手按著胸口
@@ -203,7 +246,14 @@ export function createStage(canvas) {
   box(linHead, 11, 11, 10, 0, 0, 0, '#f0c2a0'); box(linHead, 11.3, 3, 10.3, 0, 0, 0, '#c98a6a');
   box(linHead, 11.8, 3.4, 10.8, 0, 9, -0.2, '#515a6b'); box(linHead, 11.8, 8, 3, 0, 3, -4.2, '#515a6b'); box(linHead, 3, 3.6, 4, -4.6, 9.2, 3.4, '#a3b3b8');
   box(linHead, 1.2, 5, 5, -5.6, 4, -1, '#515a6b'); box(linHead, 1.2, 5, 5, 5.6, 4, -1, '#515a6b');
-  const linEyes = face(linHead, '#f0c2a0', { eyeH: 1.4, brow: '#515a6b', browTilt: -0.5, mouthW: 3 });
+  const linFace = face(linHead, '#f0c2a0', { eyeH: 1.4, brow: '#515a6b', browTilt: -0.5, mouthW: 3 });
+  const linEyes = linFace.eyes;
+  linFace.shine.forEach((m) => { m.visible = false; });
+  box(linHead, 5.4, 1.2, 0.5, 0, 2.9, 5.2, '#8792a3', { flat: true }); box(linHead, 2, 0.8, 0.4, -2.8, 3.6, 5.1, '#c98a6a', { flat: true }); box(linHead, 2, 0.8, 0.4, 2.8, 3.6, 5.1, '#c98a6a', { flat: true });
+  box(linBody, 1.6, 6, 0.6, -3.6, 9, 3.9, '#2e1f1a', { flat: true }); box(linBody, 1.6, 6, 0.6, 3.6, 9, 3.9, '#2e1f1a', { flat: true });
+  box(linBody, 5, 3.6, 0.6, -1.6, 1.4, 4.5, '#6b4a33', { flat: true }); box(linBody, 1, 3, 0.8, -2.6, 4.4, 4.7, '#e0b060', { flat: true }); box(linBody, 1, 2, 0.8, -0.8, 4.4, 4.7, '#8792a3', { flat: true });
+  box(linArmL, 4.6, 1.6, 4.6, 0, -9.4, 0, '#f5f2ea', { flat: true });
+  const sweat2 = box(linHead, 0.9, 1.4, 0.6, -5, 5, 4.6, '#9cc7d8', { glow: true });
   const sweat = box(linHead, 1, 1.8, 0.6, 4.4, 6, 5.2, '#9cc7d8', { glow: true });
 
   // 岑禾：站在旁邊，抱著紀錄板
@@ -228,13 +278,19 @@ export function createStage(canvas) {
   box(cenHead, 11.8, 4, 10.8, 0, 8.6, -0.2, '#2e1f1a'); box(cenHead, 11.8, 9, 3.4, 0, 2.4, -4.2, '#2e1f1a');
   box(cenHead, 1.4, 7, 6, -5.6, 3.6, -0.6, '#2e1f1a'); box(cenHead, 1.4, 7, 6, 5.6, 3.6, -0.6, '#2e1f1a'); box(cenHead, 5, 2, 1, -2.6, 8.6, 5.2, '#2e1f1a');
   box(cenHead, 6, 6, 5, 0, 8.6, -7.6, '#2e1f1a'); box(cenHead, 7, 1.4, 1.4, 0, 11, -5.2, '#b9803d', { flat: true });
-  const cenEyes = face(cenHead, '#f0c2a0', { eyeH: 2.4, brow: '#2e1f1a', browTilt: 0.05, mouthW: 2.6 });
+  const cenFace = face(cenHead, '#f0c2a0', { eyeH: 2.4, brow: '#2e1f1a', browTilt: 0.05, mouthW: 2.6 });
+  const cenEyes = cenFace.eyes;
+  box(cenHead, 6.6, 1.6, 5.6, 0, 8, -7.6, '#087e78', { flat: true }); box(cenHead, 3, 2.4, 1, 3.4, 8.4, 5.2, '#2e1f1a'); box(cenHead, 1.4, 4, 1, 5.2, 5, 5, '#2e1f1a');
+  box(cenBody, 2.2, 8, 0.6, -2.6, 12.6, 3.9, '#5a93b8', { flat: true }); box(cenBody, 2.2, 8, 0.6, 2.6, 12.6, 3.9, '#5a93b8', { flat: true });
+  box(cenBody, 2.4, 2.4, 0.6, 4.2, 15, 4.2, '#e0b060', { flat: true }); box(cenBody, 1, 1, 0.6, 4.2, 15.7, 4.5, '#f7dc8a', { glow: true });
+  box(cenBody, 4, 1.4, 0.6, -4, 4, 4.5, '#14243a', { flat: true }); box(cenBody, 3, 0.6, 0.5, 3.6, 11.4, 4.2, '#e0b060', { flat: true });
+  const scarfTail = group(cenBody, -3.4, 14, 4.2); box(scarfTail, 3, 6, 0.8, 0, -6, 0, '#3fb3a8', { flat: true }); box(scarfTail, 3, 1, 0.9, 0, -6, 0.1, '#e0b060', { flat: true });
+  const pen = box(cenArmR, 0.8, 5, 0.8, 0.6, -18.4, 1.6, '#f5f2ea', { flat: true }); box(cenArmR, 0.9, 1.2, 0.9, 0.6, -18.8, 1.6, '#0a0d14', { flat: true });
 
   // ── 症影：鐵翅蛾 ──
   const mothMats = [];
   const mm = (hex) => { const m = new THREE.MeshLambertMaterial({ color: hex, flatShading: true }); m.userData.base = new THREE.Color(hex); mothMats.push(m); return m; };
-  const MOTH = new THREE.Vector3(-50, 47, -12);
-  const moth = group(scene, MOTH.x, MOTH.y, MOTH.z);
+  const moth = group(scene, -50, 47, -12);
   moth.scale.setScalar(1.15);
   moth.rotation.set(1.0, 0.56, 0);
   const steelD = mm('#2a2f3a'), steel = mm('#515a6b'), steelL = mm('#8792a3'), steelH = mm('#c3ccd6'), brass = mm('#b9803d'), fuzz = mm('#a3b3b8'), rust = mm('#8a5a2b');
@@ -278,6 +334,15 @@ export function createStage(canvas) {
     puffs.push(m);
   });
   const mist = [];
+  const motes = [];
+  for (let i = 0; i < 12; i++) { const m = box(scene, 0.7, 0.7, 0.7, 0, 0, 0, '#f7dc8a', { glow: true }); m.userData = { a: i * 2.4, r: 8 + (i * 7) % 22, y: 14 + (i * 11) % 34, sp: 0.12 + (i % 5) * 0.03 }; motes.push(m); }
+  const scales = [];
+  for (let i = 0; i < 9; i++) { const m = box(scene, 0.7, 0.7, 0.7, 0, 0, 0, '#c3ccd6', { glow: true }); m.userData = { off: i / 9, dx: ((i * 37) % 17) - 8, dz: ((i * 53) % 11) - 5 }; scales.push(m); }
+  const steam = [];
+  for (let i = 0; i < 3; i++) {
+    const mat = new THREE.ShaderMaterial({ vertexShader: FOG_VERT, fragmentShader: FOG_FRAG, uniforms: { color: { value: new THREE.Color('#cfd8d6') }, alpha: { value: 0.4 } } });
+    const m = new THREE.Mesh(puffGeo, mat); m.userData = { off: i / 3 }; scene.add(m); steam.push(m);
+  }
 
   // ── 後製：輪廓加色盤 ──
   const target = new THREE.WebGLRenderTarget(180, 150, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
@@ -294,23 +359,38 @@ export function createStage(canvas) {
   postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), post));
   const postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-  // ── 鏡頭 ──
-  const look = new THREE.Vector3(-10, 22, -6);
-  const yaw = 0.56, pitch = 0.42, dist = 220;
-  const camHome = new THREE.Vector3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)).multiplyScalar(dist).add(look);
+  // ── 鏡頭：立體（斜上方看整個房間）和平面（正面看，像舞台）──
+  const VIEW = {
+    iso: { yaw: 0.56, pitch: 0.42, look: new THREE.Vector3(-10, 22, -6), div: 118, lo: 1.25, hi: 1.7, moth: new THREE.Vector3(-50, 47, -12), tilt: 1.0 },
+    flat: { yaw: 0, pitch: 0.14, look: new THREE.Vector3(-3, 30, 0), div: 76, lo: 1.5, hi: 2.6, moth: new THREE.Vector3(-26, 50, -30), tilt: 1.3 },
+  };
+  const look = new THREE.Vector3();
+  const MOTH = new THREE.Vector3();
+  const camHome = new THREE.Vector3();
   let W = 180, H = 150;
+  const lerp = (a, b, k) => a + (b - a) * k;
+  function aim(k) {
+    const A = VIEW.iso, B = VIEW.flat;
+    const yaw = lerp(A.yaw, B.yaw, k), pitch = lerp(A.pitch, B.pitch, k);
+    look.lerpVectors(A.look, B.look, k);
+    MOTH.lerpVectors(A.moth, B.moth, k);
+    camHome.set(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)).multiplyScalar(220).add(look);
+    const zoom = (v) => Math.max(v.lo, Math.min(v.hi, H / v.div));
+    camera.zoom = lerp(zoom(A), zoom(B), k);
+    camera.updateProjectionMatrix();
+    return { yaw, tilt: lerp(A.tilt, B.tilt, k) };
+  }
   function resize(w, h) {
     W = w; H = h;
     renderer.setSize(w, h, false);
     target.setSize(w, h);
     post.uniforms.texel.value.set(1 / w, 1 / h);
     camera.left = -w / 2; camera.right = w / 2; camera.top = h / 2; camera.bottom = -h / 2;
-    camera.zoom = Math.max(1.25, Math.min(1.7, h / 118));
     camera.updateProjectionMatrix();
   }
 
   // ── 狀態和動態 ──
-  const state = { veil: 1, veilShown: 1, clue: 0, bell: 0, shake: 0, flash: 0, slump: 0, slumpShown: 0, still: false };
+  const state = { veil: 1, veilShown: 1, clue: 0, bell: 0, shake: 0, flash: 0, slump: 0, slumpShown: 0, still: false, flat: 0, flatShown: 0, talker: null };
   const tmp = new THREE.Color();
   function update(t, dt) {
     const s = state;
@@ -319,6 +399,9 @@ export function createStage(canvas) {
     s.slumpShown += (s.slump - s.slumpShown) * Math.min(1, dt * 2);
     s.clue = Math.max(0, s.clue - dt * 1.6); s.bell = Math.max(0, s.bell - dt * 0.5); s.shake = Math.max(0, s.shake - dt * 3); s.flash = Math.max(0, s.flash - dt * 4);
     const v = s.veilShown;
+    s.flatShown += (s.flat - s.flatShown) * Math.min(1, dt * 4);
+    const kView = s.flatShown * s.flatShown * (3 - 2 * s.flatShown);
+    const cam = aim(kView);
 
     // 林秋：呼吸偏快，越不舒服越往前彎
     const breath = Math.sin(t * 2.6) * live;
@@ -327,7 +410,14 @@ export function createStage(canvas) {
     linHead.rotation.x = 0.06 + s.slumpShown * 0.3 + Math.sin(t * 1.3) * 0.03 * live;
     linArmR.position.y = 13.5 + breath * 0.25;
     sweat.position.y = 6.9 - ((t * 0.9) % 3) * 1.3; sweat.visible = (t * 0.9) % 3 < 2.2;
-    linEyes.forEach((e) => { e.scale.y = s.slumpShown > 0.5 ? 0.5 : 1; });
+    // 每隔幾秒痛一下：眉頭更緊、眼睛閉起來、肩膀縮一下、手在胸口揉
+    const wince = Math.max(0, Math.sin(t * 1.15)) ** 14 * live;
+    linEyes.forEach((e) => { e.scale.y = (s.slumpShown > 0.5 ? 0.7 : 1.4) * (1 - wince * 0.7); });
+    linFace.brows.forEach((b, i) => { b.rotation.z = (i ? 1 : -1) * (linFace.tilt - wince * 0.3); b.position.y = 8.2 - wince * 0.6; });
+    linBody.scale.x = 1 - wince * 0.03;
+    linArmR.position.x = 8.6 + Math.sin(t * 3.1) * 0.35 * live; linArmR.position.z = Math.cos(t * 3.1) * 0.3 * live;
+    sweat2.position.y = 5.6 - ((t * 0.7 + 1.3) % 3.4) * 1.1; sweat2.visible = (t * 0.7 + 1.3) % 3.4 < 2.4;
+    linFace.mouth.scale.x = 3 - wince * 1.2;
 
     // 岑禾：呼吸慢、偶爾眨眼、低頭看紀錄板
     const cb = Math.sin(t * 1.4) * live;
@@ -337,15 +427,22 @@ export function createStage(canvas) {
     const glance = Math.max(0, Math.sin(t * 0.35 + 1)) ** 6;
     cenHead.rotation.set(glance * 0.3, 0.25 - glance * 0.2 + s.bell * 0.3 * Math.sin(t * 9), 0);
     clip.rotation.x = -0.5 + cb * 0.02;
+    // 偶爾在紀錄板上寫幾個字
+    const writing = Math.max(0, Math.sin(t * 0.45 + 2)) ** 5 * live;
+    cenArmR.rotation.x = -writing * 1.25; cenArmR.rotation.z = 0.1 - writing * 0.5 + Math.sin(t * 16) * 0.05 * writing;
+    scarfTail.rotation.z = Math.sin(t * 1.8) * 0.12 * live; scarfTail.rotation.x = Math.sin(t * 1.3) * 0.06 * live;
+    cenFace.mouth.scale.x = s.talker === 'cen' ? 2.6 * (0.6 + 0.4 * Math.abs(Math.sin(t * 14))) : 2.6;
+    cenFace.mouth.scale.y = s.talker === 'cen' ? 1 + Math.abs(Math.sin(t * 14)) * 1.4 : 1;
+    if (s.talker === 'lin') { linFace.mouth.scale.y = 1 + Math.abs(Math.sin(t * 12)) * 1.2; } else linFace.mouth.scale.y = 1;
 
     // 症影：飄浮、拍翅。拿到線索的瞬間往後縮
     const flinch = Math.sin(Math.min(1, s.clue) * Math.PI);
     moth.position.set(MOTH.x - flinch * 3, MOTH.y + Math.sin(t * 1.7) * 1.6 * live + flinch * 2, MOTH.z - flinch * 2);
-    moth.rotation.y = 0.56 + Math.sin(t * 0.6) * 0.1 * live;
+    moth.rotation.set(cam.tilt, cam.yaw + Math.sin(t * 0.6) * 0.1 * live, 0);
     const flap = 0.22 + Math.sin(t * (3.2 + flinch * 9)) * (0.2 + flinch * 0.3) * (live || 0.2);
     wings.forEach(({ fore, hind, s: side }) => { fore.rotation.z = side * flap; hind.rotation.z = side * (flap * 0.7 + 0.1); });
     antenna.forEach((a, i) => { a.rotation.x = -0.5 + Math.sin(t * 2.2 + i) * 0.12 * live; });
-    const eyeGlow = 0.75 + Math.sin(t * 3) * 0.25;
+    const eyeGlow = ((t * 0.37) % 1 > 0.96 ? 0.05 : 0.75 + Math.sin(t * 3) * 0.25);
     mothEyes.forEach((e) => { e.material.color.set('#e0b060').multiplyScalar(eyeGlow * (1 - v * 0.6)); });
     spots.forEach((e) => { e.material.color.set('#a12635').lerp(fogColor, v * 0.9); });
     // 霧越濃，症影越接近霧的顏色，看不出細節
@@ -373,14 +470,26 @@ export function createStage(canvas) {
     lantern.intensity = 7600 * flick; lamp.rotation.z = Math.sin(t * 0.8) * 0.025 * live;
     lampGlow.material.color.set('#f7dc8a').multiplyScalar(Math.min(1.15, flick));
     lampCore.material.color.set('#f7dc8a').multiplyScalar(0.9 + Math.sin(t * 7) * 0.08 * live);
+    // 燈光裡飄的灰塵、症影掉下來的鱗粉、杯子的熱氣
+    motes.forEach((m) => { const u = m.userData; const a = u.a + t * u.sp * live; m.position.set(2 + Math.cos(a) * u.r, u.y + Math.sin(t * 0.3 + u.a) * 3 * live, 2 + Math.sin(a) * u.r * 0.8); m.visible = Math.sin(t * 1.7 + u.a * 3) > -0.4; });
+    scales.forEach((m) => { const u = m.userData; const f = (t * 0.22 + u.off) % 1; m.position.set(moth.position.x + u.dx + Math.sin(f * 9 + u.dx) * 1.5, moth.position.y - 4 - f * 26, moth.position.z + u.dz); m.visible = v < 0.9 && f < 0.85 && Math.sin(t * 9 + u.dx) > -0.2; });
+    steam.forEach((m) => { const f = (t * 0.25 + m.userData.off) % 1; const r = 1 + f * 2.2; m.scale.set(r, r, r); m.position.set(10 + Math.sin(f * 6) * 1.2, 18 + f * 10, -36); m.material.uniforms.alpha.value = 0.5 * (1 - f); });
+    // 窗外的燈塔一圈一圈掃過來、窗簾和旗幟輕輕晃、蠟燭
+    const sweep = Math.max(0, Math.sin(t * 0.9)) ** 8;
+    beacon.material.color.set('#f7dc8a').multiplyScalar(0.35 + sweep * 0.9);
+    glass.material.color.set('#0f1826').lerp(tmp.set('#1f3a5c'), sweep * 0.8);
+    curtains.forEach((c, i) => { c.rotation.z = Math.sin(t * 0.9 + i * 2) * 0.03 * live; });
+    banner.rotation.z = Math.sin(t * 0.7) * 0.025 * live;
+    flame.scale.y = 2 * (1 + Math.sin(t * 13) * 0.18 * live); flame.position.x = 0.4 + Math.sin(t * 7) * 0.15 * live;
     // 雨
     rain.forEach((r, i) => { r.position.y = 22 - ((t * (26 + (i % 4) * 5) + i * 5.3) % 23); });
     // 值班鐘
-    bell.rotation.z = Math.sin(t * 10) * 0.6 * s.bell;
+    bell.rotation.x = Math.sin(t * 10) * 0.6 * s.bell;
 
     // 鏡頭震一下（對齊整數像素，畫面才不會糊）
     const k = s.shake * 2.2;
     camera.position.copy(camHome);
+    camera.up.set(0, 1, 0);
     camera.lookAt(look);
     camera.translateX(Math.round(Math.sin(t * 61) * k)); camera.translateY(Math.round(Math.cos(t * 47) * k));
     post.uniforms.flashAmt.value = s.flash * 0.55;
@@ -391,9 +500,19 @@ export function createStage(canvas) {
     renderer.setRenderTarget(null); renderer.render(postScene, postCam);
   }
 
+  const heads = { lin: [linHead, 15], cen: [cenHead, 16], moth: [moth, 10] };
+  const pos = new THREE.Vector3();
+  function anchor(who) {
+    const h = heads[who];
+    if (!h) return null;
+    h[0].getWorldPosition(pos); pos.y += h[1]; pos.project(camera);
+    return { x: (pos.x * 0.5 + 0.5) * W, y: (1 - (pos.y * 0.5 + 0.5)) * H };
+  }
+
   resize(180, 150);
   return {
-    state, resize, update, render,
+    state, resize, update, render, anchor,
+    setFlat(on) { state.flat = on ? 1 : 0; },
     clue(step) { state.veil = Math.max(0.08, state.veil - step); state.clue = 1; state.flash = 0.5; },
     ring() { state.bell = 1; state.shake = 1; },
     worsen() { state.slump = 1; state.shake = 0.6; },
