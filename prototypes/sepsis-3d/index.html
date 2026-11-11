@@ -298,4 +298,16 @@ ul { list-style: none; }
   }
 }
 </script>
-<script type="module" src="main.js"></script>
+<script>
+// 載入失敗或太久時，換掉「正在載入」的字，不讓畫面卡住沒說明
+window.__loadFail = function (msg) {
+  var l = document.getElementById('loading');
+  if (!l || l.hidden || (window.__stage3d && window.__stage3d.ready)) return;
+  var s = l.querySelector('span');
+  if (s) s.textContent = msg;
+};
+setTimeout(function () {
+  window.__loadFail('載入超過 20 秒。可能是網路連不到 three.js 的 CDN（cdn.jsdelivr.net），或瀏覽器版本太舊。可以改玩 2D 灰盒版。');
+}, 20000);
+</script>
+<script type="module" src="main.js" onerror="window.__loadFail('3D 程式沒有載入成功。請確認網路連得到 cdn.jsdelivr.net，再重新整理。')"></script>

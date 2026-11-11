@@ -80,6 +80,24 @@ function glowTexture() {
   return t;
 }
 
+// 有些靜態主機不提供 .glb 這種檔案類型。讀不到時改讀同一份模型的 base64 文字版
+//（base64 -w0 models.glb > models.glb.b64.txt）。
+async function fetchModel(url) {
+  try {
+    const r = await fetch(url);
+    if (r.ok) {
+      const buf = await r.arrayBuffer();
+      if (buf.byteLength > 4 && new TextDecoder().decode(new Uint8Array(buf, 0, 4)) === 'glTF') return buf;
+    }
+  } catch (e) { /* 改讀文字版 */ }
+  const r = await fetch(url + '.b64.txt');
+  if (!r.ok) throw new Error('模型載入失敗：' + url);
+  const bin = atob((await r.text()).trim());
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out.buffer;
+}
+
 export class Stage {
   constructor({ canvas, labels, units, reducedMotion }) {
     this.canvas = canvas;
@@ -164,7 +182,7 @@ export class Stage {
 
   // ───────────── 載入與場景 ─────────────
   async load(url) {
-    const gltf = await new GLTFLoader().loadAsync(url);
+    const gltf = await new GLTFLoader().parseAsync(await fetchModel(url), '');
     gltf.scene.updateMatrixWorld(true);
     gltf.scene.children.slice().forEach((root) => {
       root.position.set(0, 0, 0);

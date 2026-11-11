@@ -16,6 +16,12 @@ npx serve prototypes/sepsis-3d
 
 需要連網，three.js 是從 CDN 載入的。
 
+有些靜態主機不提供 `.glb` 這種檔案類型。遊戲讀不到 `assets/models.glb` 時，會改讀同一份模型的文字編碼版 `assets/models.glb.b64.txt`，用下面的指令產生：
+
+```bash
+base64 -w0 prototypes/sepsis-3d/assets/models.glb > prototypes/sepsis-3d/assets/models.glb.b64.txt
+```
+
 ## 怎麼玩
 
 1. 下方是 10 位團隊成員。**點角色，再點棋盤上的格子**就能上場；也可以按數字鍵 1–8。
