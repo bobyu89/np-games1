@@ -1,6 +1,6 @@
 # np-games1
 
-給專科護理師（NP）學員的臨床推理遊戲。目前的方向草案：**像素風、回合制、對應 CDSS 臨床推理訓練系統的步驟，從主訴拆解到鑑別診斷**。
+給專科護理師（NP）學員的臨床推理遊戲。方向：**像素風、回合制的 NP OSCE 遊戲。每一關是一個主訴，照臨床推理的步驟把它拆開，最後自己提出鑑別診斷。**
 
 ## 現在做到哪
 
@@ -8,11 +8,11 @@
 
 | 階段 | 文件 | 狀態 |
 |---|---|---|
-| 1. 設計目標 | [`docs/01-design-goals.md`](docs/01-design-goals.md) | 🟡 草稿，等確認 |
-| 2. 架構 | 還沒開始（流程草稿：[`docs/FLOW-v1.md`](docs/FLOW-v1.md)） | ⏸ |
-| 3. 內容 | 還沒開始（美術候選：[`docs/ART-v2.md`](docs/ART-v2.md)） | ⏸ |
+| 1. 設計目標 | [`docs/01-design-goals.md`](docs/01-design-goals.md) | ✅ 定稿 v1.0 |
+| 2. 架構 | [`docs/02-architecture.md`](docs/02-architecture.md) | 🟡 草稿，等確認 |
+| 3. 內容 | 還沒開始 | ⏸ |
 
-## 先前的探索（sepsis 方向，留著當參考）
+## 先前的探索（sepsis 自走棋方向，留著當參考）
 
 - 最早的設計文件：[`docs/GDD-v0.md`](docs/GDD-v0.md)
 - 3D 可行性評估：[`docs/PLAN-3D.md`](docs/PLAN-3D.md)
