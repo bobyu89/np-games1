@@ -44,16 +44,17 @@ export const Talk = forwardRef<TalkHandle, Props>(function Talk({ onSpeaker, onT
     busy: () => !st.current.over,
   }));
   useEffect(() => () => window.clearTimeout(st.current.timer), []);
-  useEffect(() => { if (box.current) box.current.scrollTop = box.current.scrollHeight; });
+  useEffect(() => { const b = box.current; if (!b) return; b.scrollTop = b.scrollHeight; b.classList.toggle('scrolled', b.scrollTop > 2); });
 
   const s = st.current;
   return (
-    <div className="paper talk" ref={box} aria-live="polite" onClick={() => { if (!s.over) finish(); else onTap?.(); }}>
+    <div className="paper talk" ref={box} aria-live="polite" onScroll={(e) => e.currentTarget.classList.toggle('scrolled', e.currentTarget.scrollTop > 2)} onClick={() => { if (!s.over) finish(); else onTap?.(); }}>
       {s.lines.map((ln, i) => {
         if (i > s.li) return null;
         const text = i < s.li ? ln.text : ln.text.slice(0, s.ci), name = NAMES[ln.who];
         const tail = s.over && more && i === s.lines.length - 1 ? <span className="more" aria-hidden="true"> ▾</span> : null;
-        if (ln.who === 'you') return <p key={i} className="you">你：{text}{tail}</p>;
+        // 自己說過的話，等對方開口之後收成一行
+        if (ln.who === 'you') return <p key={i} className={'you' + (i < s.li && i < s.lines.length - 1 ? ' past' : '')}>你：{text}{tail}</p>;
         if (ln.who === 'sys') return <p key={i} className={'sys' + (ln.bad ? ' bad' : '')}>{text}{tail}</p>;
         return <p key={i}><b className="name">{name}</b>「{text}{i < s.li ? '」' : ''}{tail}</p>;
       })}

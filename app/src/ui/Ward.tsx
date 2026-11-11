@@ -10,17 +10,17 @@ import { buzz, sfx, sound } from './sound.ts';
 
 type Panel = 'main' | 'ask' | 'assess' | 'tests' | 'call' | 'close';
 type SheetName = null | 'board' | 'report' | 'explain' | 'clues' | 'confirm' | 'quit';
-const GROUPS: [QuestionGroup, string][] = [['open', '開場'], ['cc', '主訴'], ['hx', '病史'], ['ros', '系統回顧']];
+const GROUPS: [QuestionGroup, string][] = [['open', '開場'], ['cc', '主訴'], ['hx', '病史'], ['ros', '系統']];
 const HEART = <svg viewBox="0 0 22 20" aria-hidden="true"><path fill="currentColor" stroke="#2c2a25" strokeWidth="2" strokeLinejoin="round" d="M11 18.5C4.5 13.6 1.3 10.2 1.3 6.5 1.3 3.6 3.5 1.5 6.2 1.5c1.9 0 3.6 1 4.8 2.7 1.2-1.7 2.9-2.7 4.8-2.7 2.7 0 4.9 2.1 4.9 5 0 3.7-3.2 7.1-9.7 12z" /></svg>;
 const mmss = (t: number) => String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
 
 function Opt({ done, wait, onClick, children, cls = '' }: { done?: boolean; wait?: boolean; onClick(): void; children: ReactNode; cls?: string }) {
-  return <button type="button" className={'opt ' + cls + (done ? ' done' : '') + (wait ? ' wait' : '')} onClick={onClick}>{done && <i aria-hidden="true">✓</i>}{children}{wait && <i aria-hidden="true">…</i>}</button>;
+  return <button type="button" className={'opt ' + cls + (done ? ' done' : '') + (wait ? ' wait' : '')} onClick={onClick}>{children}{done && <i aria-hidden="true">✓</i>}{wait && <i aria-hidden="true">…</i>}</button>;
 }
-function Sub({ title, children, extra, onBack }: { title: string; children: ReactNode; extra?: ReactNode; onBack(): void }) {
+function Sub({ title, children, extra, onBack }: { title?: string; children: ReactNode; extra?: ReactNode; onBack(): void }) {
   return (
     <div className="sub">
-      <div className="sub-top"><button type="button" className="back" onClick={onBack}>‹ 行動</button><b>{title}</b>{extra}</div>
+      <div className="sub-top"><button type="button" className="back" onClick={onBack} aria-label="回到行動">‹{title ? ' 行動' : ''}</button>{title && <b>{title}</b>}{extra}</div>
       <div className="opts">{children}</div>
     </div>
   );
@@ -112,25 +112,26 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
   return (
     <div className="screen ward">
       <div className="left">
-        <div className="top">
-          <button type="button" className="back" onClick={() => (closed ? onDone(session) : setSheet('quit'))}>‹ 公會</button>
-          <span className="who">{c.patient.name}｜{c.complaint}</span>
-          <span className="clock" aria-label={'已經過了 ' + mmss(session.time)}>{mmss(session.time)}</span>
-        </div>
         <Stage kind="ward" stage={stage} onFrame={onFrame} label="霧脈公會的病室：林秋坐在床上按著胸口，岑禾拿著紀錄板站在旁邊，房間中間飄著被霧裹住的症影">
+          <button type="button" className="tag tag-back" onClick={() => (closed ? onDone(session) : setSheet('quit'))}>‹ 公會</button>
+          <span className="tag tag-clock" aria-label={'已經過了 ' + mmss(session.time)}>{mmss(session.time)}</span>
           <div className="bubble" ref={bubble} hidden>…</div>
           <div className="veil" ref={veilTag} />
           <div className={'banner' + (banner.show ? ' show' : '') + (banner.bad ? ' bad' : '')} role="status">{banner.text}</div>
           {gain && <div key={gain.n} className={'gain' + (gain.key ? ' key' : '')}>＋ {gain.text}</div>}
           <div className={'stab' + (stab < 40 ? ' low' : '')} aria-label={'穩定度 ' + stab}><span>穩定度</span><i><b style={{ width: stab + '%' }} /></i></div>
         </Stage>
-        <button type="button" className={'vitals' + (v ? '' : ' unknown') + (stale ? ' stale' : '')} onClick={() => !closed && act({ type: 'vitals' })} aria-label={v ? '生命徵象，點一下重測' : '還沒量生命徵象，點一下測量'}>
-          <span><b>BP</b>{v ? v.v.bp : '？'}</span>
-          <span><i className="heart" style={{ animationDuration: (60 / (v ? v.v.hr : 60)).toFixed(2) + 's' }}>{HEART}</i>{v ? v.v.hr : '？'}</span>
-          <span><b>RR</b>{v ? v.v.rr : '？'}</span>
-          <span><b>SpO₂</b>{v ? v.v.spo2 + '%' : '？'}</span>
-          <em>{closed ? '' : v ? (stale ? '舊的，點一下重測' : Math.max(0, Math.round((session.time - v.at) / 60)) + ' 分鐘前量的') : '還沒量，點一下測量'}</em>
-        </button>
+        {v ? (
+          <button type="button" className={'vitals' + (stale && !closed ? ' stale' : '')} disabled={closed} onClick={() => act({ type: 'vitals' })} aria-label={'生命徵象：血壓 ' + v.v.bp + '、心跳 ' + v.v.hr + '、呼吸 ' + v.v.rr + '、血氧 ' + v.v.spo2 + '%。點一下重測'}>
+            <span><b>BP</b>{v.v.bp}</span>
+            <span><b><i className="heart" style={{ animationDuration: (60 / v.v.hr).toFixed(2) + 's' }}>{HEART}</i>HR</b>{v.v.hr}</span>
+            <span><b>RR</b>{v.v.rr}</span>
+            <span><b>SpO₂</b>{v.v.spo2}%</span>
+            {stale && !closed && <em>舊了，點一下重測</em>}
+          </button>
+        ) : (
+          <button type="button" className="vitals unknown" disabled={closed} onClick={() => act({ type: 'vitals' })}><span>生命徵象還沒量<b>點一下測量</b></span></button>
+        )}
       </div>
 
       <div className="right">
@@ -148,7 +149,7 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
               <button type="button" className="act" onClick={() => open('close')}>說明</button>
             </div>
           ) : panel === 'ask' ? (
-            <Sub onBack={back} title="問診" extra={<span className="tabs">{GROUPS.map(([g, name]) => <button key={g} type="button" className={g === group ? 'on' : ''} onClick={() => { sfx.tap(); setGroup(g); }}>{name}</button>)}</span>}>
+            <Sub onBack={back} extra={<span className="tabs">{GROUPS.map(([g, name]) => <button key={g} type="button" className={g === group ? 'on' : ''} onClick={() => { sfx.tap(); setGroup(g); }}>{name}</button>)}</span>}>
               {c.questions.filter((q) => q.group === group).map((q) => <Opt key={q.id} done={session.asked.includes(q.id)} onClick={() => act({ type: 'ask', id: q.id })}>{q.label}</Opt>)}
             </Sub>
           ) : panel === 'assess' ? (
