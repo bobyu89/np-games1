@@ -12,19 +12,42 @@
 | 1. 遊戲企劃 | [`docs/05-game-design.md`](docs/05-game-design.md) | ✅ v2 已確認。對齊甄審、不猜題的題庫做法、世界觀、主線、玩法、評分 |
 | 2. 架構：遊戲規則 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認，可以玩的空殼做好了：[`game/`](game/README.md) |
 | 2. 架構：整體系統 | [`docs/04-system-design.md`](docs/04-system-design.md) | 🟡 草稿。玩家身分和主機已定，等遊戲企劃確認後再做 |
-| 3. 內容：美術方向 | [3D 像素版](prototypes/style-frame/README.md)、[繪本版](prototypes/style-frame-storybook/README.md) | 🟡 同一個場景做了兩種畫風，等你選 |
+| 3. 內容：美術方向 | [繪本版](prototypes/style-frame-storybook/README.md) | ✅ 定案：手繪繪本風（2026-11-12）。[3D 像素版](prototypes/style-frame/README.md)留著當紀錄 |
+| 3. 內容：互動原型 | [`app/`](app/README.md) | 🟡 一張委託可以從公會玩到回顧，等你試玩 |
 | 3. 內容：病例 | 只有一個示範關卡，還沒經過專家審查 | ⏸ |
+
+## 互動原型
+
+![公會、病室、推理板、回顧](docs/art/app-prototype.jpg)
+
+繪本畫風的第一個可以玩的版本：在公會接下林秋的委託，進病室問診、評估、提檢查、排推理板、通報、向病人說明，結案之後看回顧。
+
+```bash
+cd app
+```
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+怎麼玩、程式怎麼分、還沒有什麼，看 [`app/README.md`](app/README.md)。
 
 ## 風格定稿
 
-同一個場景、同樣的操作，做了兩種畫風來對照。都是會動的畫面，用來確認美術方向，不是遊戲本體。
+同一個場景做過兩種畫風來對照，最後選了繪本版。
 
-| 繪本版（手繪、平面） | 3D 像素版 |
+| 繪本版（定案） | 3D 像素版（紀錄） |
 |---|---|
 | ![繪本版的病室](docs/art/style-frame-storybook.png) | ![3D 像素版的病室](docs/art/style-frame.png) |
 | [`prototypes/style-frame-storybook/`](prototypes/style-frame-storybook/README.md) | [`prototypes/style-frame/`](prototypes/style-frame/README.md) |
 
 ## 舊的空殼
+
+架構階段做的 2D 版本，已經被 `app/` 取代，留著當紀錄。
 
 ![示範關卡的八個畫面](docs/art/game-shell.png)
 
