@@ -8,9 +8,10 @@
 
 | 階段 | 文件 | 狀態 |
 |---|---|---|
-| 1. 設計目標 | [`docs/01-design-goals.md`](docs/01-design-goals.md) | ✅ 定稿 v1.0 |
-| 2. 架構 | [`docs/02-architecture.md`](docs/02-architecture.md) | 🟡 草稿，等確認 |
-| 3. 內容 | 還沒開始 | ⏸ |
+| 1. 設計目標 | [`docs/01-design-goals.md`](docs/01-design-goals.md) | ✅ 定稿 v1.1 |
+| 2. 架構 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認；可以玩的空殼還沒做 |
+| 3. 內容：美術方向 | [`docs/03-art-options.md`](docs/03-art-options.md) | 🟡 四種像素風格，等挑選 |
+| 3. 內容：病例 | 還沒開始 | ⏸ |
 
 ## 先前的探索（sepsis 自走棋方向，留著當參考）
 

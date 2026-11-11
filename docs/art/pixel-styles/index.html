@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>像素風格候選</title>
+<!-- 字體：Fusion Pixel Font（TakWolf，SIL OFL 1.1），繁體中文 12px -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vp-tw/cjk-web-fonts-fusion-pixel-font@0.0.1/dist/12px/proportional/zh_hant/Fusion-Pixel-12px-Proportional-Traditional-Chinese.css">
+<style>
+  html, body { margin: 0; background: #20242c; color: #e8edf2; font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
+  #board { display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; justify-content: center; }
+  .card { display: flex; flex-direction: column; gap: 10px; width: min-content; }
+  .card h2 { margin: 0; font-size: 20px; }
+  .card h2 small { font-size: 13px; font-weight: 400; color: #9fb0bb; margin-left: 8px; }
+  .card p { margin: 0; font-size: 13px; line-height: 1.5; color: #c3ced6; }
+  canvas { display: block; image-rendering: pixelated; }
+  .cap { font-size: 12px; color: #9fb0bb; }
+</style>
+<div id="board"></div>
+<script>
+/*
+ * 像素風格候選：同一個畫面、同一組圖，換四種調色盤和介面畫法，方便比較。
+ * 內容是示意，不是真的病例。圖都是用程式畫的，沒有用外部圖檔。
+ */
+'use strict';
+const FONT = '"Fusion Pixel 12px Proportional Traditional Chinese"';
+const W = 160, H = 284;                       // 遊戲畫面的邏輯解析度（直式）
+
+// ───────── 小畫板：用方塊、橢圓、線畫圖，最後自動描邊 ─────────
+class Grid {
+  constructor(w, h) { this.w = w; this.h = h; this.d = new Array(w * h).fill('.'); }
+  get(x, y) { return x < 0 || y < 0 || x >= this.w || y >= this.h ? '.' : this.d[y * this.w + x]; }
+  set(x, y, c) { if (x >= 0 && y >= 0 && x < this.w && y < this.h) this.d[y * this.w + x] = c; return this; }
+  rect(x, y, w, h, c) { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) this.set(x + i, y + j, c); return this; }
+  px(list, c) { list.forEach(([x, y]) => this.set(x, y, c)); return this; }
+  ellipse(cx, cy, rx, ry, c) {
+    for (let y = 0; y < this.h; y++) for (let x = 0; x < this.w; x++) {
+      const u = (x + 0.5 - cx) / rx, v = (y + 0.5 - cy) / ry;
+      if (u * u + v * v <= 1) this.set(x, y, c);
+    }
+    return this;
+  }
+  line(x0, y0, x1, y1, c, t = 1) {
+    const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    for (let i = 0; i <= n; i++) {
+      const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n);
+      this.rect(x, y, t, t, c);
+    }
+    return this;
+  }
+  outline(c = 'o') {
+    const add = [];
+    for (let y = 0; y < this.h; y++) for (let x = 0; x < this.w; x++) {
+      if (this.get(x, y) !== '.') continue;
+      if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => this.get(x + a, y + b) !== '.')) add.push([x, y]);
+    }
+    return this.px(add, c);
+  }
+  // 馬賽克：每 b×b 一格取最多的顏色。flat=true 時只留兩個色調，看不出是誰
+  mosaic(b, flat) {
+    const g = new Grid(this.w, this.h);
+    for (let by = 0; by < this.h; by += b) for (let bx = 0; bx < this.w; bx += b) {
+      const count = {}; let filled = 0;
+      for (let j = 0; j < b; j++) for (let i = 0; i < b; i++) {
+        const c = this.get(bx + i, by + j);
+        if (c !== '.') { filled++; count[c] = (count[c] || 0) + 1; }
+      }
+      if (filled < b * b * 0.38) continue;
+      let top = Object.keys(count).sort((p, q) => count[q] - count[p])[0];
+      if (flat) top = 'oRkC'.includes(top) ? 'V' : 'v';
+      g.rect(bx, by, b, b, top);
+    }
+    return g;
+  }
+}
+
+// 病人：坐在床邊，一手按著胸口。44×52
+function makePatient() {
+  const g = new Grid(44, 52);
+  g.rect(0, 36, 44, 4, 'b').rect(0, 40, 44, 1, 'B').rect(0, 41, 44, 3, 'f').rect(3, 44, 3, 6, 'f').rect(38, 44, 3, 6, 'f');
+  g.rect(15, 34, 5, 12, 'C').rect(24, 34, 5, 12, 'C').rect(13, 46, 7, 3, 'w').rect(24, 46, 7, 3, 'w');
+  g.rect(12, 20, 20, 16, 'c').px([[12, 20], [13, 20], [12, 21], [31, 20], [30, 20], [31, 21]], '.').rect(28, 22, 4, 14, 'C');
+  g.px([[20, 20], [21, 20], [22, 20], [23, 20], [21, 21], [22, 21]], 's');   // 領口
+  g.rect(8, 21, 4, 11, 'c').rect(8, 32, 4, 3, 's');                         // 垂下的手
+  g.rect(32, 21, 4, 7, 'C').rect(26, 27, 9, 3, 'C').rect(21, 25, 5, 5, 's').rect(21, 29, 5, 1, 'S'); // 按胸口的手
+  g.rect(19, 17, 6, 4, 's').rect(19, 19, 6, 1, 'S');
+  g.ellipse(22, 9.5, 9.5, 9, 's');
+  for (let y = 0; y < 52; y++) for (let x = 0; x < 44; x++) {
+    if (g.get(x, y) !== 's' || y > 18) continue;
+    if (y <= 5 || ((x <= 14 || x >= 29) && y <= 9)) g.set(x, y, 'h');
+  }
+  g.px([[15, 8], [16, 8], [17, 7], [18, 7], [28, 8], [27, 8], [26, 7], [25, 7]], 'h');   // 皺眉
+  g.rect(17, 10, 2, 3, 'k').rect(25, 10, 2, 3, 'k').px([[17, 10], [25, 10]], 'w');
+  g.rect(20, 15, 4, 1, 'm').px([[19, 16], [24, 16]], 'm').px([[15, 13], [16, 13], [27, 13], [28, 13]], 'S');
+  g.px([[33, 5], [33, 6], [34, 6], [33, 7], [34, 7]], 'w');                 // 冷汗
+  return g.outline('o');
+}
+
+// 主訴怪的真面目（示意）：一顆生氣的心臟。48×48
+function makeMonster() {
+  const g = new Grid(48, 48);
+  g.rect(16, 31, 4, 13, 'R').rect(28, 31, 4, 13, 'R').rect(13, 43, 8, 3, 'R').rect(27, 43, 8, 3, 'R');
+  g.rect(1, 20, 6, 3, 'R').rect(41, 20, 6, 3, 'R').ellipse(2.5, 21.5, 2.6, 2.6, 'R').ellipse(45.5, 21.5, 2.6, 2.6, 'R');
+  g.rect(13, 1, 4, 7, 'R').rect(31, 1, 4, 7, 'R').rect(13, 1, 4, 1, 'p').rect(31, 1, 4, 1, 'p');
+  for (let y = 0; y < 48; y++) for (let x = 0; x < 48; x++) {
+    const u = (x + 0.5 - 24) / 17, v = -(y + 0.5 - 21) / 17;
+    const a = u * u + v * v - 1;
+    if (a * a * a - u * u * v * v * v > 0) continue;
+    g.set(x, y, u * 0.8 - v * 0.62 > 0.52 ? 'R' : 'r');
+  }
+  g.ellipse(13.5, 11.5, 3.6, 2.6, 'p');
+  g.ellipse(17, 19.5, 4.2, 3.6, 'w').ellipse(31, 19.5, 4.2, 3.6, 'w').rect(18, 19, 2, 3, 'k').rect(29, 19, 2, 3, 'k');
+  g.line(11, 13, 20, 16, 'o', 2).line(36, 13, 27, 16, 'o', 2);            // 生氣的眉毛
+  g.rect(18, 27, 13, 3, 'o').px([[20, 27], [21, 27], [24, 27], [25, 27], [28, 27], [29, 27], [22, 29], [23, 29], [26, 29], [27, 29]], 'w');
+  g.line(38, 6, 35, 10, 'y').line(35, 10, 38, 11, 'y').line(38, 11, 34, 16, 'y');  // 閃電裂痕
+  return g.outline('o');
+}
+const PATIENT = makePatient(), MONSTER = makeMonster();
+
+// ───────── 四種風格 ─────────
+const CHK = (a, b) => (x, y) => ((x + y) & 1 ? a : b);                    // 棋盤格抖色
+const STYLES = [
+  {
+    id: 'gb', name: '四色掌機', tag: '單色液晶、復古',
+    note: '只有四個色階。最省工、最容易維持一致；靠明暗和形狀辨識，沒有紅色血條。',
+    t: ['#e3f1e6', '#a5cdb8', '#3d7a72', '#122b2c'],
+    pal(s) { const t = this.t; return { o: t[3], h: t[3], s: t[0], S: t[1], w: t[0], k: t[3], c: t[1], C: t[2], m: t[3], b: t[0], B: t[1], f: t[2], r: t[2], R: t[3], p: t[1], y: t[0], V: t[3], v: t[2] }[s]; },
+    ink: '#122b2c', paper: '#e3f1e6', dim: '#3d7a72', hp: '#122b2c', hpBack: '#a5cdb8', good: '#3d7a72', lit: '#122b2c', litInk: '#e3f1e6', cellFill: '#e3f1e6', cur: '#122b2c', curFill: '#a5cdb8', curInk: '#122b2c',
+    bg(d) {
+      d.R(0, 0, W, H, this.t[0]);
+      for (let y = 110; y < 138; y += 2) d.R(0, y, W, 1, this.t[1]);
+      d.R(0, 138, W, 1, this.t[2]);
+      d.E(124, 90, 30, 7, this.t[1]); d.E(124, 90, 26, 5, this.t[2]);
+    },
+    box(d, x, y, w, h, on) { d.R(x, y, w, h, this.t[3]); d.R(x + 2, y + 2, w - 4, h - 4, on ? this.t[2] : this.t[0]); d.R(x + 3, y + 3, w - 6, 1, on ? this.t[2] : this.t[1]); },
+    boxInk(on) { return on ? this.t[0] : this.t[3]; },
+  },
+  {
+    id: 'rpg', name: '十六位元 RPG', tag: '全彩、經典角色扮演',
+    note: '顏色最豐富，場景可以畫出診間的細節。最有「遊戲感」，但每張圖要畫的東西最多。',
+    pal(s) { return { o: '#22232f', h: '#6a4530', s: '#f4cba6', S: '#d9a07c', w: '#ffffff', k: '#22232f', c: '#a6dcd4', C: '#6fb1ab', m: '#a8484a', b: '#f6f8fa', B: '#c7d2da', f: '#8794a3', r: '#e3474f', R: '#a52b3c', p: '#ff9a94', y: '#ffd94a', V: '#3b3550', v: '#6c648a' }[s]; },
+    ink: '#ffffff', paper: '#1b2a6b', dim: '#7f93cf', hp: '#58d06a', hpBack: '#0e1740', good: '#ffd94a', lit: '#ffd94a', litInk: '#22232f', cellFill: '#1b2a6b', cur: '#ffffff', curFill: '#3b55c4', curInk: '#ffffff',
+    bg(d) {
+      d.R(0, 0, W, 106, '#cfe3ea'); d.R(0, 96, W, 10, '#b9d2dc'); d.R(0, 106, W, 3, '#8aa3b0');
+      d.R(0, 109, W, 30, '#e6d8c0');
+      for (let y = 109; y < 139; y += 10) for (let x = (y / 10 | 0) % 2 ? 0 : 12; x < W; x += 24) d.R(x, y, 12, 10, '#dccbb0');
+      d.R(60, 38, 30, 34, '#5d7f9a'); d.R(62, 40, 26, 30, '#1d2f55'); d.R(74, 40, 2, 30, '#5d7f9a'); d.R(62, 54, 26, 2, '#5d7f9a');
+      d.px([[66, 45], [82, 47], [69, 62], [84, 65], [79, 58]], '#f6e9a8');
+      d.R(57, 36, 5, 38, '#e58a8a'); d.R(88, 36, 5, 38, '#e58a8a'); d.R(56, 34, 38, 3, '#8794a3');
+      d.E(124, 91, 30, 7, '#8aa3b0'); d.E(124, 90, 27, 5, '#a9bfca');
+    },
+    box(d, x, y, w, h, on) { d.R(x, y, w, h, '#ffffff'); d.R(x + 1, y + 1, w - 2, h - 2, '#0e1740'); d.R(x + 2, y + 2, w - 4, h - 4, on ? '#3b55c4' : '#1b2a6b'); d.R(x + 2, y + 2, w - 4, 2, on ? '#5a76e0' : '#2a3d8f'); },
+    boxInk() { return '#ffffff'; },
+  },
+  {
+    id: 'neon', name: '夜班霓虹', tag: '深色、現代、介面清楚',
+    note: '深色背景配少數幾個亮色，重點一眼就看到。介面最清楚，手機上最好讀。',
+    pal(s) { return { o: '#07090f', h: '#ab5236', s: '#ffccaa', S: '#e39a80', w: '#fff1e8', k: '#07090f', c: '#c2c3c7', C: '#83769c', m: '#7e2553', b: '#fff1e8', B: '#c2c3c7', f: '#5f574f', r: '#ff004d', R: '#7e2553', p: '#ff77a8', y: '#ffec27', V: '#1d2b53', v: '#3a4a86' }[s]; },
+    ink: '#fff1e8', paper: '#161a28', dim: '#6b7594', hp: '#00e08a', hpBack: '#252b40', good: '#29e6d0', lit: '#29e6d0', litInk: '#07090f', cellFill: '#161a28', cur: '#29e6d0', curFill: '#12303a', curInk: '#29e6d0',
+    bg(d) {
+      d.R(0, 0, W, H, '#0d1018');
+      for (let y = 36; y < 110; y += 8) for (let x = 4; x < W; x += 8) d.R(x, y, 1, 1, '#1c2233');
+      d.R(0, 110, W, 1, '#29e6d0'); d.R(0, 111, W, 28, '#111624');
+      d.E(124, 90, 30, 7, '#29e6d0'); d.E(124, 90, 28, 5.5, '#0d1018'); d.E(124, 90, 20, 3.5, '#152036');
+    },
+    box(d, x, y, w, h, on) { d.R(x, y, w, h, on ? '#29e6d0' : '#2b3350'); d.R(x + 1, y + 1, w - 2, h - 2, on ? '#12303a' : '#161a28'); },
+    boxInk(on) { return on ? '#29e6d0' : '#fff1e8'; },
+  },
+  {
+    id: 'bit', name: '黑白推理', tag: '黑白加一個紅色',
+    note: '只有黑、白和紅。紅色只留給血量和關鍵線索。辨識度最高，很有「解謎」的氣氛。',
+    K: '#16161a', P: '#f3efe4', RED: '#d6362f',
+    pal(s, x, y) {
+      const K = this.K, P = this.P, D = (x + y) & 1 ? K : P;
+      return { o: K, h: K, s: P, S: D, w: P, k: K, c: P, C: D, m: K, b: P, B: D, f: K, r: D, R: K, p: P, y: P, V: K, v: D }[s];
+    },
+    ink: '#16161a', paper: '#f3efe4', dim: '#8d897e', hp: '#d6362f', hpBack: '#f3efe4', good: '#d6362f', lit: '#16161a', litInk: '#f3efe4', cellFill: '#f3efe4', cur: '#d6362f', curFill: '#f3efe4', curInk: '#d6362f',
+    bg(d) {
+      d.R(0, 0, W, H, this.P);
+      for (let y = 112; y < 139; y += 2) for (let x = (y % 4 ? 2 : 0); x < W; x += 4) d.R(x, y, 1, 1, this.K);
+      d.R(0, 110, W, 1, this.K);
+      d.E(124, 90, 30, 7, this.K); d.E(124, 90, 28, 5.5, this.P);
+      for (let y = 85; y < 96; y++) for (let x = 98 + (y & 1); x < 152; x += 2) { const u = (x - 124) / 26, v = (y - 90) / 4.5; if (u * u + v * v < 1) d.R(x, y, 1, 1, this.K); }
+    },
+    box(d, x, y, w, h, on) { d.R(x, y, w, h, this.K); d.R(x + 1, y + 1, w - 2, h - 2, on ? this.K : this.P); if (on) d.R(x + 2, y + 2, w - 4, h - 4, this.K); },
+    boxInk(on) { return on ? this.P : this.K; },
+  },
+];
+
+// ───────── 繪圖 ─────────
+function pen(ctx, S) {
+  const d = {
+    R(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(Math.round(x * S), Math.round(y * S), Math.round(w * S), Math.round(h * S)); },
+    px(list, c) { list.forEach(([x, y]) => d.R(x, y, 1, 1, c)); },
+    set() {},
+    E(cx, cy, rx, ry, c) { for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) { const u = (x + 0.5 - cx) / rx, v = (y + 0.5 - cy) / ry; if (u * u + v * v <= 1) d.R(x, y, 1, 1, c); } },
+    T(str, x, y, c, align) { ctx.fillStyle = c; ctx.font = (12 * S) + 'px ' + FONT; ctx.textBaseline = 'top'; ctx.textAlign = align || 'left'; ctx.fillText(str, Math.round(x * S), Math.round(y * S)); },
+    G(grid, x, y, st) { for (let j = 0; j < grid.h; j++) for (let i = 0; i < grid.w; i++) { const s = grid.get(i, j); if (s === '.') continue; const c = st.pal(s, x + i, y + j); if (c) d.R(x + i, y + j, 1, 1, c); } },
+  };
+  return d;
+}
+
+function veiled(grid, veil) {
+  if (veil >= 0.85) return grid.mosaic(12, true);
+  if (veil >= 0.6) return grid.mosaic(6, true);
+  if (veil >= 0.4) return grid.mosaic(4, false);
+  if (veil >= 0.15) return grid.mosaic(3, false);
+  if (veil > 0.02) return grid.mosaic(2, false);
+  return grid;
+}
+
+function drawScreen(ctx, st, S) {
+  const d = pen(ctx, S);
+  st.bg(d);
+  // 上方狀態
+  st.box(d, 1, 2, 158, 30, false);
+  d.T('主訴：胸痛', 6, 5, st.boxInk(false));
+  d.T('第7回合', 154, 5, st.boxInk(false), 'right');
+  d.T('病人', 6, 17, st.boxInk(false));
+  d.R(33, 19, 98, 8, st.boxInk(false)); d.R(34, 20, 96, 6, st.hpBack); d.R(34, 20, Math.round(96 * 0.62), 6, st.hp);
+  d.T('62', 154, 17, st.boxInk(false), 'right');
+  // 場景：病人在左下，主訴怪在右上
+  d.G(veiled(MONSTER, 0.55), 100, 40, st);
+  d.T('面紗55%', 124, 97, st.id === 'rpg' ? '#22232f' : st.ink, 'center');
+  d.G(PATIENT, 6, 84, st);
+  // 13 個問診面向的燈：0 還沒問、1 問過了、2 正在問
+  const cell = (label, x, y, w, state) => {
+    if (state === 1) d.R(x, y, w, 14, st.lit);
+    else { d.R(x, y, w, 14, state === 2 ? st.cur : st.dim); d.R(x + 1, y + 1, w - 2, 12, state === 2 ? st.curFill : st.cellFill); }
+    d.T(label, x + w / 2, y + 1, state === 1 ? st.litInk : state === 2 ? st.curInk : st.dim, 'center');
+  };
+  ['L', 'Q', 'Q', 'O', 'P', 'E', 'R', 'A'].forEach((ch, i) => cell(ch, 1 + i * 20, 142, 18, [1, 1, 1, 1, 2, 0, 0, 0][i]));
+  ['病史', '用藥', '家族', '社會', '系統'].forEach((ch, i) => cell(ch, 1 + i * 32, 158, 30, [1, 0, 0, 0, 0][i]));
+  // 訊息
+  st.box(d, 1, 176, 158, 46, false);
+  d.T('病人：「胸口悶悶的，', 7, 181, st.boxInk(false));
+  d.T('大概半小時了。」', 7, 194, st.boxInk(false));
+  d.T('面紗-8　血量+3', 7, 207, st.good);
+  // 指令
+  [['問診', 1], ['身體評估', 0], ['線索筆記', 0], ['下診斷', 0]].forEach(([label, on], i) => {
+    const x = 1 + (i % 2) * 80, y = 226 + (i / 2 | 0) * 28;
+    st.box(d, x, y, 78, 26, !!on);
+    if (on) { const c = st.boxInk(true); d.R(x + 8, y + 9, 2, 8, c); d.R(x + 10, y + 10, 2, 6, c); d.R(x + 12, y + 11, 2, 4, c); d.R(x + 14, y + 12, 2, 2, c); }
+    d.T(label, x + 22, y + 7, st.boxInk(!!on));
+  });
+}
+
+function drawReveal(ctx, st, S) {
+  const d = pen(ctx, S);
+  d.R(0, 0, W, 66, st.id === 'bit' ? st.P : st.id === 'neon' ? '#0d1018' : st.id === 'gb' ? st.t[0] : '#cfe3ea');
+  [1, 0.55, 0].forEach((v, i) => {
+    d.G(veiled(MONSTER, v), 4 + i * 53, 2, st);
+    d.T(Math.round(v * 100) + '%', 28 + i * 53, 52, st.id === 'rpg' ? '#22232f' : st.ink, 'center');
+  });
+}
+
+async function main() {
+  const q = new URLSearchParams(location.search);
+  const S = Number(q.get('scale') || 2), only = q.get('only');
+  const sample = '主訴：胸痛第7回合病人面紗55%LQQOPERA病史用藥家族社會系統「胸口悶悶的，大概半小時了。」-+38　血量問診身體評估線索筆記下診斷100%0%62';
+  try { await document.fonts.load((12 * S) + 'px ' + FONT, sample); await document.fonts.ready; } catch (e) { /* 沒有字體就用系統字 */ }
+  const board = document.getElementById('board');
+  STYLES.filter((st) => !only || st.id === only).forEach((st, idx) => {
+    const card = document.createElement('section');
+    card.className = 'card';
+    card.id = 'card-' + st.id;
+    const letter = 'ABCD'[STYLES.indexOf(st)];
+    card.innerHTML = '<h2>' + letter + '　' + st.name + '<small>' + st.tag + '</small></h2>';
+    const c1 = document.createElement('canvas');
+    c1.width = W * S; c1.height = H * S;
+    drawScreen(c1.getContext('2d'), st, S);
+    const cap = document.createElement('div');
+    cap.className = 'cap';
+    cap.textContent = '面紗揭開的過程：';
+    const c2 = document.createElement('canvas');
+    c2.width = W * S; c2.height = 66 * S;
+    drawReveal(c2.getContext('2d'), st, S);
+    const p = document.createElement('p');
+    p.style.width = (W * S) + 'px';
+    p.textContent = st.note;
+    card.append(c1, cap, c2, p);
+    board.appendChild(card);
+  });
+  window.__done = true;
+}
+main();
+</script>
+</html>
