@@ -12,14 +12,17 @@
 | 1. 遊戲企劃 | [`docs/05-game-design.md`](docs/05-game-design.md) | ✅ v2 已確認。對齊甄審、不猜題的題庫做法、世界觀、主線、玩法、評分 |
 | 2. 架構：遊戲規則 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認，可以玩的空殼做好了：[`game/`](game/README.md) |
 | 2. 架構：整體系統 | [`docs/04-system-design.md`](docs/04-system-design.md) | 🟡 草稿。玩家身分和主機已定，等遊戲企劃確認後再做 |
-| 3. 內容：美術方向 | [`prototypes/style-frame/`](prototypes/style-frame/README.md) | 🟡 3D 像素的風格定稿做好了，等你看 |
+| 3. 內容：美術方向 | [3D 像素版](prototypes/style-frame/README.md)、[繪本版](prototypes/style-frame-storybook/README.md) | 🟡 同一個場景做了兩種畫風，等你選 |
 | 3. 內容：病例 | 只有一個示範關卡，還沒經過專家審查 | ⏸ |
 
 ## 風格定稿
 
-![霧脈公會的病室](docs/art/style-frame.png)
+同一個場景、同樣的操作，做了兩種畫風來對照。都是會動的畫面，用來確認美術方向，不是遊戲本體。
 
-一個會動的畫面，用來確認美術風格，不是遊戲本體。說明在 [`prototypes/style-frame/`](prototypes/style-frame/README.md)。
+| 繪本版（手繪、平面） | 3D 像素版 |
+|---|---|
+| ![繪本版的病室](docs/art/style-frame-storybook.png) | ![3D 像素版的病室](docs/art/style-frame.png) |
+| [`prototypes/style-frame-storybook/`](prototypes/style-frame-storybook/README.md) | [`prototypes/style-frame/`](prototypes/style-frame/README.md) |
 
 ## 舊的空殼
 
