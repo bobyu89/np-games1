@@ -9,7 +9,8 @@
 | 階段 | 文件 | 狀態 |
 |---|---|---|
 | 1. 設計目標 | [`docs/01-design-goals.md`](docs/01-design-goals.md) | ✅ 定稿 v1.1 |
-| 2. 架構 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認，可以玩的空殼做好了：[`game/`](game/README.md) |
+| 2. 架構：遊戲規則 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認，可以玩的空殼做好了：[`game/`](game/README.md) |
+| 2. 架構：整體系統 | [`docs/04-system-design.md`](docs/04-system-design.md) | 🟡 草稿，等確認。前端、後端、程式結構，以及直式為什麼卡 |
 | 3. 內容：美術方向 | [`docs/03-art-options.md`](docs/03-art-options.md) | ✅ 選定 B（十六位元 RPG）。正式的圖還沒畫 |
 | 3. 內容：病例 | 只有一個示範關卡，還沒經過專家審查 | ⏸ |
 
@@ -22,6 +23,8 @@ npx serve game
 ```
 
 細節看 [`game/README.md`](game/README.md)：怎麼檢查、怎麼加病例、病例檔格式、規則的數值。
+
+這個空殼的直式操作太多下、回饋太弱。整體系統設計確認後，規則核心留用，畫面會重做。
 
 ## 先前的探索（sepsis 自走棋方向，留著當參考）
 
