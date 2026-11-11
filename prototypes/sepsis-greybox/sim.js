@@ -173,7 +173,8 @@
       if (crit > 0 && rng.next() < crit) { mult *= 1.5; isCrit = true; }
       const dmg = Math.max(1, Math.round(base * mult));
       enemy.hp = Math.max(0, enemy.hp - dmg);
-      return { name: enemy.name, dmg, crit: isCrit, killed: enemy.hp === 0 };
+      // idx：敵人在 result.enemies 裡的位置，讓畫面知道打到哪一隻（同名敵人靠它分辨）
+      return { idx: enemies.indexOf(enemy), name: enemy.name, dmg, crit: isCrit, killed: enemy.hp === 0 };
     }
 
     function say(t, unit, action, hits, kind) {
@@ -296,7 +297,7 @@
         const p = enemies.reduce((s, e) => s + enemyPressure(e), 0);
         if (p > 0) {
           pressure += p;
-          events.push({ t, kind: 'pressure', action: '病理過程持續：病人安全 −' + p, hits: [] });
+          events.push({ t, kind: 'pressure', amount: p, action: '病理過程持續：病人安全 −' + p, hits: [] });
         }
       }
       frames.push({ t, hp: enemies.map((e) => e.hp), max: enemies.map((e) => e.maxHp), lactateSeen: st.lactateAt !== null });

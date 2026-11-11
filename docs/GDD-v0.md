@@ -1,6 +1,8 @@
 # 《黃金一小時》Game Design Document v0
 
 > 暫定名稱｜類型：教學型自走棋（educational auto-battler）｜對象：NP 學員｜第一章：ICU Sepsis｜狀態：發想草案，待臨床專家審閱
+>
+> **2026-11-11 更新**：畫面改走 3D。技術架構（§7）和之後的開發順序以 [`PLAN-3D.md`](PLAN-3D.md) 為準；規則、學習目標、臨床守則不變。
 
 ---
 
@@ -198,7 +200,7 @@
 
 ## 7. 技術架構
 
-- **平台**：網頁（手機＋課堂投影），TypeScript + Vite + Phaser 4。
+- **平台**：網頁（手機＋課堂投影）。原本規劃 TypeScript + Vite + Phaser 4；改走 3D 後換成 three.js，見 [`PLAN-3D.md`](PLAN-3D.md) §4。
 - **原則**
   - **資料驅動**：角色、羈絆、裝備、波次全部寫成 JSON，臨床專家不碰程式也能審閱、修改。
   - **戰鬥模擬是純邏輯、結果可重現**（seeded RNG，跟畫面分開）→ 可以寫單元測試，debrief 也能「重播並逐步解說」。
