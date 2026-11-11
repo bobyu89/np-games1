@@ -9,9 +9,19 @@
 | 階段 | 文件 | 狀態 |
 |---|---|---|
 | 1. 設計目標 | [`docs/01-design-goals.md`](docs/01-design-goals.md) | ✅ 定稿 v1.1 |
-| 2. 架構 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認；可以玩的空殼還沒做 |
-| 3. 內容：美術方向 | [`docs/03-art-options.md`](docs/03-art-options.md) | 🟡 四種像素風格，等挑選 |
-| 3. 內容：病例 | 還沒開始 | ⏸ |
+| 2. 架構 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認，可以玩的空殼做好了：[`game/`](game/README.md) |
+| 3. 內容：美術方向 | [`docs/03-art-options.md`](docs/03-art-options.md) | ✅ 選定 B（十六位元 RPG）。正式的圖還沒畫 |
+| 3. 內容：病例 | 只有一個示範關卡，還沒經過專家審查 | ⏸ |
+
+## 玩玩看
+
+![示範關卡的八個畫面](docs/art/game-shell.png)
+
+```bash
+npx serve game
+```
+
+細節看 [`game/README.md`](game/README.md)：怎麼檢查、怎麼加病例、病例檔格式、規則的數值。
 
 ## 先前的探索（sepsis 自走棋方向，留著當參考）
 

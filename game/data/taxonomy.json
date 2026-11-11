@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "note": "分類表：科別、系統、問診面向、身體評估項目。這一版是架構階段的示範用清單，內容階段會再和 CDSS 的分類對齊。",
+  "specialties": [
+    { "id": "im", "name": "內科" },
+    { "id": "surg", "name": "外科" }
+  ],
+  "systems": [
+    { "id": "cv", "name": "心血管" },
+    { "id": "resp", "name": "呼吸" },
+    { "id": "gi", "name": "腸胃" },
+    { "id": "gu", "name": "泌尿生殖" },
+    { "id": "neuro", "name": "神經" },
+    { "id": "msk", "name": "肌肉骨骼" },
+    { "id": "skin", "name": "皮膚" },
+    { "id": "heent", "name": "頭頸" }
+  ],
+  "general_system": { "id": "general", "name": "一般" },
+  "zones": [
+    { "id": "hpi", "name": "現在病史" },
+    { "id": "past", "name": "過去病史" },
+    { "id": "ros", "name": "系統回顧" }
+  ],
+  "facets": [
+    { "id": "location", "zone": "hpi", "light": "L", "name": "位置", "ask": "哪裡不舒服？" },
+    { "id": "quality", "zone": "hpi", "light": "Q", "name": "型態", "ask": "是怎麼樣的不舒服？" },
+    { "id": "quantity", "zone": "hpi", "light": "Q", "name": "程度與歷時", "ask": "有多嚴重？多久了？" },
+    { "id": "onset", "zone": "hpi", "light": "O", "name": "起病狀態", "ask": "什麼時候、怎麼開始的？" },
+    { "id": "provoking", "zone": "hpi", "light": "P", "name": "誘發因素", "ask": "做什麼的時候會發作？" },
+    { "id": "exacerbating", "zone": "hpi", "light": "E", "name": "加重因素", "ask": "什麼情況會更嚴重？" },
+    { "id": "relieving", "zone": "hpi", "light": "R", "name": "緩解因素", "ask": "怎麼樣會比較好？" },
+    { "id": "associated", "zone": "hpi", "light": "A", "name": "伴隨症狀", "ask": "還有其他不舒服嗎？" },
+    { "id": "pmh", "zone": "past", "light": "病史", "name": "過去病史", "ask": "以前有什麼疾病嗎？" },
+    { "id": "meds", "zone": "past", "light": "用藥", "name": "用藥與過敏", "ask": "平常吃什麼藥？會過敏嗎？" },
+    { "id": "family", "zone": "past", "light": "家族", "name": "家族史", "ask": "家人有什麼疾病嗎？" },
+    { "id": "social", "zone": "past", "light": "社會", "name": "社會史", "ask": "抽菸、喝酒嗎？平常的生活？" },
+    { "id": "ros", "zone": "ros", "light": "系統", "name": "系統回顧", "ask": "我照系統再問一遍。" }
+  ],
+  "ros_default": "沒有特別的不舒服。",
+  "techniques": ["視診", "觸診", "叩診", "聽診"],
+  "exam_order": {
+    "default": ["視診", "觸診", "叩診", "聽診"],
+    "gi": ["視診", "聽診", "叩診", "觸診"]
+  },
+  "exam_items": [
+    { "id": "gen-appearance", "system": "general", "technique": "視診", "site": "一般外觀", "normal": "意識清楚，外觀沒有明顯不適。" },
+    { "id": "gen-vitals", "system": "general", "technique": "測量", "site": "生命徵象", "normal": "生命徵象在正常範圍。" },
+
+    { "id": "cv-jvp", "system": "cv", "technique": "視診", "site": "頸靜脈", "normal": "沒有頸靜脈怒張。" },
+    { "id": "cv-pmi", "system": "cv", "technique": "觸診", "site": "心尖搏動", "normal": "心尖搏動位置正常。" },
+    { "id": "cv-pulses", "system": "cv", "technique": "觸診", "site": "周邊脈搏", "normal": "兩側周邊脈搏對稱。" },
+    { "id": "cv-legs", "system": "cv", "technique": "觸診", "site": "下肢", "normal": "下肢沒有水腫。" },
+    { "id": "cv-heart", "system": "cv", "technique": "聽診", "site": "心音", "normal": "心律規則，沒有雜音。" },
+    { "id": "cv-carotid", "system": "cv", "technique": "聽診", "site": "頸動脈", "normal": "沒有頸動脈雜音。" },
+
+    { "id": "resp-inspect", "system": "resp", "technique": "視診", "site": "胸廓與呼吸", "normal": "胸廓對稱，呼吸平順。" },
+    { "id": "resp-expansion", "system": "resp", "technique": "觸診", "site": "胸廓擴張", "normal": "兩側胸廓擴張對稱。" },
+    { "id": "resp-fremitus", "system": "resp", "technique": "觸診", "site": "觸覺震顫", "normal": "兩側觸覺震顫對稱。" },
+    { "id": "resp-percussion", "system": "resp", "technique": "叩診", "site": "肺野", "normal": "兩側叩診都是清音。" },
+    { "id": "resp-breath", "system": "resp", "technique": "聽診", "site": "呼吸音", "normal": "兩側呼吸音清楚。" },
+
+    { "id": "gi-inspect", "system": "gi", "technique": "視診", "site": "腹部外觀", "normal": "腹部平坦，沒有手術疤痕。" },
+    { "id": "gi-bowel", "system": "gi", "technique": "聽診", "site": "腸音", "normal": "腸音正常。" },
+    { "id": "gi-percussion", "system": "gi", "technique": "叩診", "site": "腹部", "normal": "叩診是鼓音，沒有移動性濁音。" },
+    { "id": "gi-palpation", "system": "gi", "technique": "觸診", "site": "腹部", "normal": "腹部柔軟，沒有壓痛。" },
+
+    { "id": "gu-cva", "system": "gu", "technique": "叩診", "site": "肋脊角", "normal": "兩側肋脊角沒有叩擊痛。" },
+    { "id": "gu-suprapubic", "system": "gu", "technique": "觸診", "site": "恥骨上方", "normal": "恥骨上方沒有壓痛。" },
+
+    { "id": "neuro-mental", "system": "neuro", "technique": "視診", "site": "意識與定向感", "normal": "意識清楚，人、時、地都答得出來。" },
+    { "id": "neuro-pupils", "system": "neuro", "technique": "視診", "site": "瞳孔", "normal": "瞳孔等大，對光有反應。" },
+    { "id": "neuro-motor", "system": "neuro", "technique": "檢查", "site": "四肢肌力", "normal": "四肢肌力對稱、正常。" },
+
+    { "id": "msk-chest-wall", "system": "msk", "technique": "觸診", "site": "胸壁", "normal": "胸壁沒有壓痛。" },
+    { "id": "msk-spine", "system": "msk", "technique": "觸診", "site": "脊椎", "normal": "脊椎沒有壓痛。" },
+    { "id": "msk-rom", "system": "msk", "technique": "檢查", "site": "肩頸活動度", "normal": "活動度正常，動的時候不會痛。" },
+
+    { "id": "skin-inspect", "system": "skin", "technique": "視診", "site": "皮膚", "normal": "皮膚沒有皮疹或水泡。" },
+    { "id": "skin-temp", "system": "skin", "technique": "觸診", "site": "皮膚溫度與濕度", "normal": "皮膚溫暖、乾燥。" },
+
+    { "id": "heent-throat", "system": "heent", "technique": "視診", "site": "口咽", "normal": "咽喉沒有紅腫。" },
+    { "id": "heent-thyroid", "system": "heent", "technique": "觸診", "site": "甲狀腺", "normal": "甲狀腺沒有腫大。" },
+    { "id": "heent-nodes", "system": "heent", "technique": "觸診", "site": "頸部淋巴結", "normal": "沒有摸到腫大的淋巴結。" }
+  ]
+}
