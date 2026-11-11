@@ -8,8 +8,8 @@
 
 | 階段 | 文件 | 狀態 |
 |---|---|---|
-| 1. 設計目標 | [`docs/01-design-goals.md`](docs/01-design-goals.md) | ✅ v1.4，其中三條等確認 |
-| 1. 遊戲企劃 | [`docs/05-game-design.md`](docs/05-game-design.md) | 🟡 v2 草稿，等確認。對齊甄審、不猜題的題庫做法、世界觀、主線、玩法、評分 |
+| 1. 設計目標 | [`docs/01-design-goals.md`](docs/01-design-goals.md) | ✅ v1.5 |
+| 1. 遊戲企劃 | [`docs/05-game-design.md`](docs/05-game-design.md) | ✅ v2 已確認。對齊甄審、不猜題的題庫做法、世界觀、主線、玩法、評分 |
 | 2. 架構：遊戲規則 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認，可以玩的空殼做好了：[`game/`](game/README.md) |
 | 2. 架構：整體系統 | [`docs/04-system-design.md`](docs/04-system-design.md) | 🟡 草稿。玩家身分和主機已定，等遊戲企劃確認後再做 |
 | 3. 內容：美術方向 | [`docs/03-art-options.md`](docs/03-art-options.md) | 🟡 原本選 B（十六位元 RPG）。現在要往「3D 像素」調整，參考和建議在遊戲企劃第 10 節 |
