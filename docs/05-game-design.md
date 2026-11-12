@@ -255,13 +255,29 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 | 順序 | 一排七個分頁：開場、主訴、病史、系統（問診）→ 評估 → 診斷 → 檢查。後面的要做完前一段才打開，前面的隨時可以回去補 |
 | 第 6 節的「急的事隨時可以做」 | 只留值班鐘。檢查、回報和說明都要下了診斷才能做 |
 | 第 6 節林秋的時間壓力 | 原本從進門開始算（第 4 分鐘變差）。改成從下診斷開始算：2 分鐘內沒有人知道才變差。照順序把問診和評估做完整，不會被罰 |
-| 問診的題目 | 照教案的骨架重寫：開場 3、OLD CARTS 10、個人與過去病史 8、系統回顧 6，共 27 題。教案的 16 題個人病史併成 8 題、7 組系統回顧併成 6 題，問法裡把併掉的項目都寫出來 |
+| 問診的題目 | 照教案的骨架重寫：開場 3、OLD CARTS 10、個人與過去病史 8、系統回顧 4，共 25 題。教案的 16 題個人病史併成 8 題、7 組系統回顧併成 4 題，問法裡把併掉的項目都寫出來 |
 | 身體評估 | 整體，加上頭頸、胸部、心臟、腹部、四肢五個模組，共 10 項 |
 | 胸痛的真身 | 急性冠心症、主動脈剝離、肺栓塞、胸壁疼痛 → 心因性、血管急症、胸腔腫瘤、肌肉骨骼 |
 | 第三位病人 | 莫桐：悶痛一個多月的老船工，真身是胸腔腫瘤。穩定、不急，但不能當成老毛病放回去；說明的時候不能搶著說出診斷 |
 | 轉換工具 | `app/tools/convert_script.py`：教案 → 病例底稿。推理的部分由人補 |
 
 **考站的順序和真實臨床不一樣的地方**：疑似急性冠心症，真實情境要在到院 10 分鐘內做完心電圖（Rao et al., 2025），不會等整套問完。遊戲照考站的順序走，但在林秋那一關的回顧裡把這件事講明白，避免玩家學成「可以慢慢問」。這一點要請臨床老師看過。
+
+## 15. 第四位病人、主角和圖鑑的另外兩頁（2026-11-12）
+
+你決定了三件事：系統回顧併成四題；補一位肺栓塞的病人；多設計幾個場景和主角，讓圖鑑多一塊可以蒐集的東西。
+
+| 項目 | 做法 |
+|---|---|
+| 系統回顧 | 六題併成四題：全身與頭頸、心肺、腸胃與泌尿、四肢。一張委託回到 10 分鐘左右 |
+| 第四位病人 | 阮舟：腳踝扭傷臥床兩週之後，下船時突然胸痛和喘。真身是血管急症（肺栓塞）。這一張是出診，在碼頭的貨棧 |
+| 這一關要練的 | 年輕、沒有病史的人突然喘，先看血氧和小腿，不要當成緊張；X 光乾淨不能排除 |
+| 主角 | 三位見習專科護理師可以選：葉澄、高遠、白芷。只有外表不同，能做的事一樣 |
+| 場景 | 新增碼頭的貨棧；公會的病室多一個下雨天的樣子 |
+| 圖鑑 | 三頁：症影、人物、場景。人物和場景遇到了、去過了才打開 |
+| 「也算對」的解讀 | 修掉一個錯：有幾條線索把方向相反的解讀也算對（畫面問「更像」，卻接受「比較不像」的那一個）。現在檢查器會擋 |
+
+細節在 [`06-progression.md`](06-progression.md) 第 8.5 節。
 
 ## References
 
@@ -277,5 +293,7 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 - Croskerry, P. (2003). The importance of cognitive errors in diagnosis and strategies to minimize them. *Academic Medicine, 78*(8), 775–780. https://doi.org/10.1097/00001888-200308000-00003
 - Fanning, R. M., & Gaba, D. M. (2007). The role of debriefing in simulation-based learning. *Simulation in Healthcare, 2*(2), 115–125. https://doi.org/10.1097/SIH.0b013e3180315539
 - Hamilton, W., Peters, T. J., Round, A., & Sharp, D. (2005). What are the clinical features of lung cancer before the diagnosis is made? A population based case-control study. *Thorax, 60*(12), 1059–1065. https://doi.org/10.1136/thx.2005.045880
+- Konstantinides, S. V., Meyer, G., Becattini, C., Bueno, H., Geersing, G.-J., Harjola, V.-P., Huisman, M. V., Humbert, M., Jennings, C. S., Jiménez, D., Kucher, N., Lang, I. M., Lankeit, M., Lorusso, R., Mazzolai, L., Meneveau, N., Ní Áinle, F., Prandoni, P., Pruszczyk, P., … Zamorano, J. L. (2020). 2019 ESC guidelines for the diagnosis and management of acute pulmonary embolism developed in collaboration with the European Respiratory Society (ERS). *European Heart Journal, 41*(4), 543–603. https://doi.org/10.1093/eurheartj/ehz405
 - Rao, S. V., O'Donoghue, M. L., Ruel, M., Rab, T., Tamis-Holland, J. E., Alexander, J. H., Baber, U., Baker, H., Cohen, M. G., Cruz-Ruiz, M., Davis, L. L., de Lemos, J. A., DeWald, T. A., Elgendy, I. Y., Feldman, D. N., Goyal, A., Isiadinso, I., Menon, V., Morrow, D. A., . . . Williams, M. S. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. *Journal of the American College of Cardiology, 85*(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009
 - Tanner, C. A. (2006). Thinking like a nurse: A research-based model of clinical judgment in nursing. *Journal of Nursing Education, 45*(6), 204–211. https://doi.org/10.3928/01484834-20060601-04
+- Wells, P. S., Anderson, D. R., Rodger, M., Stiell, I., Dreyer, J. F., Barnes, D., Forgie, M., Kovacs, G., Ward, J., & Kovacs, M. J. (2001). Excluding pulmonary embolism at the bedside without diagnostic imaging: Management of patients with suspected pulmonary embolism presenting to the emergency department by using a simple clinical model and D-dimer. *Annals of Internal Medicine, 135*(2), 98–107. https://doi.org/10.7326/0003-4819-135-2-200107170-00010

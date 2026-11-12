@@ -33,7 +33,7 @@ export const CHEST_PAIN: ComplaintDef = {
   exams: EXAMS,
   tests: [
     { id: 't-ecg', label: '12 導程心電圖', kind: 'order', cost: 10, delay: 90 },
-    { id: 't-blood', label: '抽血（含心肌旋蛋白）', kind: 'order', cost: 20 },
+    { id: 't-blood', label: '抽血（心肌旋蛋白、D-dimer）', kind: 'order', cost: 20 },
     { id: 't-cxr', label: '胸部 X 光', kind: 'order', cost: 10, delay: 120 },
     { id: 't-glucose', label: '指尖血糖', kind: 'order', cost: 10, delay: 40 },
   ],

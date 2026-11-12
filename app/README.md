@@ -1,8 +1,8 @@
 # 霧脈公會：互動原型
 
-繪本畫風的可以玩的版本。第一章有三張委託，是同一隻症影（胸痛）的三個真身：林秋、簡晴和莫桐。從公會接案玩到關後回顧，圖鑑會跟著寫回來。
+繪本畫風的可以玩的版本。第一章有四張委託，是同一隻症影（胸痛）的四個真身：林秋、簡晴、莫桐和阮舟。序章之後從三位見習專科護理師裡選一位當主角；從公會接案玩到關後回顧，圖鑑會跟著寫回來。
 
-![問診的分頁、評估的五個模組、下診斷、第三位病人](../docs/art/app-prototype.jpg)
+![選主角、出診到碼頭的貨棧、圖鑑的人物和場景](../docs/art/app-prototype.jpg)
 
 ## 怎麼跑
 
@@ -18,7 +18,7 @@ npm run dev
 
 | 指令 | 做什麼 |
 |---|---|
-| `npm test` | 規則和評分的測試（35 項） |
+| `npm test` | 規則和評分的測試（36 項） |
 | `npm run cases` | 檢查所有病例，印出一張總表 |
 | `npm run check` | 型別檢查 |
 | `npm run build` | 型別檢查之後打包到 `dist/`，是純靜態檔，放到任何主機都能跑 |
@@ -28,7 +28,7 @@ npm run dev
 
 ## 一張委託怎麼走
 
-1. **公會**：故事的段落、委託板、圖鑑。完成一張委託，下一張才會貼上板子。
+1. **公會**：故事的段落、選主角、委託板、圖鑑。完成一張委託，下一張才會貼上板子。
 2. **閱題**：病人的資料，和進門前先想的三件事。
 3. **病室**：症影底下掛著四盞燈，是四個可能的真身。行動排成一排七個分頁，順序和考站一樣：
 
@@ -37,7 +37,7 @@ npm run dev
    | 一、問診 | 開場 | 洗手、自我介紹並核對身分、說明流程和隱私 |
    | | 主訴 | OLD CARTS 十題：怎麼不舒服、何時開始、位置、持續多久、性質、伴隨症狀、加重與緩解、會傳到哪、處理過嗎、幾分 |
    | | 病史 | 慢性病與控制、家族史、住院手術外傷、用藥與過敏、菸酒檳榔、工作與接觸史、飲食睡眠壓力、擔心什麼 |
-   | | 系統 | 系統回顧：全身、頭頸、呼吸、心臟、腸胃與泌尿、四肢 |
+   | | 系統 | 系統回顧四題：全身與頭頸、心肺、腸胃與泌尿、四肢 |
    | 二、評估 | 評估 | 生命徵象，再照模組做：整體、頭頸、胸部、心臟、腹部、四肢。動手之前先說明 |
    | 三、診斷 | 診斷 | 一句話說出問題，選最可能的真身和還要排除的 |
    | 四、檢查 | 檢查 | 提出檢查、向醫師回報、重測、觀察、向病人說明、結案 |
@@ -53,9 +53,11 @@ npm run dev
 - **照順序做不會被罰。** 問診和評估花多久，病人都不會變差。
 - **時間只在做行動的時候走。** 看字、解讀線索、下診斷都不扣時間。問診和評估整套做完，模擬的時鐘大約走 15 分鐘，和考站差不多。
 - **沒量過就是不知道。** 生命徵象一開始沒有數字；病人變差之後要重測才知道。
-- **三位病人的選項一模一樣，真身不一樣。** 林秋（心因性）下了診斷之後，兩分鐘內沒有通報會變差。簡晴（肌肉骨骼）很穩定，敲值班鐘反而是過度通報，要做的是把危險的真身一個一個排除。莫桐（胸腔腫瘤）不急，但不能當成老毛病放回去，說明的時候也不能搶著說出診斷。
+- **四位病人的選項一模一樣，真身不一樣。** 林秋（心因性）下了診斷之後，兩分鐘內沒有通報會變差。簡晴（肌肉骨骼）很穩定，敲值班鐘反而是過度通報，要做的是把危險的真身一個一個排除。莫桐（胸腔腫瘤）不急，但不能當成老毛病放回去，說明的時候也不能搶著說出診斷。阮舟（血管急症，肺栓塞）年輕、沒有病史，喘和心跳快很容易被當成緊張；要看血氧和小腿。
+- **三位主角只有外表不同。** 葉澄、高遠、白芷能做的事、題目和分數完全一樣。
 - **回報的內容來自你問到的東西。** 沒問他擔心什麼，說明的時候就沒有那一句可以選。
-- **圖鑑只收你自己解讀對的線索。**
+- **圖鑑只收你自己解讀對的線索。** 另外兩頁（人物、場景）是遇到了、去過了才打開；小圖直接用真正的場景畫出來，不是另外的圖檔。
+- **地點會換。** 阮舟那一張是出診，在碼頭的貨棧；莫桐來的那天在下雨。
 
 **和真實臨床不一樣的地方**：考站是整套問診和評估做完才說計畫。真實的急診不會等：疑似急性冠心症，心電圖要在到院 10 分鐘內做完。遊戲照考站的順序，這件事寫在林秋那一關的回顧裡。
 
@@ -72,10 +74,10 @@ src/
     scoring.ts   評分（55 / 45）、安全狀態、回顧和圖鑑用的資料
     validate.ts  病例檢查器
     autoplay.ts  照病例的資料走出理想的打法，用來驗證病例
-  data/      內容：共用的骨架（skeleton.ts）、主訴模組（chest-pain.ts）、病例（c01a.ts、c01b.ts、c01c.ts）、目錄（index.ts）
+  data/      內容：共用的骨架（skeleton.ts）、主訴模組（chest-pain.ts）、病例（c01a.ts 到 c01d.ts）、目錄（index.ts）
              怎麼寫新病例：data/README.md
-  art/       繪本風的畫：色盤和畫筆、角色、病室、公會大廳（Canvas，沒有圖檔）
-  ui/        畫面（React）：公會、病室、各種紙片、回顧；progress.ts 管故事、解鎖和圖鑑
+  art/       繪本風的畫：色盤和畫筆、角色（含三位主角）、病室和碼頭的貨棧、公會大廳（Canvas，沒有圖檔）
+  ui/        畫面（React）：公會、病室、各種紙片、回顧；progress.ts 管故事、解鎖和圖鑑；Portrait.tsx 畫圖鑑的小圖
 tools/
   cases.ts            npm run cases
   convert_script.py   教案 → 病例的底稿（寫到 drafts/，不進版本控制）
@@ -86,8 +88,9 @@ tools/
 
 ## 還沒有的
 
-- 只有第一章的三張委託。胸痛的第四個真身（血管急症）還沒有病人；其他主訴、資格試煉（真實倒數 15 分鐘）都還沒做。
-- 一張委託大約要點 70 下，估計 10 到 12 分鐘，比原本的目標（10 分鐘）長一點。
+- 只有第一章的四張委託（胸痛）。其他主訴、資格試煉（真實倒數 15 分鐘）都還沒做。
+- 場景只有公會大廳、病室（含下雨天）和碼頭的貨棧。圖鑑裡另外兩格（燈塔的值夜房、船塢的工寮）還只是名字。
+- 主角只有外表不同；故事裡的對話還不會因為選了誰而改變。
 - 沒有伺服器。進度存在這台裝置的瀏覽器裡；**病例的答案現在在瀏覽器裡看得到**，正式版要搬到伺服器。
 - 真身、回報和說明都是從清單選，還不能自己寫。
 - 提示還沒有照階級一層一層拿掉（設計在 `docs/06-progression.md` 第 7 節）。
@@ -99,6 +102,7 @@ tools/
 - 問診和評估的骨架（開場、OLD CARTS、個人與過去病史、系統回顧、五個模組）參考臨床老師的 OSCE 教案；題目的文字和三位病人都是為這個專案重寫的，沒有用教案的原文。
 - 畫是用程式畫的，角色、房間和構圖都是為這個專案重新設計的。
 - 在真的手機上試過一次（改流程之前的版本）：系統字體調大的時候文字會疊在一起、對話被切掉。已經把版面改成跟著字的大小伸縮。這一版在模擬手機上重測過（390×760、385×700 字放大 1.25 倍、375×600），**還沒有在真的手機上確認**。
+- 肺栓塞那一關引用的指引，書目資料用 PubMed 核對過；指引的內文我沒有逐句對原文，要請臨床老師確認。
 - 遊戲的分數是訓練用的，不代表正式甄審的成績。
 
 ## 病例的出處
@@ -106,6 +110,9 @@ tools/
 - Gulati, M., et al. (2021). 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR guideline for the evaluation and diagnosis of chest pain. *Circulation, 144*(22), e368–e454. https://doi.org/10.1161/CIR.0000000000001029
 - Hamilton, W., Peters, T. J., Round, A., & Sharp, D. (2005). What are the clinical features of lung cancer before the diagnosis is made? A population based case-control study. *Thorax, 60*(12), 1059–1065. https://doi.org/10.1136/thx.2005.045880
 - Baile, W. F., et al. (2000). SPIKES—A six-step protocol for delivering bad news: Application to the patient with cancer. *The Oncologist, 5*(4), 302–311. https://doi.org/10.1634/theoncologist.5-4-302
+- Konstantinides, S. V., et al. (2020). 2019 ESC guidelines for the diagnosis and management of acute pulmonary embolism developed in collaboration with the European Respiratory Society (ERS). *European Heart Journal, 41*(4), 543–603. https://doi.org/10.1093/eurheartj/ehz405
 - Rao, S. V., et al. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. *Journal of the American College of Cardiology, 85*(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009
 
-四篇的書目資料都用 PubMed 核對過。
+- Wells, P. S., et al. (2001). Excluding pulmonary embolism at the bedside without diagnostic imaging: Management of patients with suspected pulmonary embolism presenting to the emergency department by using a simple clinical model and D-dimer. *Annals of Internal Medicine, 135*(2), 98–107. https://doi.org/10.7326/0003-4819-135-2-200107170-00010
+
+六篇的書目資料都用 PubMed 核對過。

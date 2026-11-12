@@ -159,3 +159,77 @@ export function drawMo(g, t, o) {
   g.restore();
   g.restore();
 }
+
+/** 主角：見習專科護理師。三位只有外表和帶的東西不同，能做的事一模一樣 */
+export const HERO_LOOKS = {
+  cheng: { cape: C.moss, cape2: C.green, hair: C.hairDark, style: 'bob', item: 'book' },
+  yuan: { cape: C.pumpkin, cape2: C.rust, hair: C.hairInk, style: 'short', item: 'lamp', skin: C.skin2 },
+  zhi: { cape: C.rose, cape2: C.rose2, hair: C.hairBrown, style: 'braid', item: 'herb' },
+};
+
+/** o：{ x, y, look, talking, scale }。面向左邊，和岑禾一樣看著病人 */
+export function drawHero(g, t, o) {
+  const L = HERO_LOOKS[o.look] || HERO_LOOKS.cheng, skin = L.skin || C.skin;
+  K.seed = o.seed || 5200;
+  const talking = !!o.talking, blink = (t * 0.9 + 1.4) % 4.3 < 0.13, big = o.scale || 1.04;
+  const bob = Math.sin(t * 1.8 + 1) * 0.5, sway = Math.sin(t * 1.3 + 0.6) * 1.3;
+  g.save(); g.translate(o.x, o.y); g.scale(big, big);
+  oval(g, 0, 1, 20, 4.3, { fill: C.shadow, stroke: null });
+  limb(g, [[-5.5, -16], [-5.5, -4]], 6, C.trouser, { amp: 0.2 }); limb(g, [[5.5, -16], [5.5, -4]], 6, C.trouser, { amp: 0.2 });
+  shape(g, ell(-7.5, -1.5, 6.8, 4.2, 10), { fill: C.boot, boil: true, step: 99 }); shape(g, ell(4.5, -1.5, 6.8, 4.2, 10), { fill: C.boot, boil: true, step: 99 });
+  g.translate(0, bob);
+  // 辮子垂在背後
+  if (L.style === 'braid') { limb(g, [[10, -84], [16, -70 + sway * 0.3], [15 + sway, -54]], 5, L.hair, { boil: true }); dot(g, 15 + sway, -52, 2.4, C.rust); }
+  // 斜背的出診包
+  shape(g, rrect(7, -40, 15, 13, 3), { fill: C.mustard, boil: true }); shape(g, rect(12, -36.5, 5, 3.4), { fill: C.cream, lw: 1 });
+  // 後面那隻手
+  limb(g, [[10, -64], [14, -52], [12, -42]], 6.2, C.paper, { boil: true });
+  // 米色的長衫和腰帶
+  shape(g, [[-10, -68], [-13, -48], [-16, -14], [-6, -11.5], [5, -12.5], [16, -14], [13, -48], [10, -68], [0, -72]], { fill: C.cream, boil: true });
+  wline(g, [[-14.5, -33], [-4, -31], [5, -31.5], [14.5, -33]], C.wood2, 2.4, { boil: true });
+  wline(g, [[-1, -30], [-2, -13]], C.paperLine, 1.2, { boil: true });
+  wline(g, [[-7, -68], [3, -52], [11, -38]], C.wood2, 2.2, { boil: true });
+  // 見習生的短披肩和公會的徽章
+  shape(g, [[-12, -71], [-18, -55], [-13, -47], [-2, -51], [9, -47], [17, -55], [12, -71], [0, -75]], { fill: L.cape, boil: true });
+  wline(g, [[-17, -56], [-12.5, -49], [-2, -53], [8.5, -49], [16, -56]], L.cape2, 2, { boil: true });
+  oval(g, 6, -61, 3.3, 3.3, { fill: C.ochre, lw: 1.1, boil: true }); wline(g, [[6, -63.2], [6, -58.8]], C.ink, 0.9);
+  // 前面那隻手，和手上的東西
+  const hx = -13 + (talking ? Math.sin(t * 6) * 1.2 : 0), hy = -43;
+  limb(g, [[-10, -66], [-17, -54], [hx, hy]], 6.2, C.cream, { boil: true });
+  if (L.item === 'book') {            // 隨身的筆記本
+    g.save(); g.translate(hx - 3, hy - 6); g.rotate(-0.18);
+    shape(g, rrect(-6.5, -8, 13, 16, 2), { fill: C.rust, boil: true }); shape(g, rect(-4.5, -6, 9, 12), { fill: C.cream, lw: 1 });
+    [-3, 0, 3].forEach((dy, i) => wline(g, [[-3, dy], [3 - (i % 2), dy]], C.ink, 0.8, { amp: 0.2 }));
+    g.restore();
+  } else if (L.item === 'lamp') {     // 巡夜用的小提燈
+    const fl = 0.5 + 0.5 * Math.sin(t * 5.1) * Math.sin(t * 2.7);
+    wline(g, [[hx, hy], [hx - 1, hy + 6]], C.ink, 1.3);
+    g.globalAlpha = 0.2 + fl * 0.08; dot(g, hx - 1, hy + 13, 12, C.glow); g.globalAlpha = 1;
+    shape(g, [[hx - 5.5, hy + 7.5], [hx - 1, hy + 5], [hx + 3.5, hy + 7.5]], { fill: C.brass, lw: 1.1 });
+    shape(g, rrect(hx - 6, hy + 7.5, 10, 11, 2.5), { fill: C.glow, boil: true });
+    shape(g, rect(hx - 5.5, hy + 18.5, 9, 2.4), { fill: C.brass, lw: 1 });
+  } else {                            // 一把剛採的草藥
+    [-3, 0, 3].forEach((dx, k) => { wline(g, [[hx, hy], [hx - 2 + dx, hy - 12 - (k % 2) * 2]], C.green, 1.3, { boil: true }); leaf(g, hx - 2 + dx, hy - 13 - (k % 2) * 2, 3.4, 1.9, dx * 0.2, k === 1 ? C.ochre : C.moss); });
+  }
+  oval(g, hx, hy, 3.4, 3.1, { fill: skin, lw: 1.2, boil: true });
+  shape(g, [[-8, -73], [0, -68.5], [8, -73], [5.5, -77], [-5.5, -77]], { fill: C.cream, lw: 1.2, boil: true });
+  // 頭
+  g.save(); g.translate(-1, -92); g.rotate(-0.03 + (talking ? Math.sin(t * 8) * 0.025 : Math.sin(t * 0.7) * 0.015));
+  if (L.style === 'bob') shape(g, ell(3, 0, 21.5, 21.5, 14), { fill: L.hair, boil: true, step: 99 });
+  else if (L.style === 'braid') shape(g, ell(3.5, -2, 20.5, 20, 14), { fill: L.hair, boil: true, step: 99 });
+  else shape(g, ell(2.5, -3, 19.5, 18.5, 14), { fill: L.hair, boil: true, step: 99 });
+  shape(g, ell(-1.5, 1.5, 18, 17.5, 14), { fill: skin, boil: true, step: 99 });
+  if (L.style === 'short') shape(g, [[-18, -4], [-17, -13], [-9, -19.5], [3, -21], [13, -18], [19, -9], [18, -2], [11, -9], [3, -13], [-6, -13], [-13, -9]], { fill: L.hair, boil: true });
+  else if (L.style === 'bob') shape(g, [[-19, 2], [-18.5, -12], [-10, -20], [2, -22], [13, -19], [20, -10], [21, 8], [15, -3], [8, -10.5], [-2, -9], [-9, -11], [-14, -4]], { fill: L.hair, boil: true });
+  else { shape(g, [[-18.5, -2], [-17.5, -13], [-9, -20], [3, -21.5], [13, -18.5], [19.5, -9], [19, 0], [14, -8], [5, -12.5], [-4, -10], [-12, -12]], { fill: L.hair, boil: true }); wline(g, [[-3, -20], [-5, -11]], C.ink, 0.9, { amp: 0.2 }); }
+  g.globalAlpha = 0.6; leaf(g, -15, 7, 3.6, 2.4, 0, C.blush); leaf(g, 4.5, 7, 4, 2.5, 0, C.blush); g.globalAlpha = 1;
+  const look = talking ? [0, 0.5] : [-1.3, 0.6], mode = blink ? 'blink' : 'open';
+  eye(g, -11, -0.5, 4, look, mode); eye(g, 0, -0.5, 4.3, look, mode);
+  wline(g, [[-14, -7], [-9, -8]], L.hair, 1.6, { amp: 0.1 }); wline(g, [[-2.5, -8], [3, -7]], L.hair, 1.6, { amp: 0.1 });
+  wline(g, [[-6.5, 3.5], [-8.5, 6], [-6.5, 6.6]], C.ink, 1.2, { amp: 0.1, boil: true });
+  const mo = talking ? Math.abs(Math.sin(t * 10)) * 2.4 : 0;
+  if (mo > 0.4) { g.beginPath(); g.ellipse(-6, 11, 2.4, mo, 0, 0, TAU); g.fillStyle = '#5b2f28'; g.fill(); }
+  else wline(g, [[-9.5, 10.2], [-6, 12], [-2.5, 10.2]], C.ink, 1.3, { amp: 0.1, boil: true });
+  g.restore();
+  g.restore();
+}

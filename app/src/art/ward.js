@@ -1,15 +1,15 @@
 // 病室：林秋的床、岑禾、症影「鐵翅蛾」和霧。
 // 不會動的背景只畫一次存起來，每一格直接貼上；會動的東西每一格重畫。
 import { C, K, TAU, hash, clamp, smooth, ell, rect, rrect, prep, trace, shape, oval, wline, limb, dot, leaf, fillRect, star, createBase } from './sketch.js';
-import { eye, drawCat, drawCen, drawShen } from './cast.js';
+import { eye, drawCat, drawCen, drawShen, drawHero } from './cast.js';
 
 const X0 = -220, X1 = 580, Y0 = -120, Y1 = 420;   // 背景畫到畫面外，窄或寬的螢幕都不會露白
 const FLOOR_Y = 186;
-const LIN = { x: 90, y: 219 }, CEN = { x: 298, y: 264 }, SHEN = { x: 322, y: 268 }, MOTH = { x: 178, y: 88 };
+const LIN = { x: 90, y: 219 }, CEN = { x: 298, y: 264 }, SHEN = { x: 322, y: 268 }, MOTH = { x: 178, y: 88 }, HERO = { x: 207, y: 297 };
 const BIG = 1.14, MOTH_BIG = 1.28;   // 人物比家具大一點，表情在手機上才看得清楚
 
 // ════════ 不會動的背景 ════════
-function drawBack(g, who) {
+function drawWardRoom(g, rain) {
   K.seed = 100;
   // 牆和壁紙
   fillRect(g, X0, Y0, X1 - X0, FLOOR_Y - Y0, C.wall);
@@ -43,7 +43,7 @@ function drawBack(g, who) {
 
   // 窗戶：外框、窗外的天和樹
   shape(g, rrect(11, 13, 94, 97, 6), { fill: C.wood2 });
-  shape(g, rect(19, 21, 78, 80), { fill: C.sky, lw: 1.2 });
+  shape(g, rect(19, 21, 78, 80), { fill: rain ? C.rainSky : C.sky, lw: 1.2 });
   g.save(); g.beginPath(); g.rect(19.5, 21.5, 77.5, 79.5); g.clip();
   oval(g, 30, 97, 21, 21, { fill: C.green2 }); oval(g, 92, 93, 17, 24, { fill: C.moss }); oval(g, 62, 102, 26, 17, { fill: C.green });
   [[24, 84], [36, 90], [28, 96], [86, 80], [94, 90], [56, 94], [70, 92], [64, 98]].forEach(([x, y], i) => dot(g, x, y, 1.6 + (i % 2) * 0.5, C.ochre));
@@ -69,6 +69,66 @@ function drawBack(g, who) {
   wline(g, [[110, 17], [132, 17]], C.wood2, 2.4); dot(g, 110, 17, 1.8, C.brass); dot(g, 132, 17, 1.8, C.brass);
   wline(g, [[138, 4], [168, 12], [206, 14], [246, 5]], C.wood2, 1.2);
 
+}
+
+// 碼頭的貨棧：木板牆、石頭牆腳、朝海的大窗口、堆在角落的貨箱。出診的時候在這裡
+function drawDockRoom(g) {
+  K.seed = 900;
+  // 木板牆
+  fillRect(g, X0, Y0, X1 - X0, FLOOR_Y - Y0, C.plank);
+  for (let y = -112, row = 0; y < 138; y += 19, row++) {
+    wline(g, [[X0, y], [X1, y]], C.plank2, 1.3, { step: 18 });
+    for (let x = X0 + ((row * 67) % 110); x < X1; x += 110) { wline(g, [[x, y], [x + 0.6, y + 19]], C.plank2, 1); dot(g, x - 4, y + 5, 0.9, C.wood2); dot(g, x + 4, y + 5, 0.9, C.wood2); }
+  }
+  // 石頭牆腳
+  fillRect(g, X0, 138, X1 - X0, FLOOR_Y - 138, C.stone);
+  for (let y = 138, row = 0; y < FLOOR_Y; y += 16, row++) {
+    wline(g, [[X0, y], [X1, y]], C.stone2, 1.2, { step: 16 });
+    for (let x = X0 + (row % 2) * 19; x < X1; x += 38) wline(g, [[x, y], [x + hash(x, row) * 1.5, y + 16]], C.stone2, 1);
+  }
+  shape(g, rect(X0, 133, X1 - X0, 6), { fill: C.wood2, lw: 1.2, step: 14 });
+  // 地板：寬木板
+  fillRect(g, X0, FLOOR_Y, X1 - X0, Y1 - FLOOR_Y, C.plank);
+  let prev = FLOOR_Y;
+  [206, 230, 258, 290, 326, 366].forEach((y, i) => {
+    wline(g, [[X0, y], [X1, y]], C.plank2, 1.3, { step: 16 });
+    for (let x = X0 + ((i * 71) % 120); x < X1; x += 120) wline(g, [[x, prev], [x + 1, y]], C.plank2, 1);
+    prev = y;
+  });
+  [[150, 268], [322, 240], [26, 292], [226, 300]].forEach(([x, y]) => oval(g, x, y, 3.4, 1.4, { stroke: C.plank2, lw: 1, double: false }));
+  wline(g, [[X0, FLOOR_Y], [X1, FLOOR_Y]], C.ink, 1.5, { step: 14 });
+  // 麻繩編的墊子
+  oval(g, 272, 266, 74, 18, { fill: C.stone, n: 22 });
+  oval(g, 272, 266, 62, 13.5, { stroke: C.stone2, lw: 1.6, n: 22, double: false }); oval(g, 272, 266, 46, 9, { stroke: C.stone2, lw: 1.4, n: 18, double: false });
+  // 屋樑
+  shape(g, rect(X0, -6, X1 - X0, 11), { fill: C.wood2, lw: 1.3, step: 16 });
+  // 朝海的大窗口：外框、天、海
+  shape(g, rrect(9, 11, 98, 101, 4), { fill: C.wood2 });
+  shape(g, rect(17, 19, 82, 84), { fill: C.sky, lw: 1.2 });
+  g.save(); g.beginPath(); g.rect(17.5, 19.5, 81.5, 83.5); g.clip();
+  fillRect(g, 17, 74, 84, 30, C.sea);
+  wline(g, [[17, 74], [99, 74]], C.sea2, 1.3, { step: 12 });
+  g.restore();
+  // 角落的貨箱和木桶
+  const crate = (x, y, w, h, fill) => {
+    shape(g, rect(x, y, w, h), { fill });
+    wline(g, [[x + 4, y + 2], [x + 4, y + h - 2]], C.wood2, 1.2); wline(g, [[x + w - 4, y + 2], [x + w - 4, y + h - 2]], C.wood2, 1.2);
+    wline(g, [[x + 4, y + 3], [x + w - 4, y + h - 3]], C.wood2, 1.1);
+  };
+  crate(318, 136, 46, 50, C.wood); crate(268, 150, 44, 36, C.plank2); crate(326, 100, 34, 36, C.plank2);
+  shape(g, rect(276, 160, 12, 9), { fill: C.cream, lw: 1 }); wline(g, [[278, 163], [286, 163]], C.ink, 0.9); wline(g, [[278, 166], [284, 166]], C.ink, 0.9);
+  // 掛在牆上的一捆纜繩
+  dot(g, 232, 64, 2, C.wood2);
+  [13, 10, 7].forEach((r) => oval(g, 232, 80, r, r * 1.25, { stroke: C.mustard, lw: 2.2, n: 14, double: false }));
+  // 值班鐘的架子（岑禾把鐘帶來，掛在樑上）
+  shape(g, rect(306, 4, 5, 20), { fill: C.wood2, lw: 1.2 }); wline(g, [[310, 15], [320, 15]], C.ink, 2);
+  // 掛信號旗的繩子
+  wline(g, [[112, 6], [150, 20], [196, 22], [246, 8]], C.wood2, 1.2);
+}
+
+function drawBack(g, who, scene) {
+  if (scene === 'dock') drawDockRoom(g); else drawWardRoom(g, scene === 'ward-rain');
+  K.seed = 180;
   // 床：影子、床頭板、床架、床墊、枕頭
   oval(g, 118, 252, 104, 6, { fill: C.shadow, stroke: null });
   shape(g, [[19, 251], [19, 150], [24, 139], [37, 133], [50, 138], [55, 149], [55, 224], [30, 224], [30, 251]], { fill: C.wood });
@@ -91,7 +151,14 @@ function drawBack(g, who) {
   shape(g, [[243, 195], [254, 195], [253, 204], [244, 204]], { fill: C.cream, lw: 1.3 }); wline(g, [[244, 199], [253, 199]], C.teal, 1.6);
   shape(g, rect(226, 200.5, 11, 3.5), { fill: C.brass, lw: 1.2 }); shape(g, rect(229.5, 190, 4.5, 10.5), { fill: C.cream, lw: 1.2 });
 
-  if (who === 'tong') {
+  if (who === 'zhou') {
+    // 阮舟的東西：一根拐杖、一疊綁起來的帳冊、一只水手袋
+    oval(g, 78, 282, 38, 3.6, { fill: C.shadow, stroke: null });
+    wline(g, [[45, 282], [55, 232]], C.wood2, 3.4); wline(g, [[48, 232], [63, 231]], C.wood2, 4.6); wline(g, [[49, 256], [58, 255]], C.wood2, 2.6);
+    [[66, 272, C.rust], [68, 265, C.teal], [67, 258, C.ochre]].forEach(([x, y, col], i) => { shape(g, rrect(x, y, 30 - i, 7.5, 1.5), { fill: col }); wline(g, [[x + 27 - i, y + 1.5], [x + 27 - i, y + 6]], C.cream, 1.6); });
+    wline(g, [[81, 257], [81, 280]], C.cream, 1.6); wline(g, [[66, 268.5], [97, 268.5]], C.cream, 1.2);
+    shape(g, ell(114, 271, 12, 10, 12), { fill: C.coat, step: 99 }); wline(g, [[106, 264], [114, 261], [122, 264]], C.cream, 1.4); dot(g, 114, 260, 1.8, C.brass);
+  } else if (who === 'tong') {
     // 莫桐的東西：一根拐杖、一把填船縫的木槌、一捲麻絮
     oval(g, 74, 281, 34, 3.6, { fill: C.shadow, stroke: null });
     wline(g, [[45, 281], [52, 236]], C.wood2, 3.4); wline(g, [[52, 236], [57, 231], [63, 234]], C.wood2, 3.4);
@@ -150,11 +217,17 @@ function drawMid(g) {
 }
 
 export function createWard(canvas, opts = {}) {
-  // 病人長什麼樣子。lin：林秋，冒冷汗的老燈匠；jian：簡晴，坐得很直的搬運工；tong：莫桐，瘦瘦的老船工，圍著圍巾
-  const who = ['jian', 'tong'].includes(opts.patient) ? opts.patient : 'lin', calm = who !== 'lin', woman = who === 'jian', old = who === 'tong';
-  const LOOK = woman ? { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairDark, brow: C.hairDark } : old ? { shirt: C.moss, shirt2: C.green2, hair: C.cream, brow: C.hairGrey } : { shirt: C.shirt, shirt2: C.shirt2, hair: C.hairGrey, brow: C.hairGrey };
-  const base = createBase(canvas, { back: (g) => drawBack(g, who), mid: drawMid }), ctx = base.ctx;
-  const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [] };
+  // 病人長什麼樣子。lin：林秋，冒冷汗的老燈匠；jian：簡晴，坐得很直的搬運工；tong：莫桐，瘦瘦的老船工；zhou：阮舟，喘得坐不住的帳房
+  const who = ['jian', 'tong', 'zhou'].includes(opts.patient) ? opts.patient : 'lin';
+  const calm = who === 'jian' || who === 'tong', woman = who === 'jian' || who === 'zhou', pony = who === 'jian', old = who === 'tong', fast = who === 'zhou';
+  const LOOK = pony ? { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairDark, brow: C.hairDark }
+    : fast ? { shirt: C.sky, shirt2: C.wall2, hair: C.hairInk, brow: C.hairInk }
+    : old ? { shirt: C.moss, shirt2: C.green2, hair: C.cream, brow: C.hairGrey } : { shirt: C.shirt, shirt2: C.shirt2, hair: C.hairGrey, brow: C.hairGrey };
+  // 在哪裡：ward 公會的病室、ward-rain 下雨天的病室、dock 碼頭的貨棧（出診）
+  const scene = ['ward-rain', 'dock'].includes(opts.scene) ? opts.scene : 'ward', dock = scene === 'dock', rain = scene === 'ward-rain';
+  const base = createBase(canvas, { back: (g) => drawBack(g, who, scene), mid: drawMid }, opts.view), ctx = base.ctx;
+  // hero：主角是哪一位（沒有就不畫）；hide：不畫症影、霧和燈（圖鑑的頭像用）
+  const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [], hero: opts.hero || null, hide: false };
   let T = 0, dustClock = 0;
   const sparks = [], dust = [];
   const PUFFS = [
@@ -167,21 +240,61 @@ export function createWard(canvas, opts = {}) {
 
 
   // ── 會動的東西 ──
+  // 碼頭的窗口：雲、海浪、一艘靠岸的船、海鷗
+  function drawDockLife(g, t) {
+    g.save(); g.beginPath(); g.rect(17.5, 19.5, 81.5, 83.5); g.clip();
+    [[0, 32, 15, 5, 2.6], [56, 46, 11, 4, 1.8]].forEach(([x0, y, rx, ry, sp], i) => {
+      const x = 2 + ((x0 + t * sp) % 118);
+      oval(g, x, y, rx, ry, { fill: C.cream, stroke: null, seed: 60 + i }); oval(g, x + rx * 0.5, y - ry * 0.6, rx * 0.55, ry * 0.9, { fill: C.cream, stroke: null, seed: 64 + i });
+    });
+    // 船：跟著浪輕輕晃
+    const bobY = Math.sin(t * 1.1) * 1.2, tilt = Math.sin(t * 0.8) * 0.02;
+    g.save(); g.translate(68, 76 + bobY); g.rotate(tilt);
+    wline(g, [[2, -4], [2, -46]], C.wood2, 2.2, { seed: 70 }); wline(g, [[-16, -4], [-16, -32]], C.wood2, 1.8, { seed: 71 });
+    shape(g, [[3, -44], [3, -18], [22, -20]], { fill: C.cream, lw: 1.1, seed: 72, step: 99 }); shape(g, [[-15, -30], [-15, -12], [-2, -14]], { fill: C.paper, lw: 1.1, seed: 73, step: 99 });
+    const pen = Math.sin(t * 5) * 1.5; shape(g, [[2, -46], [11, -44 + pen], [2, -41]], { fill: C.rust, lw: 1, seed: 74, step: 99 });
+    shape(g, [[-30, -6], [32, -6], [26, 6], [-24, 6]], { fill: C.wood2, lw: 1.3, seed: 75, step: 99 }); wline(g, [[-27, -1], [29, -1]], C.ochre, 1.3, { seed: 76 });
+    g.restore();
+    // 浪
+    for (let i = 0; i < 4; i++) {
+      const y = 80 + i * 6, ph = t * (0.9 + i * 0.2) + i * 1.7, pts = [];
+      for (let x = 14; x <= 102; x += 8) pts.push([x, y + Math.sin(x * 0.16 + ph) * 1.3]);
+      wline(g, pts, i % 2 ? C.cream : C.sea2, 1.1, { amp: 0, seed: 77 + i });
+    }
+    // 海鷗
+    const b = (t * 0.09) % 1;
+    if (b < 0.4) {
+      const x = 12 + (b / 0.4) * 94, y = 40 - Math.sin((b / 0.4) * Math.PI) * 9, up = Math.sin(t * 13) > 0;
+      wline(g, [[x - 6, y + (up ? -3 : 2)], [x, y], [x + 6, y + (up ? -3 : 2)]], C.ink, 1.4, { amp: 0, seed: 82 });
+    }
+    g.restore();
+    // 撐起來的木板窗、窗台
+    shape(g, [[9, 12], [107, 12], [112, 2], [4, 2]], { fill: C.wood, seed: 86 });
+    wline(g, [[14, 12], [10, 30]], C.wood2, 2.2, { seed: 88 }); wline(g, [[102, 12], [106, 30]], C.wood2, 2.2, { seed: 89 });
+    shape(g, rect(5, 103, 106, 7), { fill: C.wood, seed: 87 });
+  }
+
   function drawWindowLife(g, t) {
+    if (dock) return drawDockLife(g, t);
     g.save(); g.beginPath(); g.rect(19.5, 21.5, 77.5, 79.5); g.clip();
     // 雲
     [[0, 36, 15, 5, 3.2], [50, 52, 11, 4, 2.1]].forEach(([x0, y, rx, ry, sp], i) => {
       const x = 4 + ((x0 + t * sp) % 112);
       oval(g, x, y, rx, ry, { fill: C.cream, stroke: null, seed: 60 + i }); oval(g, x + rx * 0.5, y - ry * 0.6, rx * 0.55, ry * 0.9, { fill: C.cream, stroke: null, seed: 64 + i });
     });
+    // 下雨天：雨絲斜斜地打在窗上
+    if (rain) for (let i = 0; i < 16; i++) {
+      const k = (t * 1.6 + i * 0.137) % 1, x = 16 + ((i * 37) % 84) + k * 6, y = 18 + k * 88;
+      wline(g, [[x, y], [x - 2, y + 7]], C.cream, 1, { amp: 0, seed: 90 + i });
+    }
     // 落葉
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < (rain ? 0 : 4); i++) {
       const k = (t * 0.11 + i * 0.27) % 1, x = 24 + i * 19 + Math.sin(t * 1.3 + i * 2) * 5, y = 20 + k * 86;
       leaf(g, x, y, 2.4, 1.5, t * 1.5 + i, i % 2 ? C.ochre : C.pumpkin);
     }
     // 偶爾飛過一隻鳥
     const b = (t * 0.07) % 1;
-    if (b < 0.3) {
+    if (b < 0.3 && !rain) {
       const x = 14 + (b / 0.3) * 92, y = 44 - Math.sin((b / 0.3) * Math.PI) * 8, up = Math.sin(t * 16) > 0;
       shape(g, [[x - 5, y], [x, y - 2.4], [x + 5, y - 0.5], [x + 7.5, y + 0.6], [x + 4, y + 2], [x - 2, y + 2.4]], { fill: C.green, lw: 1, seed: 70, step: 99 });
       shape(g, up ? [[x - 1, y - 1], [x - 4, y - 8], [x + 3, y - 1]] : [[x - 1, y + 1], [x - 4, y + 7], [x + 3, y + 1]], { fill: C.green2, lw: 1, seed: 71, step: 99 });
@@ -200,6 +313,13 @@ export function createWard(canvas, opts = {}) {
 
   function drawHangings(g, t) {
     K.seed = 700;
+    if (dock) {
+      // 一串信號旗
+      [[131, 13, C.rust], [158, 21, C.cream], [185, 22, C.teal], [213, 17, C.ochre]].forEach(([x, y, col], i) => {
+        const sw = Math.sin(t * 2.2 + i * 1.3) * 1.6;
+        shape(g, [[x - 7, y], [x + 7, y + 1], [x + sw, y + 15]], { fill: col, lw: 1.1, boil: true });
+      });
+    } else {
     // 公會的旗子
     const s1 = Math.sin(t * 1.1) * 1.8;
     shape(g, [[112, 18], [130, 18], [130 + s1 * 0.4, 46], [121 + s1, 62], [112 + s1 * 0.4, 46]], { fill: C.coat, boil: true });
@@ -212,6 +332,7 @@ export function createWard(canvas, opts = {}) {
       [-2, 2].forEach((dx) => leaf(g, dx * 1.6, 12, 3.4, 1.8, dx > 0 ? 0.7 : -0.7, i === 1 ? C.moss : col));
       wline(g, [[-2, 4], [2, 4]], C.wood2, 2.2); g.restore();
     });
+    }
     // 吊燈
     g.save(); g.translate(262, -40); g.rotate(Math.sin(t * 0.85) * 0.03); g.translate(0, 40);
     const pulse = 0.5 + 0.5 * Math.sin(t * 5.3) * Math.sin(t * 3.1);
@@ -232,11 +353,11 @@ export function createWard(canvas, opts = {}) {
       const r = 16 + i * 6 + (K.boil % 2) * 2; g.globalAlpha = clamp(state.bell * 1.4);
       wline(g, [[320 - r, 24], [320 - r * 0.95, 32], [320 - r * 0.75, 39]], C.ink, 1.3, { amp: 0.2 }); wline(g, [[320 + r, 24], [320 + r * 0.95, 32], [320 + r * 0.75, 39]], C.ink, 1.3, { amp: 0.2 }); g.globalAlpha = 1;
     }
-    // 地上那盞點著的燈
+    // 地上那盞點著的燈（林秋搬來的）
     const lf = 0.5 + 0.5 * Math.sin(t * 6.1) * Math.sin(t * 2.3);
-    g.globalAlpha = 0.14 + lf * 0.07; dot(g, 46, 268, 15, C.glow); g.globalAlpha = 1;
+    if (who === 'lin') { g.globalAlpha = 0.14 + lf * 0.07; dot(g, 46, 268, 15, C.glow); g.globalAlpha = 1; }
     // 繞著吊燈飛的螢火蟲
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < (dock ? 0 : 3); i++) {
       const a = t * (0.5 + i * 0.13) + i * 2.1, fx = 262 + Math.cos(a) * (26 + i * 9) + Math.sin(t * 1.7 + i) * 4, fy = 44 + Math.sin(a * 1.3) * (14 + i * 4), tw = 0.5 + 0.5 * Math.sin(t * 4 + i * 2);
       g.globalAlpha = 0.25 * tw; dot(g, fx, fy, 4.5, C.glow); g.globalAlpha = 0.5 + 0.5 * tw; dot(g, fx, fy, 1.5, C.ochre);
     }
@@ -255,7 +376,7 @@ export function createWard(canvas, opts = {}) {
 
   function drawLin(g, t) {
     K.seed = 1000;
-    const slump = state.slumpShown, wince = state.wince, breath = Math.sin(t * 2.5);
+    const slump = state.slumpShown, wince = state.wince, breath = Math.sin(t * (fast ? 5.2 : 2.5)) * (fast ? 1.5 : 1);
     const talking = state.talker === 'lin', blink = (t * 0.9 + 0.4) % 3.6 < 0.13;
     g.save(); g.translate(LIN.x, LIN.y); g.scale(BIG, BIG); g.rotate((calm ? -0.02 : -0.07) + slump * 0.3 + wince * 0.035);
     // 後面那隻手
@@ -281,7 +402,8 @@ export function createWard(canvas, opts = {}) {
     }
     // 頭
     g.save(); g.translate(1, -59 - breath * 0.5); g.rotate(slump * 0.35 + wince * 0.1 + (talking ? Math.sin(t * 9) * 0.02 : 0));
-    if (woman) {   // 簡晴：綁在腦後的馬尾
+    if (fast) shape(g, ell(-3, 2, 21.5, 20.5, 14), { fill: LOOK.hair, boil: true, step: 99 });   // 阮舟：齊耳的短髮
+    if (pony) {   // 簡晴：綁在腦後的馬尾
       limb(g, [[-17, -8], [-27, -2], [-29, 12 + Math.sin(t * 1.4) * 1.5]], 7, LOOK.hair, { boil: true });
       wline(g, [[-19, -9], [-23, -5]], C.rust, 2.6);
     }
@@ -305,7 +427,7 @@ export function createWard(canvas, opts = {}) {
     else if (woman) wline(g, [[5.5, 11], [9, 12], [12.5, 11]], C.ink, 1.3, { amp: 0.1, boil: true });
     if (!woman) shape(g, [[0, 9.5], [4.5, 6.6], [9, 7.6], [13.5, 6.6], [18, 9.5], [14, 12.4], [9, 10.6], [4, 12.4]], { fill: LOOK.hair, lw: 1.2, boil: true });
     // 冷汗
-    for (let i = 0; i < (calm ? 0 : 2); i++) {
+    for (let i = 0; i < (calm || fast ? 0 : 2); i++) {
       const k = (t * 0.33 + i * 0.5) % 1, sx = -9 + i * 26, sy = -9 + k * 13;
       g.globalAlpha = Math.sin(k * Math.PI);
       shape(g, [[sx, sy - 3.4], [sx + 2.1, sy + 0.6], [sx, sy + 2.6], [sx - 2.1, sy + 0.6]], { fill: C.sweat, lw: 1, step: 99, boil: true });
@@ -406,6 +528,13 @@ export function createWard(canvas, opts = {}) {
       [0.5, 0.66, 0.8].forEach((k, j) => { wline(g, [[0, -len * k], [len * 0.11, -len * (k + 0.07)]], C.wall2, 0.9, { seed: 5004 + i * 9 + j }); wline(g, [[0, -len * k], [-len * 0.11, -len * (k + 0.07)]], C.wall2, 0.9, { seed: 5007 + i * 9 + j }); });
       g.restore();
     };
+    if (dock) {
+      shape(g, [[336, 268], [384, 268], [388, 292], [384, 318], [336, 318], [332, 292]], { fill: C.wood, seed: 5080 });
+      wline(g, [[334, 280], [386, 280]], C.ink, 2.2, { seed: 5081 }); wline(g, [[333, 304], [387, 304]], C.ink, 2.2, { seed: 5082 });
+      [348, 360, 372].forEach((x, i) => wline(g, [[x, 270], [x + (i - 1) * 1.5, 316]], C.wood2, 1.1, { seed: 5083 + i }));
+      [16, 12, 8].forEach((r, i) => oval(g, 10, 300, r, r * 0.5, { stroke: C.mustard, lw: 2.6, n: 14, double: false, seed: 5087 + i }));
+      return;
+    }
     big(352, 292, 64, -0.5, C.green, 0); big(362, 296, 74, -0.12, C.green2, 1); big(372, 300, 58, 0.3, C.green, 2); big(342, 300, 44, -0.9, C.moss, 3);
     big(6, 312, 60, 0.3, C.green2, 4); big(-2, 300, 70, 0.05, C.green, 5);
     shape(g, [[338, 282], [388, 282], [382, 316], [344, 316]], { fill: C.pumpkin, seed: 5090 });
@@ -450,13 +579,16 @@ export function createWard(canvas, opts = {}) {
     const sx = state.still ? 0 : (hash(K.boil, Math.floor(T * 30)) - 0.5) * state.shake * 10, sy = state.still ? 0 : (hash(K.boil + 9, Math.floor(T * 30)) - 0.5) * state.shake * 10;
     base.begin(); base.paste('back', sx, sy); base.world(sx, sy);
     K.seed = 50; drawWindowLife(g, t);
-    drawCat(g, t, 40, 101);
+    if (!dock) drawCat(g, t, 40, 101);
     drawHangings(g, t);
     drawLin(g, t);
     base.paste('mid', sx, sy); base.world(sx, sy);
-    const m = drawMoth(g, t);
-    drawFog(g, t, m);
-    drawLights(g, t, m);
+    if (state.hero) drawHero(g, t, { x: HERO.x, y: HERO.y, look: state.hero, talking: state.talker === 'hero', scale: 1.03 });
+    if (!state.hide) {
+      const m = drawMoth(g, t);
+      drawFog(g, t, m);
+      drawLights(g, t, m);
+    }
     // 值班醫師到了，岑禾往旁邊讓一步
     const d = state.doctorShown;
     drawCen(g, t, { x: CEN.x - 34 * d, y: CEN.y, talking: state.talker === 'cen', nod: state.nod });
@@ -485,7 +617,7 @@ export function createWard(canvas, opts = {}) {
     /** 角色頭頂的位置，給對話泡泡和標籤用（CSS 像素） */
     anchor(who) {
       const d = state.doctorShown;
-      const p = who === 'lin' ? [LIN.x + 1, LIN.y - 84 * BIG] : who === 'cen' ? [CEN.x - 1 - 34 * d, CEN.y - 128 * BIG] : who === 'shen' ? [SHEN.x - 1, SHEN.y - 150] : null;
+      const p = who === 'lin' ? [LIN.x + 1, LIN.y - 84 * BIG] : who === 'cen' ? [CEN.x - 1 - 34 * d, CEN.y - 128 * BIG] : who === 'shen' ? [SHEN.x - 1, SHEN.y - 150] : who === 'hero' && state.hero ? [HERO.x - 1, HERO.y - 124] : null;
       return p && base.css(p[0], p[1]);
     },
     /** 拿到一條線索：症影往後縮、岑禾點頭、星星散開 */

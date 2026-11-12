@@ -94,6 +94,8 @@ export interface CaseDef {
   title: string;
   review: { state: '未審查' | '已審查'; note: string };
   patient: { name: string; age: number; sex: string; job: string; look: string; pronoun: string };
+  /** 這張委託在哪裡進行。只給畫面用，規則不看。沒寫就是公會的病室 */
+  scene?: 'ward' | 'ward-rain' | 'dock';
   shadow: { name: string; lore: string };
   forms: TrueForm[];
   reading: { lines: string[]; prompts: string[] };

@@ -16,14 +16,14 @@ export interface StageHandle {
   setLights(list: { mark: string; level: number }[]): void;
 }
 
-interface Props { kind: 'ward' | 'hall'; patient?: string; label: string; stage: RefObject<StageHandle | null>; onFrame?: (s: StageHandle) => void; children?: ReactNode }
+interface Props { kind: 'ward' | 'hall'; patient?: string; scene?: string; hero?: string | null; label: string; stage: RefObject<StageHandle | null>; onFrame?: (s: StageHandle) => void; children?: ReactNode }
 
-export function Stage({ kind, patient, label, stage, onFrame, children }: Props) {
+export function Stage({ kind, patient, scene, hero, label, stage, onFrame, children }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null), frame = useRef<HTMLDivElement>(null), cb = useRef(onFrame);
   cb.current = onFrame;
   useEffect(() => {
     const el = canvas.current!, box = frame.current!;
-    const s = (kind === 'ward' ? createWard(el, { patient }) : createHall(el)) as unknown as StageHandle;
+    const s = (kind === 'ward' ? createWard(el, { patient, scene, hero }) : createHall(el, { hero })) as unknown as StageHandle;
     s.state.still = still();
     stage.current = s;
     const fit = () => s.resize(box.clientWidth, box.clientHeight);
@@ -37,7 +37,7 @@ export function Stage({ kind, patient, label, stage, onFrame, children }: Props)
     };
     raf = requestAnimationFrame(loop);
     return () => { cancelAnimationFrame(raf); ro.disconnect(); stage.current = null; };
-  }, [kind, patient, stage]);
+  }, [kind, patient, scene, hero, stage]);
   return (
     <div className="paper scene">
       <div className="frame" ref={frame}>

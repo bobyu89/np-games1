@@ -84,8 +84,8 @@ export function ExplainSheet({ c, s, onSend, onClose }: { c: CaseDef; s: Session
   const [ids, setIds] = useState<string[]>([]);
   const opts = c.explain.filter((e) => !e.needsClue || s.clues.includes(e.needsClue));
   return (
-    <Sheet title={'向' + c.patient.name + '說明'} onClose={onClose} footer={<button type="button" className="act demo" disabled={!ids.length} onClick={() => onSend(ids)}>跟他說</button>}>
-      <p className="dim">選你要說的話，最多四句。要讓他知道評估的結果、接下來會怎樣、要注意什麼。</p>
+    <Sheet title={'向' + c.patient.name + '說明'} onClose={onClose} footer={<button type="button" className="act demo" disabled={!ids.length} onClick={() => onSend(ids)}>跟{c.patient.pronoun}說</button>}>
+      <p className="dim">選你要說的話，最多四句。要讓{c.patient.pronoun}知道評估的結果、接下來會怎樣、要注意什麼。</p>
       <div className="stack">{opts.map((e) => <Pick key={e.id} on={ids.includes(e.id)} onClick={() => setIds(toggle(ids, e.id, 4))}>{e.text}</Pick>)}</div>
     </Sheet>
   );

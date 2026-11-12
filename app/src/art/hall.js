@@ -1,10 +1,10 @@
 // 公會大廳：委託板、眠墨的櫃台、看得到霧港和燈塔的窗。
 import { C, K, TAU, rect, rrect, prep, trace, shape, oval, wline, dot, leaf, fillRect, createBase } from './sketch.js';
-import { drawCat, drawCen, drawMo } from './cast.js';
+import { drawCat, drawCen, drawMo, drawHero } from './cast.js';
 
 const X0 = -220, X1 = 580, Y0 = -120, Y1 = 420;
 const FLOOR_Y = 196;
-const CEN = { x: 266, y: 270 }, MO = { x: 74, y: 191 }, PAPER = { x: 250, y: 82 };
+const CEN = { x: 266, y: 270 }, MO = { x: 74, y: 191 }, PAPER = { x: 250, y: 82 }, HERO = { x: 190, y: 284 };
 const WINDOW = [[31, 144], [31, 64], [38, 45], [55, 33], [72, 30], [89, 33], [106, 45], [113, 64], [113, 144]];
 
 function paper(g, x, y, w, h, rot, lines, fill = C.paper) {
@@ -87,10 +87,11 @@ function drawMid(g) {
   shape(g, [[136, 187], [138, 180], [144, 177], [150, 180], [152, 187]], { fill: C.brass, lw: 1.2 }); dot(g, 144, 175.6, 1.6, C.wood2);
 }
 
-export function createHall(canvas) {
-  const base = createBase(canvas, { back: drawBack, mid: drawMid }), ctx = base.ctx;
+export function createHall(canvas, opts = {}) {
+  const base = createBase(canvas, { back: drawBack, mid: drawMid }, opts.view), ctx = base.ctx;
   // glow：委託板上那張可以接的委託有沒有在發亮
-  const state = { talker: null, still: false, glow: 1 };
+  // hero：主角是哪一位（沒有就不畫）
+  const state = { talker: null, still: false, glow: 1, hero: opts.hero || null };
   let T = 0;
 
   function drawWindowLife(g, t) {
@@ -179,6 +180,7 @@ export function createHall(canvas) {
       base.paste('mid'); base.world();
       drawDeskLife(g, t);
       drawCen(g, t, { x: CEN.x, y: CEN.y, talking: state.talker === 'cen', nod: 0 });
+      if (state.hero) drawHero(g, t, { x: HERO.x, y: HERO.y, look: state.hero, talking: state.talker === 'you', scale: 1.1 });
       drawFront(g, t);
       g.globalAlpha = 1; base.grain();
     },

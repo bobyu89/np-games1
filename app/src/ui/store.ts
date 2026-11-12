@@ -10,10 +10,11 @@ export interface CaseRecord {
   concern: boolean;
   reads: { clue: string; text: string; form: string; dir: 1 | -1 }[];
 }
-export interface Save { v: 3; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[] }
+/** hero：選了哪一位主角。還沒選是 null */
+export interface Save { v: 3; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[]; hero: string | null }
 
 const KEY = 'mist-guild.v1';
-const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [] });
+const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [], hero: null });
 
 export function load(): Save {
   try {

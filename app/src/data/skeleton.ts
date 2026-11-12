@@ -42,12 +42,10 @@ export const HISTORY: Q[] = [
   { id: 'q-concern', group: 'hx', label: '擔心什麼', ask: '這次不舒服，您自己最擔心的是什麼？', weight: 2 },
 ];
 
-/** 系統回顧：從頭到腳掃一遍，補上前面沒問到的 */
+/** 系統回顧：從頭到腳掃一遍，補上前面沒問到的。四題，每一題把那一區的症狀一次問完 */
 export const REVIEW: Q[] = [
-  { id: 'q-ros-gen', group: 'ros', label: '全身', ask: '最近有沒有發燒、特別累、晚上盜汗？體重有沒有變？', weight: 2 },
-  { id: 'q-ros-head', group: 'ros', label: '頭頸', ask: '會頭痛、頭暈嗎？聲音有沒有變，吞東西會不會卡？', weight: 1 },
-  { id: 'q-ros-resp', group: 'ros', label: '呼吸', ask: '有咳嗽、有痰嗎？有沒有咳出血？', weight: 2 },
-  { id: 'q-ros-cv', group: 'ros', label: '心臟', ask: '會心悸嗎？晚上會不會喘到要坐起來、要墊高枕頭？', weight: 1 },
+  { id: 'q-ros-gen', group: 'ros', label: '全身與頭頸', ask: '最近有沒有發燒、特別累、晚上盜汗？體重有沒有變？會不會頭痛、頭暈，聲音有沒有變、吞東西會不會卡？', weight: 2 },
+  { id: 'q-ros-cp', group: 'ros', label: '心肺', ask: '有咳嗽、有痰嗎？有沒有咳出血？會心悸嗎？晚上會不會喘到要坐起來、要墊高枕頭？', weight: 2 },
   { id: 'q-ros-gi', group: 'ros', label: '腸胃與泌尿', ask: '有火燒心、想吐、肚子痛嗎？大小便的樣子和次數跟平常一樣嗎？', weight: 1 },
   { id: 'q-ros-limb', group: 'ros', label: '四肢', ask: '手腳會麻、沒力嗎？腳會不會腫，小腿會不會痛？', weight: 2 },
 ];

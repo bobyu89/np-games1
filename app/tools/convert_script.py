@@ -35,7 +35,7 @@ MAX_XML = 8 * 1024 * 1024  # 教案的文字不會超過這個大小；超過就
 OPEN = ['q-wash', 'q-intro', 'q-explain']
 CC = ['q-cc', 'q-onset', 'q-location', 'q-duration', 'q-character', 'q-assoc', 'q-factors', 'q-radiate', 'q-treat', 'q-severity']
 HX = ['q-pmh', 'q-family', 'q-surgery', 'q-meds', 'q-habits', 'q-work', 'q-life', 'q-concern']
-ROS = ['q-ros-gen', 'q-ros-head', 'q-ros-resp', 'q-ros-cv', 'q-ros-gi', 'q-ros-limb']
+ROS = ['q-ros-gen', 'q-ros-cp', 'q-ros-gi', 'q-ros-limb']
 EXAMS = ['x-look', 'x-head', 'x-jvp', 'x-chest-touch', 'x-chest-listen', 'x-heart', 'x-botharms', 'x-abd', 'x-perfusion', 'x-legs']
 TESTS = ['t-ecg', 't-blood', 't-cxr', 't-glucose']
 LABEL = {
@@ -44,7 +44,7 @@ LABEL = {
     'q-assoc': '伴隨症狀', 'q-factors': '加重與緩解', 'q-radiate': '會傳到哪', 'q-treat': '處理過嗎', 'q-severity': '幾分',
     'q-pmh': '慢性病與控制', 'q-family': '家族史', 'q-surgery': '住院手術外傷', 'q-meds': '用藥與過敏', 'q-habits': '菸酒檳榔',
     'q-work': '工作與接觸史', 'q-life': '飲食睡眠壓力', 'q-concern': '擔心什麼',
-    'q-ros-gen': '全身', 'q-ros-head': '頭頸', 'q-ros-resp': '呼吸', 'q-ros-cv': '心臟', 'q-ros-gi': '腸胃與泌尿', 'q-ros-limb': '四肢',
+    'q-ros-gen': '全身與頭頸', 'q-ros-cp': '心肺', 'q-ros-gi': '腸胃與泌尿', 'q-ros-limb': '四肢',
     'x-look': '整體外觀', 'x-head': '眼口與淋巴結', 'x-jvp': '頸靜脈與氣管', 'x-chest-touch': '胸廓與按壓', 'x-chest-listen': '叩診與聽診',
     'x-heart': '心臟聽診', 'x-botharms': '兩手血壓脈搏', 'x-abd': '腹部', 'x-perfusion': '末梢與指甲', 'x-legs': '小腿與水腫',
 }
@@ -80,10 +80,8 @@ RULES = {
     ],
     # 系統回顧：教案常常一句問兩個系統，所以中了幾題就放幾題
     'ros': [
-        ('q-ros-gen', ['發燒', '體重', '疲憊', '疲倦', '盜汗']),
-        ('q-ros-head', ['頭痛', '頭暈', '視力', '耳鳴', '喉嚨', '吞嚥', '聲音', '脖子']),
-        ('q-ros-resp', ['咳', '痰']),
-        ('q-ros-cv', ['心悸', '心臟', '心跳', '胸悶', '端坐', '平躺', '喘醒']),
+        ('q-ros-gen', ['發燒', '體重', '疲憊', '疲倦', '盜汗', '頭痛', '頭暈', '視力', '耳鳴', '喉嚨', '吞嚥', '聲音', '脖子']),
+        ('q-ros-cp', ['咳', '痰', '心悸', '心臟', '心跳', '胸悶', '端坐', '平躺', '喘醒']),
         ('q-ros-gi', ['腹瀉', '噁心', '嘔吐', '腹痛', '排便', '黑便', '血便', '尿尿', '解尿', '小便']),
         ('q-ros-limb', ['四肢', '手腳', '麻', '水腫', '關節', '肌肉', '小腿', '大腿']),
     ],

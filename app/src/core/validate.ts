@@ -24,6 +24,7 @@ export function validateCase(c: CaseDef): string[] {
     [k.tell, ...(k.alsoOk ?? [])].forEach((t) => { if (t && !form.has(t.form)) errs.push('線索 ' + k.id + ' 的解讀指到不存在的真身：' + t.form); });
     if (k.tell && !k.why) errs.push('線索 ' + k.id + ' 要玩家解讀，卻沒有寫為什麼');
     if (!k.tell && k.alsoOk) errs.push('線索 ' + k.id + ' 只寫了「也算對」，沒有寫主要的解讀');
+    if (k.tell && (k.alsoOk ?? []).some((t) => t.dir !== k.tell!.dir)) errs.push('線索 ' + k.id + ' 的「也算對」方向和主要的解讀不一樣（畫面只會問一個方向）');
   });
 
   // 真身：固定四個；真身和要排除的都要存在

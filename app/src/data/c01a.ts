@@ -48,10 +48,8 @@ export const C01A: CaseSpec = {
     'q-life': { say: '吃得鹹，常吃宵夜。睡得還可以。跟女兒兩個人住。', clue: { text: '飲食偏鹹，與女兒同住', kind: 'info' } },
     'q-concern': { say: '我女兒今晚一個人守燈……她還在等我去交班。', clue: { text: '擔心女兒一個人值夜', kind: 'info' } },
     // 系統回顧
-    'q-ros-gen': { say: '沒有發燒。體重沒什麼變，晚上也不會盜汗。', clue: { text: '沒有發燒、體重減輕或盜汗', kind: 'neg', tell: { form: 'tumor', dir: -1 }, why: WHY_NO_WEIGHT_LOSS } },
-    'q-ros-head': { say: '頭不痛。聲音沒變，吞東西也不會卡。', clue: { text: '沒有頭痛、聲音改變或吞嚥困難', kind: 'neg' } },
-    'q-ros-resp': { say: '沒有咳嗽，也沒有咳血。', clue: { text: '沒有咳嗽或咳血', kind: 'neg' } },
-    'q-ros-cv': { say: '現在心跳得很快。平常晚上不會喘到坐起來。', clue: { text: '現在心悸，平常沒有夜間喘', kind: 'pos' } },
+    'q-ros-gen': { say: '沒有發燒。體重沒什麼變，晚上也不會盜汗。頭不痛，聲音沒變，吞東西也不會卡。', clue: { text: '沒有發燒、體重減輕、盜汗或聲音改變', kind: 'neg', tell: { form: 'tumor', dir: -1 }, why: WHY_NO_WEIGHT_LOSS } },
+    'q-ros-cp': { say: '沒有咳嗽，也沒有咳血。現在心跳得很快；平常晚上不會喘到坐起來。', clue: { text: '沒有咳嗽或咳血；現在心悸，平常沒有夜間喘', kind: 'neg' } },
     'q-ros-gi': { say: '沒有火燒心，跟吃飯沒關係。大小便都正常。', clue: { text: '沒有火燒心，大小便正常', kind: 'neg' } },
     'q-ros-limb': { say: '手腳不會麻。腳沒有腫，小腿也不痛。', clue: { text: '手腳不麻，腳不腫，小腿不痛', kind: 'neg' } },
   },

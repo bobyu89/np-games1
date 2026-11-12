@@ -12,6 +12,7 @@ export const C01C: CaseSpec = {
   title: '慢慢來的那一隻',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '莫桐', age: 67, sex: '男', job: '退休的船塢填縫工', look: 'tong', pronoun: '他' },
+  scene: 'ward-rain',
   reading: {
     lines: ['莫桐，67 歲，退休的船塢填縫工。', '左邊胸口悶痛一個多月，越來越常痛，這幾天晚上痛到睡不好。兒子陪他來。', '他自己走進來，說話的聲音有點沙啞。'],
     prompts: ['最危險的可能是什麼？', '痛了一個多月，和痛了四十分鐘，要想的病有什麼不一樣？', '這一關要緊的是什麼：馬上處置，還是不要漏掉？'],
@@ -28,7 +29,7 @@ export const C01C: CaseSpec = {
     'q-explain': { say: '好。問仔細一點也好，我兒子比我還緊張。' },
     // 主訴
     'q-cc': { say: '左邊胸口悶悶地痛，拖了一個多月都沒好。', clue: { text: '主訴：左胸悶痛一個多月', kind: 'pos' } },
-    'q-onset': { say: '一個多月前吧，說不出是哪一天。慢慢來的，那時候沒在做什麼。', clue: { text: '一個多月前慢慢開始，說不出哪一天', kind: 'pos', key: true, tell: { form: 'tumor', dir: 1 }, alsoOk: [{ form: 'cardiac', dir: -1 }, { form: 'vascular', dir: -1 }], why: '說不出哪一天、幾個禮拜慢慢加重，不是心臟或大血管急症的樣子。要想到裡面長了東西。' } },
+    'q-onset': { say: '一個多月前吧，說不出是哪一天。慢慢來的，那時候沒在做什麼。', clue: { text: '一個多月前慢慢開始，說不出哪一天', kind: 'pos', key: true, tell: { form: 'tumor', dir: 1 }, why: '說不出哪一天、幾個禮拜慢慢加重，不是心臟或大血管急症的樣子。要想到裡面長了東西。' } },
     'q-location': { say: '左邊胸口偏上面，靠近肩膀這一帶。深深的，一整片。', clue: { text: '左上胸深處，一整片', kind: 'pos' } },
     'q-duration': { say: '一開始偶爾痛，現在幾乎整天都在。晚上躺下來更明顯。', clue: { text: '越來越常痛，現在幾乎整天，夜裡更明顯', kind: 'pos', key: true } },
     'q-character': { say: '鈍鈍的，像裡面有東西頂著。不是壓得喘不過氣，也不是被撕開的痛。', clue: { text: '深處的鈍痛，不是壓迫感或撕裂感', kind: 'pos' } },
@@ -47,10 +48,8 @@ export const C01C: CaseSpec = {
     'q-life': { say: '最近沒什麼胃口，飯吃一半就飽。晚上又痛又咳，睡不好。跟兒子一家住。', clue: { text: '胃口變差，睡不好', kind: 'pos' } },
     'q-concern': { say: '我哥當年也是這樣咳……我怕跟他一樣。可是我不想讓我兒子先聽到。', clue: { text: '怕跟哥哥一樣；不想讓兒子先知道', kind: 'info' } },
     // 系統回顧
-    'q-ros-gen': { say: '沒有發燒。這兩個月褲頭鬆了，瘦了大概五公斤。晚上有時候一身汗。', clue: { text: '兩個月瘦 5 公斤，夜裡盜汗，沒有發燒', kind: 'pos', key: true, tell: { form: 'tumor', dir: 1 }, why: '沒有刻意減重卻一直瘦，是警訊。配上久咳和痰裡有血，腫瘤要排到前面。' } },
-    'q-ros-head': { say: '頭不痛。聲音這一個月變啞了。吞東西還好。', clue: { text: '聲音沙啞一個月', kind: 'pos', key: true } },
-    'q-ros-resp': { say: '早上咳得最厲害，痰白白的帶血絲。沒有整口的血。', clue: { text: '痰中帶血絲，沒有大量咳血', kind: 'pos' } },
-    'q-ros-cv': { say: '不會心悸。晚上可以躺平睡，不用墊高。', clue: { text: '沒有心悸，可以平躺', kind: 'neg' } },
+    'q-ros-gen': { say: '沒有發燒。這兩個月褲頭鬆了，瘦了大概五公斤，晚上有時候一身汗。聲音這一個月變啞了；頭不痛，吞東西還好。', clue: { text: '兩個月瘦 5 公斤、夜裡盜汗、聲音沙啞一個月', kind: 'pos', key: true, tell: { form: 'tumor', dir: 1 }, why: '沒有刻意減重卻一直瘦，是警訊；聲音變啞超過幾個禮拜，也要查。配上久咳和痰裡有血，腫瘤要排到前面。' } },
+    'q-ros-cp': { say: '早上咳得最厲害，痰白白的帶血絲，沒有整口的血。不會心悸，晚上可以躺平睡。', clue: { text: '痰中帶血絲，沒有大量咳血；沒有心悸，可以平躺', kind: 'pos' } },
     'q-ros-gi': { say: '沒有火燒心。大便正常，沒有黑黑的。小便也正常。', clue: { text: '沒有火燒心，大小便正常', kind: 'neg' } },
     'q-ros-limb': { say: '手腳不會麻，也不會沒力。腳沒有腫。', clue: { text: '手腳不麻，腳不腫', kind: 'neg' } },
   },

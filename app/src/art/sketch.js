@@ -30,6 +30,8 @@ export const C = {
   shadow: 'rgba(58, 46, 26, 0.2)',
   shen: '#7c6b47', shen2: '#63553a', skin2: '#e6bd94', hairShen: '#5a554e',
   cloak: '#55807e', cloak2: '#3d6363',
+  // 碼頭的貨棧、雨天
+  plank: '#b08a5c', plank2: '#8f6c45', stone: '#9b957f', stone2: '#7c7663', sea: '#6f9d9a', sea2: '#4f7f80', rainSky: '#9fb0aa', rose: '#b98579', rose2: '#96635a', hairInk: '#33302c', hairBrown: '#7a5a3c',
   hallWall: '#d9c692', hallWall2: '#c9b47c', tile: '#7b9a94', tile2: '#63817c', cork: '#b98a5a', sea: '#6f9a98',
 };
 

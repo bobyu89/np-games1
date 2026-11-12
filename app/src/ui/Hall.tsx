@@ -1,4 +1,4 @@
-// 公會大廳：故事的段落、委託板、圖鑑。
+// 公會大廳：故事的段落、委託板、圖鑑（症影、人物、場景）、選主角。
 import { useEffect, useRef, useState } from 'react';
 import type { CaseDef } from '../core/types.ts';
 import { SAFETY_LABEL } from '../core/scoring.ts';
@@ -8,15 +8,40 @@ import { Talk, type TalkHandle, type Who } from './Talk.tsx';
 import { Sheet } from './Sheets.tsx';
 import { sfx, sound } from './sound.ts';
 import type { Save } from './store.ts';
-import { BEATS, QUESTS, codexOf, nextBeat, rankOf, unlocked, type Beat } from './progress.ts';
+import { BEATS, HEROES, QUESTS, albumCount, codexOf, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, unlocked, type Beat, type Entry } from './progress.ts';
+import { Portrait } from './Portrait.tsx';
 
-interface Props { save: Save; onBeatSeen(id: string): void; onStart(c: CaseDef): void }
+interface Props { save: Save; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void }
 
-export function Hall({ save, onBeatSeen, onStart }: Props) {
+/** 圖鑑裡的一張卡：遇到了、去過了才看得到 */
+function Card({ e, wide }: { e: Entry; wide?: boolean }) {
+  return (
+    <div className={'card' + (wide ? ' wide' : '') + (e.open ? '' : ' locked')}>
+      <Portrait shot={e.shot} label={e.name} locked={!e.open} wide={wide} />
+      <div><b>{e.open ? e.name : '？？？'}</b><span>{e.open ? e.tag : e.hint}</span>{e.open && e.lines.map((l) => <p key={l}>{l}</p>)}</div>
+    </div>
+  );
+}
+/** 三位主角。picked 是現在選的那一位 */
+function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(id: string): void; action: string }) {
+  return (
+    <div className="album">
+      {HEROES.map((h) => (
+        <div key={h.id} className={'card' + (picked === h.id ? ' on' : '')}>
+          <Portrait shot={heroShots[h.id]} label={h.name} />
+          <div><b>{h.name}</b><span>{h.tag}</span><p>{h.line}</p>{picked === h.id ? <em>現在是這一位</em> : <button type="button" className="pick" onClick={() => { sfx.tap(); onPick(h.id); }}>{action}</button>}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
   const [beat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
   const [step, setStep] = useState(0);
   const [reading, setReading] = useState<CaseDef | null>(null);
   const [codex, setCodex] = useState(false);
+  const [tab, setTab] = useState<'shadow' | 'people' | 'places'>('shadow');
   const [soundOn, setSoundOn] = useState(sound.on);
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null), speaker = useRef<Who | null>(null), bubble = useRef<HTMLDivElement>(null);
   const open = QUESTS.filter((q) => unlocked(q, save)), fresh = open.find((q) => !save.cases[q.caseId]);
@@ -49,8 +74,8 @@ export function Hall({ save, onBeatSeen, onStart }: Props) {
   return (
     <div className="screen hall">
       <div className="left">
-        <div className="top"><span className="who">霧脈公會</span><span className="clock">{rankOf(save)}</span></div>
-        <Stage kind="hall" stage={stage} onFrame={onFrame} label="霧脈公會的大廳：牆上是委託板，眠墨坐在櫃台後面寫字，岑禾站在委託板旁邊，窗外是霧港和燈塔">
+        <div className="top"><span className="who">霧脈公會</span><span className="clock">{save.hero ? heroOf(save.hero).name + '・' : ''}{rankOf(save)}</span></div>
+        <Stage kind="hall" hero={save.hero} stage={stage} onFrame={onFrame} label="霧脈公會的大廳：牆上是委託板，眠墨坐在櫃台後面寫字，岑禾站在委託板旁邊，窗外是霧港和燈塔">
           <div className="bubble" ref={bubble} hidden>…</div>
           {beat && <div className="chapter">{beat.title}</div>}
         </Stage>
@@ -105,8 +130,34 @@ export function Hall({ save, onBeatSeen, onStart }: Props) {
           <p className="dim">{reading.review.note}</p>
         </Sheet>
       )}
+      {!beat && save.hero === null && (
+        <Sheet title="你是哪一位？" onClose={() => onHero(HEROES[0].id)}>
+          <p className="dim">三位都是剛到霧脈公會的見習專科護理師。只有外表和帶的東西不同，能做的事一模一樣；之後可以在圖鑑的「人物」裡換。</p>
+          <HeroCards picked={null} onPick={onHero} action="就是這一位" />
+        </Sheet>
+      )}
       {codex && (
-        <Sheet title="症影圖鑑" onClose={() => setCodex(false)}>
+        <Sheet title="圖鑑" onClose={() => setCodex(false)}>
+          <div className="steps" role="tablist">
+            {([['shadow', '症影'], ['people', '人物'], ['places', '場景']] as const).map(([id, name]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => { sfx.tap(); setTab(id); }}>{name}</button>)}
+          </div>
+          {tab === 'people' && (() => {
+            const { guild, patients } = peopleOf(save);
+            return <>
+              <p className="dim">遇到的人會記在這裡。人物和場景一共 {albumCount(save).total} 張，你打開了 {albumCount(save).got} 張。</p>
+              <h3>主角</h3>
+              <HeroCards picked={save.hero} onPick={onHero} action="換成這一位" />
+              <h3>公會的人</h3>
+              <div className="album">{guild.map((e) => <Card key={e.id} e={e} />)}</div>
+              <h3>照顧過的人</h3>
+              <div className="album">{patients.map((e) => <Card key={e.id} e={e} />)}</div>
+            </>;
+          })()}
+          {tab === 'places' && <>
+            <p className="dim">去過的地方會記在這裡。出診的委託，會帶你到公會以外的地方。</p>
+            <div className="album">{placesOf(save).map((e) => <Card key={e.id} e={e} wide />)}</div>
+          </>}
+          {tab === 'shadow' && <>
           <p className="dim">檔案室淹水之後，圖鑑只剩症影的外形。底下的字，要靠你在一張一張委託裡寫回來。</p>
           {COMPLAINTS.map((m) => {
             const page = codexOf(m, save);
@@ -130,6 +181,7 @@ export function Hall({ save, onBeatSeen, onStart }: Props) {
             );
           })}
           {save.takeaways.length > 0 && <><h3>你寫下的話</h3><ul>{save.takeaways.map((t) => <li key={t}>{t}</li>)}</ul></>}
+          </>}
         </Sheet>
       )}
     </div>

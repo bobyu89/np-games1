@@ -5,7 +5,8 @@ import { CHEST_PAIN } from './chest-pain.ts';
 import { C01A } from './c01a.ts';
 import { C01B } from './c01b.ts';
 import { C01C } from './c01c.ts';
+import { C01D } from './c01d.ts';
 
 export const COMPLAINTS: ComplaintDef[] = [CHEST_PAIN];
-export const CASES: CaseDef[] = [resolveCase(CHEST_PAIN, C01A), resolveCase(CHEST_PAIN, C01B), resolveCase(CHEST_PAIN, C01C)];
+export const CASES: CaseDef[] = [resolveCase(CHEST_PAIN, C01A), resolveCase(CHEST_PAIN, C01B), resolveCase(CHEST_PAIN, C01C), resolveCase(CHEST_PAIN, C01D)];
 export const caseById = (id: string) => CASES.find((c) => c.id === id)!;

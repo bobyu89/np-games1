@@ -268,6 +268,23 @@ button.act.hint, .quest.hint, .opt.hint:not(.done) { animation: hint 1.8s ease-i
 .safety.review { background: var(--grain), var(--rust-2); }
 .safety b { font-size: 1.1em; line-height: 1.64; }
 .row-top { display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+/* 圖鑑的人物和場景：一張卡一個，沒遇到的是暗的 */
+.album { display: flex; flex-direction: column; gap: 8px; }
+.card { display: grid; grid-template-columns: 5.4em minmax(0, 1fr); gap: 10px; align-items: start; border: 2px solid var(--ink); border-radius: var(--r-b); padding: 7px; background: var(--grain), var(--paper); }
+.card.wide { grid-template-columns: minmax(0, 1fr); }
+.card.on { box-shadow: 0 0 0 3px var(--ochre); }
+.card.locked { border-style: dashed; border-color: var(--ink-soft); background: var(--grain), var(--paper-2); color: var(--ink-soft); }
+.card b { font-size: 1.08em; }
+.card span { display: block; font-size: 0.86em; color: var(--ink-soft); }
+.card p { font-size: 0.93em; line-height: 1.4; margin-top: 3px; }
+.card em { display: inline-block; margin-top: 5px; font-style: normal; font-weight: 700; font-size: 0.86em; color: var(--teal); }
+.card .pick { margin-top: 5px; padding: 1px 10px; }
+.portrait { display: block; width: 100%; aspect-ratio: 1; border: 2px solid var(--ink); border-radius: var(--r-a); background: #8fab89; }
+.portrait.wide { aspect-ratio: 332 / 268; }
+.portrait.locked { filter: grayscale(1) brightness(0.4) contrast(1.15); border-color: var(--ink-soft); }
+.sheet-body .steps { margin-bottom: 4px; }
+.sheet-body .steps button { border-color: var(--ink-soft); color: var(--ink-soft); }
+.sheet-body .steps button.on { border-color: var(--ink); color: var(--ink); }
 .bar { display: block; height: 9px; border: 2px solid var(--ink); border-radius: 6px; background: var(--paper-2); overflow: hidden; margin: 2px 0 3px; }
 .bar b { display: block; height: 100%; background: var(--moss); }
 .row ul, .refs { font-size: 0.9em; color: var(--ink-soft); }

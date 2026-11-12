@@ -9,7 +9,7 @@ import { validateCase } from './validate.ts';
 import { idealActions, run, step } from './autoplay.ts';
 import type { Action } from './types.ts';
 
-const A = caseById('c01a'), B = caseById('c01b'), C = caseById('c01c');
+const A = caseById('c01a'), B = caseById('c01b'), C = caseById('c01c'), D = caseById('c01d');
 const ask = (id: string): Action => ({ type: 'ask', id });
 const exam = (id: string, explain = true): Action => ({ type: 'exam', id, explain });
 const row = (c: typeof A, actions: Action[], id: string, wrong = false) => scoreSession(c, run(c, actions, wrong)).rows.find((r) => r.id === id)!;
@@ -36,15 +36,17 @@ test('每個病例照理想的打法，都能安全達成、九十分以上', ()
 
 test('同一個主訴的病例，畫面上的選項一模一樣，真身各不相同', () => {
   const shape = (c: typeof A) => JSON.stringify([c.questions.map((q) => [q.id, q.label, q.ask]), c.exams.map((e) => [e.id, e.part, e.label]), c.tests.map((t) => [t.id, t.label]), c.forms.map((f) => f.id)]);
-  assert.equal(shape(A), shape(B));
-  assert.equal(shape(A), shape(C));
-  assert.equal(new Set([A, B, C].map((c) => c.answer.truth)).size, 3);
+  for (const c of [B, C, D]) assert.equal(shape(A), shape(c));
+  // 四位病人，四個真身各一位
+  assert.deepEqual([A, B, C, D].map((c) => c.answer.truth).sort(), A.forms.map((f) => f.id).sort());
 });
 
 test('問題庫照骨架排：開場、主訴、病史、系統回顧；評估照五個模組', () => {
   assert.deepEqual([...new Set(A.questions.map((q) => q.group))], ['open', 'cc', 'hx', 'ros']);
   assert.deepEqual(A.questions.filter((q) => q.group === 'open').map((q) => q.id), ['q-wash', 'q-intro', 'q-explain']);
   assert.equal(A.questions.filter((q) => q.group === 'cc').length, 10);
+  assert.deepEqual(A.questions.filter((q) => q.group === 'ros').map((q) => q.id), ['q-ros-gen', 'q-ros-cp', 'q-ros-gi', 'q-ros-limb']);
+  assert.equal(A.questions.length, 25);
   assert.deepEqual([...new Set(A.exams.map((e) => e.part))], ['整體', '頭頸', '胸部', '心臟', '腹部', '四肢']);
 });
 
@@ -63,6 +65,7 @@ test('檢查器抓得到常見的錯', () => {
   has({ ...A, forms: A.forms.slice(0, 3) }, '四個真身');
   has({ ...A, questions: A.questions.filter((q) => q.group !== 'ros') }, '少了一段');
   has({ ...A, title: 'TODO 委託的標題' }, 'TODO');
+  has({ ...B, clues: B.clues.map((k) => (k.id === 'c-location' ? { ...k, alsoOk: [{ form: 'cardiac', dir: -1 as const }] } : k)) }, '方向');
 });
 
 // ── 規則 ──
@@ -144,7 +147,7 @@ test('只寫了摘要、沒選最可能的，不算下了診斷', () => {
 
 test('整套問診和評估做完，模擬的時間大約是考站的 15 分鐘', () => {
   const t = run(A, toDx(A)).time;
-  assert.ok(t >= 13 * 60 && t <= 16 * 60, '用了 ' + t + ' 秒');
+  assert.ok(t >= 12 * 60 && t <= 16 * 60, '用了 ' + t + ' 秒');
 });
 
 // ── 會變差的病人（C01A）──
@@ -190,6 +193,20 @@ test('心電圖提出一分半之後才有結果，結果也要解讀', () => {
   for (let i = 0; i < 3; i++) s = perform(A, s, watch).session;
   assert.ok(s.results.includes('t-ecg'));
   assert.deepEqual(s.pending, ['c-ecg']);
+});
+
+test('肺栓塞那一位：下了診斷不通報一樣會變差；X 光乾淨反而是線索；圖鑑的第四盞燈亮了', () => {
+  assert.equal(D.answer.truth, 'vascular');
+  assert.equal(D.scene, 'dock');
+  const late = run(D, [...toDx(D), ...times(watch, 4)]);
+  assert.ok(late.worsenedAt !== null);
+  assert.equal(step(D, late, { type: 'vitals' }).vitalsSeen!.v.spo2, 85);
+  const s = run(D, idealActions(D));
+  assert.ok(s.reads.some((r) => r.clue === 'c-cxr' && r.ok) && s.reads.some((r) => r.clue === 'c-legs' && r.ok));
+  assert.ok(lights(D, s).vascular > lights(D, s).cardiac);
+  // 把低血氧當成緊張：回報零分的那一句
+  const acts = idealActions(D).map((a) => (a.type === 'report' ? { ...a, a: 'a-anxious' } : a));
+  assert.ok(row(D, acts, 'care').got < row(D, idealActions(D), 'care').got);
 });
 
 // ── 穩定的病人（C01B、C01C）──

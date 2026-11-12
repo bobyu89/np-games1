@@ -6,10 +6,11 @@ import { harvest } from '../core/scoring.ts';
 import { CASES } from '../data/index.ts';
 import type { Line } from './Talk.tsx';
 import type { CaseRecord, Save } from './store.ts';
+import type { Shot } from './Portrait.tsx';
 
 /** 委託板上的一張委託。needs：要先完成哪一張才會出現 */
 export interface Quest { caseId: string; chapter: number; needs?: string }
-export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b', chapter: 1, needs: 'c01a' }, { caseId: 'c01c', chapter: 1, needs: 'c01b' }];
+export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b', chapter: 1, needs: 'c01a' }, { caseId: 'c01c', chapter: 1, needs: 'c01b' }, { caseId: 'c01d', chapter: 1, needs: 'c01c' }];
 export const unlocked = (q: Quest, s: Save) => !q.needs || !!s.cases[q.needs];
 
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
@@ -32,9 +33,15 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '還沒完。這一頁底下還有兩盞燈，你沒看過它們亮起來的樣子。' },
     { who: 'mentor', text: '有位老船工，胸口悶了一個多月。他不急。你去想清楚：不急的，是不是就不要緊。' },
   ] },
-  { id: 'ch1-finale', title: '第一章　完', when: (s) => !!s.cases.c01a && !!s.cases.c01b && !!s.cases.c01c, lines: [
+  { id: 'ch1-fourth', title: '第一章　慢慢來的那一隻', when: (s) => !!s.cases.c01a && !!s.cases.c01b && !!s.cases.c01c, lines: [
     { who: 'mo', text: '鐵翅蛾這一頁，三個真身底下都有人名了。只剩「血管急症」那一盞，還沒有人讓它亮過。' },
     { who: 'mentor', text: '那一盞，你每一次都在排除它。沒亮過，不代表可以不看。' },
+    { who: 'sys', text: '碼頭那邊有人跑進來：一艘貨船剛靠岸，有個人下跳板的時候喘不過氣，走不到公會。' },
+    { who: 'mentor', text: '這一張是出診。把包背上，鐘我來拿。' },
+  ] },
+  { id: 'ch1-complete', title: '第一章　完', when: (s) => !!s.cases.c01a && !!s.cases.c01b && !!s.cases.c01c && !!s.cases.c01d, lines: [
+    { who: 'mo', text: '四盞燈，四個人。鐵翅蛾這一頁寫回來了。' },
+    { who: 'mentor', text: '同一句「胸口痛」，一個要馬上叫人，一個可以回家，一個不能放走，一個差點被當成緊張。' },
     { who: 'mentor', text: '第一章到這裡。下一頁是別的症影，還在整理，好了會貼到委託板上。' },
     { who: 'sys', text: '你升為「巡診專科護理師」。' },
   ] },
@@ -71,4 +78,63 @@ export function codexOf(m: ComplaintDef, save: Save) {
   const people = cases.filter((c) => save.cases[c.id]).map((c) => ({ c, rec: save.cases[c.id] }));
   const percent = Math.round(100 * (0.4 * (people.length / cases.length) + 0.3 * (forms.filter((f) => f.known).length / forms.length) + 0.3 * (total ? got / total : 0)));
   return { cases, forms, people, percent, got, total };
+}
+
+// ── 人物和場景的圖鑑 ──
+// 遇到了、去過了才會打開。全部從存檔算出來，沒有另外記。
+
+/** 主角：三位見習專科護理師。只有外表和帶的東西不同，能做的事一模一樣 */
+export const HEROES = [
+  { id: 'cheng', name: '葉澄', tag: '內科病房出身', line: '習慣把每一件事寫下來，筆記本從不離手。' },
+  { id: 'yuan', name: '高遠', tag: '急診出身', line: '手腳很快，正在學慢下來把話問完。巡夜的時候提著一盞小燈。' },
+  { id: 'zhi', name: '白芷', tag: '社區巡診出身', line: '很會聽人說話。出診包裡總有一把剛採的草藥。' },
+] as const;
+export const heroOf = (id: string | null) => HEROES.find((h) => h.id === id) ?? HEROES[0];
+const heroShot = (id: string): Shot => ({ kind: 'hall', hero: id, view: { w: 112, h: 112, cx: 189, cy: 212 } });
+export const heroShots = Object.fromEntries(HEROES.map((h) => [h.id, heroShot(h.id)])) as Record<string, Shot>;
+
+export interface Entry { id: string; name: string; tag: string; lines: string[]; shot: Shot; open: boolean; hint: string }
+const face = (cx: number, cy: number, w = 104): Shot['view'] => ({ w, h: w, cx, cy });
+
+/** 人物：公會的人，和你照顧過的病人 */
+export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
+  const any = Object.keys(save.cases).length > 0;
+  const guild: Entry[] = [
+    { id: 'cen', name: '岑禾', tag: '資深專科護理師', lines: ['帶你的人。話不多，問的問題都很準。', '她的紀錄板上，每一位病人只寫三行。'], shot: { kind: 'ward', view: face(297, 178) }, open: true, hint: '' },
+    { id: 'mo', name: '眠墨', tag: '公會的檔案員', lines: ['管圖鑑的人。檔案室淹水的那一夜，他搶救到天亮。', '舊索引上「一症一解」的那幾行，是他親手劃掉的。'], shot: { kind: 'hall', view: face(74, 152) }, open: true, hint: '' },
+    { id: 'shen', name: '沈渡', tag: '值班醫師', lines: ['值班鐘一響就會出現。', '他只說一句：「告訴我重點。」'], shot: { kind: 'ward', doctor: true, view: face(326, 170) }, open: any, hint: '完成第一張委託之後' },
+  ];
+  const after: Record<string, string> = {
+    c01a: '後來他把菸戒了。那一晚，女兒自己守完了燈。',
+    c01b: '那一船貨，她隔了三天才回去卸。現在會催同事來公會。',
+    c01c: '檢查的結果，他是自己先聽的。過了兩天，才帶兒子一起來。',
+    c01d: '帳冊有人幫她收好了。那一趟船，是別人代她出的海。',
+  };
+  const patients: Entry[] = CASES.map((c) => {
+    const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;
+    return {
+      id: c.id, name: c.patient.name, tag: c.patient.age + ' 歲，' + c.patient.job,
+      lines: [rec?.found ? '真身：' + truth.name + '。' : '真身還沒有認出來。', ...(after[c.id] ? [after[c.id]] : [])],
+      shot: { kind: 'ward', patient: c.patient.look, scene: c.scene, view: face(92, 170) }, open: !!rec, hint: '完成「' + c.title + '」之後',
+    };
+  });
+  return { guild, patients };
+}
+
+/** 場景：去過的地方。最後兩個是之後的章節才會去的 */
+export function placesOf(save: Save): Entry[] {
+  const any = Object.keys(save.cases).length > 0;
+  return [
+    { id: 'hall', name: '公會大廳', tag: '霧港', lines: ['委託板、眠墨的櫃台、看得到燈塔的拱窗。每一張委託從這裡開始，也回到這裡。'], shot: { kind: 'hall' }, open: true, hint: '' },
+    { id: 'ward', name: '公會的病室', tag: '大廳旁邊那扇門', lines: ['一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。'], shot: { kind: 'ward', patient: 'lin' }, open: any, hint: '完成第一張委託之後' },
+    { id: 'dock', name: '碼頭的貨棧', tag: '出診', lines: ['船一靠岸，走不到公會的人就先扶進這裡。', '出診的時候，岑禾會把值班鐘一起帶來，掛在樑上。'], shot: { kind: 'ward', patient: 'zhou', scene: 'dock' }, open: !!save.cases.c01d, hint: '完成「靠岸的那天早上」之後' },
+    { id: 'tower', name: '燈塔的值夜房', tag: '還沒去過', lines: [], shot: { kind: 'hall' }, open: false, hint: '之後的章節' },
+    { id: 'yard', name: '船塢的工寮', tag: '還沒去過', lines: [], shot: { kind: 'hall' }, open: false, hint: '之後的章節' },
+  ];
+}
+
+/** 人物和場景加起來打開了幾個 */
+export function albumCount(save: Save): { got: number; total: number } {
+  const { guild, patients } = peopleOf(save), all = [...guild, ...patients, ...placesOf(save)];
+  return { got: all.filter((e) => e.open).length + HEROES.length, total: all.length + HEROES.length };
 }

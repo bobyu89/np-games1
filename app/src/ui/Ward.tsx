@@ -30,9 +30,9 @@ function Forms({ c, onPick }: { c: CaseDef; onPick(id: string): void }) {
   return <div className="forms">{c.forms.map((f) => <button key={f.id} type="button" className="form" onClick={() => onPick(f.id)}><i aria-hidden="true">{f.mark}</i>{f.name}</button>)}</div>;
 }
 
-interface Props { c: CaseDef; takeaway: string | null; onDone(s: Session, seconds: number): void; onQuit(): void }
+interface Props { c: CaseDef; hero: string | null; takeaway: string | null; onDone(s: Session, seconds: number): void; onQuit(): void }
 
-export function Ward({ c, takeaway, onDone, onQuit }: Props) {
+export function Ward({ c, hero, takeaway, onDone, onQuit }: Props) {
   const [session, setSession] = useState(() => createSession(c));
   const [tab, setTab] = useState<Tab>('open');   // 第一步是開場：洗手、自我介紹、說明流程
   const [sheet, setSheet] = useState<SheetName>(null);
@@ -71,7 +71,7 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
   }, [c, session]);
 
   const onFrame = (s: StageHandle) => {
-    const sp = speaker.current, key = sp === 'patient' ? 'lin' : sp === 'mentor' ? 'cen' : sp === 'doctor' ? 'shen' : null;
+    const sp = speaker.current, key = sp === 'patient' ? 'lin' : sp === 'mentor' ? 'cen' : sp === 'doctor' ? 'shen' : sp === 'you' ? 'hero' : null;
     s.state.talker = key;
     const at = key ? s.anchor(key) : null, b = bubble.current, v = veilTag.current;
     if (b) { b.hidden = !at; if (at) { b.style.left = Math.round(at.x) + 'px'; b.style.top = Math.round(at.y) + 'px'; } }
@@ -139,7 +139,7 @@ export function Ward({ c, takeaway, onDone, onQuit }: Props) {
   return (
     <div className="screen ward">
       <div className="left">
-        <Stage kind="ward" patient={c.patient.look} stage={stage} onFrame={onFrame} label={'霧脈公會的病室：' + who + '坐在床上，岑禾拿著紀錄板站在旁邊，房間中間飄著被霧裹住的症影，底下掛著四盞燈'}>
+        <Stage kind="ward" patient={c.patient.look} scene={c.scene} hero={hero} stage={stage} onFrame={onFrame} label={(c.scene === 'dock' ? '碼頭的貨棧：' : '霧脈公會的病室：') + who + '坐在床上，你站在床尾，岑禾拿著紀錄板站在旁邊，房間中間飄著被霧裹住的症影，底下掛著四盞燈'}>
           <button type="button" className="tag tag-back" onClick={() => (closed ? finish() : setSheet('quit'))}>‹ 公會</button>
           <span className="tag tag-clock" aria-label={'已經過了 ' + mmss(session.time)}>{mmss(session.time)}</span>
           <div className="bubble" ref={bubble} hidden>…</div>
