@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { CASES, COMPLAINTS, caseById } from '../data/index.ts';
 import { C01A } from '../data/c01a.ts';
 import { resolveCase } from './module.ts';
-import { createSession, perform, stability, veil, lights, hintFor, COMMIT_AFTER, COST } from './engine.ts';
+import { createSession, perform, stability, veil, lights, hintFor, COMMIT_AFTER, COST, HINT_LIMIT } from './engine.ts';
 import { scoreSession, moments, takeaways, trajectory, harvest } from './scoring.ts';
 import { validateCase } from './validate.ts';
 import { idealActions, run, step } from './autoplay.ts';
@@ -97,6 +97,32 @@ test('解讀對了霧才全散，解讀錯只散一半；燈照著線索亮', ()
   assert.equal(veil(A, none), 1);
   const l = lights(A, run(A, [ask('q-onset'), ask('q-surgery')]));
   assert.ok(l.cardiac > 0 && l.vascular < 0 && l.tumor === 0);
+});
+
+test('提示拿掉一層：線索是更像還是比較不像要自己選，方向錯了不算對', () => {
+  const got = perform(A, createSession(A, 1), ask('q-onset')).session, clue = got.pending[0];
+  assert.equal(perform(A, got, { type: 'read', clue, form: 'cardiac' }).events[0].type, 'reject');   // 沒選方向
+  const wrong = perform(A, got, { type: 'read', clue, form: 'cardiac', dir: -1 });
+  assert.equal(wrong.session.reads[0].ok, false);
+  assert.ok(wrong.events.some((e) => e.type === 'say' && e.text.startsWith('真身選對了，方向反了')));
+  assert.equal(perform(A, got, { type: 'read', clue, form: 'cardiac', dir: 1 }).session.reads[0].ok, true);
+  // 原本的那一層：不用選方向
+  const easy = perform(A, createSession(A), ask('q-onset')).session;
+  assert.equal(perform(A, easy, { type: 'read', clue, form: 'cardiac' }).session.reads[0].ok, true);
+  // 理想的打法在兩層都拿得到一樣的分數
+  for (const c of CASES) assert.equal(scoreSession(c, run(c, idealActions(c), false, 1)).total, scoreSession(c, run(c, idealActions(c))).total, c.id);
+});
+
+test('提示拿掉一層：岑禾一張委託只回答三次', () => {
+  let s = createSession(A, 1);
+  for (let i = 0; i < HINT_LIMIT; i++) s = perform(A, s, { type: 'hint' }).session;
+  const more = perform(A, s, { type: 'hint' });
+  assert.equal(more.session.hints, HINT_LIMIT);
+  assert.equal(more.session.time, s.time);
+  assert.ok(more.events.some((e) => e.type === 'say' && e.text.includes('已經回答你')));
+  let easy = createSession(A);
+  for (let i = 0; i < HINT_LIMIT + 2; i++) easy = perform(A, easy, { type: 'hint' }).session;
+  assert.equal(easy.hints, HINT_LIMIT + 2);
 });
 
 test('解讀到第三條，岑禾會問你最擔心哪一個；回答之前不能做別的', () => {

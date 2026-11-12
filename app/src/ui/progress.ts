@@ -63,12 +63,22 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '風箱蛙四盞，結繩蟹四盞，都有人名了。圖鑑寫回了三頁。' },
     { who: 'mentor', text: '八個人，講的幾乎是同樣兩句話：「我很喘」「我肚子痛」。你問到了他們不一樣的地方。' },
     { who: 'mentor', text: '還有一件事：最後那一位怕的不是痛。她怕什麼，不問是聽不到的。' },
-    { who: 'mentor', text: '第二章到這裡。下一頁是別的症影，還在整理。' },
+    { who: 'mentor', text: '第二章到這裡。' },
+  ] },
+  { id: 'rank-duty', title: '升階　值班專科護理師', when: (s) => tierOf(s) === 1, lines: [
+    { who: 'mentor', text: '從今天起，你是值班專科護理師。披肩不換，換的是我幫你的方式。' },
+    { who: 'mentor', text: '以前我會先告訴你，一條線索是讓某個真身更像，還是比較不像。現在這一步你自己來。' },
+    { who: 'mentor', text: '還有，一張委託我只回答你三次。想清楚再問。' },
+    { who: 'mo', text: '舊的委託也可以重接。同一位病人，少了提示，你看到的東西會不一樣。' },
   ] },
 ];
 export const nextBeat = (s: Save) => BEATS.find((b) => !s.beats.includes(b.id) && b.when(s));
 
-export const rankOf = (s: Save) => (QUESTS.filter((q) => q.chapter === 1).every((q) => s.cases[q.caseId]) ? '巡診專科護理師' : '見習專科護理師');
+const chapterDone = (n: number, s: Save) => QUESTS.filter((q) => q.chapter === n).every((q) => s.cases[q.caseId]);
+/** 階級只代表提示少了幾層，不加任何數值。第一章走完是巡診，第二章走完是值班 */
+export const rankOf = (s: Save) => (!chapterDone(1, s) ? '見習專科護理師' : !chapterDone(2, s) ? '巡診專科護理師' : '值班專科護理師');
+/** 提示拿掉了幾層：升到值班之後拿掉第一層 */
+export const tierOf = (s: Save): 0 | 1 => (chapterDone(1, s) && chapterDone(2, s) ? 1 : 0);
 
 /** 把一場對局的結果併進存檔 */
 export function record(save: Save, c: CaseDef, session: Session, score: Score, seconds: number, takeaway: string | null): Save {

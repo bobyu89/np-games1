@@ -5,9 +5,9 @@ import { Hall } from './Hall.tsx';
 import { Ward } from './Ward.tsx';
 import { Debrief } from './Debrief.tsx';
 import { load, store, type Save } from './store.ts';
-import { newReads, record } from './progress.ts';
+import { newReads, record, tierOf } from './progress.ts';
 
-type Screen = { name: 'hall' } | { name: 'ward'; c: CaseDef; n: number } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number };
+type Screen = { name: 'hall' } | { name: 'ward'; c: CaseDef; n: number; tier: 0 | 1 } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number };
 
 export function App() {
   const [save, setSave] = useState<Save>(load);
@@ -15,7 +15,7 @@ export function App() {
   const keep = (s: Save) => { setSave(s); store(s); };
 
   if (screen.name === 'ward') {
-    return <Ward key={screen.n} c={screen.c} hero={save.hero} takeaway={save.takeaways[0] ?? null} onQuit={() => setScreen({ name: 'hall' })}
+    return <Ward key={screen.n} c={screen.c} tier={screen.tier} hero={save.hero} takeaway={save.takeaways[0] ?? null} onQuit={() => setScreen({ name: 'hall' })}
       onDone={(session, seconds) => setScreen({ name: 'debrief', c: screen.c, session, seconds })} />;
   }
   if (screen.name === 'debrief') {
@@ -25,5 +25,5 @@ export function App() {
       setScreen({ name: 'hall' });
     }} />;
   }
-  return <Hall save={save} onHero={(hero) => keep({ ...save, hero })} onBeatSeen={(id) => keep({ ...save, beats: save.beats.includes(id) ? save.beats : [...save.beats, id] })} onStart={(c) => setScreen({ name: 'ward', c, n: Date.now() })} />;
+  return <Hall save={save} onHero={(hero) => keep({ ...save, hero })} onBeatSeen={(id) => keep({ ...save, beats: save.beats.includes(id) ? save.beats : [...save.beats, id] })} onStart={(c) => setScreen({ name: 'ward', c, n: Date.now(), tier: tierOf(save) })} />;
 }

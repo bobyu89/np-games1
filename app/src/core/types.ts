@@ -148,6 +148,8 @@ export interface LogEntry { t: number; type: string; id?: string; note?: string;
 export interface Session {
   caseId: string;
   mode: 'quest';
+  /** 提示拿掉了幾層。0：見習和巡診。1：值班（線索是更像還是比較不像要自己選；岑禾一張委託只回答三次） */
+  tier: 0 | 1;
   /** 模擬的時鐘，單位是秒。只有做行動才會走 */
   time: number;
   /** 走到第幾個階段：1 問診、2 評估、3 診斷、4 檢查與處置。可以回頭補做前面的，不能跳到後面 */
@@ -193,7 +195,7 @@ export type Action =
   | { type: 'exam'; id: string; explain: boolean }
   | { type: 'watch' }
   | { type: 'test'; id: string }
-  | { type: 'read'; clue: string; form: string }
+  | { type: 'read'; clue: string; form: string; dir?: 1 | -1 }
   | { type: 'commit'; form: string }
   | { type: 'board'; board: Board }
   | { type: 'call' }

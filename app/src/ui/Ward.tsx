@@ -2,7 +2,7 @@
 // 規則全部在 core/engine，這裡只負責把行動送進去、把發生的事演出來。
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Action, CaseDef, QuestionGroup, Session } from '../core/types.ts';
-import { clueOf, createSession, formOf, lights, perform, stability, testReady, veil } from '../core/engine.ts';
+import { HINT_LIMIT, clueOf, createSession, formOf, lights, perform, stability, testReady, veil } from '../core/engine.ts';
 import { Stage, type StageHandle } from './Stage.tsx';
 import { Talk, type Line, type TalkHandle, type Who } from './Talk.tsx';
 import { BoardSheet, CluesSheet, ConfirmSheet, ExplainSheet, ReportSheet } from './Sheets.tsx';
@@ -30,10 +30,11 @@ function Forms({ c, onPick }: { c: CaseDef; onPick(id: string): void }) {
   return <div className="forms">{c.forms.map((f) => <button key={f.id} type="button" className="form" onClick={() => onPick(f.id)}><i aria-hidden="true">{f.mark}</i>{f.name}</button>)}</div>;
 }
 
-interface Props { c: CaseDef; hero: string | null; takeaway: string | null; onDone(s: Session, seconds: number): void; onQuit(): void }
+interface Props { c: CaseDef; tier: 0 | 1; hero: string | null; takeaway: string | null; onDone(s: Session, seconds: number): void; onQuit(): void }
 
-export function Ward({ c, hero, takeaway, onDone, onQuit }: Props) {
-  const [session, setSession] = useState(() => createSession(c));
+export function Ward({ c, tier, hero, takeaway, onDone, onQuit }: Props) {
+  const [session, setSession] = useState(() => createSession(c, tier));
+  const [dir, setDir] = useState<1 | -1 | null>(null);   // 提示拿掉一層之後，線索的方向要自己選
   const [tab, setTab] = useState<Tab>('open');   // 第一步是開場：洗手、自我介紹、說明流程
   const [sheet, setSheet] = useState<SheetName>(null);
   const [gain, setGain] = useState<{ text: string; key: boolean; n: number } | null>(null);
@@ -169,8 +170,25 @@ export function Ward({ c, hero, takeaway, onDone, onQuit }: Props) {
           ) : reading ? (
             <div className="ask-read">
               <p><b>「{reading.text}」</b></p>
-              <p>這條線索，讓哪一個真身{reading.tell!.dir > 0 ? <em className="up">更像</em> : <em className="down">比較不像</em>}？</p>
-              <Forms c={c} onPick={(form) => act({ type: 'read', clue: reading.id, form })} />
+              {session.tier === 0 ? (
+                <>
+                  <p>這條線索，讓哪一個真身{reading.tell!.dir > 0 ? <em className="up">更像</em> : <em className="down">比較不像</em>}？</p>
+                  <Forms c={c} onPick={(form) => act({ type: 'read', clue: reading.id, form })} />
+                </>
+              ) : dir === null ? (
+                <>
+                  <p>這條線索，是讓某一個真身更像，還是比較不像？</p>
+                  <div className="forms dirs">
+                    <button type="button" className="form" onClick={() => { sfx.tap(); setDir(1); }}><em className="up">更像</em>支持它</button>
+                    <button type="button" className="form" onClick={() => { sfx.tap(); setDir(-1); }}><em className="down">比較不像</em>排除它</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p>讓哪一個真身{dir > 0 ? <em className="up">更像</em> : <em className="down">比較不像</em>}？<button type="button" className="redo" onClick={() => setDir(null)}>改方向</button></p>
+                  <Forms c={c} onPick={(form) => { setDir(null); act({ type: 'read', clue: reading.id, form, dir }); }} />
+                </>
+              )}
             </div>
           ) : session.needCommit ? (
             <div className="ask-read">
@@ -216,7 +234,7 @@ export function Ward({ c, hero, takeaway, onDone, onQuit }: Props) {
         </div>
         <div className="foot">
           <button type="button" onClick={() => { sfx.page(); setSheet('clues'); }}>線索 {session.clues.length}</button>
-          {!closed && !reading && !session.needCommit && <button type="button" onClick={() => act({ type: 'hint' })}>問岑禾</button>}
+          {!closed && !reading && !session.needCommit && <button type="button" onClick={() => act({ type: 'hint' })}>問岑禾{session.tier >= 1 ? '（剩 ' + Math.max(0, HINT_LIMIT - session.hints) + ' 次）' : ''}</button>}
           {!closed && !reading && !session.needCommit && <button type="button" className={session.bell ? 'rung' : ''} onClick={() => (session.bell ? act({ type: 'call' }) : (sfx.page(), setSheet('bell')))}>值班鐘{session.bell ? '（已響）' : ''}</button>}
           <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
         </div>

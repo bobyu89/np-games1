@@ -8,12 +8,14 @@ import type { Action, Board, CaseDef, Clue, GameEvent, Session, Tell, Vitals } f
 export const COST = { ask: 20, vitals: 40, exam: 20, explainExam: 10, watch: 30, call: 5, report: 30, explain: 40 } as const;
 /** 解讀到第幾條線索的時候，岑禾會停下來問「你最擔心哪一個」 */
 export const COMMIT_AFTER = 3;
+/** 提示拿掉一層之後，岑禾一張委託回答幾次 */
+export const HINT_LIMIT = 3;
 
 export const emptyBoard = (): Board => ({ summary: null, likely: null, exclude: [] });
 
-export function createSession(c: CaseDef): Session {
+export function createSession(c: CaseDef, tier: 0 | 1 = 0): Session {
   return {
-    caseId: c.id, mode: 'quest', time: 0, phase: 1, dxAt: null,
+    caseId: c.id, mode: 'quest', tier, time: 0, phase: 1, dxAt: null,
     asked: [], examined: [], ordered: [], results: [], clues: [], pending: [], reads: [], commits: [], needCommit: false,
     vitalsSeen: null, vitalsLog: [],
     worsenedAt: null, calledAt: null, calledBy: null, bell: false, doctorAt: null, doctorHere: false,
@@ -236,11 +238,12 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
     case 'read': {
       if (s.pending[0] !== a.clue) return reject('現在要想的不是這一條線索。');
       if (!formOf(c, a.form)) return reject('沒有這個真身。');
-      const k = clueOf(c, a.clue), ok = hit(k, a.form);
+      if (s.tier >= 1 && a.dir === undefined) return reject('先決定這條線索是讓它更像，還是比較不像。');
+      const k = clueOf(c, a.clue), formOk = hit(k, a.form), ok = formOk && (s.tier === 0 || a.dir === k.tell!.dir);
       s.pending = s.pending.slice(1);
       s.reads = [...s.reads, { clue: a.clue, form: a.form, ok, t: s.time }];
       note(x, 'read', a.clue, ok ? 'ok' : 'miss');
-      x.ev.push({ type: 'read', id: a.clue, ok }, { type: 'say', who: 'mentor', text: (ok ? '對。' : '不是這一個。') + (k.why ?? '') });
+      x.ev.push({ type: 'read', id: a.clue, ok }, { type: 'say', who: 'mentor', text: (ok ? '對。' : formOk ? '真身選對了，方向反了。' : '不是這一個。') + (k.why ?? '') });
       if (!s.pending.length && s.reads.length >= COMMIT_AFTER && !s.commits.length) {
         s.needCommit = true;
         x.ev.push({ type: 'say', who: 'mentor', text: '先停一下。到目前為止，你最擔心哪一個？' });
@@ -301,6 +304,7 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
       break;
     }
     case 'hint': {
+      if (s.tier >= 1 && s.hints >= HINT_LIMIT) { x.ev.push({ type: 'say', who: 'mentor', text: '這一張委託，我已經回答你 ' + HINT_LIMIT + ' 次了。剩下的，你自己看。' }); return { session: s, events: x.ev }; }
       s.hints += 1;
       note(x, 'hint');
       x.ev.push({ type: 'say', who: 'mentor', text: hintFor(c, s) });
@@ -319,6 +323,6 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
 }
 
 /** 把一串行動從頭跑一遍。回放和測試都用這個 */
-export function replay(c: CaseDef, actions: Action[]): Session {
-  return actions.reduce((s, a) => perform(c, s, a).session, createSession(c));
+export function replay(c: CaseDef, actions: Action[], tier: 0 | 1 = 0): Session {
+  return actions.reduce((s, a) => perform(c, s, a).session, createSession(c, tier));
 }

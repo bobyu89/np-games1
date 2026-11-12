@@ -8,14 +8,14 @@ export function step(c: CaseDef, s: Session, a: Action, wrongReads = false): Ses
   let cur = perform(c, s, a).session;
   for (let guard = 0; guard < 50 && (cur.pending.length || cur.needCommit); guard++) {
     if (cur.pending.length) {
-      const id = cur.pending[0], right = clueOf(c, id).tell!.form;
+      const id = cur.pending[0], right = clueOf(c, id).tell!.form, dir = clueOf(c, id).tell!.dir;
       const form = wrongReads ? c.forms.find((f) => f.id !== right && !(clueOf(c, id).alsoOk ?? []).some((t) => t.form === f.id))!.id : right;
-      cur = perform(c, cur, { type: 'read', clue: id, form }).session;
+      cur = perform(c, cur, { type: 'read', clue: id, form, dir }).session;
     } else cur = perform(c, cur, { type: 'commit', form: c.answer.truth }).session;
   }
   return cur;
 }
-export const run = (c: CaseDef, actions: Action[], wrongReads = false): Session => actions.reduce((s, a) => step(c, s, a, wrongReads), createSession(c));
+export const run = (c: CaseDef, actions: Action[], wrongReads = false, tier: 0 | 1 = 0): Session => actions.reduce((s, a) => step(c, s, a, wrongReads), createSession(c, tier));
 
 export function idealActions(c: CaseDef): Action[] {
   const has = (type: string) => c.safety.some((r) => r.type === type);
