@@ -43,6 +43,9 @@ jobs:
           git diff --exit-code -- ../docs/review || { echo "::error::病例改過了，docs/review 沒有跟著重新產生。請跑 npm run review 再提交。"; exit 1; }
       - name: 型別檢查和建置
         run: npm run build
+        env:
+          # 匿名使用統計的端點。沒有設定這個變數，遊戲就不會詢問、也不會回傳任何東西（見 stats/README.md）
+          VITE_STATS_URL: ${{ vars.STATS_URL }}
       - name: 交給 Pages
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3

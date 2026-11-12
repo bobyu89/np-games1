@@ -8,7 +8,8 @@ import { Talk, type TalkHandle, type Who } from './Talk.tsx';
 import { Sheet } from './Sheets.tsx';
 import { sfx, sound } from './sound.ts';
 import type { Run, Save } from './store.ts';
-import { Settings } from './Settings.tsx';
+import { Settings, StatsFacts } from './Settings.tsx';
+import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
 import { BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, unlocked, type Beat, type Entry } from './progress.ts';
 import { Portrait } from './Portrait.tsx';
@@ -50,6 +51,8 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
   const [soundOn, setSoundOn] = useState(sound.on);
   const [settings, setSettings] = useState(false);
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
+  const consent = useSyncExternalStore(statsSubscribe, statsConsent);
+  const [later, setLater] = useState(false);   // 按了關閉：這一次先不問，下次打開再問
   const pending = run ? caseById(run.caseId) : null;
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null), speaker = useRef<Who | null>(null), bubble = useRef<HTMLDivElement>(null);
   const open = QUESTS.filter((q) => unlocked(q, save)), fresh = open.find((q) => !save.cases[q.caseId]);
@@ -156,6 +159,13 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
         </Sheet>
       )}
       {settings && <Settings save={save} onImport={onImport} onReset={onReset} onReplayIntro={() => { setSettings(false); setBeat(BEATS[0]); setStep(0); }} onClose={() => setSettings(false)} />}
+      {statsBuilt && consent === 'ask' && !later && !beat && save.hero !== null && !settings && !reading && !codex && (
+        <Sheet title="先問你一件事" onClose={() => setLater(true)} footer={<div className="two"><button type="button" className="act" onClick={() => { sfx.tap(); setConsent('no'); }}>不要回傳</button><button type="button" className="act demo" onClick={() => { sfx.done(); setConsent('yes'); }}>可以回傳</button></div>}>
+          <p>可以讓這個遊戲回傳<b>匿名的使用統計</b>嗎？</p>
+          <StatsFacts />
+          <p className="dim">之後想改，在「設定」裡。你選之前，什麼都不會送出去。</p>
+        </Sheet>
+      )}
       {!beat && save.hero === null && !settings && (
         <Sheet title="你是哪一位？" onClose={() => onHero(HEROES[0].id)}>
           <p className="dim">三位都是剛到霧脈公會的見習專科護理師。只有外表和帶的東西不同，能做的事一模一樣；之後可以在圖鑑的「人物」裡換。</p>

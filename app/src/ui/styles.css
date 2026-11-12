@@ -327,3 +327,29 @@ sup { font-size: 0.7em; }
 .note.bad { border-left-color: var(--rust); background: var(--rust-2); }
 .pick:disabled { opacity: 0.55; cursor: default; }
 .quests > .skip { align-self: flex-start; }
+
+/* 給管理者看的總表（網址後面加 #stats）：不是遊戲的畫面，用整個視窗的寬度 */
+html.admin, html.admin body { height: auto; }
+html.admin body { display: block; overflow: auto; background: var(--paper); }
+html.admin #app { max-width: 1080px; max-height: none; height: auto; margin: 0 auto; padding: 16px 0 40px; }
+.admin-page { display: flex; flex-direction: column; gap: 12px; }
+.admin-page h1 { margin: 0; font-size: 1.3em; }
+.admin-page h2 { margin: 14px 0 0; font-size: 1.05em; color: var(--teal); }
+.admin-top, .admin-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.admin-top { justify-content: space-between; }
+.admin-bar input, .admin-bar select { font: inherit; padding: 3px 8px; border: 2px solid var(--ink-soft); border-radius: 8px; background: #fff; color: var(--ink); max-width: 12em; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.tile { border: 2px solid var(--ink-soft); border-radius: 10px; padding: 6px 10px; background: #fffaf0; display: flex; flex-direction: column; }
+.tile b { font-size: 1.5em; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 0.88em; color: var(--ink-soft); }
+.admin-page .tw { overflow-x: auto; border: 1px solid var(--ink-soft); border-radius: 8px; background: #fffaf0; }
+.admin-page table { border-collapse: collapse; width: 100%; font-size: 0.92em; font-variant-numeric: tabular-nums; }
+.admin-page th, .admin-page td { text-align: left; padding: 4px 10px; border-bottom: 1px solid var(--paper-2); white-space: nowrap; }
+.admin-page th { font-weight: 700; background: var(--paper-2); }
+.admin-page td.wide { width: 40%; min-width: 120px; }
+.statbar { display: block; height: 0.7em; background: var(--paper-2); border-radius: 4px; overflow: hidden; }
+.statbar b { display: block; height: 100%; background: var(--teal); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 4px 24px; }
+.cols > div { min-width: 0; overflow-x: auto; }
+.admin-page, .admin-bar label { min-width: 0; }
+.admin-bar label { display: flex; align-items: center; gap: 6px; }

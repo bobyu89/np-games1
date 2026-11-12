@@ -7,6 +7,7 @@ import type { Save } from './store.ts';
 import { packSave, readBackup } from './backup.ts';
 import { QUESTS, codexPercent, rankOf } from './progress.ts';
 import { applyUpdate, checkUpdate, install, isIos, isStandalone, pwaState, pwaSubscribe } from './pwa.ts';
+import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 
 const doneOf = (s: Save) => QUESTS.filter((q) => s.cases[q.caseId]).length;
 const brief = (s: Save) => '完成 ' + doneOf(s) + '／' + QUESTS.length + ' 張委託，圖鑑寫回 ' + codexPercent(COMPLAINTS, s) + '%，' + rankOf(s);
@@ -16,6 +17,7 @@ interface Props { save: Save; onImport(s: Save): void; onReset(): void; onReplay
 
 export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Props) {
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
+  const consent = useSyncExternalStore(statsSubscribe, statsConsent);
   const [note, setNote] = useState<{ text: string; bad?: boolean } | null>(null);
   const [code, setCode] = useState<string | null>(null);        // 存不了檔案的時候，把內容攤開讓人複製
   const [paste, setPaste] = useState<string | null>(null);      // 貼上進度的那一格。null 是還沒打開
@@ -108,6 +110,14 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
         : pwa.supported && <button type="button" className="pick" disabled={checking} onClick={check}>{checking ? '檢查中……' : '檢查有沒有新版'}</button>}
       <p className="dim">更新不會動到進度。病例都還是草稿，還沒有經過臨床老師審查。</p>
 
+      <h3>使用統計</h3>
+      {!statsBuilt ? <p className="dim">這一版不會回傳任何資料。</p> : <>
+        <p>{consent === 'yes' ? '現在：會回傳匿名的使用統計。' : '現在：不回傳。'}</p>
+        <StatsFacts />
+        {consent === 'yes' ? <button type="button" className="pick" onClick={() => { sfx.tap(); setConsent('no'); }}>改成不要回傳</button>
+          : <button type="button" className="pick" onClick={() => { sfx.tap(); setConsent('yes'); }}>改成可以回傳</button>}
+      </>}
+
       <h3>其他</h3>
       <div className="stack">
         <button type="button" className="pick" onClick={() => { sfx.page(); onReplayIntro(); }}>重看開場</button>
@@ -117,5 +127,17 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
             <button type="button" className="pick on" onClick={() => setSure(false)}>不要，留著</button></>}
       </div>
     </Sheet>
+  );
+}
+
+/** 回傳什麼、不回傳什麼。第一次問的時候和設定頁用同一份，才不會兩邊講的不一樣 */
+export function StatsFacts() {
+  return (
+    <ul className="dim">
+      <li>會回傳：哪一張委託開始了、做到哪一段、有沒有結案、分數、花了多久、問了岑禾幾次、用手機還是電腦、是哪一版。</li>
+      <li>不會回傳：姓名、帳號、你選的句子、任何文字。遊戲本來就沒有帳號。</li>
+      <li>用一組隨機的代號分辨不同的裝置，沒辦法從它知道你是誰。選「不要」，代號和還沒送出去的都會清掉。</li>
+      <li>用途是讓作者知道哪一關有人玩、哪裡容易卡住。選哪一個都不影響遊戲。</li>
+    </ul>
   );
 }
