@@ -294,6 +294,19 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 
 細節在 [`06-progression.md`](06-progression.md) 第 8.6 節。
 
+## 17. 審查清單、升階和第三章（2026-11-12）
+
+你回覆「繼續」。我照自己的建議做了三件事，分開提交，哪一件不要都可以單獨退回。
+
+| 項目 | 做法 |
+|---|---|
+| 給臨床老師的審查清單 | 用程式從病例檔產生（`npm run review`），放在 [`docs/review/`](review/README.md)。每一關列出真身、要解讀的線索（指向和理由）、安全行動和時限、回報和說明的選項、教學重點和文獻，以及完整的腳本。另外可以轉成 Word 檔 |
+| 升階 | 第二章走完升為值班專科護理師，拿掉第一層提示：線索是更像還是比較不像要自己選；岑禾一張委託只回答三次 |
+| 第三章 | 照原本故事線的提案「被蓋掉的紀錄」，先做發燒（餘燼蜥）和頭痛（篤篤鳥），每隻症影先兩位：溫荷（腎盂腎炎）、涂柏（傷口感染合併敗血症）、喬芸（偏頭痛）、魏葵（蜘蛛膜下腔出血）。都還沒經過臨床老師審查 |
+| 頭痛的評估 | 多了「神經」這一個部位：腦神經、肌力與漂移、感覺與反射、協調與步態，再加瞳孔與眼底、頸部僵硬 |
+
+細節在 [`06-progression.md`](06-progression.md) 第 7 節和第 8.7 節。
+
 ## References
 
 甄審規定（衛生福利部護理及健康照護司，2026）：
@@ -309,14 +322,21 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 - Baile, W. F., Buckman, R., Lenzi, R., Glober, G., Beale, E. A., & Kudelka, A. P. (2000). SPIKES—A six-step protocol for delivering bad news: Application to the patient with cancer. *The Oncologist, 5*(4), 302–311. https://doi.org/10.1634/theoncologist.5-4-302
 - Croskerry, P. (2003). The importance of cognitive errors in diagnosis and strategies to minimize them. *Academic Medicine, 78*(8), 775–780. https://doi.org/10.1097/00001888-200308000-00003
 - Di Saverio, S., Podda, M., De Simone, B., Ceresoli, M., Augustin, G., Gori, A., Boermeester, M., Sartelli, M., Coccolini, F., Tarasconi, A., De' Angelis, N., Weber, D. G., Tolonen, M., Birindelli, A., Biffl, W., Moore, E. E., Kelly, M., Soreide, K., Kashuk, J., … Catena, F. (2020). Diagnosis and treatment of acute appendicitis: 2020 update of the WSES Jerusalem guidelines. *World Journal of Emergency Surgery, 15*, 27. https://doi.org/10.1186/s13017-020-00306-3
+- Do, T. P., Remmers, A., Schytz, H. W., Schankin, C., Nelson, S. E., Obermann, M., Hansen, J. M., Sinclair, A. J., Gantenbein, A. R., & Schoonman, G. G. (2019). Red and orange flags for secondary headaches in clinical practice: SNNOOP10 list. *Neurology, 92*(3), 134–144. https://doi.org/10.1212/WNL.0000000000006697
+- Evans, L., Rhodes, A., Alhazzani, W., Antonelli, M., Coopersmith, C. M., French, C., Machado, F. R., Mcintyre, L., Ostermann, M., Prescott, H. C., Schorr, C., Simpson, S., Wiersinga, W. J., Alshamsi, F., Angus, D. C., Arabi, Y., Azevedo, L., Beale, R., Beilman, G., … Levy, M. (2021). Surviving Sepsis Campaign: International guidelines for management of sepsis and septic shock 2021. *Critical Care Medicine, 49*(11), e1063–e1143. https://doi.org/10.1097/CCM.0000000000005337
 - Fanning, R. M., & Gaba, D. M. (2007). The role of debriefing in simulation-based learning. *Simulation in Healthcare, 2*(2), 115–125. https://doi.org/10.1097/SIH.0b013e3180315539
 - Hamilton, W., Peters, T. J., Round, A., & Sharp, D. (2005). What are the clinical features of lung cancer before the diagnosis is made? A population based case-control study. *Thorax, 60*(12), 1059–1065. https://doi.org/10.1136/thx.2005.045880
+- Headache Classification Committee of the International Headache Society. (2018). The International Classification of Headache Disorders, 3rd edition. *Cephalalgia, 38*(1), 1–211. https://doi.org/10.1177/0333102417738202
 - Heidenreich, P. A., Bozkurt, B., Aguilar, D., Allen, L. A., Byun, J. J., Colvin, M. M., Deswal, A., Drazner, M. H., Dunlay, S. M., Evers, L. R., Fang, J. C., Fedson, S. E., Fonarow, G. C., Hayek, S. S., Hernandez, A. F., Khazanie, P., Kittleson, M. M., Lee, C. S., Link, M. S., … Yancy, C. W. (2022). 2022 AHA/ACC/HFSA guideline for the management of heart failure. *Circulation, 145*(18), e895–e1032. https://doi.org/10.1161/CIR.0000000000001063
+- Hoh, B. L., Ko, N. U., Amin-Hanjani, S., Chou, S. H.-Y., Cruz-Flores, S., Dangayach, N. S., Derdeyn, C. P., Du, R., Hänggi, D., Hetts, S. W., Ifejika, N. L., Johnson, R., Keigher, K. M., Leslie-Mazwi, T. M., Lucke-Wold, B., Rabinstein, A. A., Robicsek, S. A., Stapleton, C. J., Suarez, J. I., … Welch, B. G. (2023). 2023 guideline for the management of patients with aneurysmal subarachnoid hemorrhage: A guideline from the American Heart Association/American Stroke Association. *Stroke, 54*(7), e314–e370. https://doi.org/10.1161/STR.0000000000000436
+- Johnson, J. R., & Russo, T. A. (2018). Acute pyelonephritis in adults. *New England Journal of Medicine, 378*(1), 48–59. https://doi.org/10.1056/NEJMcp1702758
 - Konstantinides, S. V., Meyer, G., Becattini, C., Bueno, H., Geersing, G.-J., Harjola, V.-P., Huisman, M. V., Humbert, M., Jennings, C. S., Jiménez, D., Kucher, N., Lang, I. M., Lankeit, M., Lorusso, R., Mazzolai, L., Meneveau, N., Ní Áinle, F., Prandoni, P., Pruszczyk, P., … Zamorano, J. L. (2020). 2019 ESC guidelines for the diagnosis and management of acute pulmonary embolism developed in collaboration with the European Respiratory Society (ERS). *European Heart Journal, 41*(4), 543–603. https://doi.org/10.1093/eurheartj/ehz405
 - MacDuff, A., Arnold, A., & Harvey, J. (2010). Management of spontaneous pneumothorax: British Thoracic Society pleural disease guideline 2010. *Thorax, 65*(Suppl. 2), ii18–ii31. https://doi.org/10.1136/thx.2010.136986
 - Metlay, J. P., Waterer, G. W., Long, A. C., Anzueto, A., Brozek, J., Crothers, K., Cooley, L. A., Dean, N. C., Fine, M. J., Flanders, S. A., Griffin, M. R., Metersky, M. L., Musher, D. M., Restrepo, M. I., & Whitney, C. G. (2019). Diagnosis and treatment of adults with community-acquired pneumonia: An official clinical practice guideline of the American Thoracic Society and Infectious Diseases Society of America. *American Journal of Respiratory and Critical Care Medicine, 200*(7), e45–e67. https://doi.org/10.1164/rccm.201908-1581ST
 - Peery, A. F., Shaukat, A., & Strate, L. L. (2021). AGA clinical practice update on medical management of colonic diverticulitis: Expert review. *Gastroenterology, 160*(3), 906–911.e1. https://doi.org/10.1053/j.gastro.2020.09.059
+- Perry, J. J., Stiell, I. G., Sivilotti, M. L. A., Bullard, M. J., Hohl, C. M., Sutherland, J., Émond, M., Worster, A., Lee, J. S., Mackey, D., Pauls, M., Lesiuk, H., Symington, C., & Wells, G. A. (2013). Clinical decision rules to rule out subarachnoid hemorrhage for acute headache. *JAMA, 310*(12), 1248–1255. https://doi.org/10.1001/jama.2013.278018
 - Rao, S. V., O'Donoghue, M. L., Ruel, M., Rab, T., Tamis-Holland, J. E., Alexander, J. H., Baber, U., Baker, H., Cohen, M. G., Cruz-Ruiz, M., Davis, L. L., de Lemos, J. A., DeWald, T. A., Elgendy, I. Y., Feldman, D. N., Goyal, A., Isiadinso, I., Menon, V., Morrow, D. A., . . . Williams, M. S. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. *Journal of the American College of Cardiology, 85*(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009
+- Stevens, D. L., Bisno, A. L., Chambers, H. F., Dellinger, E. P., Goldstein, E. J. C., Gorbach, S. L., Hirschmann, J. V., Kaplan, S. L., Montoya, J. G., & Wade, J. C. (2014). Practice guidelines for the diagnosis and management of skin and soft tissue infections: 2014 update by the Infectious Diseases Society of America. *Clinical Infectious Diseases, 59*(2), e10–e52. https://doi.org/10.1093/cid/ciu444
 - Tanner, C. A. (2006). Thinking like a nurse: A research-based model of clinical judgment in nursing. *Journal of Nursing Education, 45*(6), 204–211. https://doi.org/10.3928/01484834-20060601-04
 - Wells, P. S., Anderson, D. R., Rodger, M., Stiell, I., Dreyer, J. F., Barnes, D., Forgie, M., Kovacs, G., Ward, J., & Kovacs, M. J. (2001). Excluding pulmonary embolism at the bedside without diagnostic imaging: Management of patients with suspected pulmonary embolism presenting to the emergency department by using a simple clinical model and D-dimer. *Annals of Internal Medicine, 135*(2), 98–107. https://doi.org/10.7326/0003-4819-135-2-200107170-00010
 - Wang, C. S., FitzGerald, J. M., Schulzer, M., Mak, E., & Ayas, N. T. (2005). Does this dyspneic patient in the emergency department have congestive heart failure? *JAMA, 294*(15), 1944–1956. https://doi.org/10.1001/jama.294.15.1944

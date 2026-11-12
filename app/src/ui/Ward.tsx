@@ -234,8 +234,8 @@ export function Ward({ c, tier, hero, takeaway, onDone, onQuit }: Props) {
         </div>
         <div className="foot">
           <button type="button" onClick={() => { sfx.page(); setSheet('clues'); }}>線索 {session.clues.length}</button>
-          {!closed && !reading && !session.needCommit && <button type="button" onClick={() => act({ type: 'hint' })}>問岑禾{session.tier >= 1 ? '（剩 ' + Math.max(0, HINT_LIMIT - session.hints) + ' 次）' : ''}</button>}
-          {!closed && !reading && !session.needCommit && <button type="button" className={session.bell ? 'rung' : ''} onClick={() => (session.bell ? act({ type: 'call' }) : (sfx.page(), setSheet('bell')))}>值班鐘{session.bell ? '（已響）' : ''}</button>}
+          {!closed && !reading && !session.needCommit && <button type="button" aria-label={session.tier >= 1 ? '問岑禾，這一張委託還可以問 ' + Math.max(0, HINT_LIMIT - session.hints) + ' 次' : undefined} onClick={() => act({ type: 'hint' })}>問岑禾{session.tier >= 1 ? ' ×' + Math.max(0, HINT_LIMIT - session.hints) : ''}</button>}
+          {!closed && !reading && !session.needCommit && <button type="button" className={session.bell ? 'rung' : ''} onClick={() => (session.bell ? act({ type: 'call' }) : (sfx.page(), setSheet('bell')))}>{session.bell ? '鐘已響' : '值班鐘'}</button>}
           <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
         </div>
       </div>
