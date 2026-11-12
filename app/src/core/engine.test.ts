@@ -330,21 +330,21 @@ test('腹痛：評估照看、聽、敲、摸的順序；讓病人吃東西或�
   assert.equal(scoreSession(G, run(G, quick)).safety, 'review');
 });
 
-test('前兩章三隻症影的四個真身，每一個都有一位病人', () => {
-  for (const m of COMPLAINTS.slice(0, 3)) {
+test('五隻症影的四個真身，每一個都有一位病人', () => {
+  for (const m of COMPLAINTS) {
     const truths = CASES.filter((c) => c.complaint === m.id).map((c) => c.answer.truth).sort();
     assert.deepEqual(truths, m.forms.map((f) => f.id).sort(), m.id);
   }
-  assert.equal(CASES.length, 16);
+  assert.equal(CASES.length, 20);
 });
 
-test('第三章：發燒和頭痛各有一位穩定、一位不穩定；頭痛的評估有神經學檢查', () => {
-  for (const id of ['c04b', 'c05b']) {
+test('第三章：三位不穩定、五位穩定；頭痛的評估有神經學檢查', () => {
+  for (const id of ['c04b', 'c05b', 'c05c']) {
     const c = caseById(id), late = run(c, [...toDx(c), ...times(watch, 5)]);
     assert.ok(late.worsenedAt !== null, id);
     assert.equal(scoreSession(c, run(c, idealActions(c))).safety, 'met', id);
   }
-  for (const id of ['c04a', 'c05a']) {
+  for (const id of ['c04a', 'c04c', 'c04d', 'c05a', 'c05d']) {
     const c = caseById(id), late = run(c, [...toDx(c), ...times(watch, 8)]);
     assert.equal(late.worsenedAt, null, id);
     assert.equal(scoreSession(c, run(c, [...idealActions(c).slice(0, -1), { type: 'call' }, { type: 'close' }])).safety, 'late', id + ' 穩定的病人敲鐘是過度通報');
@@ -355,6 +355,37 @@ test('第三章：發燒和頭痛各有一位穩定、一位不穩定；頭痛�
   // 發燒要脫襪子看腳；那一位的源頭就在那裡
   const feet = caseById('c04b').exams.find((e) => e.id === 'x-skin')!;
   assert.ok(feet.explain.includes('襪子') && feet.finding.includes('滲膿'));
+});
+
+test('結核那一位：戴口罩是安全行動；沒說就需要複核；「非感染」那一盞不要求排除', () => {
+  const c = caseById('c04c'), acts = idealActions(c);
+  const mask = c.safety.find((r) => r.type === 'explain' && r.id === 'e-mask');
+  assert.ok(mask && mask.type === 'explain' && mask.what);
+  assert.deepEqual(c.safety.flatMap((r) => (r.type === 'exclude' ? r.forms : [])).sort(), ['skin', 'urinary']);
+  assert.ok(!c.clues.some((k) => k.tell?.form === 'other'));   // 腫瘤也會這樣，這一關放不下
+  assert.equal(scoreSession(c, run(c, acts)).safety, 'met');
+  const noMask = scoreSession(c, run(c, acts.map((a) => (a.type === 'explain' ? { ...a, ids: a.ids.filter((id) => id !== 'e-mask') } : a))));
+  assert.equal(noMask.safety, 'review');
+  assert.ok(noMask.safetyNote.includes('口罩'));
+  assert.equal(c.sbar.requests.find((k) => k.id === 'r-syrup')!.ok, false);
+});
+
+test('藥物熱那一位：真身是非感染；再加一種抗生素是錯的；另外三盞都要有排除的線索', () => {
+  const c = caseById('c04d');
+  assert.equal(c.answer.truth, 'other');
+  assert.equal(c.sbar.requests.find((k) => k.id === 'r-more')!.ok, false);
+  assert.deepEqual(c.safety.flatMap((r) => (r.type === 'exclude' ? r.forms : [])).sort(), ['lung', 'skin', 'urinary']);
+  assert.equal(scoreSession(c, run(c, idealActions(c), true)).safety, 'review');   // 線索都解讀錯，就沒有排除到
+});
+
+test('腦膜炎那一位：關鍵的是抽血留培養；讓他睡一覺是錯的。腦瘤那一位：穩定，但斷層是安全行動', () => {
+  const m = caseById('c05c'), t = caseById('c05d');
+  assert.ok(m.safety.some((r) => r.type === 'order' && r.test === 't-blood') && m.safety.some((r) => r.type === 'call'));
+  assert.equal(m.sbar.requests.find((k) => k.id === 'r-sleep')!.ok, false);
+  assert.ok(m.tests.find((x) => x.id === 't-lp')!.pending);
+  assert.ok(t.safety.some((r) => r.type === 'order' && r.test === 't-ct') && t.safety.some((r) => r.type === 'calm'));
+  assert.equal(t.explain.find((e) => e.id === 'e-blunt')!.ok, false);
+  assert.equal(t.explain.find((e) => e.id === 'e-false')!.ok, false);
 });
 
 test('同樣寫著「老毛病」的兩張：一張沒有紅旗，一張她自己說不一樣', () => {

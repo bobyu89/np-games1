@@ -38,8 +38,8 @@ function judge(c: CaseDef, s: Session, r: SafetyRule): { got: number; state: 'me
       return { got: r.points * ratio(done.length, r.forms.length), state: done.length ? 'part' : 'miss', note: '還沒有線索讓這幾個比較不像：' + left.join('、') + '。' };
     }
     case 'explain': {
-      const said = (s.explained ?? []).includes(r.id);
-      return said ? { got: r.points, state: 'met', note: '有交代什麼情況要馬上回來。' } : { got: 0, state: 'miss', note: '沒有交代什麼情況要馬上回來。' };
+      const said = (s.explained ?? []).includes(r.id), what = r.what ?? '交代什麼情況要馬上回來';
+      return said ? { got: r.points, state: 'met', note: '有' + what + '。' } : { got: 0, state: 'miss', note: '沒有' + what + '。' };
     }
     case 'calm':
       return s.bell ? { got: 0, state: 'part', note: who + '很穩定，這次不需要敲值班鐘。鐘是留給等不了的病人。' } : { got: r.points, state: 'met', note: '判斷' + who + '穩定，沒有動用值班鐘。' };

@@ -49,7 +49,7 @@ function safetyText(c: CaseDef, r: SafetyRule): string {
     case 'call': return '病況變差之前通報（敲值班鐘，或直接向醫師回報）';
     case 'order': return '下診斷之後 ' + sec(r.within) + '內提出「' + c.tests.find((t) => t.id === r.test)!.label + '」';
     case 'exclude': return '這幾個真身，各要有一條解讀正確的「比較不像」的線索：' + r.forms.map((f) => formOf(c, f)!.name).join('、');
-    case 'explain': return '向病人說明時要有這一句：「' + c.explain.find((e) => e.id === r.id)!.text + '」';
+    case 'explain': return '向病人說明時要有這一句（' + (r.what ?? '交代什麼情況要馬上回來') + '）：「' + c.explain.find((e) => e.id === r.id)!.text + '」';
     case 'calm': return '病人穩定，不需要敲值班鐘（敲了算過度通報）';
   }
 }

@@ -239,6 +239,10 @@ const PATIENTS = {
   bai: { shirt: C.stone, shirt2: C.stone2, hair: C.cream, brow: C.hairGrey, moustache: true, fast: true, pale: true, sweat: 1 },
   yun: { shirt: C.frog, shirt2: C.frog2, hair: C.hairInk, brow: C.hairInk, woman: true, bob: true, calm: true },
   kui: { shirt: C.moss, shirt2: C.green2, hair: C.hairDark, brow: C.hairDark, woman: true, bun: true, pale: true, sweat: 2 },
+  yu: { shirt: C.paper, shirt2: C.paperLine, hair: C.hairDark, brow: C.hairDark, moustache: true, scarf: true, pale: true },
+  shan: { shirt: C.plank, shirt2: C.plank2, hair: C.hairBrown, brow: C.hairBrown, beard: true, calm: true, flush: true },
+  feng: { shirt: C.slate, shirt2: C.slate2, hair: C.hairInk, brow: C.hairInk, fast: true, flush: true, sweat: 2 },
+  lan: { shirt: C.rose, shirt2: C.rose2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bob: true, calm: true, pale: true },
 };
 
 // 第二章四位病人帶來的東西
@@ -290,6 +294,22 @@ function drawProps(g, who) {
     [[50, 261, 0.2], [64, 259, -0.1], [77, 261, 0.3]].forEach(([x, y, r]) => { leaf(g, x, y, 8, 3, r, C.slate); dot(g, x + 5, y - 0.5, 0.8, C.ink); });
     wline(g, [[94, 262], [126, 268]], C.wood2, 2.2); wline(g, [[100, 263], [100, 274]], C.ink, 1.1); oval(g, 100, 278, 6, 2.2, { fill: C.brass, lw: 1.1 });
     wline(g, [[120, 267], [120, 276]], C.ink, 1.1); dot(g, 120, 279, 3.2, C.iron2);
+  } else if (who === 'yu') {      // 池榆：一口小湯鍋、一支長杓和一條手帕
+    shape(g, [[44, 268], [84, 268], [80, 282], [48, 282]], { fill: C.iron }); oval(g, 64, 268, 20, 3.4, { fill: C.iron2, lw: 1.2 });
+    wline(g, [[40, 271], [44, 271]], C.ink, 2.4); wline(g, [[84, 271], [88, 271]], C.ink, 2.4);
+    wline(g, [[70, 266], [92, 252]], C.wood2, 2.2); oval(g, 94, 251, 4.4, 3, { fill: C.brass, lw: 1.1 });
+    shape(g, [[100, 276], [116, 273], [121, 281], [105, 284]], { fill: C.cream }); wline(g, [[105, 278], [116, 277]], C.rust, 1);
+  } else if (who === 'shan') {    // 尤杉：一只工具袋、一把木槌和幾捲刨花
+    shape(g, [[42, 282], [45, 264], [80, 264], [84, 282]], { fill: C.mustard }); wline(g, [[50, 264], [56, 255], [70, 255], [76, 264]], C.wood2, 2.2);
+    wline(g, [[58, 264], [58, 258]], C.ink, 2); shape(g, rect(54, 252, 9, 7), { fill: C.iron2, lw: 1.1 });
+    shape(g, rrect(96, 268, 18, 10, 2), { fill: C.wood }); wline(g, [[105, 278], [108, 284]], C.wood2, 2.6);
+    [[118, 280], [124, 276]].forEach(([x, y], i) => oval(g, x, y, 3.2, 2.6, { stroke: C.plank2, lw: 1.3, n: 8, double: false, seed: 960 + i }));
+  } else if (who === 'feng') {    // 賀楓：一個倒著的酒碗、一只水手袋
+    shape(g, [[44, 282], [48, 262], [62, 257], [78, 262], [82, 282]], { fill: C.slate2 }); wline(g, [[54, 260], [72, 260]], C.cream, 2); wline(g, [[63, 257], [66, 250], [72, 253]], C.cream, 1.4);
+    shape(g, [[96, 283], [100, 275], [118, 275], [122, 283]], { fill: C.ochre }); oval(g, 109, 283, 13, 1.8, { fill: C.shadow, stroke: null });
+  } else if (who === 'lan') {     // 季蘭：一疊染好的布和一根晾布的竹竿
+    [[C.sea, 0], [C.rose, 5], [C.ochre, 10], [C.slate, 15]].forEach(([col, d]) => shape(g, rrect(44, 278 - d, 40, 5.4, 2), { fill: col, lw: 1.1 }));
+    wline(g, [[92, 283], [126, 258]], C.mustard, 2.6); [0.3, 0.6].forEach((k) => wline(g, [[92 + 34 * k - 1, 283 - 25 * k - 1.6], [92 + 34 * k + 1, 283 - 25 * k + 1.6]], C.wood2, 1.2));
   } else {                        // 邵棠：工具箱和一把刨刀
     shape(g, rect(44, 264, 40, 18), { fill: C.wood }); wline(g, [[44, 271], [84, 271]], C.wood2, 1.2); shape(g, rect(61, 268, 6, 5), { fill: C.brass, lw: 1 });
     wline(g, [[52, 264], [56, 256], [72, 256], [76, 264]], C.wood2, 2.4);

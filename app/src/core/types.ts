@@ -80,7 +80,7 @@ export type SafetyRule =
   | { type: 'call'; points: number }                            // 病況變差之前通報
   | { type: 'order'; test: string; within: number; points: number } // 下診斷之後幾秒之內提出某項檢查
   | { type: 'exclude'; forms: string[]; points: number }        // 每個危險的真身，都要有一條讓它比較不像的線索
-  | { type: 'explain'; id: string; points: number }             // 說明裡一定要有的那一句
+  | { type: 'explain'; id: string; points: number; what?: string } // 說明裡一定要有的那一句。what：這一句是在做什麼，沒寫就是「交代什麼情況要馬上回來」
   | { type: 'calm'; points: number };                           // 病人穩定，不需要敲值班鐘
 
 export interface CaseDef {

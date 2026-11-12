@@ -15,8 +15,8 @@ export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b'
   { caseId: 'c02a', chapter: 2, needs: 'c01d' }, { caseId: 'c02b', chapter: 2, needs: 'c02a' }, { caseId: 'c02c', chapter: 2, needs: 'c02b' }, { caseId: 'c02d', chapter: 2, needs: 'c02c' },
   { caseId: 'c03a', chapter: 2, needs: 'c01d' }, { caseId: 'c03b', chapter: 2, needs: 'c03a' }, { caseId: 'c03c', chapter: 2, needs: 'c03b' }, { caseId: 'c03d', chapter: 2, needs: 'c03c' },
   // 第三章：第二章的八張都走完才會貼上板子
-  { caseId: 'c04a', chapter: 3, needs: ['c02d', 'c03d'] }, { caseId: 'c04b', chapter: 3, needs: 'c04a' },
-  { caseId: 'c05a', chapter: 3, needs: ['c02d', 'c03d'] }, { caseId: 'c05b', chapter: 3, needs: 'c05a' }];
+  { caseId: 'c04a', chapter: 3, needs: ['c02d', 'c03d'] }, { caseId: 'c04b', chapter: 3, needs: 'c04a' }, { caseId: 'c04c', chapter: 3, needs: 'c04b' }, { caseId: 'c04d', chapter: 3, needs: 'c04c' },
+  { caseId: 'c05a', chapter: 3, needs: ['c02d', 'c03d'] }, { caseId: 'c05b', chapter: 3, needs: 'c05a' }, { caseId: 'c05c', chapter: 3, needs: 'c05b' }, { caseId: 'c05d', chapter: 3, needs: 'c05c' }];
 export const unlocked = (q: Quest, s: Save) => [q.needs ?? []].flat().every((id) => !!s.cases[id]);
 
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
@@ -84,7 +84,14 @@ export const BEATS: Beat[] = [
   { id: 'ch3-half', title: '第三章　打開了四張', when: (s) => ['c04a', 'c04b', 'c05a', 'c05b'].every((id) => !!s.cases[id]), lines: [
     { who: 'mo', text: '四張舊索引，三張劃掉重寫，一張底下補了憑據。' },
     { who: 'mentor', text: '兩張「老毛病」，一張是對的，一張差一點出事。差別不在那三個字，在寫的人有沒有查過。' },
-    { who: 'mentor', text: '餘燼蜥還有兩盞沒有人名，篤篤鳥也是。那幾張還在整理。' },
+    { who: 'mentor', text: '餘燼蜥還有兩盞沒有人名，篤篤鳥也是。剩下的四張，眠墨剛從櫃子底下翻出來。' },
+    { who: 'mo', text: '這四張寫的是：「感冒，還沒好」「感染沒清乾淨」「宿醉」「更年期」。有一張，底下還多補了一行。' },
+  ] },
+  { id: 'ch3-complete', title: '第三章　完', when: (s) => ['c04a', 'c04b', 'c04c', 'c04d', 'c05a', 'c05b', 'c05c', 'c05d'].every((id) => !!s.cases[id]), lines: [
+    { who: 'mo', text: '八張舊索引都重新打開了。七張劃掉重寫，一張底下補了憑據。' },
+    { who: 'mentor', text: '這些字不是亂寫的。「感冒」「宿醉」「更年期」，十次裡有九次是對的。危險的是第十次，還有寫完就不再看的那個習慣。' },
+    { who: 'mentor', text: '有一張的答案是「不是感染」，有一張是「真的只是老毛病」。把東西排除掉，跟把東西找出來，一樣是本事。' },
+    { who: 'mentor', text: '第三章到這裡。下一頁是別的症影，還在整理。' },
   ] },
 ];
 export const nextBeat = (s: Save) => BEATS.find((b) => !s.beats.includes(b.id) && b.when(s));
@@ -169,6 +176,10 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
     c04b: '腳保住了。孫女每天晚上幫他看一次腳底，他嘴上嫌煩，襪子倒是自己先脫好。',
     c05a: '她在帳冊的最後一頁記下每一次頭痛的日子。亮線再出現的時候，她先去把燈調暗。',
     c05b: '兒子的親事延了兩個月。那一天她坐在主桌，是自己走進去的。',
+    c04c: '他在單獨的房間住了一陣子。半年後回到船上，還是廚子；同艙的七個人都去照了片子。',
+    c04d: '藥停掉的第三天，燒退了。他的紀錄上多了一行紅字，藥鋪的櫃台上也貼了一張。',
+    c05c: '他在第九天認得出同伴。母親是他自己寫信去說的，信裡只寫了：「生了一場病，好了。」',
+    c05d: '結果是醫師、她和女兒三個人一起聽的。之後的每一次回診，女兒都陪著。',
   };
   const patients: Entry[] = CASES.map((c) => {
     const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;

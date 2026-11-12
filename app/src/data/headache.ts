@@ -45,7 +45,7 @@ export const HEADACHE: ComplaintDef = {
   ],
   tests: [
     { id: 't-ct', label: '頭部電腦斷層（不打顯影劑）', kind: 'order', cost: 10, delay: 110 },
-    { id: 't-blood', label: '抽血（血球、凝血、發炎指數）', kind: 'order', cost: 20, delay: 130 },
+    { id: 't-blood', label: '抽血（血球、凝血、血液培養）', kind: 'order', cost: 20, delay: 130 },
     { id: 't-glucose', label: '指尖血糖', kind: 'order', cost: 10, delay: 40 },
     { id: 't-lp', label: '腰椎穿刺（請醫師評估）', kind: 'order', cost: 10 },
   ],
