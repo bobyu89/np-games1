@@ -30,18 +30,22 @@ function Forms({ c, onPick }: { c: CaseDef; onPick(id: string): void }) {
   return <div className="forms">{c.forms.map((f) => <button key={f.id} type="button" className="form" onClick={() => onPick(f.id)}><i aria-hidden="true">{f.mark}</i>{f.name}</button>)}</div>;
 }
 
-interface Props { c: CaseDef; tier: 0 | 1; hero: string | null; takeaway: string | null; onDone(s: Session, seconds: number): void; onQuit(): void }
+/** resume：上次做到一半的那一場。onProgress：每做一個行動就交出去存，中途離開回來可以接著做 */
+interface Props { c: CaseDef; tier: 0 | 1; hero: string | null; takeaway: string | null; resume?: { session: Session; seconds: number } | null; onProgress?(s: Session, seconds: number): void; onDone(s: Session, seconds: number): void; onQuit(): void }
+/** 接著做的時候，翻到做到一半的那一頁 */
+const tabFor = (c: CaseDef, s: Session): Tab => (s.phase === 2 ? 'exam' : s.phase === 3 ? 'dx' : s.phase === 4 ? 'plan'
+  : (['open', 'cc', 'hx', 'ros'] as QuestionGroup[]).find((g) => c.questions.some((q) => q.group === g && !s.asked.includes(q.id))) ?? 'ros');
 
-export function Ward({ c, tier, hero, takeaway, onDone, onQuit }: Props) {
-  const [session, setSession] = useState(() => createSession(c, tier));
+export function Ward({ c, tier, hero, takeaway, resume, onProgress, onDone, onQuit }: Props) {
+  const [session, setSession] = useState(() => resume?.session ?? createSession(c, tier));
   const [dir, setDir] = useState<1 | -1 | null>(null);   // 提示拿掉一層之後，線索的方向要自己選
-  const [tab, setTab] = useState<Tab>('open');   // 第一步是開場：洗手、自我介紹、說明流程
+  const [tab, setTab] = useState<Tab>(() => (resume ? tabFor(c, resume.session) : 'open'));   // 第一步是開場：洗手、自我介紹、說明流程
   const [sheet, setSheet] = useState<SheetName>(null);
   const [gain, setGain] = useState<{ text: string; key: boolean; n: number } | null>(null);
   const [explainOn, setExplainOn] = useState(false);
   const [banner, setBanner] = useState<{ text: string; bad: boolean; show: boolean }>({ text: '', bad: false, show: false });
   const [soundOn, setSoundOn] = useState(sound.on);
-  const live = useRef(session), nudged = useRef(false), bannerTimer = useRef(0), began = useRef(performance.now());
+  const live = useRef(session), nudged = useRef(false), bannerTimer = useRef(0), began = useRef(performance.now() - (resume?.seconds ?? 0) * 1000), resumed = useRef(!!resume);
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null);
   const bubble = useRef<HTMLDivElement>(null), veilTag = useRef<HTMLDivElement>(null), speaker = useRef<Who | null>(null);
   const who = c.patient.name;
@@ -51,13 +55,17 @@ export function Ward({ c, tier, hero, takeaway, onDone, onQuit }: Props) {
     window.clearTimeout(bannerTimer.current);
     bannerTimer.current = window.setTimeout(() => setBanner((b) => ({ ...b, show: false })), 1800);
   };
-  const finish = () => onDone(live.current, Math.round((performance.now() - began.current) / 1000));
+  const elapsed = () => Math.round((performance.now() - began.current) / 1000);
+  const finish = () => onDone(live.current, elapsed());
 
   // 進門：岑禾的第一句話
   useEffect(() => {
     const lines: Line[] = [];
-    if (takeaway) lines.push({ who: 'sys', text: '你上次說這次要做到：' + takeaway });
-    c.lines.opening.forEach((text) => lines.push({ who: 'mentor', text }));
+    if (resumed.current) lines.push({ who: 'sys', text: '你回到' + who + '的床邊。之前問到的、做過的都還在；剛才的對話沒有留下來，拿到的線索在底下的「線索」裡。' });
+    else {
+      if (takeaway) lines.push({ who: 'sys', text: '你上次說這次要做到：' + takeaway });
+      c.lines.opening.forEach((text) => lines.push({ who: 'mentor', text }));
+    }
     talk.current?.say(lines);
     return () => window.clearTimeout(bannerTimer.current);
   }, [c, takeaway]);
@@ -87,6 +95,7 @@ export function Ward({ c, tier, hero, takeaway, onDone, onQuit }: Props) {
     if (first?.type === 'reject') { sfx.miss(); talk.current?.say([{ who: 'sys', text: first.text }]); return; }
     sfx.tap(); buzz(8);
     live.current = next; setSession(next);
+    onProgress?.(next, elapsed());
     // 這一段第一次問完，就翻到下一段；進到新的階段，就翻到那一頁
     if (a.type === 'ask' && !before.asked.includes(a.id)) {
       const g = c.questions.find((q) => q.id === a.id)!.group, to = NEXT_GROUP[g];
@@ -248,7 +257,7 @@ export function Ward({ c, tier, hero, takeaway, onDone, onQuit }: Props) {
         lines={missing.length ? ['岑禾：「提交之前再看一眼。」', ...missing, '結案之後就不能再補了。'] : ['岑禾：「該做的都做了。」', '提交之後會進到這一關的回顧。']} />}
       {sheet === 'next' && <ConfirmSheet title={session.phase === 1 ? '問診問完了嗎？' : '評估做完了嗎？'} yes={session.phase === 1 ? '開始評估' : '去下診斷'} no="再補一下" onNo={() => setSheet(null)} onYes={() => { setSheet(null); act({ type: 'advance' }); }} lines={nextLines} />}
       {sheet === 'bell' && <ConfirmSheet title="要敲值班鐘嗎？" yes="敲鐘" no="先不要" onNo={() => setSheet(null)} onYes={() => { setSheet(null); act({ type: 'call' }); }} lines={['值班鐘是留給等不了的病人。', '敲了，沈渡醫師會放下手邊的事趕過來。病人等不了的時候，隨時都可以敲，不用等到問完。']} />}
-      {sheet === 'quit' && <ConfirmSheet title="要離開病室嗎？" yes="離開" no="留下" onNo={() => setSheet(null)} onYes={onQuit} lines={['這張委託的進度不會留下來。']} />}
+      {sheet === 'quit' && <ConfirmSheet title="要先回公會嗎？" yes="回公會" no="留下" onNo={() => setSheet(null)} onYes={onQuit} lines={['做到這裡的都會留著，回到公會可以接著做。', '不想接了，在委託板上可以把這一張放掉。']} />}
     </div>
   );
 }

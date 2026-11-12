@@ -30,6 +30,8 @@ html, body { height: 100%; }
 body {
   margin: 0; background: var(--page); color: var(--ink); font-family: var(--font);
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  /* 從主畫面的圖示打開是全螢幕：讓開上面的狀態列和下面的橫條 */
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
   display: flex; justify-content: center; align-items: center; overflow: hidden;
 }
 #app { position: relative; width: 100%; max-width: 440px; height: 100%; max-height: 900px; padding-block: 8px; font-size: 16px; line-height: 1.45; }
@@ -318,3 +320,10 @@ sup { font-size: 0.7em; }
   .gain { animation: gain-still 2.4s forwards; }
   @keyframes gain-still { 0%, 85% { opacity: 1; } 100% { opacity: 0; } }
 }
+
+/* 設定與進度 */
+.code { display: block; flex: none; width: 100%; min-height: 7.5em; margin: 6px 0; padding: 6px 8px; font: 16px/1.35 ui-monospace, Menlo, Consolas, monospace; background: var(--paper-2); color: var(--ink); border: 2px dashed var(--ink-soft); border-radius: 8px; resize: vertical; word-break: break-all; }
+.note { margin: 8px 0; padding: 4px 10px; border-left: 4px solid var(--moss); background: var(--sage-2); border-radius: 0 8px 8px 0; }
+.note.bad { border-left-color: var(--rust); background: var(--rust-2); }
+.pick:disabled { opacity: 0.55; cursor: default; }
+.quests > .skip { align-self: flex-start; }

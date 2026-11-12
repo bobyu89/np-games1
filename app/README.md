@@ -18,15 +18,37 @@ npm run dev
 
 | 指令 | 做什麼 |
 |---|---|
-| `npm test` | 規則和評分的測試（49 項） |
+| `npm test` | 規則、評分和存檔的測試（54 項） |
 | `npm run cases` | 檢查所有病例，印出一張總表 |
 | `npm run review` | 產生給臨床老師的審查清單，寫到 [`docs/review/`](../docs/review/README.md) |
 | `python3 tools/review_docx.py 審查清單.docx` | 把審查清單轉成一份 Word 檔（要先裝 pandoc） |
 | `npm run check` | 型別檢查 |
-| `npm run build` | 型別檢查之後打包到 `dist/`，是純靜態檔，放到任何主機都能跑 |
+| `npm run build` | 型別檢查之後打包到 `dist/`：純靜態檔，連字體和離線快取一起，放到任何主機都能跑 |
+| `npm run preview` | 在本機打開建好的那一包（離線、安裝、換版要用這個才看得到；`npm run dev` 不會啟用） |
 | `python3 tools/convert_script.py 教案.docx --id c02a` | 把一份 OSCE 教案轉成病例的底稿，寫到 `drafts/`（見 [`src/data/README.md`](src/data/README.md)） |
 
-需要 Node 22.18 以上（測試直接跑 TypeScript，不用另外編譯）。字體從 Google Fonts 載入。
+需要 Node 22.18 以上（測試直接跑 TypeScript，不用另外編譯）。
+
+## 放到網路上（靜態版）
+
+整個遊戲是 `dist/` 裡的一包靜態檔，沒有伺服器。為什麼先做靜態版、少了什麼，看 [`docs/04-system-design.md`](../docs/04-system-design.md) 第 9 節。
+
+**GitHub Pages（已經設好）**：到 repo 的 Settings → Pages，把 Source 選成「GitHub Actions」；之後每次合併到 main，[`.github/workflows/app.yml`](../.github/workflows/app.yml) 會檢查、建置、放上去。同一個流程在每個 PR 上也會跑檢查（不部署）。
+
+**別的靜態主機**（Cloudflare Pages、Netlify、自己的主機）：根目錄 `app`，建置指令 `npm run build`，輸出 `dist`。路徑都是相對的，放在網域底下的哪一層都可以。要用 HTTPS，離線和安裝才會啟用。
+
+靜態版給玩家的東西：
+
+| 項目 | 怎麼運作 |
+|---|---|
+| 離線可玩 | 第一次打開時把整包存在裝置上，之後沒有網路也能玩 |
+| 裝到手機 | 加到主畫面，全螢幕、有圖示。Android 的 Chrome 會出現安裝的按鈕；iPhone 用 Safari 的「分享 → 加入主畫面」 |
+| 換版 | 新版在背景下載好，大廳出現「有新的版本」，玩家按了才換上 |
+| 接著做 | 每做一個行動就存一次；頁面被收掉、關掉、按了「回公會」，回來都接得上 |
+| 進度帶著走 | 「設定」裡匯出（檔案或一段文字），到另一台匯入。進度只存在裝置上，沒有帳號 |
+| 字體 | 建置時從完整的字體檔只留遊戲用到的字，跟著遊戲一起放。玩家打開遊戲不會連到別的網站 |
+
+字體是 [LXGW WenKai TC](https://github.com/lxgw/LxgwWenkaiTC)（SIL Open Font License 1.1），授權全文跟著字體檔放在 `dist/fonts/OFL.txt`。
 
 ## 一張委託怎麼走
 
@@ -77,12 +99,17 @@ src/
     scoring.ts   評分（55 / 45）、安全狀態、回顧和圖鑑用的資料
     validate.ts  病例檢查器
     autoplay.ts  照病例的資料走出理想的打法，用來驗證病例
-  data/      內容：共用的骨架（skeleton.ts）、主訴模組（chest-pain.ts、dyspnea.ts、abdomen.ts）、
-             病例（胸痛 c01a–d、喘 c02a–d、腹痛 c03a–d）、目錄（index.ts）
+  data/      內容：共用的骨架（skeleton.ts）、十二個主訴模組（chest-pain.ts、dyspnea.ts … paresthesia.ts）、
+             48 個病例（c01a … c12d）、第四章以後每個主訴自己的文獻（*.refs.ts）、目錄（index.ts、extras.ts）
              怎麼寫新病例：data/README.md
   art/       繪本風的畫：色盤和畫筆、角色（含六位主角）、病室和碼頭的貨棧、十二隻症影、每位病人床邊的隨身物、公會大廳（Canvas，沒有圖檔）
-  ui/        畫面（React）：公會、病室、各種紙片、回顧；progress.ts 管故事、解鎖和圖鑑；Portrait.tsx 畫圖鑑的小圖
+  ui/        畫面（React）：公會、病室、各種紙片、回顧、設定；progress.ts 管故事、解鎖和圖鑑；Portrait.tsx 畫圖鑑的小圖；
+             store.ts 存進度和還沒結案的那一場；backup.ts 匯出匯入；pwa.ts 離線、換版、安裝
+public/      圖示和 manifest（裝到手機用）
 tools/
+  static.ts           建置時做的兩件事：精簡字體、產生離線快取（sw.js）
+  sw.template.js      離線快取的樣板
+  icons.mjs           畫 App 的圖示（用遊戲自己的畫筆）
   cases.ts            npm run cases
   check_draft.ts      還沒登記的主訴和病例，先單獨檢查
   review.ts           npm run review：從病例檔產生審查清單
@@ -91,7 +118,7 @@ tools/
 ```
 
 規則核心和畫面是分開的：畫面只做兩件事，把行動送進 `perform`，把回傳的事件演出來。
-之後要把規則搬到伺服器（答案不送到瀏覽器），`core/` 可以原封不動搬過去。
+現在是靜態版，規則在瀏覽器裡跑。之後如果要把規則搬到伺服器（答案不送到瀏覽器），`core/` 可以原封不動搬過去。
 
 ## 還沒有的
 
@@ -102,7 +129,8 @@ tools/
 - 腹痛的四個真身照位置分，有可能被只看「痛在哪裡」猜中。現在的做法是：沒有把另外三個排除就下診斷，安全行動會是「需要複核」。夠不夠要再看。
 - 場景只有公會大廳、病室（含下雨天）和碼頭的貨棧。圖鑑裡另外兩格（燈塔的值夜房、船塢的工寮）還只是名字。
 - 主角只有外表不同；故事裡的對話還不會因為選了誰而改變。
-- 沒有伺服器。進度存在這台裝置的瀏覽器裡；**病例的答案現在在瀏覽器裡看得到**，正式版要搬到伺服器。
+- 沒有伺服器（靜態版）。**病例的答案在瀏覽器裡看得到**；進度只存在裝置上、不會自動同步；你看不到大家怎麼玩。什麼時候才需要加伺服器，看 `docs/04-system-design.md` 第 9.5 節。
+- 離線、安裝、換版只在無頭瀏覽器裡測過，還沒有在真的 iPhone 和 Android 手機上裝過。
 - 真身、回報和說明都是從清單選，還不能自己寫。
 - 心電圖只有文字結果，沒有波形。
 

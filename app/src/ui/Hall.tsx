@@ -1,5 +1,5 @@
 // 公會大廳：故事的段落、委託板、圖鑑（症影、人物、場景）、選主角。
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { CaseDef } from '../core/types.ts';
 import { SAFETY_LABEL } from '../core/scoring.ts';
 import { COMPLAINTS, caseById } from '../data/index.ts';
@@ -7,13 +7,16 @@ import { Stage, type StageHandle } from './Stage.tsx';
 import { Talk, type TalkHandle, type Who } from './Talk.tsx';
 import { Sheet } from './Sheets.tsx';
 import { sfx, sound } from './sound.ts';
-import type { Save } from './store.ts';
+import type { Run, Save } from './store.ts';
+import { Settings } from './Settings.tsx';
+import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
 import { BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, unlocked, type Beat, type Entry } from './progress.ts';
 import { Portrait } from './Portrait.tsx';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
-interface Props { save: Save; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void }
+/** run：上次沒結案的那一張委託 */
+interface Props { save: Save; run: Run | null; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void }
 
 /** 圖鑑裡的一張卡：遇到了、去過了才看得到 */
 function Card({ e, wide }: { e: Entry; wide?: boolean }) {
@@ -38,19 +41,23 @@ function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(i
   );
 }
 
-export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
+export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropRun, onImport, onReset }: Props) {
   const [beat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
   const [step, setStep] = useState(0);
   const [reading, setReading] = useState<CaseDef | null>(null);
   const [codex, setCodex] = useState(false);
   const [tab, setTab] = useState<'shadow' | 'people' | 'places'>('shadow');
   const [soundOn, setSoundOn] = useState(sound.on);
+  const [settings, setSettings] = useState(false);
+  const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
+  const pending = run ? caseById(run.caseId) : null;
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null), speaker = useRef<Who | null>(null), bubble = useRef<HTMLDivElement>(null);
   const open = QUESTS.filter((q) => unlocked(q, save)), fresh = open.find((q) => !save.cases[q.caseId]);
 
   useEffect(() => {
     if (beat) { talk.current?.say([beat.lines[step]]); return; }
     const last = save.takeaways[0];
+    if (pending) { talk.current?.say([{ who: 'mentor', text: run!.session.closedAt !== null ? pending.patient.name + '那一張結案了，回顧還沒看完。' : pending.patient.name + '還在等你。上次做到一半，可以接著做。' }]); return; }
     talk.current?.say([{ who: 'mentor', text: last ? '你上次說，下次要做到：' + last : fresh ? '委託板上有一張新的。準備好了就接。' : '板子上的委託都走過了。想再走一次也可以，圖鑑還有空白。' }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [beat, step]);
@@ -92,6 +99,12 @@ export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
             </div>
           ) : (
             <div className="quests">
+              {pwa.update && <button type="button" className="quest paper hint" onClick={() => { sfx.done(); applyUpdate(); }}><i className="seal" aria-hidden="true" /><b>有新的版本</b><span>換上只要幾秒，進度不會動</span><em>現在更新</em></button>}
+              {pending && run && <>
+                <div className="quest-head">還沒結案</div>
+                <button type="button" className="quest paper hint" onClick={() => { sfx.page(); onResume(); }}><i className="seal" aria-hidden="true" /><b>{pending.title}</b><span>{pending.patient.name}｜{run.session.closedAt !== null ? '結案了，回顧還沒看完' : '做到一半'}</span><em>{run.session.closedAt !== null ? '看回顧' : '接著做'}</em></button>
+                {run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>不接了，放掉這一張</button>}
+              </>}
               {COMPLAINTS.map((m) => {
                 const mine = QUESTS.filter((q) => caseById(q.caseId).complaint === m.id);
                 if (!mine.length) return null;
@@ -121,8 +134,8 @@ export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
         </div>
         <div className="foot">
           <button type="button" onClick={() => { sfx.page(); setCodex(true); }}>圖鑑 {codexPercent(COMPLAINTS, save)}%</button>
-          {!beat && <button type="button" onClick={() => { setBeat(BEATS[0]); setStep(0); }}>重看開場</button>}
           <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
+          <button type="button" onClick={() => { sfx.page(); setSettings(true); }}>設定{pwa.update ? '・有新版' : ''}</button>
         </div>
       </div>
 
@@ -142,7 +155,8 @@ export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
           <p className="dim">{reading.review.note}</p>
         </Sheet>
       )}
-      {!beat && save.hero === null && (
+      {settings && <Settings save={save} onImport={onImport} onReset={onReset} onReplayIntro={() => { setSettings(false); setBeat(BEATS[0]); setStep(0); }} onClose={() => setSettings(false)} />}
+      {!beat && save.hero === null && !settings && (
         <Sheet title="你是哪一位？" onClose={() => onHero(HEROES[0].id)}>
           <p className="dim">三位都是剛到霧脈公會的見習專科護理師。只有外表和帶的東西不同，能做的事一模一樣；之後可以在圖鑑的「人物」裡換。</p>
           <HeroCards picked={null} onPick={onHero} action="就是這一位" />
