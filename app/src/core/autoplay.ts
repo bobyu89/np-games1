@@ -19,20 +19,22 @@ export const run = (c: CaseDef, actions: Action[], wrongReads = false): Session 
 
 export function idealActions(c: CaseDef): Action[] {
   const has = (type: string) => c.safety.some((r) => r.type === type);
-  const out: Action[] = [{ type: 'ask', id: 'q-intro' }, { type: 'vitals' }];
+  const must = [...c.explain.filter((e) => e.concern).map((e) => e.id), ...c.safety.flatMap((r) => (r.type === 'explain' ? [r.id] : []))];
+  const out: Action[] = [];
+  // 一、問診：開場、主訴、病史、系統回顧
+  c.questions.forEach((q) => out.push({ type: 'ask', id: q.id }));
+  // 二、評估：生命徵象，再照模組做
+  out.push({ type: 'advance' }, { type: 'vitals' });
+  c.exams.forEach((e) => out.push({ type: 'exam', id: e.id, explain: true }));
+  // 三、診斷
+  out.push({ type: 'advance' }, { type: 'board', board: { summary: c.summaries.find((k) => k.score === 5)!.id, likely: c.answer.truth, exclude: Object.keys(c.answer.exclude) } });
+  // 四、檢查與處置：該通報的先通報，關鍵的檢查先提出
   if (has('call')) out.push({ type: 'call' });
   c.safety.forEach((r) => { if (r.type === 'order') out.push({ type: 'test', id: r.test }); });
-  c.questions.filter((q) => q.id !== 'q-intro').forEach((q) => out.push({ type: 'ask', id: q.id }));
-  c.exams.forEach((e) => out.push({ type: 'exam', id: e.id, explain: true }));
   c.tests.forEach((t) => { if (!out.some((a) => a.type === 'test' && a.id === t.id)) out.push({ type: 'test', id: t.id }); });
-  out.push({ type: 'vitals' });
   out.push({ type: 'report', a: c.sbar.assessments.find((k) => k.score === 2)!.id, r: c.sbar.requests.filter((k) => k.ok).map((k) => k.id) });
-  out.push({ type: 'board', board: { summary: c.summaries.find((k) => k.score === 5)!.id, likely: c.answer.truth, exclude: Object.keys(c.answer.exclude) } });
-  out.push({ type: 'explain', ids: c.explain.filter((e) => e.ok).slice(0, 4).map((e) => e.id) });
-  // 理想的說明要包含回應擔心的那一句和安全行動要求的那一句
-  const must = [...c.explain.filter((e) => e.concern).map((e) => e.id), ...c.safety.flatMap((r) => (r.type === 'explain' ? [r.id] : []))];
-  const picked = [...new Set([...must, ...c.explain.filter((e) => e.ok).map((e) => e.id)])].slice(0, 4);
-  out[out.length - 1] = { type: 'explain', ids: picked };
+  out.push({ type: 'vitals' }, { type: 'watch' }, { type: 'watch' });
+  out.push({ type: 'explain', ids: [...new Set([...must, ...c.explain.filter((e) => e.ok).map((e) => e.id)])].slice(0, 4) });
   out.push({ type: 'close' });
   return out;
 }

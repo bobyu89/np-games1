@@ -10,17 +10,18 @@ export interface CaseRecord {
   concern: boolean;
   reads: { clue: string; text: string; form: string; dir: 1 | -1 }[];
 }
-export interface Save { v: 2; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[] }
+export interface Save { v: 3; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[] }
 
 const KEY = 'mist-guild.v1';
-const blank = (): Save => ({ v: 2, beats: [], cases: {}, takeaways: [] });
+const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [] });
 
 export function load(): Save {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || '{}') as Record<string, unknown>;
-    if (raw.v === 2) return { ...blank(), ...(raw as Partial<Save>) };
-    // 第一版的存檔：只留「看過開場」，其他從頭來（規則改了，舊的分數不能比）
-    return { ...blank(), beats: raw.introSeen ? ['prologue'] : [] };
+    if (raw.v === 3) return { ...blank(), ...(raw as Partial<Save>) };
+    // 舊版的存檔：只留「看過開場」，其他從頭來。流程、題目和真身都改過了，舊的分數和圖鑑對不上
+    const sawIntro = !!raw.introSeen || (Array.isArray(raw.beats) && raw.beats.includes('prologue'));
+    return { ...blank(), beats: sawIntro ? ['prologue'] : [] };
   } catch { return blank(); }
 }
 export function store(s: Save) {

@@ -91,7 +91,7 @@ body {
 .vitals span:nth-child(odd) { transform: rotate(-0.8deg); }
 .vitals span:nth-child(even) { transform: rotate(0.7deg); border-radius: var(--r-a); }
 .vitals span b { font-weight: 400; font-size: 0.68em; color: var(--ink-soft); line-height: 1.3; }
-.vitals em { position: absolute; right: 4px; top: -1.15em; z-index: 1; font-style: normal; font-size: 0.72em; font-weight: 700; line-height: 1.5; background: var(--grain), var(--ochre); color: var(--ink); border: 2px solid var(--ink); border-radius: var(--r-b); padding: 0 7px; transform: rotate(2deg); animation: hint 1.8s ease-in-out infinite; }
+.vitals em { position: absolute; left: 50%; margin-left: -4.6em; bottom: calc(100% - 5px); white-space: nowrap; z-index: 1; font-style: normal; font-size: 0.72em; font-weight: 700; line-height: 1.5; background: var(--grain), var(--ochre); color: var(--ink); border: 2px solid var(--ink); border-radius: var(--r-b); padding: 0 7px; transform: rotate(2deg); animation: hint 1.8s ease-in-out infinite; }
 .vitals.stale span { border-style: dashed; background: var(--grain), var(--paper-2); color: var(--ink-soft); }
 .vitals.unknown { grid-template-columns: 1fr; }
 .vitals.unknown span { border-style: dashed; background: var(--grain), var(--paper-2); color: var(--ink-soft); transform: none; padding: 2px 8px 1px; white-space: normal; }
@@ -132,7 +132,7 @@ button.act:active { transform: translate(2px, 3px); box-shadow: 0 0 0 var(--ink)
 button.act.demo { background: var(--grain), var(--sage); }
 button.act.urgent { background: var(--grain), var(--rust); color: var(--paper); }
 button.act:disabled { background: var(--grain), var(--paper-2); color: var(--ink-soft); border-color: var(--ink-soft); box-shadow: none; transform: translate(1px, 2px); cursor: default; }
-button.act.hint, .quest.hint { animation: hint 1.8s ease-in-out infinite; }
+button.act.hint, .quest.hint, .opt.hint:not(.done) { animation: hint 1.8s ease-in-out infinite; }
 @keyframes hint { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-2deg) scale(1.03); } 80% { transform: rotate(2deg) scale(1.03); } 90% { transform: rotate(-1deg); } }
 .skip { background: none; border: 0; color: var(--on-page-soft); text-decoration: underline wavy; text-underline-offset: 3px; cursor: pointer; font-size: 0.9em; padding: 4px; }
 
@@ -172,6 +172,21 @@ button.act.hint, .quest.hint { animation: hint 1.8s ease-in-out infinite; }
 .opt { position: relative; }
 .opt i { position: absolute; right: -6px; top: -9px; width: 1.5em; height: 1.5em; display: grid; place-items: center; font-style: normal; font-size: 0.72em; line-height: 1; background: var(--moss); color: var(--paper); border: 2px solid var(--ink); border-radius: 50%; }
 .opt.wait i { background: var(--ochre); color: var(--ink); }
+.opt small { display: block; font-size: 0.66em; font-weight: 400; line-height: 1.15; color: var(--ink-soft); }
+.opt.next { grid-column: 1 / -1; background: var(--grain), var(--sage); font-weight: 700; }
+.opts .wide { grid-column: 1 / -1; margin: 0; justify-self: start; }
+
+/* 一排七個分頁：這一場的順序。還沒打開的是虛線 */
+.flow { flex: none; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; min-width: 0; }
+.flow button { background: none; border: 2px solid var(--on-page-soft); border-radius: var(--r-b); color: var(--on-page-soft); padding: 2px 0 1px; font-size: 0.86em; line-height: 1.4; cursor: pointer; white-space: nowrap; overflow: hidden; }
+.flow button:nth-child(even) { border-radius: var(--r-a); }
+/* 做完的那一頁：實線、亮一點、底下一條線。不加勾，字放大的時候才不會被切掉 */
+.flow button.full { color: var(--on-page); border-color: var(--on-page); box-shadow: inset 0 -3px 0 var(--sage); }
+.flow button.on { background: var(--grain), var(--ochre); border-color: var(--ink); color: var(--ink); font-weight: 700; box-shadow: none; }
+.flow button.locked { border-style: dashed; opacity: 0.55; }
+.dx { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 2px 3px 3px 0; color: var(--on-page); line-height: 1.35; }
+.dx .act { width: 100%; }
+.foot button.rung { text-decoration: none; opacity: 0.7; }
 
 .foot { flex: none; display: flex; justify-content: space-between; gap: 12px; color: var(--on-page-soft); font-size: 0.9em; }
 .foot button { background: none; border: 0; padding: 2px 0; cursor: pointer; text-decoration: underline wavy; text-underline-offset: 3px; }

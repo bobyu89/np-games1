@@ -26,10 +26,10 @@ function judge(c: CaseDef, s: Session, r: SafetyRule): { got: number; state: 'me
       return { got: 0, state: 'miss', note: s.calledBy === 'mentor' ? '沒有通報，由岑禾接手敲鐘。' : '沒有通報。' };
     }
     case 'order': {
-      const o = s.ordered.find((k) => k.id === r.test), label = c.tests.find((t) => t.id === r.test)!.label, limit = Math.round(r.by / 60);
+      const o = s.ordered.find((k) => k.id === r.test), label = c.tests.find((t) => t.id === r.test)!.label, limit = Math.round(r.within / 60), late = o ? o.at - (s.dxAt ?? 0) : 0;
       if (!o) return { got: 0, state: 'miss', note: '沒有提出' + label + '。' };
-      if (o.at <= r.by) return { got: r.points, state: 'met', note: label + '在 ' + mmss(o.at) + ' 提出，在 ' + limit + ' 分鐘內。' };
-      return { got: r.points / 3, state: 'part', note: label + '在 ' + mmss(o.at) + ' 才提出，超過 ' + limit + ' 分鐘。' };
+      if (late <= r.within) return { got: r.points, state: 'met', note: '下診斷之後很快就提出' + label + '（' + limit + ' 分鐘內）。' };
+      return { got: r.points / 3, state: 'part', note: '下診斷之後過了 ' + mmss(late) + ' 才提出' + label + '，超過 ' + limit + ' 分鐘。' };
     }
     case 'exclude': {
       const done = r.forms.filter((f) => s.reads.some((x) => x.ok && clueOf(c, x.clue).tell?.form === f && clueOf(c, x.clue).tell?.dir === -1));
@@ -55,7 +55,7 @@ export function scoreSession(c: CaseDef, s: Session): Score {
   const qTotal = qs.reduce((n, q) => n + q.weight, 0), qGot = qs.filter((q) => s.asked.includes(q.id)).reduce((n, q) => n + q.weight, 0);
   const missedKeyQ = qs.filter((q) => q.weight >= 3 && !s.asked.includes(q.id)).map((q) => q.label);
   row('history', 'data', '焦點病史', 25, 25 * ratio(qGot, qTotal * 0.8), [
-    '問了 ' + s.asked.filter((id) => id !== 'q-intro').length + ' 題，共 ' + qs.length + ' 題。',
+    '問了 ' + qs.filter((q) => s.asked.includes(q.id)).length + ' 題，共 ' + qs.length + ' 題。',
     ...(missedKeyQ.length ? ['沒問到的重點：' + missedKeyQ.join('、') + '。'] : ['重點都問到了。']),
   ]);
 
@@ -70,9 +70,9 @@ export function scoreSession(c: CaseDef, s: Session): Score {
   ]);
 
   // ── 取得同意與說明檢查 10 ──
-  const intro = s.asked.includes('q-intro'), told = s.examined.filter((k) => k.explained).length;
-  row('consent', 'data', '取得同意與說明檢查', 10, (intro ? 4 : 0) + 6 * ratio(told, s.examined.length), [
-    intro ? '有自我介紹並確認身分。' : '沒有自我介紹、確認身分。',
+  const opens = c.questions.filter((q) => q.group === 'open'), opened = opens.filter((q) => s.asked.includes(q.id)), told = s.examined.filter((k) => k.explained).length;
+  row('consent', 'data', '取得同意與說明檢查', 10, 4 * ratio(opened.length, opens.length) + 6 * ratio(told, s.examined.length), [
+    opened.length === opens.length ? '開場做完整了：' + opens.map((q) => q.label).join('、') + '。' : '開場沒做的：' + opens.filter((q) => !s.asked.includes(q.id)).map((q) => q.label).join('、') + '。',
     s.examined.length ? '做了 ' + s.examined.length + ' 項評估，其中 ' + told + ' 項有先說明。' : '沒有做身體評估。',
   ]);
 
@@ -134,7 +134,7 @@ export function moments(c: CaseDef, s: Session): { id: string; t: number; name: 
   add('worsen', first('worsen'), c.patient.name + '的狀況變差');
   const keyTest = c.safety.find((r) => r.type === 'order');
   if (keyTest && keyTest.type === 'order') add('result', first('result', keyTest.test), c.tests.find((t) => t.id === keyTest.test)!.label + '的結果回來');
-  add('board', [...s.log].reverse().find((l) => l.type === 'board'), '你排好推理板');
+  add('board', [...s.log].reverse().find((l) => l.type === 'board'), '你下了診斷');
   return out.sort((a, b) => a.t - b.t);
 }
 
@@ -158,16 +158,16 @@ export function takeaways(c: CaseDef, s: Session, sc: Score): string[] {
   const got = (id: string) => sc.rows.find((r) => r.id === id)!;
   const has = (type: SafetyRule['type']) => c.safety.some((r) => r.type === type);
   const out: string[] = [];
-  if (has('call') && sc.safety !== 'met') out.push('看到危險訊號就先通報，再回頭補問病史。');
+  if (has('call') && sc.safety !== 'met') out.push('判斷病人不穩定，下了診斷就馬上通報。');
   if (has('calm') && s.bell) out.push('先判斷病人穩不穩定，再決定要不要敲值班鐘。');
-  if (c.safety.some((r) => r.type === 'order' && !s.ordered.some((o) => o.id === r.test && o.at <= r.by))) out.push('越早做越好的檢查，一開始就提出。');
+  if (c.safety.some((r) => r.type === 'order' && !s.ordered.some((o) => o.id === r.test && o.at - (s.dxAt ?? 0) <= r.within))) out.push('下了診斷，最關鍵的那項檢查要先提出。');
   if (has('exclude') && sc.safety !== 'met') out.push('說「沒事」之前，每個危險的可能都要有一條排除它的線索。');
   if (got('consent').got < 8) out.push('動手評估之前，先說明目的、項目和部位。');
   if (got('evidence').got < 7) out.push('每拿到一條線索，先想它讓哪個診斷更像、哪個比較不像。');
   if (!s.clues.includes('c-concern') || got('explain').got < 4) out.push('問病人最擔心什麼，說明的時候回應它。');
   if (got('ddx').got < 12) out.push('先用一句話講事實，再排最可能的和不能漏掉的。');
   if (got('exam').notes[1].includes('沒有重測')) out.push('處置或病況變化之後，重測生命徵象。');
-  out.push('病史不用一次問完，先問會改變處置的那幾題。');
+  out.push('結案之前回頭看一遍：有沒有哪一段沒問、哪一個模組沒做。');
   return out.slice(0, 4);
 }
 

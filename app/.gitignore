@@ -1,2 +1,4 @@
 node_modules
 dist
+# 教案轉出來的底稿：裡面有別人教案的原文，不進版本控制
+drafts/

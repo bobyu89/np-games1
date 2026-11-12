@@ -36,11 +36,11 @@ export function validateCase(c: CaseDef): string[] {
 
   // 安全行動
   const tl = c.timeline;
-  if (tl.worsenAt !== undefined && tl.stepInAt !== undefined && !(tl.worsenAt < tl.stepInAt)) errs.push('病況變差的時間要早於岑禾接手的時間');
+  if (tl.worsenAfter !== undefined && tl.stepInAfter !== undefined && !(tl.worsenAfter < tl.stepInAfter)) errs.push('病況變差的時間要早於岑禾接手的時間');
   if (!c.safety.length) errs.push('沒有宣告任何安全行動');
   if (Math.abs(c.safety.reduce((n, r) => n + r.points, 0) - 9) > 0.001) errs.push('安全行動的分數加起來要是 9 分');
   c.safety.forEach((r) => {
-    if (r.type === 'call' && tl.worsenAt === undefined) errs.push('要求在變差之前通報，卻沒有寫變差的時間');
+    if (r.type === 'call' && tl.worsenAfter === undefined) errs.push('要求在變差之前通報，卻沒有寫變差的時間');
     if (r.type === 'call' && (!c.vitals.worse || !c.lines.worsen || !c.lines.stepIn)) errs.push('會變差的病例要寫變差後的生命徵象、病人的話和岑禾接手的話');
     if (r.type === 'order' && !test.has(r.test)) errs.push('安全行動指到不存在的檢查：' + r.test);
     if (r.type === 'exclude') r.forms.forEach((f) => {
@@ -48,11 +48,12 @@ export function validateCase(c: CaseDef): string[] {
       else if (!tells.some((k) => k.tell!.form === f && k.tell!.dir === -1)) errs.push('要求排除「' + f + '」，卻沒有任何線索能讓它比較不像');
     });
     if (r.type === 'explain' && !c.explain.some((e) => e.id === r.id && e.ok)) errs.push('安全行動指到不存在或不適合的說明：' + r.id);
-    if (r.type === 'calm' && tl.worsenAt !== undefined) errs.push('會變差的病例不能要求不敲鐘');
+    if (r.type === 'calm' && tl.worsenAfter !== undefined) errs.push('會變差的病例不能要求不敲鐘');
   });
   c.sbar.requests.forEach((k) => { if (k.orders && !test.has(k.orders)) errs.push('回報的請求指到不存在的檢查：' + k.orders); });
 
   if (!c.questions.some((q) => q.id === 'q-intro')) errs.push('少了自我介紹（q-intro）');
+  (['open', 'cc', 'hx', 'ros'] as const).forEach((g) => { if (!c.questions.some((q) => q.group === g)) errs.push('問題庫少了一段：' + g); });
   if (!c.summaries.some((k) => k.score === 5)) errs.push('問題摘要沒有滿分的選項');
   if (!c.sbar.assessments.some((k) => k.score === 2)) errs.push('回報的評估沒有滿分的選項');
   if (c.sbar.requests.filter((k) => k.ok).length < 2) errs.push('回報的請求至少要有兩個適合的選項');
@@ -60,5 +61,8 @@ export function validateCase(c: CaseDef): string[] {
   if (!c.explain.some((e) => e.concern && e.ok)) errs.push('說明裡少了回應病人擔心的那一句');
   c.debrief.teaching.forEach((t) => { if (!c.debrief.references.some((r) => r.id === t.ref)) errs.push('教學重點指到不存在的文獻：' + t.ref); });
   c.debrief.references.forEach((r) => { if (!/^10\.\d{4,}\//.test(r.doi)) errs.push('文獻 ' + r.id + ' 的 DOI 格式不對'); });
+  // 從教案轉出來的底稿，要補的地方都標了 TODO；還有沒補完的就不能上線
+  const todo = (JSON.stringify(c).match(/TODO/g) ?? []).length;
+  if (todo) errs.push('還有 ' + todo + ' 個 TODO 沒有補完');
   return errs;
 }

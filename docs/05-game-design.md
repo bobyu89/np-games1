@@ -246,6 +246,23 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 | 第 6.3 節的推理板 | 「把線索標成支持、反對」改成在過程中一條一條解讀；推理板只剩問題摘要、最可能的、還要排除的 |
 | 第 7 節的安全狀態 | 「延遲補救」改名「部分達成」 |
 
+## 14. 流程改成問診 → 評估 → 診斷 → 檢查（2026-11-12）
+
+你看過互動原型之後指出：實際的做法是先問診，然後評估、診斷，最後才做檢驗檢查。另外提供了 22 份其他老師的 OSCE 教案，要我參考結構、內容自己重寫，並且做一個把教案轉成病例底稿的工具。
+
+| 項目 | 做法 |
+|---|---|
+| 順序 | 一排七個分頁：開場、主訴、病史、系統（問診）→ 評估 → 診斷 → 檢查。後面的要做完前一段才打開，前面的隨時可以回去補 |
+| 第 6 節的「急的事隨時可以做」 | 只留值班鐘。檢查、回報和說明都要下了診斷才能做 |
+| 第 6 節林秋的時間壓力 | 原本從進門開始算（第 4 分鐘變差）。改成從下診斷開始算：2 分鐘內沒有人知道才變差。照順序把問診和評估做完整，不會被罰 |
+| 問診的題目 | 照教案的骨架重寫：開場 3、OLD CARTS 10、個人與過去病史 8、系統回顧 6，共 27 題。教案的 16 題個人病史併成 8 題、7 組系統回顧併成 6 題，問法裡把併掉的項目都寫出來 |
+| 身體評估 | 整體，加上頭頸、胸部、心臟、腹部、四肢五個模組，共 10 項 |
+| 胸痛的真身 | 急性冠心症、主動脈剝離、肺栓塞、胸壁疼痛 → 心因性、血管急症、胸腔腫瘤、肌肉骨骼 |
+| 第三位病人 | 莫桐：悶痛一個多月的老船工，真身是胸腔腫瘤。穩定、不急，但不能當成老毛病放回去；說明的時候不能搶著說出診斷 |
+| 轉換工具 | `app/tools/convert_script.py`：教案 → 病例底稿。推理的部分由人補 |
+
+**考站的順序和真實臨床不一樣的地方**：疑似急性冠心症，真實情境要在到院 10 分鐘內做完心電圖（Rao et al., 2025），不會等整套問完。遊戲照考站的順序走，但在林秋那一關的回顧裡把這件事講明白，避免玩家學成「可以慢慢問」。這一點要請臨床老師看過。
+
 ## References
 
 甄審規定（衛生福利部護理及健康照護司，2026）：
@@ -256,7 +273,9 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 
 依 PubMed 查到的文獻：
 
+- Baile, W. F., Buckman, R., Lenzi, R., Glober, G., Beale, E. A., & Kudelka, A. P. (2000). SPIKES—A six-step protocol for delivering bad news: Application to the patient with cancer. *The Oncologist, 5*(4), 302–311. https://doi.org/10.1634/theoncologist.5-4-302
 - Croskerry, P. (2003). The importance of cognitive errors in diagnosis and strategies to minimize them. *Academic Medicine, 78*(8), 775–780. https://doi.org/10.1097/00001888-200308000-00003
 - Fanning, R. M., & Gaba, D. M. (2007). The role of debriefing in simulation-based learning. *Simulation in Healthcare, 2*(2), 115–125. https://doi.org/10.1097/SIH.0b013e3180315539
+- Hamilton, W., Peters, T. J., Round, A., & Sharp, D. (2005). What are the clinical features of lung cancer before the diagnosis is made? A population based case-control study. *Thorax, 60*(12), 1059–1065. https://doi.org/10.1136/thx.2005.045880
 - Rao, S. V., O'Donoghue, M. L., Ruel, M., Rab, T., Tamis-Holland, J. E., Alexander, J. H., Baber, U., Baker, H., Cohen, M. G., Cruz-Ruiz, M., Davis, L. L., de Lemos, J. A., DeWald, T. A., Elgendy, I. Y., Feldman, D. N., Goyal, A., Isiadinso, I., Menon, V., Morrow, D. A., . . . Williams, M. S. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. *Journal of the American College of Cardiology, 85*(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009
 - Tanner, C. A. (2006). Thinking like a nurse: A research-based model of clinical judgment in nursing. *Journal of Nursing Education, 45*(6), 204–211. https://doi.org/10.3928/01484834-20060601-04

@@ -1,7 +1,8 @@
-// 病例 C01A：林秋，胸痛，真身是急性冠心症（危險的那一版）。
+// 病例 C01A：林秋，胸痛，真身是心因性（急性冠心症，危險的那一版）。
 // 虛構的教學病例，依文末的指引撰寫，還沒經過臨床老師審查，不能當教材。
+// 這一關要練的是：整套流程照順序做完，下了診斷就馬上通報、提出心電圖。
 import type { CaseSpec } from '../core/module.ts';
-import { GULATI_2021, RAO_2025, REVIEW_NOTE } from './shared.ts';
+import { GULATI_2021, RAO_2025, REVIEW_NOTE, TEXT_RESULT, WHY_ARMS_EQUAL, WHY_NO_IMMOB, WHY_NO_WEIGHT_LOSS } from './shared.ts';
 
 export const C01A: CaseSpec = {
   format: 3,
@@ -13,7 +14,7 @@ export const C01A: CaseSpec = {
   patient: { name: '林秋', age: 58, sex: '男', job: '港口的燈匠', look: 'lin', pronoun: '他' },
   reading: {
     lines: ['林秋，58 歲，港口的燈匠。', '傍晚搬銅燈上架的時候胸口不舒服，同伴扶他到公會的病室。', '他清醒，可以自己說話，額頭都是汗。'],
-    prompts: ['最危險的可能是什麼？', '最常見的可能是什麼？', '我第一件要知道的事是什麼？有什麼要同時處理？'],
+    prompts: ['最危險的可能是什麼？', '最常見的可能是什麼？', '問診、評估做完之後，我第一件要做的事是什麼？'],
   },
   vitals: {
     base: { bp: '103/68', hr: 108, rr: 24, spo2: 96, bt: 36.4 },
@@ -22,63 +23,73 @@ export const C01A: CaseSpec = {
   },
 
   answers: {
-    'q-intro': { say: '林秋……好，麻煩你了。' },
-    'q-concern': { say: '我女兒今晚一個人值夜守燈……她還在等我去交班。', clue: { text: '擔心女兒一個人值夜', kind: 'info' } },
-    'q-onset': { say: '搬到第三盞燈的時候開始的。大概四十分鐘了，休息也沒有比較好。', clue: { text: '持續 40 分鐘，休息沒有好', kind: 'pos', key: true, tell: { form: 'acs', dir: 1 }, why: '休息也不緩解、持續這麼久的胸痛，要先想到心臟。' } },
-    'q-quality': { say: '胸口正中間，像被什麼壓住。', clue: { text: '胸口正中，壓迫感', kind: 'pos', key: true, tell: { form: 'acs', dir: 1 }, why: '壓、悶、緊，一整片指不出一個點，是心臟缺血常見的說法。' } },
-    'q-radiate': { say: '一路到左手臂，下巴也有點緊。', clue: { text: '傳到左臂和下巴', kind: 'pos', key: true, tell: { form: 'acs', dir: 1 }, why: '會傳到手臂、下巴或肩膀的胸痛，更像心臟。' } },
-    'q-severity': { say: '八分吧……比以前任何一次都厲害。', clue: { text: '疼痛 8 分', kind: 'pos' } },
-    'q-provoke': { say: '在搬銅燈上架子。這兩個禮拜爬坡會悶，停下來幾分鐘就好。這次不一樣。', clue: { text: '這兩週出力就悶，這次休息不緩解', kind: 'pos', key: true } },
-    'q-worse': { say: '都不會，怎麼動都一樣。', clue: { text: '呼吸、轉身、按壓都不影響', kind: 'neg', tell: { form: 'msk', dir: -1 }, why: '跟呼吸、姿勢、按壓都沒關係，就比較不像胸壁的問題。' } },
-    'q-tear': { say: '沒有，背不痛。就是壓著。', clue: { text: '沒有撕裂感，沒有痛到背', kind: 'neg', tell: { form: 'dissection', dir: -1 }, why: '突然、像撕裂、痛到背，是主動脈剝離的典型說法。沒有，就比較不像；但不能只靠這一條排除。' } },
-    'q-relief': { say: '坐著好一點點，沒有完全好。沒吃藥。', clue: { text: '坐著只好一點點', kind: 'pos' } },
-    'q-assoc': { say: '一直冒冷汗，還有點想吐。', clue: { text: '冒冷汗、噁心', kind: 'pos', key: true, tell: { form: 'acs', dir: 1 }, why: '冒冷汗、噁心跟著胸痛一起來，更像心臟。' } },
-    'q-sob': { say: '有一點喘。沒有昏倒，只是很虛。', clue: { text: '有點喘，沒有昏倒', kind: 'pos' } },
-    'q-pmh': { say: '高血壓五年，在藥舖拿藥。大夫說過血脂偏高，我沒理它。', clue: { text: '高血壓、血脂偏高', kind: 'info' } },
-    'q-meds': { say: '血壓藥，有時候忘記吃。沒有過敏。', clue: { text: '血壓藥沒有規則吃，無藥物過敏', kind: 'info' } },
-    'q-family': { say: '我爸五十二歲那年心肌梗塞走的。', clue: { text: '父親 52 歲心肌梗塞', kind: 'info' } },
-    'q-smoke': { say: '菸抽了三十年，一天一包。酒很少。', clue: { text: '抽菸 30 年', kind: 'info' } },
-    'q-immob': { say: '沒有，天天都在走動幹活。', clue: { text: '沒有久坐、腿腫或手術', kind: 'neg', tell: { form: 'pe', dir: -1 }, why: '沒有久坐不動、腿腫或剛開刀，肺栓塞的危險因子就少，比較不像。' } },
-    'q-ros-cv': { say: '都沒有。', clue: { text: '沒有心悸、夜間喘或腳腫', kind: 'neg' } },
-    'q-ros-resp': { say: '沒有。', clue: { text: '沒有咳嗽、咳血或發燒', kind: 'neg' } },
-    'q-ros-gi': { say: '沒有，跟吃飯沒關係。', clue: { text: '沒有火燒心，跟吃東西無關', kind: 'neg' } },
-    'q-trauma': { say: '沒有。', clue: { text: '胸口沒有撞到或拉傷', kind: 'neg' } },
+    // 開場
+    'q-wash': { say: '（林秋半躺在床上，一手按著胸口，看著你把手洗乾淨。）' },
+    'q-intro': { say: '林秋……秋分那天生的，今年五十八。' },
+    'q-explain': { say: '好……你問吧。' },
+    // 主訴
+    'q-cc': { say: '胸口……很悶，很不對勁。', clue: { text: '主訴：胸口悶痛', kind: 'pos' } },
+    'q-onset': { say: '這兩個禮拜爬坡就會悶，停下來幾分鐘就好。今天傍晚搬銅燈的時候又來了，這次沒有退。', clue: { text: '兩週來出力就悶、休息就好；今天發作後沒有退', kind: 'pos', key: true, tell: { form: 'cardiac', dir: 1 }, why: '出力就悶、休息就好，是心絞痛的樣子。這次休息也不退，表示變嚴重了。' } },
+    'q-location': { say: '胸口正中間，一整片。要我指一個點，我指不出來。', clue: { text: '胸口正中一整片，指不出一個點', kind: 'pos' } },
+    'q-duration': { say: '到現在大概四十分鐘，一直在，沒有停過。', clue: { text: '持續 40 分鐘沒有停', kind: 'pos', key: true } },
+    'q-character': { say: '像被一綑纜繩勒緊，又悶又重。不是刺的，也沒有被撕開的感覺。', clue: { text: '又悶又緊的壓迫感，沒有撕裂感', kind: 'pos', key: true, tell: { form: 'cardiac', dir: 1 }, why: '悶、緊、壓，是心臟缺血常見的說法。刺痛或一碰就痛，反而比較不像。' } },
+    'q-assoc': { say: '一直冒冷汗，有點想吐，也有點喘。沒有昏倒，也沒有咳嗽。', clue: { text: '冒冷汗、噁心、有點喘', kind: 'pos', key: true, tell: { form: 'cardiac', dir: 1 }, why: '冒冷汗、噁心跟著胸痛一起來，更像心臟。' } },
+    'q-factors': { say: '怎麼動、怎麼呼吸都一樣。坐著只好一點點。', clue: { text: '呼吸、轉身都不影響，休息只好一點點', kind: 'neg', tell: { form: 'msk', dir: -1 }, why: '跟呼吸、姿勢都沒有關係，就比較不像胸壁的問題。' } },
+    'q-radiate': { say: '一路到左邊肩膀和手臂，下巴也緊緊的。背不會痛。', clue: { text: '傳到左肩、左臂和下巴，背不痛', kind: 'pos', key: true, tell: { form: 'cardiac', dir: 1 }, why: '會傳到手臂、肩膀或下巴的胸痛，更像心臟。' } },
+    'q-treat': { say: '沒有。本來想坐一下就好，是同伴硬把我扶過來的。', clue: { text: '沒有就醫或吃藥', kind: 'info' } },
+    'q-severity': { say: '現在八分。比以前任何一次都厲害。', clue: { text: '疼痛 8 分', kind: 'pos' } },
+    // 個人與過去病史
+    'q-pmh': { say: '高血壓五年了，藥舖的大夫也說過我血裡的油太高。很久沒回去看了。', clue: { text: '高血壓、血脂高，沒有追蹤', kind: 'info' } },
+    'q-family': { say: '我爸五十二歲那年，心臟病發走的。', clue: { text: '父親 52 歲心肌梗塞過世', kind: 'info' } },
+    'q-surgery': { say: '沒住過院，沒開過刀。最近沒有受傷，也沒有躺著不動，天天都在爬燈架。', clue: { text: '沒有手術、外傷或久臥不動', kind: 'neg', tell: { form: 'vascular', dir: -1 }, why: WHY_NO_IMMOB } },
+    'q-meds': { say: '就血壓藥，常常忘記吃。沒有吃別的，也沒有對什麼過敏。', clue: { text: '血壓藥沒有規則吃，沒有過敏', kind: 'info' } },
+    'q-habits': { say: '菸抽了三十年，一天一包。酒很少，檳榔不吃。', clue: { text: '抽菸 30 年，一天一包', kind: 'info' } },
+    'q-work': { say: '在港口點燈、修燈，要爬高、搬銅燈。最近沒有出遠門，身邊也沒有人生病。', clue: { text: '工作要爬高搬重，沒有旅遊或接觸史', kind: 'info' } },
+    'q-life': { say: '吃得鹹，常吃宵夜。睡得還可以。跟女兒兩個人住。', clue: { text: '飲食偏鹹，與女兒同住', kind: 'info' } },
+    'q-concern': { say: '我女兒今晚一個人守燈……她還在等我去交班。', clue: { text: '擔心女兒一個人值夜', kind: 'info' } },
+    // 系統回顧
+    'q-ros-gen': { say: '沒有發燒。體重沒什麼變，晚上也不會盜汗。', clue: { text: '沒有發燒、體重減輕或盜汗', kind: 'neg', tell: { form: 'tumor', dir: -1 }, why: WHY_NO_WEIGHT_LOSS } },
+    'q-ros-head': { say: '頭不痛。聲音沒變，吞東西也不會卡。', clue: { text: '沒有頭痛、聲音改變或吞嚥困難', kind: 'neg' } },
+    'q-ros-resp': { say: '沒有咳嗽，也沒有咳血。', clue: { text: '沒有咳嗽或咳血', kind: 'neg' } },
+    'q-ros-cv': { say: '現在心跳得很快。平常晚上不會喘到坐起來。', clue: { text: '現在心悸，平常沒有夜間喘', kind: 'pos' } },
+    'q-ros-gi': { say: '沒有火燒心，跟吃飯沒關係。大小便都正常。', clue: { text: '沒有火燒心，大小便正常', kind: 'neg' } },
+    'q-ros-limb': { say: '手腳不會麻。腳沒有腫，小腿也不痛。', clue: { text: '手腳不麻，腳不腫，小腿不痛', kind: 'neg' } },
   },
   findings: {
     'x-look': { say: '表情痛苦，臉色蒼白，額頭和脖子都是冷汗，一手按著胸口。', clue: { text: '臉色蒼白、冒冷汗、按著胸口', kind: 'pos', key: true } },
-    'x-botharms': { say: '右手 102/66 mmHg，左手 104/68 mmHg，沒有明顯差別。', clue: { text: '兩手血壓沒有明顯差別', kind: 'neg', tell: { form: 'dissection', dir: -1 }, why: '兩手血壓差很多，要想到主動脈剝離。沒有差別，就比較不像。' } },
+    'x-head': { say: '結膜不蒼白，嘴唇沒有發紫。脖子和鎖骨上方摸不到腫大的淋巴結。', clue: { text: '結膜不蒼白，沒有摸到淋巴結', kind: 'neg' } },
+    'x-jvp': { say: '沒有頸靜脈怒張，氣管在正中間。', clue: { text: '沒有頸靜脈怒張，氣管居中', kind: 'neg' } },
+    'x-chest-touch': { say: '胸廓對稱，兩邊起伏一致。按壓胸壁不會引發一樣的痛。', clue: { text: '按壓胸壁不會引發一樣的痛', kind: 'neg', tell: { form: 'msk', dir: -1 }, why: '按不出一樣的痛，胸壁來源就比較不像。' } },
+    'x-chest-listen': { say: '兩側叩診音清，呼吸音清楚、對稱，沒有囉音。', clue: { text: '兩側呼吸音清楚、對稱', kind: 'neg' } },
     'x-heart': { say: '心律規則、偏快。沒有雜音，沒有心包摩擦音。', clue: { text: '心律規則偏快，沒有雜音或摩擦音', kind: 'neg' } },
-    'x-lungs': { say: '兩側呼吸音清楚、對稱，沒有囉音。', clue: { text: '兩側呼吸音清楚、對稱', kind: 'neg' } },
-    'x-jvp': { say: '沒有頸靜脈怒張。', clue: { text: '沒有頸靜脈怒張', kind: 'neg' } },
-    'x-perfusion': { say: '手腳濕冷，微血管回填約 3 秒。', clue: { text: '手腳濕冷，微血管回填約 3 秒', kind: 'pos', key: true } },
-    'x-legs': { say: '兩側橈動脈、足背動脈的搏動對稱。兩腳沒有水腫，小腿沒有壓痛。', clue: { text: '脈搏對稱，小腿不腫不痛', kind: 'neg' } },
-    'x-chestwall': { say: '按壓胸壁不會引發一樣的痛。', clue: { text: '按壓胸壁不會引發一樣的痛', kind: 'neg', tell: { form: 'msk', dir: -1 }, why: '按不出一樣的痛，胸壁來源就比較不像。' } },
-    'x-abd': { say: '腹部柔軟，上腹沒有壓痛。', clue: { text: '腹部柔軟，上腹沒有壓痛', kind: 'neg' } },
+    'x-botharms': { say: '右手 102/66 mmHg，左手 104/68 mmHg。兩邊橈動脈的搏動一樣強。', clue: { text: '兩手血壓和脈搏沒有差別', kind: 'neg', tell: { form: 'vascular', dir: -1 }, why: WHY_ARMS_EQUAL } },
+    'x-abd': { say: '腹部柔軟，上腹沒有壓痛，沒有摸到會跳動的腫塊。', clue: { text: '腹部柔軟，上腹沒有壓痛', kind: 'neg' } },
+    'x-perfusion': { say: '手腳濕冷，微血管回填約 3 秒。指甲的形狀正常。', clue: { text: '手腳濕冷，微血管回填約 3 秒', kind: 'pos', key: true } },
+    'x-legs': { say: '兩邊小腿一樣粗，沒有水腫，按了不痛。', clue: { text: '小腿不腫不痛', kind: 'neg' } },
   },
   results: {
-    't-record': { say: '兩年前的紀錄：高血壓，建議戒菸，之後沒有回來追蹤。沒有做過心電圖。', clue: { text: '舊紀錄：高血壓沒有追蹤，沒做過心電圖', kind: 'info' } },
-    't-ecg': { say: '竇性心律，心跳約每分鐘 110 下。II、III、aVF 導程的 ST 段上升，I、aVL 導程的 ST 段下降。（訓練用的文字結果，要由值班醫師判讀。）', clue: { text: '心電圖：II、III、aVF 的 ST 段上升', kind: 'pos', key: true, fog: 6, tell: { form: 'acs', dir: 1 }, why: '下壁導程的 ST 段上升，強烈支持急性冠心症。結果要由醫師判讀。' } },
-    't-glucose': { say: '132 mg/dL。', clue: { text: '血糖 132 mg/dL', kind: 'neg' } },
+    't-ecg': { say: '竇性心律，心跳約每分鐘 110 下。II、III、aVF 導程的 ST 段上升，I、aVL 導程的 ST 段下降。' + TEXT_RESULT, clue: { text: '心電圖：II、III、aVF 的 ST 段上升', kind: 'pos', key: true, fog: 6, tell: { form: 'cardiac', dir: 1 }, why: '下壁導程的 ST 段上升，強烈支持急性冠心症。結果要由醫師判讀。' } },
     't-blood': { pending: '血已經抽好送出，結果要等一段時間，這一關裡等不到。' },
-    't-cxr': { pending: '已經排上，還沒輪到，這一關裡等不到。' },
+    't-cxr': { say: '心臟大小正常，縱膈沒有變寬，兩側肺野清楚。' + TEXT_RESULT, clue: { text: '胸部 X 光：縱膈沒有變寬，肺野清楚', kind: 'neg' } },
+    't-glucose': { say: '132 mg/dL。', clue: { text: '血糖 132 mg/dL', kind: 'neg' } },
   },
 
-  answer: { truth: 'acs', exclude: { dissection: 2, pe: 2, msk: 1 } },
+  answer: { truth: 'cardiac', exclude: { vascular: 3, tumor: 1, msk: 1 } },
   summaries: [
-    { id: 's-best', text: '58 歲男性，有高血壓和抽菸史，急性持續 40 分鐘的胸口壓迫感，合併冒冷汗，血壓偏低。', score: 5, note: '有年齡、危險因子、病程、性質、伴隨症狀和目前的穩定程度，聽的人馬上知道有多急。' },
+    { id: 's-best', text: '58 歲男性，有高血壓和抽菸史，兩週來出力就胸悶，今天持續 40 分鐘的胸口壓迫感，合併冒冷汗，血壓偏低。', score: 5, note: '有年齡、危險因子、病程、性質、伴隨症狀和目前的穩定程度，聽的人馬上知道有多急。' },
     { id: 's-ok', text: '58 歲男性，搬重物之後胸痛 40 分鐘，休息沒有改善。', score: 3, note: '病程有了，但少了壓迫感、冒冷汗和血壓偏低這幾個決定急不急的資訊。' },
     { id: 's-vague', text: '中年男性胸口不舒服，原因還不清楚。', score: 0, note: '太模糊，聽的人沒辦法判斷要不要馬上過來。' },
-    { id: 's-anchor', text: '58 歲男性搬重物後胸痛，應該是胸壁拉傷。', score: 0, note: '一句話裡直接下了診斷，而且把搬重物當成唯一的解釋。問題摘要要先講事實。' },
+    { id: 's-anchor', text: '58 歲男性搬重物後胸痛，應該是胸壁拉傷。', score: 0, note: '把搬重物當成唯一的解釋。問題摘要要先講事實，再下判斷。' },
   ],
   sbar: {
     assessments: [
-      { id: 'a-acs', text: '我擔心是急性冠心症，病人現在不穩定。', score: 2, note: '說出最擔心的問題，也說出有多急。' },
+      { id: 'a-acs', text: '我的診斷是心因性胸痛，擔心急性冠心症。病人現在不穩定。', score: 2, note: '說出最擔心的問題，也說出有多急。' },
       { id: 'a-unknown', text: '胸痛的原因還不清楚，生命徵象還可以。', score: 1, note: '沒有說出你擔心什麼。血壓偏低、心跳快、手腳濕冷不算「還可以」。' },
       { id: 'a-msk', text: '可能是搬東西拉傷，想先觀察看看。', score: 0, note: '持續的壓迫感合併冒冷汗，不能先當成拉傷來觀察。' },
     ],
     requests: [
       { id: 'r-come', text: '請您現在過來看病人。', ok: true, note: '明確說出要對方做什麼。' },
-      { id: 'r-ecg', text: '請同意馬上做 12 導程心電圖，並請您判讀。', ok: true, orders: 't-ecg', note: '疑似急性冠心症要在 10 分鐘內取得並判讀心電圖。' },
+      { id: 'r-ecg', text: '請同意馬上做 12 導程心電圖，並請您判讀。', ok: true, orders: 't-ecg', note: '疑似急性冠心症，心電圖是第一項檢查，要由醫師判讀。' },
       { id: 'r-monitor', text: '我會接上監測，每 5 分鐘重測血壓，有變化馬上回報。', ok: true, note: '說出你自己接下來會做什麼。' },
       { id: 'r-wait', text: '先讓他喝點熱茶休息，半小時後再評估。', ok: false, note: '這是延遲。病人的狀況可能在這半小時裡變差。' },
     ],
@@ -92,16 +103,17 @@ export const C01A: CaseSpec = {
     { id: 'e-jargon', text: '您是下壁 ST 段上升型心肌梗塞，要做緊急心導管。', ok: false, note: '用了病人聽不懂的詞，而且診斷和處置要由醫師確認之後才說。' },
   ],
 
-  timeline: { worsenAt: 240, stepInAt: 480, doctorDelay: 90 },
-  safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-ecg', by: 600, points: 3 }],
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，岑禾接手
+  timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
+  safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-ecg', within: 120, points: 3 }],
   readsNeeded: 6,
 
   lines: {
-    opening: ['你現在最想知道什麼？有什麼要同時處理？'],
+    opening: ['從開場做起。照你平常的順序來：問診、評估、診斷，最後才是檢查。'],
     watch: '林秋按著胸口，額頭的汗一直沒有停。',
     watchWorse: '林秋閉著眼睛，呼吸又淺又快。',
     worsen: '頭……有點暈。',
-    stepIn: '我先敲鐘了。這個病人不能再等。',
+    stepIn: '我先敲鐘了。你已經知道他是什麼問題，就不能再等。',
     called: '值班鐘響了。沈渡醫師馬上到，你繼續。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。心電圖我來判讀，你接著監測，五分鐘後重測血壓。',
@@ -116,9 +128,9 @@ export const C01A: CaseSpec = {
 
   debrief: {
     alternatives: [
-      '先敲鐘、再補問病史，或是先量生命徵象、看到血壓偏低就敲鐘，兩種順序都可以。',
-      '心電圖可以在敲鐘之前就先提出，不用等醫師到。',
-      '病史不用一次問完。先問會改變處置的幾題，穩定之後再補齊。',
+      '這一關照考站的順序走：問診、評估、診斷，最後才是檢查。真實的急診不會等這麼久：疑似急性冠心症，心電圖要在到院 10 分鐘內做完。',
+      '看到冒冷汗、量到血壓偏低，隨時都可以先敲值班鐘，不用等到下診斷。提早通報不會扣分。',
+      '評估可以照模組從頭做到腳，也可以先做和主訴最有關的胸部和心臟，再補其他。',
     ],
     teaching: [
       { text: '急性胸痛要先找出會致命的原因：急性冠心症、主動脈剝離、肺栓塞。', ref: 'gulati2021' },

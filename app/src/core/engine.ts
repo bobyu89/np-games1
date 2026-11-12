@@ -4,7 +4,8 @@
 import type { Action, Board, CaseDef, Clue, GameEvent, Session, Tell, Vitals } from './types.ts';
 
 /** 每種行動花掉的模擬時間（秒）。看字、解讀線索、排推理板都不扣時間 */
-export const COST = { ask: 30, vitals: 40, exam: 30, explainExam: 10, watch: 30, call: 5, report: 30, explain: 40 } as const;
+// 問診加評估整套做完大約 15 分鐘，和考站的時間差不多
+export const COST = { ask: 20, vitals: 40, exam: 20, explainExam: 10, watch: 30, call: 5, report: 30, explain: 40 } as const;
 /** 解讀到第幾條線索的時候，岑禾會停下來問「你最擔心哪一個」 */
 export const COMMIT_AFTER = 3;
 
@@ -12,7 +13,7 @@ export const emptyBoard = (): Board => ({ summary: null, likely: null, exclude: 
 
 export function createSession(c: CaseDef): Session {
   return {
-    caseId: c.id, mode: 'quest', time: 0,
+    caseId: c.id, mode: 'quest', time: 0, phase: 1, dxAt: null,
     asked: [], examined: [], ordered: [], results: [], clues: [], pending: [], reads: [], commits: [], needCommit: false,
     vitalsSeen: null, vitalsLog: [],
     worsenedAt: null, calledAt: null, calledBy: null, bell: false, doctorAt: null, doctorHere: false,
@@ -22,7 +23,7 @@ export function createSession(c: CaseDef): Session {
 
 export const clueOf = (c: CaseDef, id: string): Clue => c.clues.find((k) => k.id === id)!;
 export const formOf = (c: CaseDef, id: string | null) => c.forms.find((f) => f.id === id);
-export const isUrgent = (c: CaseDef) => c.timeline.worsenAt !== undefined;
+export const isUrgent = (c: CaseDef) => c.timeline.worsenAfter !== undefined;
 export const testReady = (s: Session, id: string) => s.results.includes(id);
 
 /** 病人此刻真正的生命徵象。玩家要量了才看得到 */
@@ -33,8 +34,9 @@ export function trueVitals(c: CaseDef, s: Session): Vitals {
 /** 穩定度：只在委託裡顯示。由時間和安全行動推動，不是問對問題就回血 */
 export function stability(c: CaseDef, s: Session): number {
   if (!isUrgent(c)) return 88;
-  const untilHelp = s.calledAt ?? s.time;
-  let v = 66 - Math.floor(untilHelp / 20);
+  // 問診和評估的時候不會掉；下了診斷之後，每拖一下就掉一點，直到有人知道
+  const waited = s.dxAt === null ? 0 : Math.max(0, (s.calledAt ?? s.time) - s.dxAt);
+  let v = 62 - Math.floor(waited / 8);
   if (s.worsenedAt !== null) v -= 22;
   if (s.calledBy === 'you') v += 6;
   if (s.doctorHere) v += 8;
@@ -47,7 +49,8 @@ const fogOf = (k: Clue) => k.fog ?? (k.key ? 3 : 1);
 /** 霧還剩多少（0 到 1）。要解讀的線索，解讀對了霧才全散，解讀錯只散一半 */
 export function veil(c: CaseDef, s: Session): number {
   if (s.closedAt !== null) return 0;
-  const total = c.clues.reduce((n, k) => n + fogOf(k), 0) * 0.7;
+  // 問診和評估做完整，霧大約剩一成；最後那一點要等關鍵的檢查回來才會散
+  const total = c.clues.reduce((n, k) => n + fogOf(k), 0) * 0.96;
   const got = s.clues.reduce((n, id) => {
     const k = clueOf(c, id), r = s.reads.find((x) => x.clue === id);
     return n + fogOf(k) * (!k.tell ? 1 : !r ? 0 : r.ok ? 1 : 0.5);
@@ -65,19 +68,30 @@ export function lights(c: CaseDef, s: Session): Record<string, number> {
 const hit = (k: Clue, form: string) => [k.tell, ...(k.alsoOk ?? [])].some((t) => (t as Tell).form === form);
 const vitalsAfterChange = (s: Session) => s.worsenedAt === null || s.vitalsLog.some((t) => t >= s.worsenedAt!);
 
-/** 岑禾現在會給的提示。依對局的狀況挑一句，不直接講答案 */
+/** 岑禾現在會給的提示。照現在走到哪個階段挑一句，不直接講答案 */
 export function hintFor(c: CaseDef, s: Session): string {
-  const who = c.patient.name;
-  if (s.vitalsSeen === null) return '你還不知道' + who + '的血壓和心跳。看得到的數字，先拿到手。';
-  if (c.safety.some((r) => r.type === 'call') && s.calledAt === null) return '把你手上的線索和數字放在一起看。這個病人，可以等你問完再叫人嗎？';
-  for (const r of c.safety) if (r.type === 'order' && !s.ordered.some((o) => o.id === r.test)) return '有一項檢查越早做越好：' + c.tests.find((t) => t.id === r.test)!.label + '。到「檢查」裡找。';
+  const who = c.patient.name, asked = (g: string) => c.questions.filter((q) => q.group === g && s.asked.includes(q.id)).length, all = (g: string) => c.questions.filter((q) => q.group === g).length;
+  if (s.phase === 1) {
+    if (asked('open') < all('open')) return '開場還沒做完：洗手、自我介紹和核對身分、說明流程。';
+    if (asked('cc') < Math.min(6, all('cc'))) return '先把主訴問清楚：什麼時候開始、在哪裡、多久、怎麼樣的痛、什麼會加重或緩解、會不會傳到別處。';
+    if (asked('hx') < 4) return '主訴之後是個人和過去的病史：慢性病、家族史、過敏、菸酒、工作和接觸史。';
+    if (asked('ros') < 3) return '最後用系統回顧補一遍，看有沒有漏掉的症狀。';
+    return '問得差不多了，就進到評估。之後想到還可以回來補問。';
+  }
+  if (s.phase === 2) {
+    if (s.vitalsSeen === null) return '你還不知道' + who + '的血壓和心跳。先量生命徵象。';
+    if (s.examined.length < 4) return '照模組從頭做到腳：頭頸、胸部、心臟、腹部、四肢。動手之前先說明。';
+    return '評估得差不多了，就去下診斷。';
+  }
+  if (s.phase === 3) return '把線索排一排：一句話說出問題，最可能的是哪一個，還要排除哪幾個。';
+  if (c.safety.some((r) => r.type === 'call') && s.calledAt === null) return '你下了診斷。這位病人等得了嗎？該讓誰知道？';
+  for (const r of c.safety) if (r.type === 'order' && !s.ordered.some((o) => o.id === r.test)) return '依你的診斷，有一項檢查要先做：' + c.tests.find((t) => t.id === r.test)!.label + '。';
   if (!vitalsAfterChange(s)) return who + '的樣子變了。你手上的數字還是剛才的。';
   const untouched = c.forms.find((f) => f.danger && !s.reads.some((r) => clueOf(c, r.clue).tell?.form === f.id));
-  if (untouched) return '「' + untouched.name + '」那盞燈還沒動過。有哪一個問題或檢查，能讓它更像或比較不像？';
-  if (!s.report) return '把你現在知道的重點，報給值班醫師。';
-  if (!s.board.likely) return '線索夠多了。到「推理」排一排：最可能的是什麼，還要排除什麼。';
+  if (untouched) return '「' + untouched.name + '」那盞燈還沒動過。回到問診或評估，找一條能讓它更像或比較不像的線索。';
+  if (!s.report) return '把你的診斷和打算，報給值班醫師。';
   if (!s.explained) return who + '還不知道自己怎麼了。結案之前，跟' + c.patient.pronoun + '說明。';
-  return '該做的都做了。到「說明」裡提交摘要。';
+  return '該做的都做了。可以提交摘要了。';
 }
 
 interface Ctx { c: CaseDef; s: Session; ev: GameEvent[] }
@@ -113,14 +127,14 @@ function advance(x: Ctx) {
     ev.push({ type: 'result', id: o.id }, { type: 'toast', text: def.label + '的結果回來了' }, { type: 'say', who: 'sys', text: def.label + '：' + def.result });
     addClue(x, def.clue, 'test', o.id);
   }
-  // 還沒通報就拖過時間：病況變差
-  if (tl.worsenAt !== undefined && s.worsenedAt === null && s.calledAt === null && s.time >= tl.worsenAt) {
+  // 下了診斷卻遲遲不通報：病況變差
+  if (tl.worsenAfter !== undefined && s.dxAt !== null && s.worsenedAt === null && s.calledAt === null && s.time >= s.dxAt + tl.worsenAfter) {
     s.worsenedAt = s.time;
     note(x, 'worsen');
     ev.push({ type: 'worsen' }, { type: 'say', who: 'patient', text: c.lines.worsen ?? '……' }, { type: 'say', who: 'sys', text: c.patient.name + '的狀況變了。現在通報還來得及。', bad: true });
   }
   // 再拖下去：岑禾接手敲鐘
-  if (tl.stepInAt !== undefined && s.calledAt === null && s.time >= tl.stepInAt) {
+  if (tl.stepInAfter !== undefined && s.dxAt !== null && s.calledAt === null && s.time >= s.dxAt + tl.stepInAfter) {
     summon(x, 'mentor', 'step-in'); s.bell = true;
     ev.push({ type: 'bell', by: 'mentor' }, { type: 'say', who: 'mentor', text: c.lines.stepIn ?? '我先敲鐘了。' });
   }
@@ -151,7 +165,19 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
     if (prev.needCommit) return reject('先回答岑禾：你現在最擔心哪一個？');
   }
 
+  // 照順序：先問診，再評估，然後診斷，最後才是檢查和處置。可以回頭補做，不能跳到後面
+  if (a.type === 'exam' && prev.phase < 2) return reject('照順序來：先問診，問完了再開始評估。');
+  if (a.type === 'board' && prev.phase < 3) return reject('照順序來：評估做完，再下診斷。');
+  if ((a.type === 'test' || a.type === 'report' || a.type === 'explain') && prev.dxAt === null) return reject('先下診斷，再決定要做什麼檢查和處置。');
+
   switch (a.type) {
+    case 'advance': {
+      if (s.phase >= 3) return reject(s.phase === 3 ? '下了診斷，才會進到檢查。' : '已經是最後一個階段了。');
+      s.phase = (s.phase + 1) as 2 | 3;
+      note(x, 'advance', String(s.phase));
+      x.ev.push({ type: 'say', who: 'mentor', text: s.phase === 2 ? '好，接著評估。動手之前，先讓' + c.patient.pronoun + '知道你要做什麼。' : '線索都在你手上了。下診斷吧。' });
+      break;
+    }
     case 'ask': {
       const q = c.questions.find((k) => k.id === a.id);
       if (!q) return reject('沒有這個問題。');
@@ -233,7 +259,10 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
     case 'board': {
       s.board = { ...a.board, exclude: a.board.exclude.filter((id) => id !== a.board.likely && !!formOf(c, id)) };
       note(x, 'board', a.board.likely ?? undefined);
-      x.ev.push({ type: 'toast', text: '推理板已更新' });
+      if (s.board.likely && s.dxAt === null) {
+        s.dxAt = s.time; s.phase = 4;
+        x.ev.push({ type: 'say', who: 'mentor', text: '診斷記下了。接下來：要做哪些檢查？要讓誰知道？' });
+      } else x.ev.push({ type: 'toast', text: '診斷已更新' });
       break;
     }
     case 'call': {

@@ -9,7 +9,7 @@ import type { CaseRecord, Save } from './store.ts';
 
 /** 委託板上的一張委託。needs：要先完成哪一張才會出現 */
 export interface Quest { caseId: string; chapter: number; needs?: string }
-export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b', chapter: 1, needs: 'c01a' }];
+export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b', chapter: 1, needs: 'c01a' }, { caseId: 'c01c', chapter: 1, needs: 'c01b' }];
 export const unlocked = (q: Quest, s: Save) => !q.needs || !!s.cases[q.needs];
 
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
@@ -27,9 +27,14 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '一隻症影只配一個答案。那本索引就是這樣害人的。' },
     { who: 'mentor', text: '碼頭又送來一位，同事說「跟林秋那天一樣」。你去看看，是不是真的一樣。' },
   ] },
-  { id: 'ch1-end', title: '第一章　完', when: (s) => !!s.cases.c01a && !!s.cases.c01b, lines: [
+  { id: 'ch1-third', title: '第一章　同一張面孔', when: (s) => !!s.cases.c01a && !!s.cases.c01b, lines: [
     { who: 'mo', text: '兩個人，同一隻蛾，兩個真身。舊索引那一行，我劃掉了。' },
-    { who: 'mentor', text: '這一頁現在是你寫的：哪些線索讓它更像，哪些讓它比較不像。' },
+    { who: 'mentor', text: '還沒完。這一頁底下還有兩盞燈，你沒看過它們亮起來的樣子。' },
+    { who: 'mentor', text: '有位老船工，胸口悶了一個多月。他不急。你去想清楚：不急的，是不是就不要緊。' },
+  ] },
+  { id: 'ch1-finale', title: '第一章　完', when: (s) => !!s.cases.c01a && !!s.cases.c01b && !!s.cases.c01c, lines: [
+    { who: 'mo', text: '鐵翅蛾這一頁，三個真身底下都有人名了。只剩「血管急症」那一盞，還沒有人讓它亮過。' },
+    { who: 'mentor', text: '那一盞，你每一次都在排除它。沒亮過，不代表可以不看。' },
     { who: 'mentor', text: '第一章到這裡。下一頁是別的症影，還在整理，好了會貼到委託板上。' },
     { who: 'sys', text: '你升為「巡診專科護理師」。' },
   ] },

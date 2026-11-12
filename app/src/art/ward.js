@@ -91,7 +91,15 @@ function drawBack(g, who) {
   shape(g, [[243, 195], [254, 195], [253, 204], [244, 204]], { fill: C.cream, lw: 1.3 }); wline(g, [[244, 199], [253, 199]], C.teal, 1.6);
   shape(g, rect(226, 200.5, 11, 3.5), { fill: C.brass, lw: 1.2 }); shape(g, rect(229.5, 190, 4.5, 10.5), { fill: C.cream, lw: 1.2 });
 
-  if (who === 'jian') {
+  if (who === 'tong') {
+    // 莫桐的東西：一根拐杖、一把填船縫的木槌、一捲麻絮
+    oval(g, 74, 281, 34, 3.6, { fill: C.shadow, stroke: null });
+    wline(g, [[45, 281], [52, 236]], C.wood2, 3.4); wline(g, [[52, 236], [57, 231], [63, 234]], C.wood2, 3.4);
+    shape(g, rrect(66, 268, 24, 12, 3), { fill: C.wood });
+    wline(g, [[70, 268.5], [70, 279.5]], C.wood2, 1.1); wline(g, [[86, 268.5], [86, 279.5]], C.wood2, 1.1);
+    wline(g, [[90, 274], [112, 278]], C.wood2, 3.2);
+    shape(g, ell(104, 266, 8, 5, 12, 0.1), { fill: C.cream, lw: 1.2, step: 99 }); wline(g, [[99, 265], [104, 263.5], [109, 266.5]], C.paperLine, 1.1); wline(g, [[100, 268], [105, 266.5], [109, 269]], C.paperLine, 1.1);
+  } else if (who === 'jian') {
     // 簡晴的東西：一只綁著麻繩的木箱、一雙工作手套
     oval(g, 66, 282, 32, 3.6, { fill: C.shadow, stroke: null });
     shape(g, rect(42, 258, 40, 24), { fill: C.wood });
@@ -142,9 +150,9 @@ function drawMid(g) {
 }
 
 export function createWard(canvas, opts = {}) {
-  // 病人長什麼樣子。lin：林秋，冒冷汗的老燈匠；jian：簡晴，坐得很直的搬運工
-  const who = opts.patient === 'jian' ? 'jian' : 'lin', calm = who === 'jian';
-  const LOOK = calm ? { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairDark, brow: C.hairDark } : { shirt: C.shirt, shirt2: C.shirt2, hair: C.hairGrey, brow: C.hairGrey };
+  // 病人長什麼樣子。lin：林秋，冒冷汗的老燈匠；jian：簡晴，坐得很直的搬運工；tong：莫桐，瘦瘦的老船工，圍著圍巾
+  const who = ['jian', 'tong'].includes(opts.patient) ? opts.patient : 'lin', calm = who !== 'lin', woman = who === 'jian', old = who === 'tong';
+  const LOOK = woman ? { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairDark, brow: C.hairDark } : old ? { shirt: C.moss, shirt2: C.green2, hair: C.cream, brow: C.hairGrey } : { shirt: C.shirt, shirt2: C.shirt2, hair: C.hairGrey, brow: C.hairGrey };
   const base = createBase(canvas, { back: (g) => drawBack(g, who), mid: drawMid }), ctx = base.ctx;
   const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [] };
   let T = 0, dustClock = 0;
@@ -266,31 +274,36 @@ export function createWard(canvas, opts = {}) {
     if (wince > 0.3) { g.globalAlpha = clamp((wince - 0.3) * 2.5); [[9, -33, 14, -37], [10, -27, 16, -27], [9, -21, 14, -17]].forEach(([a, b, c, d]) => wline(g, [[a, b], [c, d]], C.rust, 1.6, { amp: 0.2, boil: true })); g.globalAlpha = 1; }
     // 脖子
     limb(g, [[0, -44], [1, -49]], 6, C.skin, { amp: 0 });
+    if (old) {   // 莫桐：一條繞了兩圈的圍巾
+      shape(g, [[-9, -41], [-7, -48], [9, -48], [11, -41], [5, -38], [-4, -38]], { fill: C.rust, lw: 1.3, boil: true });
+      shape(g, [[4, -40], [9, -40], [10, -26], [5, -25]], { fill: C.rust, lw: 1.3, boil: true });
+      wline(g, [[5.5, -29], [9.5, -29.5]], C.cream, 1.1); wline(g, [[5.5, -32.5], [9.5, -33]], C.cream, 1.1);
+    }
     // 頭
     g.save(); g.translate(1, -59 - breath * 0.5); g.rotate(slump * 0.35 + wince * 0.1 + (talking ? Math.sin(t * 9) * 0.02 : 0));
-    if (calm) {   // 簡晴：綁在腦後的馬尾
+    if (woman) {   // 簡晴：綁在腦後的馬尾
       limb(g, [[-17, -8], [-27, -2], [-29, 12 + Math.sin(t * 1.4) * 1.5]], 7, LOOK.hair, { boil: true });
       wline(g, [[-19, -9], [-23, -5]], C.rust, 2.6);
     }
     oval(g, -17.5, 2, 4, 5, { fill: C.skin, lw: 1.3, boil: true });
     shape(g, ell(0, 0, 20, 19, 14), { fill: C.skin, boil: true, step: 99 });
-    if (calm) shape(g, [[-19.5, 6], [-21, -8], [-16, -17], [-5, -21.5], [8, -20.5], [17, -14], [19.5, -6], [14, -11], [5, -13.5], [-5, -12], [-12, -7], [-14, 4]], { fill: LOOK.hair, boil: true });
+    if (woman) shape(g, [[-19.5, 6], [-21, -8], [-16, -17], [-5, -21.5], [8, -20.5], [17, -14], [19.5, -6], [14, -11], [5, -13.5], [-5, -12], [-12, -7], [-14, 4]], { fill: LOOK.hair, boil: true });
     else {
       shape(g, [[-19.5, 4], [-21, -8], [-16, -17], [-5, -21], [7, -20], [14, -14], [7, -13.5], [-3, -14.5], [-10, -10], [-13, -2], [-14.5, 5]], { fill: LOOK.hair, boil: true });
       wline(g, [[-14, -13], [-9, -16]], C.cream, 1); wline(g, [[-16, -6], [-13, -10]], C.cream, 1);
     }
     // 臉頰、眼睛、眉毛
-    g.globalAlpha = (calm ? 0.62 : 0.42) - slump * 0.2; leaf(g, -4, 6, 4, 2.4, 0, C.blush); leaf(g, 17, 6, 2.8, 2.2, 0, C.blush); g.globalAlpha = 1;
+    g.globalAlpha = (woman ? 0.62 : old ? 0.22 : 0.42) - slump * 0.2; leaf(g, -4, 6, 4, 2.4, 0, C.blush); leaf(g, 17, 6, 2.8, 2.2, 0, C.blush); g.globalAlpha = 1;
     const mode = wince > 0.45 ? 'wince' : (blink || slump > 0.6) ? 'blink' : 'open', look = talking ? [0.9, 0.2] : [1.2, 0.9];
     eye(g, 3, -2.5, 4.2, look, mode, -1); eye(g, 13.5, -2.5, 3.9, look, mode, 1);
     const w = 1.2 + wince * 2;   // 眉頭往上皺
-    wline(g, [[-2.5, -8 + w * 0.3], [6, -10 - w]], LOOK.brow, calm ? 1.6 : 2.2, { amp: 0.15, boil: true }); wline(g, [[10.5, -10 - w], [18, -8 + w * 0.3]], LOOK.brow, calm ? 1.6 : 2.2, { amp: 0.15, boil: true });
+    wline(g, [[-2.5, -8 + w * 0.3], [6, -10 - w]], LOOK.brow, woman ? 1.6 : 2.2, { amp: 0.15, boil: true }); wline(g, [[10.5, -10 - w], [18, -8 + w * 0.3]], LOOK.brow, woman ? 1.6 : 2.2, { amp: 0.15, boil: true });
     // 鼻子、鬍子、嘴
     wline(g, [[9, 1], [12.4, 4.2], [9.4, 6]], C.ink, 1.3, { amp: 0.15, boil: true });
     const mo = talking ? Math.abs(Math.sin(t * 11)) * 2.6 : wince * 1.2;
-    if (mo > 0.4) { g.beginPath(); g.ellipse(9, calm ? 11.5 : 13.6, 2.6, mo, 0, 0, TAU); g.fillStyle = '#5b2f28'; g.fill(); }
-    else if (calm) wline(g, [[5.5, 11], [9, 12], [12.5, 11]], C.ink, 1.3, { amp: 0.1, boil: true });
-    if (!calm) shape(g, [[0, 9.5], [4.5, 6.6], [9, 7.6], [13.5, 6.6], [18, 9.5], [14, 12.4], [9, 10.6], [4, 12.4]], { fill: LOOK.hair, lw: 1.2, boil: true });
+    if (mo > 0.4) { g.beginPath(); g.ellipse(9, woman ? 11.5 : 13.6, 2.6, mo, 0, 0, TAU); g.fillStyle = '#5b2f28'; g.fill(); }
+    else if (woman) wline(g, [[5.5, 11], [9, 12], [12.5, 11]], C.ink, 1.3, { amp: 0.1, boil: true });
+    if (!woman) shape(g, [[0, 9.5], [4.5, 6.6], [9, 7.6], [13.5, 6.6], [18, 9.5], [14, 12.4], [9, 10.6], [4, 12.4]], { fill: LOOK.hair, lw: 1.2, boil: true });
     // 冷汗
     for (let i = 0; i < (calm ? 0 : 2); i++) {
       const k = (t * 0.33 + i * 0.5) % 1, sx = -9 + i * 26, sy = -9 + k * 13;

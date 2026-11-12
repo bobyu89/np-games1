@@ -36,8 +36,11 @@ export interface Question {
   weight: number;
 }
 
+/** 身體評估照模組做：從頭到腳 */
+export type ExamPart = '整體' | '頭頸' | '胸部' | '心臟' | '腹部' | '四肢';
 export interface Exam {
   id: string;
+  part: ExamPart;
   label: string;
   /** 動手之前對病人說的話：目的、項目、部位 */
   explain: string;
@@ -75,7 +78,7 @@ export interface Choice { id: string; text: string; note: string }
 /** 安全行動：每個病例自己宣告哪些事一定要做到 */
 export type SafetyRule =
   | { type: 'call'; points: number }                            // 病況變差之前通報
-  | { type: 'order'; test: string; by: number; points: number } // 幾秒之內提出某項檢查
+  | { type: 'order'; test: string; within: number; points: number } // 下診斷之後幾秒之內提出某項檢查
   | { type: 'exclude'; forms: string[]; points: number }        // 每個危險的真身，都要有一條讓它比較不像的線索
   | { type: 'explain'; id: string; points: number }             // 說明裡一定要有的那一句
   | { type: 'calm'; points: number };                           // 病人穩定，不需要敲值班鐘
@@ -107,8 +110,8 @@ export interface CaseDef {
     requests: (Choice & { ok: boolean; orders?: string })[];
   };
   explain: (Choice & { ok: boolean; needsClue?: string; concern?: boolean })[];
-  /** 劇本上的時間點（模擬的秒數）。沒寫 worsenAt 表示這個病人不會變差 */
-  timeline: { worsenAt?: number; stepInAt?: number; doctorDelay: number };
+  /** 劇本上的時間點（模擬的秒數，從下診斷那一刻算起）。沒寫 worsenAfter 表示這個病人不會變差 */
+  timeline: { worsenAfter?: number; stepInAfter?: number; doctorDelay: number };
   safety: SafetyRule[];
   /** 解讀對幾條線索，「支持和反對的證據」就拿滿 */
   readsNeeded: number;
@@ -145,6 +148,10 @@ export interface Session {
   mode: 'quest';
   /** 模擬的時鐘，單位是秒。只有做行動才會走 */
   time: number;
+  /** 走到第幾個階段：1 問診、2 評估、3 診斷、4 檢查與處置。可以回頭補做前面的，不能跳到後面 */
+  phase: 1 | 2 | 3 | 4;
+  /** 第一次下診斷的時間 */
+  dxAt: number | null;
   asked: string[];
   examined: { id: string; explained: boolean }[];
   ordered: { id: string; at: number }[];
@@ -178,6 +185,7 @@ export interface Session {
 }
 
 export type Action =
+  | { type: 'advance' }
   | { type: 'ask'; id: string }
   | { type: 'vitals' }
   | { type: 'exam'; id: string; explain: boolean }

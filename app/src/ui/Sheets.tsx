@@ -1,5 +1,5 @@
-// 蓋在畫面上的紙：推理板、回報、說明、線索、確認。
-// 看字和排推理板不扣時間，所以這些都可以慢慢想。
+// 蓋在畫面上的紙：診斷、回報、說明、線索、確認。
+// 看字和下診斷不扣時間，所以這些都可以慢慢想。
 import { useState, type ReactNode } from 'react';
 import type { Board, CaseDef, Clue, Session } from '../core/types.ts';
 import { sfx } from './sound.ts';
@@ -27,17 +27,18 @@ function Pick({ on, onClick, children, tone = '' }: { on: boolean; onClick(): vo
   return <button type="button" className={'pick ' + tone + (on ? ' on' : '')} aria-pressed={on} onClick={() => { sfx.tap(); onClick(); }}>{children}</button>;
 }
 
-/** 推理板：一句問題摘要 → 最可能的真身、還要排除的真身。證據是你一路解讀下來的線索 */
+/** 下診斷：一句問題摘要 → 最可能的真身、還要排除的真身。證據是你一路解讀下來的線索 */
 export function BoardSheet({ c, s, onSave, onClose }: { c: CaseDef; s: Session; onSave(b: Board): void; onClose(): void }) {
   const [b, setB] = useState<Board>(s.board);
   const unasked = c.questions.filter((q) => q.weight > 0 && !s.asked.includes(q.id)).map((q) => q.label);
+  const unexamined = c.exams.filter((e) => !s.examined.some((k) => k.id === e.id)).map((e) => e.label);
   const readsOf = (form: string) => s.reads.map((r) => ({ r, k: clueOf(c, r.clue) })).filter((x) => x.k.tell!.form === form);
   return (
-    <Sheet title="推理板" onClose={onClose} footer={<button type="button" className="act demo" onClick={() => onSave(b)}>記下來</button>}>
+    <Sheet title="下診斷" onClose={onClose} footer={<button type="button" className="act demo" disabled={!b.likely} onClick={() => onSave(b)}>{b.likely ? '這是我的診斷' : '先選一個最可能的'}</button>}>
       <h3>一、用一句話說出問題</h3>
       <div className="stack">{c.summaries.map((k) => <Pick key={k.id} on={b.summary === k.id} onClick={() => setB({ ...b, summary: k.id })}>{k.text}</Pick>)}</div>
 
-      <h3>二、最可能的是哪一個？還要排除哪幾個？</h3>
+      <h3>二、你的診斷：最可能的是哪一個？還要排除哪幾個？</h3>
       <p className="dim">底下是你解讀過的線索：＋ 讓它更像，－ 讓它比較不像。</p>
       <div className="hyps">
         {c.forms.map((f) => (
@@ -51,7 +52,8 @@ export function BoardSheet({ c, s, onSave, onClose }: { c: CaseDef; s: Session; 
       </div>
 
       <h3>還不知道的</h3>
-      <p className="dim">{unasked.length ? '還沒問：' + unasked.join('、') + '。' : '病史都問過了。'}{s.vitalsSeen ? '' : ' 生命徵象還沒量。'}</p>
+      <p className="dim">{unasked.length ? '還沒問：' + unasked.join('、') + '。' : '病史都問過了。'}{s.vitalsSeen ? '' : ' 生命徵象還沒量。'}{unexamined.length ? ' 還沒做的評估：' + unexamined.join('、') + '。' : ''}</p>
+      <p className="dim">下了診斷，才會進到檢查。之後想法變了可以回來改。</p>
     </Sheet>
   );
 }
