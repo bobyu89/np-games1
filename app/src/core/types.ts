@@ -37,7 +37,7 @@ export interface Question {
 }
 
 /** 身體評估照模組做：從頭到腳 */
-export type ExamPart = '整體' | '頭頸' | '胸部' | '心臟' | '腹部' | '四肢' | '神經';
+export type ExamPart = '整體' | '頭頸' | '胸部' | '心臟' | '腹部' | '四肢' | '神經' | '背部' | '皮膚';
 export interface Exam {
   id: string;
   part: ExamPart;
