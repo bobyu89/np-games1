@@ -53,6 +53,14 @@ python3 tools/convert_script.py 教案.docx --id c02a
 npm run cases
 ```
 
+6. 更新給臨床老師的審查清單：
+
+```bash
+npm run review
+```
+
+寫的時候就知道沒把握的地方（數字沒對到原文、設計上的取捨），在 `shared.ts` 的 `REVIEW_ASKS` 補一條；新的文獻如果教學重點對過摘要，在 `REF_CHECK` 登記。
+
 ## 線索
 
 回答、評估結果、檢查結果後面都可以掛一條線索：

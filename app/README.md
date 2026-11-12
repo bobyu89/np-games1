@@ -20,6 +20,8 @@ npm run dev
 |---|---|
 | `npm test` | 規則和評分的測試（42 項） |
 | `npm run cases` | 檢查所有病例，印出一張總表 |
+| `npm run review` | 產生給臨床老師的審查清單，寫到 [`docs/review/`](../docs/review/README.md) |
+| `python3 tools/review_docx.py 審查清單.docx` | 把審查清單轉成一份 Word 檔（要先裝 pandoc） |
 | `npm run check` | 型別檢查 |
 | `npm run build` | 型別檢查之後打包到 `dist/`，是純靜態檔，放到任何主機都能跑 |
 | `python3 tools/convert_script.py 教案.docx --id c02a` | 把一份 OSCE 教案轉成病例的底稿，寫到 `drafts/`（見 [`src/data/README.md`](src/data/README.md)） |
@@ -82,6 +84,8 @@ src/
   ui/        畫面（React）：公會、病室、各種紙片、回顧；progress.ts 管故事、解鎖和圖鑑；Portrait.tsx 畫圖鑑的小圖
 tools/
   cases.ts            npm run cases
+  review.ts           npm run review：從病例檔產生審查清單
+  review_docx.py      把審查清單轉成 Word 檔
   convert_script.py   教案 → 病例的底稿（寫到 drafts/，不進版本控制）
 ```
 
