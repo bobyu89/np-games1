@@ -5,7 +5,7 @@ import type { CaseDef, Safety, Session } from '../core/types.ts';
 import type { CaseRecord, Run, Save } from './store.ts';
 
 const SAFETY: Safety[] = ['met', 'late', 'review'];
-/** 一個病例：最佳分數、安全行動、玩過幾次、花了幾秒、認出真身、回應在意的事、解讀對的線索 */
+/** 一個病例：最佳分數、安全行動、玩過幾次、花了幾秒、診斷對了沒、回應在意的事、解讀對的線索 */
 type Row = [number, number, number, number, 0 | 1, 0 | 1, string[]];
 interface Packed { app: 'mist-guild'; kind: 'save'; v: 3; at: string; build: string; hero: string | null; beats: string[]; takeaways: string[]; cases: Record<string, Row> }
 

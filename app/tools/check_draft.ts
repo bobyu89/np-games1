@@ -16,7 +16,7 @@ const m = (await load(modFile)).find((x) => !!x && typeof x === 'object' && 'for
 if (!m) { console.log('✗ ' + modFile + ' 裡找不到主訴模組'); process.exit(1); }
 let bad = 0;
 const problems: string[] = [];
-if (m.forms.length !== 4) problems.push('真身要四個，現在 ' + m.forms.length + ' 個');
+if (m.forms.length !== 4) problems.push('診斷要四個，現在 ' + m.forms.length + ' 個');
 if (m.questions.length !== 25) problems.push('問題要 25 題，現在 ' + m.questions.length + ' 題');
 if (m.exams.length !== 10) problems.push('評估要 10 項，現在 ' + m.exams.length + ' 項');
 if (m.tests.length !== 4) problems.push('檢查要 4 項，現在 ' + m.tests.length + ' 項');
@@ -34,14 +34,14 @@ for (const file of caseFiles) {
     const ok = !errs.length && sc.safety === 'met' && sc.total >= 90;
     if (!ok) bad += 1;
     truths.push(c.answer.truth);
-    console.log((ok ? '✓' : '✗') + ' ' + c.id + '｜' + c.title + '｜' + c.patient.name + '｜真身：' + formOf(c, c.answer.truth)!.name + '｜' + (c.timeline.worsenAfter !== undefined ? '不穩定' : '穩定'));
-    console.log('    要解讀的線索 ' + tells + '、安全行動 ' + c.safety.map((r) => r.type).join('+') + '；理想 ' + sc.total + ' 分・' + SAFETY_LABEL[sc.safety] + '；全部選錯真身 ' + wrong.total + ' 分・' + SAFETY_LABEL[wrong.safety]);
+    console.log((ok ? '✓' : '✗') + ' ' + c.id + '｜' + c.title + '｜' + c.patient.name + '｜診斷：' + formOf(c, c.answer.truth)!.name + '｜' + (c.timeline.worsenAfter !== undefined ? '不穩定' : '穩定'));
+    console.log('    要解讀的線索 ' + tells + '、安全行動 ' + c.safety.map((r) => r.type).join('+') + '；理想 ' + sc.total + ' 分・' + SAFETY_LABEL[sc.safety] + '；全部選錯診斷 ' + wrong.total + ' 分・' + SAFETY_LABEL[wrong.safety]);
     errs.forEach((e) => console.log('    ✗ ' + e));
     if (!errs.length && !ok) console.log('    ✗ 照理想的打法拿不到九十分或安全達成：' + sc.safetyNote + ' ' + sc.rows.map((r) => r.id + ' ' + r.got + '/' + r.max).join(' '));
     if (c.review.state !== '未審查') { console.log('    ✗ review.state 要寫「未審查」'); bad += 1; }
     if (tells < 7 || tells > 9) console.log('    ！要解讀的線索建議 7 到 9 條，現在 ' + tells + ' 條');
   } catch (e) { console.log('✗ ' + file + '：' + (e as Error).message); bad += 1; }
 }
-if (new Set(truths).size !== truths.length) { console.log('✗ 有兩位病人是同一個真身'); bad += 1; }
+if (new Set(truths).size !== truths.length) { console.log('✗ 有兩位病人是同一個診斷'); bad += 1; }
 console.log(bad ? '\n有 ' + bad + ' 個地方要修。' : '\n這個主訴的 ' + caseFiles.length + ' 個病例都可以用。');
 process.exit(bad ? 1 : 0);

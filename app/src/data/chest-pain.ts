@@ -1,4 +1,4 @@
-// 主訴模組：胸痛。症影是鐵翅蛾，底下有四個真身。
+// 主訴模組：胸痛。症影是胸悶蛾，底下有四個診斷。
 // 開場、病史、系統回顧和身體評估用共用的骨架（skeleton.ts）；這裡只寫胸痛自己的部分。
 import type { ComplaintDef } from '../core/module.ts';
 import { EXAMS, HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
@@ -6,7 +6,7 @@ import { EXAMS, HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const CHEST_PAIN: ComplaintDef = {
   id: 'chest-pain',
   name: '胸痛',
-  shadow: { name: '鐵翅蛾', look: 'moth', lore: '胸痛的症影。翅膀像鐵片一樣壓在胸口。同樣的外形底下，可能是好幾種不同的病。' },
+  shadow: { name: '胸悶蛾', look: 'moth', lore: '胸痛的症影。翅膀像鐵片一樣壓在胸口。同樣的外形底下，可能是好幾種不同的病。' },
   forms: [
     { id: 'cardiac', name: '心因性', mark: '心', danger: true, blurb: '心臟的血管堵住或快要堵住：心絞痛、急性冠心症。' },
     { id: 'vascular', name: '血管急症', mark: '脈', danger: true, blurb: '大血管出事：主動脈剝離、肺栓塞。' },

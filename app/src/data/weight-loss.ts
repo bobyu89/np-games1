@@ -1,4 +1,4 @@
-// 主訴模組：體重減輕。症影是啃月鼠，底下有四個真身。
+// 主訴模組：體重減輕。症影是消瘦鼠，底下有四個診斷。
 // 開場、病史、系統回顧用共用的骨架；主訴那一段的問法和身體評估是體重減輕自己的。
 // 第一個要分的是：吃得多還瘦，還是吃不下所以瘦。再來是大便、心情，和「誰煮飯、跟誰吃」。
 import type { ComplaintDef } from '../core/module.ts';
@@ -7,7 +7,7 @@ import { HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const WEIGHT_LOSS: ComplaintDef = {
   id: 'weight-loss',
   name: '體重減輕',
-  shadow: { name: '啃月鼠', look: 'mouse', lore: '體重減輕的症影。每天夜裡，把月亮啃掉一小口。一天看不出來；等到看得出來，已經少了一大塊。' },
+  shadow: { name: '消瘦鼠', look: 'mouse', lore: '體重減輕的症影。每天夜裡，把月亮啃掉一小口。一天看不出來；等到看得出來，已經少了一大塊。' },
   forms: [
     { id: 'tumor', name: '惡性腫瘤', mark: '瘤', danger: true, blurb: '身體裡長了東西，吃不下，也被它吃掉。' },
     { id: 'endocrine', name: '內分泌與代謝', mark: '代', danger: true, blurb: '身體燒得太快：甲狀腺亢進、糖尿病。吃得多，還是瘦。' },

@@ -1,4 +1,4 @@
-// 主訴模組：背痛。症影是負石龜，底下有四個真身。
+// 主訴模組：背痛。症影是腰背龜，底下有四個診斷。
 // 教案把背痛分成泌尿和骨骼兩類；這裡把「骨骼」拆成一般的肌肉骨骼和不能等的脊椎問題，再加上血管。
 // 開場、病史、系統回顧用共用的骨架；主訴那一段的問法和身體評估是背痛自己的：
 // 問法繞著「紅旗」問，評估多了下肢的神經學檢查，還有肚子和脈搏。
@@ -8,7 +8,7 @@ import { HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const BACK_PAIN: ComplaintDef = {
   id: 'back-pain',
   name: '背痛',
-  shadow: { name: '負石龜', look: 'tortoise', lore: '背痛的症影。背上馱著一疊石頭，走一步、沉一分。石頭多半只是累；有幾塊，底下壓著東西。' },
+  shadow: { name: '腰背龜', look: 'tortoise', lore: '背痛的症影。背上馱著一疊石頭，走一步、沉一分。石頭多半只是累；有幾塊，底下壓著東西。' },
   forms: [
     { id: 'msk', name: '肌肉骨骼', mark: '肌', danger: false, blurb: '筋和肌肉的事：拉傷、扭到、勞損。' },
     { id: 'urinary', name: '泌尿', mark: '尿', danger: true, blurb: '痛從腎臟和輸尿管來：結石、腎盂腎炎。' },

@@ -26,11 +26,15 @@ test('每個病例都通過檢查器', () => { for (const c of CASES) assert.dee
 test('病室和回顧裡不用圖鑑的詞；結案的那一句可以', () => {
   const said = (c: typeof CASES[number]) => validateCase(c).filter((e) => e.includes('圖鑑的詞'));
   const base = CASES[0];
-  assert.deepEqual(said({ ...base, lines: { ...base.lines, closing: '霧散了。' + base.shadow.name + '的真身，寫進圖鑑吧。' } }), []);
+  assert.deepEqual(said({ ...base, lines: { ...base.lines, closing: '霧散了。' + base.shadow.name + '的第一盞燈亮了，寫進圖鑑吧。' } }), []);
   assert.equal(said({ ...base, lines: { ...base.lines, opening: ['同一隻' + base.shadow.name + '，停在另一個人身上。'] } }).length, 1);
-  assert.equal(said({ ...base, clues: base.clues.map((k, i) => (i === 0 ? { ...k, why: '這條線索讓這個真身更像。' } : k)) }).length, 1);
+  assert.equal(said({ ...base, clues: base.clues.map((k, i) => (i === 0 ? { ...k, why: '這條線索讓這隻症影更清楚。' } : k)) }).length, 1);
   assert.equal(said({ ...base, debrief: { ...base.debrief, alternatives: ['「血管急症」那一盞底下有兩個病。'] } }).length, 1);
   assert.deepEqual(said({ ...base, sbar: { ...base.sbar, requests: base.sbar.requests.map((k, i) => (i === 0 ? { ...k, text: '夜裡留一盞燈，走動有人陪。' } : k)) } }), [], '真的燈不算');
+  // 「\u771f\u8eab」這個舊的說法在哪裡都不能用，結案的那一句也一樣
+  const old = '\u771f\u8eab';
+  assert.ok(validateCase({ ...base, lines: { ...base.lines, closing: '霧散了。這一次的' + old + '不一樣。' } }).some((e) => e.includes('已經不用的詞')));
+  for (const c of CASES) assert.ok(!JSON.stringify(c).includes(old), c.id);
 });
 
 test('每個病例照理想的打法，都能安全達成、九十分以上', () => {
@@ -44,10 +48,10 @@ test('每個病例照理想的打法，都能安全達成、九十分以上', ()
   }
 });
 
-test('同一個主訴的病例，畫面上的選項一模一樣，真身各不相同', () => {
+test('同一個主訴的病例，畫面上的選項一模一樣，診斷各不相同', () => {
   const shape = (c: typeof A) => JSON.stringify([c.questions.map((q) => [q.id, q.label, q.ask]), c.exams.map((e) => [e.id, e.part, e.label]), c.tests.map((t) => [t.id, t.label]), c.forms.map((f) => f.id)]);
   for (const c of [B, C, D]) assert.equal(shape(A), shape(c));
-  // 四位病人，四個真身各一位
+  // 四位病人，四個診斷各一位
   assert.deepEqual([A, B, C, D].map((c) => c.answer.truth).sort(), A.forms.map((f) => f.id).sort());
 });
 
@@ -72,7 +76,7 @@ test('檢查器抓得到常見的錯', () => {
   has({ ...A, answer: { ...A.answer, truth: 'nope' } }, 'nope');
   has({ ...A, clues: A.clues.map((k) => (k.id === 'c-character' ? { ...k, why: undefined } : k)) }, '為什麼');
   has({ ...B, clues: B.clues.map((k) => (k.tell?.form === 'vascular' ? { ...k, tell: undefined, why: undefined } : k)) }, '比較不像');
-  has({ ...A, forms: A.forms.slice(0, 3) }, '四個真身');
+  has({ ...A, forms: A.forms.slice(0, 3) }, '四個診斷');
   has({ ...A, questions: A.questions.filter((q) => q.group !== 'ros') }, '少了一段');
   has({ ...A, title: 'TODO 委託的標題' }, 'TODO');
   has({ ...B, clues: B.clues.map((k) => (k.id === 'c-location' ? { ...k, alsoOk: [{ form: 'cardiac', dir: -1 as const }] } : k)) }, '方向');
@@ -264,7 +268,7 @@ test('穩定的病人敲了值班鐘：安全行動只算部分達成', () => {
   }
 });
 
-test('沒有把危險的真身排除就說沒事：需要複核', () => {
+test('沒有把危險的診斷排除就說沒事：需要複核', () => {
   const quick: Action[] = [ask('q-intro'), next, { type: 'vitals' }, exam('x-chest-touch'), next, { type: 'board', board: { summary: 's-best', likely: 'msk', exclude: [] } },
     { type: 'test', id: 't-ecg' }, { type: 'explain', ids: ['e-why', 'e-warn'] }, { type: 'close' }];
   const sc = scoreSession(B, run(B, quick));
@@ -298,7 +302,7 @@ test('腫瘤那一位：關鍵的檢查是胸部 X 光；沒照就放回去要�
 });
 
 // ── 第二章：喘、腹痛 ──
-test('每隻症影各有自己的四個真身、自己的檢查；同一隻底下的病例選項一樣', () => {
+test('每隻症影各有自己的四個診斷、自己的檢查；同一隻底下的病例選項一樣', () => {
   assert.deepEqual(COMPLAINTS.map((m) => m.id), ['chest-pain', 'dyspnea', 'abdomen', 'fever', 'headache', 'back-pain', 'leg-pain', 'swelling', 'excreta', 'rash', 'weight-loss', 'paresthesia']);
   for (const m of COMPLAINTS) {
     const mine = CASES.filter((c) => c.complaint === m.id);
@@ -307,7 +311,7 @@ test('每隻症影各有自己的四個真身、自己的檢查；同一隻底�
     assert.ok(m.shadow.look, m.id + ' 沒有寫症影的樣子');
     const shape = (c: typeof A) => JSON.stringify([c.questions.map((q) => [q.id, q.label, q.ask]), c.exams.map((e) => [e.id, e.part, e.label]), c.tests.map((t) => [t.id, t.label])]);
     mine.forEach((c) => assert.equal(shape(c), shape(mine[0]), c.id));
-    assert.equal(new Set(mine.map((c) => c.answer.truth)).size, mine.length, m.id + ' 有兩位病人是同一個真身');
+    assert.equal(new Set(mine.map((c) => c.answer.truth)).size, mine.length, m.id + ' 有兩位病人是同一個診斷');
     // 開場、病史、系統回顧每一隻都一樣；只有主訴那一段的問法不同
     const shared = (c: typeof A) => JSON.stringify(c.questions.filter((q) => q.group !== 'cc').map((q) => [q.id, q.ask]));
     assert.equal(shared(mine[0]), shared(A));
@@ -340,7 +344,7 @@ test('腹痛：評估照看、聽、敲、摸的順序；讓病人吃東西或�
   assert.equal(scoreSession(G, run(G, quick)).safety, 'review');
 });
 
-test('十二隻症影的四個真身，每一個都有一位病人', () => {
+test('十二隻症影的四個診斷，每一個都有一位病人', () => {
   for (const m of COMPLAINTS) {
     const truths = CASES.filter((c) => c.complaint === m.id).map((c) => c.answer.truth).sort();
     assert.deepEqual(truths, m.forms.map((f) => f.id).sort(), m.id);
@@ -380,7 +384,7 @@ test('結核那一位：戴口罩是安全行動；沒說就需要複核；「�
   assert.equal(c.sbar.requests.find((k) => k.id === 'r-syrup')!.ok, false);
 });
 
-test('藥物熱那一位：真身是非感染；再加一種抗生素是錯的；另外三盞都要有排除的線索', () => {
+test('藥物熱那一位：診斷是非感染；再加一種抗生素是錯的；另外三盞都要有排除的線索', () => {
   const c = caseById('c04d');
   assert.equal(c.answer.truth, 'other');
   assert.equal(c.sbar.requests.find((k) => k.id === 'r-more')!.ok, false);
@@ -401,7 +405,7 @@ test('腦膜炎那一位：關鍵的是抽血留培養；讓他睡一覺是錯�
 test('同樣寫著「老毛病」的兩張：一張沒有紅旗，一張她自己說不一樣', () => {
   const a = caseById('c05a'), b = caseById('c05b');
   assert.equal(a.answer.truth, 'primary'); assert.equal(b.answer.truth, 'bleed');
-  // 沒有紅旗的那一張：沒有非做不可的檢查，但三個危險的真身都要有排除的線索；要求馬上做斷層是錯的選項
+  // 沒有紅旗的那一張：沒有非做不可的檢查，但三個危險的診斷都要有排除的線索；要求馬上做斷層是錯的選項
   assert.ok(!a.safety.some((r) => r.type === 'order'));
   assert.deepEqual(a.safety.flatMap((r) => (r.type === 'exclude' ? r.forms : [])).sort(), ['bleed', 'infect', 'pressure']);
   assert.equal(a.sbar.requests.find((k) => k.id === 'r-ct')!.ok, false);
@@ -464,7 +468,7 @@ test('結案之後不能再行動', () => {
 });
 
 // ── 提示和回顧 ──
-test('提示跟著階段走，而且不講出真身', () => {
+test('提示跟著階段走，而且不講出診斷', () => {
   assert.ok(hintFor(A, createSession(A)).includes('開場'));
   assert.ok(hintFor(A, run(A, A.questions.map((q) => ask(q.id)))).includes('評估'));
   assert.ok(hintFor(A, run(A, [next])).includes('血壓'));
@@ -492,7 +496,7 @@ test('回顧：時間點照順序；看得出想法有沒有跟著線索變', ()
   assert.ok(takeaways(A, cur, scoreSession(A, cur)).length <= 4);
 });
 
-test('可以寫進圖鑑的：解讀對的線索、有沒有認出真身', () => {
+test('可以寫進圖鑑的：解讀對的線索、診斷對不對', () => {
   const h = harvest(B, run(B, idealActions(B)));
   assert.ok(h.found && h.concern);
   assert.ok(h.reads.some((r) => r.form === 'msk' && r.dir === 1) && h.reads.some((r) => r.form === 'cardiac' && r.dir === -1));

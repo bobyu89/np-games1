@@ -46,47 +46,47 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '板子上那張蓋了紅蠟的，是剛送來的。去看看吧。' },
   ] },
   { id: 'ch1-second', title: '第一章　鐘聲之前', when: (s) => !!s.cases.c01a, lines: [
-    { who: 'mo', text: '鐵翅蛾那一頁回來了一半。舊索引上只寫了一行：「鐵翅蛾，心」。' },
+    { who: 'mo', text: '胸悶蛾那一頁回來了一半。舊索引上只寫了一行：「胸悶蛾，心」。' },
     { who: 'mentor', text: '一隻症影只配一個答案。那本索引就是這樣害人的。' },
     { who: 'mentor', text: '碼頭又送來一位，同事說「跟林秋那天一樣」。你去看看，是不是真的一樣。' },
   ] },
   { id: 'ch1-third', title: '第一章　同一張面孔', when: (s) => !!s.cases.c01a && !!s.cases.c01b, lines: [
-    { who: 'mo', text: '兩個人，同一隻蛾，兩個真身。舊索引那一行，我劃掉了。' },
+    { who: 'mo', text: '兩個人，同一隻蛾，兩個診斷。舊索引那一行，我劃掉了。' },
     { who: 'mentor', text: '還沒完。這一頁底下還有兩盞燈，你沒看過它們亮起來的樣子。' },
     { who: 'mentor', text: '有位老船工，胸口悶了一個多月。他不急。你去想清楚：不急的，是不是就不要緊。' },
   ] },
   { id: 'ch1-fourth', title: '第一章　慢慢來的那一隻', when: (s) => !!s.cases.c01a && !!s.cases.c01b && !!s.cases.c01c, lines: [
-    { who: 'mo', text: '鐵翅蛾這一頁，三個真身底下都有人名了。只剩「血管急症」那一盞，還沒有人讓它亮過。' },
+    { who: 'mo', text: '胸悶蛾這一頁，三個診斷底下都有人名了。只剩「血管急症」那一盞，還沒有人讓它亮過。' },
     { who: 'mentor', text: '那一盞，你每一次都在排除它。沒亮過，不代表可以不看。' },
     { who: 'sys', text: '碼頭那邊有人跑進來：一艘貨船剛靠岸，有個人下跳板的時候喘不過氣，走不到公會。' },
     { who: 'mentor', text: '這一張是出診。把包背上，鐘我來拿。' },
   ] },
   { id: 'ch1-complete', title: '第一章　完', when: (s) => !!s.cases.c01a && !!s.cases.c01b && !!s.cases.c01c && !!s.cases.c01d, lines: [
-    { who: 'mo', text: '四盞燈，四個人。鐵翅蛾這一頁寫回來了。' },
+    { who: 'mo', text: '四盞燈，四個人。胸悶蛾這一頁寫回來了。' },
     { who: 'mentor', text: '同一句「胸口痛」，一個要馬上叫人，一個可以回家，一個不能放走，一個差點被當成緊張。' },
     { who: 'mentor', text: '第一章到這裡。下一頁是別的症影，還在整理，好了會貼到委託板上。' },
     { who: 'sys', text: '你升為「巡診專科護理師」。' },
   ] },
   { id: 'ch2-open', title: '第二章　同一張面孔', when: (s) => !!s.cases.c01a && !!s.cases.c01b && !!s.cases.c01c && !!s.cases.c01d, lines: [
     { who: 'mo', text: '下一頁有兩隻。一隻肚子像風箱，一鼓一縮；一隻把繩子打成結，抱在懷裡不放。' },
-    { who: 'mentor', text: '風箱蛙是喘，結繩蟹是腹痛。這兩隻最會騙人：來的人講的話都差不多，底下卻完全不一樣。' },
+    { who: 'mentor', text: '氣促蛙是喘，腹痛蟹是腹痛。這兩隻最會騙人：來的人講的話都差不多，底下卻完全不一樣。' },
     { who: 'mentor', text: '流程你已經熟了。這一章要練的是聽：同樣一句「我很喘」「我肚子痛」，要問到它們不一樣的地方。' },
     { who: 'sys', text: '委託板上多了兩張新的。' },
   ] },
   { id: 'ch2-half', title: '第二章　寫回一半', when: (s) => !!s.cases.c02a && !!s.cases.c02b && !!s.cases.c03a && !!s.cases.c03b, lines: [
-    { who: 'mo', text: '兩頁各寫回了一半。風箱蛙還有「肺部感染」和「突發急症」，結繩蟹還有「胰臟與胃」和「大腸憩室」，底下都還沒有人名。' },
+    { who: 'mo', text: '兩頁各寫回了一半。氣促蛙還有「肺部感染」和「突發急症」，腹痛蟹還有「胰臟與胃」和「大腸憩室」，底下都還沒有人名。' },
     { who: 'mentor', text: '一個是水，一個是氣；一個吃完油的才痛，一個從肚臍開始痛。這些差別，都是你自己問出來的。' },
     { who: 'mentor', text: '剩下的四盞，委託已經送到了。有兩位不太穩，你要一邊問、一邊看著他們。' },
   ] },
   { id: 'ch2-complete', title: '第二章　完', when: (s) => ['c02a', 'c02b', 'c02c', 'c02d', 'c03a', 'c03b', 'c03c', 'c03d'].every((id) => !!s.cases[id]), lines: [
-    { who: 'mo', text: '風箱蛙四盞，結繩蟹四盞，都有人名了。圖鑑寫回了三頁。' },
+    { who: 'mo', text: '氣促蛙四盞，腹痛蟹四盞，都有人名了。圖鑑寫回了三頁。' },
     { who: 'mentor', text: '八個人，講的幾乎是同樣兩句話：「我很喘」「我肚子痛」。你問到了他們不一樣的地方。' },
     { who: 'mentor', text: '還有一件事：最後那一位怕的不是痛。她怕什麼，不問是聽不到的。' },
     { who: 'mentor', text: '第二章到這裡。' },
   ] },
   { id: 'rank-duty', title: '升階　值班專科護理師', when: (s) => tierOf(s) === 1, lines: [
     { who: 'mentor', text: '從今天起，你是值班專科護理師。披肩不換，換的是我幫你的方式。' },
-    { who: 'mentor', text: '以前我會先告訴你，一條線索是讓某個真身更像，還是比較不像。現在這一步你自己來。' },
+    { who: 'mentor', text: '以前我會先告訴你，一條線索是讓某個診斷更像，還是比較不像。現在這一步你自己來。' },
     { who: 'mentor', text: '還有，一張委託我只回答你三次。想清楚再問。' },
     { who: 'mo', text: '舊的委託也可以重接。同一位病人，少了提示，你看到的東西會不一樣。' },
   ] },
@@ -100,7 +100,7 @@ export const BEATS: Beat[] = [
   { id: 'ch3-half', title: '第三章　打開了四張', when: (s) => ['c04a', 'c04b', 'c05a', 'c05b'].every((id) => !!s.cases[id]), lines: [
     { who: 'mo', text: '四張舊索引，三張劃掉重寫，一張底下補了憑據。' },
     { who: 'mentor', text: '兩張「老毛病」，一張是對的，一張差一點出事。差別不在那三個字，在寫的人有沒有查過。' },
-    { who: 'mentor', text: '餘燼蜥還有兩盞沒有人名，篤篤鳥也是。剩下的四張，眠墨剛從櫃子底下翻出來。' },
+    { who: 'mentor', text: '發熱蜥還有兩盞沒有人名，頭痛鳥也是。剩下的四張，眠墨剛從櫃子底下翻出來。' },
     { who: 'mo', text: '這四張寫的是：「感冒，還沒好」「感染沒清乾淨」「宿醉」「更年期」。有一張，底下還多補了一行。' },
   ] },
   { id: 'ch3-complete', title: '第三章　完', when: (s) => ['c04a', 'c04b', 'c04c', 'c04d', 'c05a', 'c05b', 'c05c', 'c05d'].every((id) => !!s.cases[id]), lines: [
@@ -158,7 +158,7 @@ export function newReads(save: Save, c: CaseDef, session: Session) {
   return harvest(c, session).reads.filter((r) => !had.some((k) => k.clue === r.clue));
 }
 
-/** 圖鑑的一頁：一隻症影、四個真身、你在不同病人身上解讀對的線索 */
+/** 圖鑑的一頁：一隻症影、四個診斷、你在不同病人身上解讀對的線索 */
 export function codexOf(m: ComplaintDef, save: Save) {
   const cases = CASES.filter((c) => c.complaint === m.id);
   const forms = m.forms.map((f) => {
@@ -228,7 +228,7 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
     const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;
     return {
       id: c.id, name: c.patient.name, tag: c.patient.age + ' 歲，' + c.patient.job,
-      lines: [rec?.found ? '真身：' + truth.name + '。' : '真身還沒有認出來。', ...(after[c.id] ? [after[c.id]] : [])],
+      lines: [rec?.found ? '診斷：' + truth.name + '。' : '還沒有診斷對過。', ...(after[c.id] ? [after[c.id]] : [])],
       shot: { kind: 'ward', patient: c.patient.look, scene: c.scene, view: face(92, 170) }, open: !!rec, hint: '完成「' + c.title + '」之後',
     };
   });

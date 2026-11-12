@@ -10,11 +10,11 @@
   1. 讀出教案的四段：開場、主訴（OLD CARTS）、個人與過去病史（含系統回顧）、身體評估。
   2. 把每一個問句對到遊戲的問題代號（src/data/skeleton.ts 那一套），把身體評估的發現對到評估代號。
   3. 寫出一份 CaseSpec 的底稿到 drafts/<id>.draft.ts：病人的回答和評估結果先放教案的原文，
-     推理的部分（每條線索指向哪個真身、安全行動、摘要、回報、說明、文獻）留成 TODO。
+     推理的部分（每條線索指向哪個診斷、安全行動、摘要、回報、說明、文獻）留成 TODO。
 
 它不做的事：
   - 不改寫文字。底稿裡是教案的原文，只能當底稿：進專案之前，每一句都要用自己的話重寫。
-  - 不判斷臨床內容。線索指向哪個真身、哪些算安全行動，要由寫病例的人決定、由臨床老師審查。
+  - 不判斷臨床內容。線索指向哪個診斷、哪些算安全行動，要由寫病例的人決定、由臨床老師審查。
 
 drafts/ 不進版本控制。教案是別人的著作，原文不要 commit、不要放進遊戲。
 只用 Python 內建的模組。教案當成不可信的資料處理：只取文字，不執行裡面的任何東西。
@@ -249,7 +249,7 @@ def draft(doc: dict, a: dict, case_id: str, complaint: str, src: str) -> str:
     w('export const ' + case_id.upper().replace('-', '_') + ': CaseSpec = {')
     w('  format: 3,')
     w('  id: ' + ts(case_id) + ',')
-    w('  complaint: ' + ts(complaint) + ',   // TODO：屬於哪個主訴模組。新的主訴要先寫模組（四個真身、主訴那一段的問法、檢查）')
+    w('  complaint: ' + ts(complaint) + ',   // TODO：屬於哪個主訴模組。新的主訴要先寫模組（四個診斷、主訴那一段的問法、檢查）')
     w("  kind: '變體',   // TODO：示範／變體／遷移")
     w("  title: 'TODO 委託的標題',")
     w("  review: { state: '未審查', note: REVIEW_NOTE },")
@@ -263,7 +263,7 @@ def draft(doc: dict, a: dict, case_id: str, complaint: str, src: str) -> str:
         w("  vitals: { base: { bp: 'TODO', hr: 0, rr: 0, spo2: 0, bt: 0 }, clue: { text: 'TODO 生命徵象的一句話', kind: 'info', key: true } },   // 教案裡沒有寫生命徵象，要自己訂")
     w('')
     w('  // 每一題的回答。有意義的回答後面掛一條線索；要玩家解讀的線索再加 tell 和 why：')
-    w("  //   clue: { text: '顯示在畫面上的短句', kind: 'pos'｜'neg'｜'info', key: true, tell: { form: '真身代號', dir: 1 或 -1 }, why: '岑禾的一句話' }")
+    w("  //   clue: { text: '顯示在畫面上的短句', kind: 'pos'｜'neg'｜'info', key: true, tell: { form: '診斷代號', dir: 1 或 -1 }, why: '岑禾的一句話' }")
     w('  answers: {')
     for group, ids in (('開場', OPEN), ('主訴', CC), ('個人與過去病史', HX), ('系統回顧', ROS)):
         w('    // ── ' + group + ' ──')
@@ -277,7 +277,7 @@ def draft(doc: dict, a: dict, case_id: str, complaint: str, src: str) -> str:
             elif qid in OPEN:
                 w('    %s: { say: %s },' % (ts(qid), ts('TODO 重寫：' + (answer or '（病人的反應）'))))
             else:
-                w("    %s: { say: %s, clue: { text: 'TODO 線索', kind: 'info' } },   // TODO：要不要讓玩家解讀？指向哪個真身？"
+                w("    %s: { say: %s, clue: { text: 'TODO 線索', kind: 'info' } },   // TODO：要不要讓玩家解讀？指向哪個診斷？"
                   % (ts(qid), ts('TODO 重寫：' + (answer or '（教案沒有寫回答）'))))
         w('')
     w('  },')
@@ -301,7 +301,7 @@ def draft(doc: dict, a: dict, case_id: str, complaint: str, src: str) -> str:
     w('  },')
     w('')
     w('  // ── 以下是推理的部分，轉換工具不會幫你寫 ──')
-    w("  answer: { truth: 'TODO 真身代號', exclude: { 'TODO 要排除的真身': 2 } },")
+    w("  answer: { truth: 'TODO 診斷代號', exclude: { 'TODO 要排除的診斷': 2 } },")
     w('  summaries: [   // 四句問題摘要：一句完整的（5 分）、一句少了關鍵的（3 分）、一句太模糊的、一句太早下結論的（0 分）')
     w("    { id: 's-best', text: 'TODO', score: 5, note: 'TODO 為什麼好' },")
     w("    { id: 's-ok', text: 'TODO', score: 3, note: 'TODO 少了什麼' },")

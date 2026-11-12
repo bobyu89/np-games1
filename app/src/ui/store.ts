@@ -5,7 +5,7 @@ import type { Safety, Session } from '../core/types.ts';
 /** 一個病例留下來的紀錄。reads 是解讀對的線索，會寫進圖鑑 */
 export interface CaseRecord {
   best: number; safety: Safety; plays: number; seconds: number;
-  /** 有沒有認出真身 */
+  /** 診斷對過沒有 */
   found: boolean;
   /** 有沒有回應病人最在意的事 */
   concern: boolean;
@@ -21,7 +21,7 @@ export function load(): Save {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || '{}') as Record<string, unknown>;
     if (raw.v === 3) return { ...blank(), ...(raw as Partial<Save>) };
-    // 舊版的存檔：只留「看過開場」，其他從頭來。流程、題目和真身都改過了，舊的分數和圖鑑對不上
+    // 舊版的存檔：只留「看過開場」，其他從頭來。流程、題目和診斷都改過了，舊的分數和圖鑑對不上
     const sawIntro = !!raw.introSeen || (Array.isArray(raw.beats) && raw.beats.includes('prologue'));
     return { ...blank(), beats: sawIntro ? ['prologue'] : [] };
   } catch { return blank(); }

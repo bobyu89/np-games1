@@ -223,7 +223,7 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
                 <div className="codex-top"><b>{m.shadow.name}</b><span>{m.name}的症影</span><em>寫回 {page.percent}%</em></div>
                 <i className="bar"><b style={{ width: page.percent + '%' }} /></i>
                 <p>{m.shadow.lore}</p>
-                <h3>四個真身</h3>
+                <h3>四個診斷</h3>
                 {page.forms.map(({ form, seenIn, reads, known }) => (
                   <div key={form.id} className={'form-card' + (known ? '' : ' unknown')}>
                     <div><i className="mark" aria-hidden="true">{known ? form.mark : '？'}</i><b>{known ? form.name : '還沒寫回來'}</b>{seenIn.length > 0 && <em>在{seenIn.join('、')}身上確認過</em>}</div>
@@ -232,7 +232,7 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
                   </div>
                 ))}
                 <h3>遇過的人</h3>
-                {page.people.length ? page.people.map(({ c, rec }) => <p key={c.id} className="quote"><b>{c.patient.name}</b>，{c.patient.job}。{rec.found ? '你認出了真身。' : '真身還沒有認出來。'}{rec.concern ? '你回應了' + c.patient.pronoun + '最在意的事。' : ''}</p>) : <p className="dim">還沒有。完成第一張委託，才會有第一筆紀錄。</p>}
+                {page.people.length ? page.people.map(({ c, rec }) => <p key={c.id} className="quote"><b>{c.patient.name}</b>，{c.patient.job}。{rec.found ? '你的診斷是對的。' : '還沒有診斷對過。'}{rec.concern ? '你回應了' + c.patient.pronoun + '最在意的事。' : ''}</p>) : <p className="dim">還沒有。完成第一張委託，才會有第一筆紀錄。</p>}
                 <p className="dim">這一頁有 {page.cases.length} 位病人、{page.total} 條可以解讀的線索，你寫回了 {page.got} 條。</p>
               </div>
             );

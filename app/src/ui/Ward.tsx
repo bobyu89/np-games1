@@ -35,7 +35,7 @@ function Opt({ done, wait, onClick, children, cls = '' }: { done?: boolean; wait
   return <button type="button" className={'opt ' + cls + (done ? ' done' : '') + (wait ? ' wait' : '')} onClick={onClick}>{children}{done && <i aria-hidden="true">✓</i>}{wait && <i aria-hidden="true">…</i>}</button>;
 }
 
-/** 四個診斷的按鈕：解讀線索和回答岑禾都用這一組。病室裡一律說「診斷」，不說圖鑑裡的「真身」 */
+/** 四個診斷的按鈕：解讀線索和回答岑禾都用這一組 */
 function Forms({ c, onPick }: { c: CaseDef; onPick(id: string): void }) {
   return <div className="forms">{c.forms.map((f) => <button key={f.id} type="button" className="form" onClick={() => onPick(f.id)}><i aria-hidden="true">{f.mark}</i>{f.name}</button>)}</div>;
 }

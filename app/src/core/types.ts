@@ -3,7 +3,7 @@
 
 export interface Vitals { bp: string; hr: number; rr: number; spo2: number; bt: number }
 
-/** 一條線索對某個真身的意義：dir 是 1 表示更像，-1 表示比較不像 */
+/** 一條線索對某個診斷的意義：dir 是 1 表示更像，-1 表示比較不像 */
 export interface Tell { form: string; dir: 1 | -1 }
 
 /** 一條線索：問到的、看到的、量到的事實 */
@@ -15,7 +15,7 @@ export interface Clue {
   key?: boolean;
   /** 這條線索能推開多少霧。沒寫的話，關鍵線索 3，其他 1 */
   fog?: number;
-  /** 有寫的線索，拿到之後要玩家自己解讀：它讓哪個真身更像或比較不像 */
+  /** 有寫的線索，拿到之後要玩家自己解讀：它讓哪個診斷更像或比較不像 */
   tell?: Tell;
   /** 也算對的其他解讀 */
   alsoOk?: Tell[];
@@ -62,7 +62,7 @@ export interface TestDef {
   clue?: string;
 }
 
-/** 真身：同一隻症影底下可能的病。一個主訴固定四個 */
+/** 診斷：同一隻症影底下可能的病。一個主訴固定四個 */
 export interface TrueForm {
   id: string;
   name: string;
@@ -79,7 +79,7 @@ export interface Choice { id: string; text: string; note: string }
 export type SafetyRule =
   | { type: 'call'; points: number }                            // 病況變差之前通報
   | { type: 'order'; test: string; within: number; points: number } // 下診斷之後幾秒之內提出某項檢查
-  | { type: 'exclude'; forms: string[]; points: number }        // 每個危險的真身，都要有一條讓它比較不像的線索
+  | { type: 'exclude'; forms: string[]; points: number }        // 每個危險的診斷，都要有一條讓它比較不像的線索
   | { type: 'explain'; id: string; points: number; what?: string } // 說明裡一定要有的那一句。what：這一句是在做什麼，沒寫就是「交代什麼情況要馬上回來」
   | { type: 'calm'; points: number };                           // 病人穩定，不需要敲值班鐘
 
@@ -89,7 +89,7 @@ export interface CaseDef {
   /** 屬於哪個主訴模組 */
   complaint: string;
   complaintName: string;
-  /** 示範：第一次遇到；變體：同一隻症影、不同的真身；遷移：沒看過的說法 */
+  /** 示範：第一次遇到；變體：同一隻症影、不同的診斷；遷移：沒看過的說法 */
   kind: '示範' | '變體' | '遷移';
   title: string;
   review: { state: '未審查' | '已審查'; note: string };

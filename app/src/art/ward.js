@@ -1,4 +1,4 @@
-// 病室：林秋的床、岑禾、症影「鐵翅蛾」和霧。
+// 病室：林秋的床、岑禾、症影「胸悶蛾」和霧。
 // 不會動的背景只畫一次存起來，每一格直接貼上；會動的東西每一格重畫。
 import { C, K, TAU, hash, clamp, smooth, ell, rect, rrect, prep, trace, shape, oval, wline, limb, dot, leaf, fillRect, star, createBase } from './sketch.js';
 import { eye, drawCat, drawCen, drawShen, drawHero } from './cast.js';
@@ -611,7 +611,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 風箱蛙：喘的症影。肚子一鼓一縮，喉嚨的鳴囊跟著反過來動
+  // 氣促蛙：喘的症影。肚子一鼓一縮，喉嚨的鳴囊跟著反過來動
   function drawFrog(g, t, x, y, flinch, agit) {
     const puff = 0.5 + 0.5 * Math.sin(t * (2.2 + agit * 4 + flinch * 8));
     g.save(); g.translate(x, y + 4); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
@@ -636,7 +636,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 結繩蟹：腹痛的症影。懷裡抱著一個打死的繩結，兩隻螯一開一合
+  // 腹痛蟹：腹痛的症影。懷裡抱著一個打死的繩結，兩隻螯一開一合
   function drawCrab(g, t, x, y, flinch, agit) {
     const snap = 0.5 + 0.5 * Math.sin(t * (2.6 + agit * 5 + flinch * 10));
     g.save(); g.translate(x, y + 6); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
@@ -664,7 +664,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 餘燼蜥：發燒的症影。背上三塊炭一明一滅，尾巴捲著，鼻子冒一縷煙
+  // 發熱蜥：發燒的症影。背上三塊炭一明一滅，尾巴捲著，鼻子冒一縷煙
   function drawNewt(g, t, x, y, flinch, agit) {
     const glow = t * (2.2 + agit * 4 + flinch * 8);
     g.save(); g.translate(x, y + 6); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
@@ -692,7 +692,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 篤篤鳥：頭痛的症影。停在半空，一下一下地往病人那一邊啄
+  // 頭痛鳥：頭痛的症影。停在半空，一下一下地往病人那一邊啄
   function drawBird(g, t, x, y, flinch, agit) {
     const beat = (t * (1.1 + agit * 1.3 + flinch * 2)) % 1, peck = beat < 0.18 ? Math.sin((beat / 0.18) * Math.PI) : 0;
     g.save(); g.translate(x, y + 4); g.scale(-MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.03 + flinch * 0.2);
@@ -712,7 +712,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 負石龜：背痛的症影。背上疊著石頭，走一步、沉一分
+  // 腰背龜：背痛的症影。背上疊著石頭，走一步、沉一分
   function drawTortoise(g, t, x, y, flinch, agit) {
     const sag = Math.sin(t * (1.6 + agit * 3 + flinch * 6)) * (1 + agit * 1.5);
     g.save(); g.translate(x, y + 8 + sag * 0.6); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.8) * 0.02 + flinch * 0.15);
@@ -728,7 +728,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 單腳鷺：腳痛的症影。只用一隻腳站著，另一隻縮起來不讓人看
+  // 跛足鷺：腳痛的症影。只用一隻腳站著，另一隻縮起來不讓人看
   function drawHeron(g, t, x, y, flinch, agit) {
     const sway = Math.sin(t * (1.4 + agit * 3 + flinch * 7)) * (0.04 + agit * 0.05);
     g.save(); g.translate(x, y - 6); g.scale(MOTH_BIG, MOTH_BIG);
@@ -752,7 +752,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 漲水豚：腫脹的症影。一鼓一消
+  // 水腫豚：腫脹的症影。一鼓一消
   function drawPuffer(g, t, x, y, flinch, agit) {
     const puff = 0.5 + 0.5 * Math.sin(t * (1.8 + agit * 3.5 + flinch * 8)), r = 19 + puff * 6;
     g.save(); g.translate(x, y + 4); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.05 + flinch * 0.2);
@@ -767,7 +767,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 渾水獺：排泄物異常的症影。把水攪渾了就躲起來
+  // 二便獺：排泄物異常的症影。把水攪渾了就躲起來
   function drawOtter(g, t, x, y, flinch, agit) {
     const stir = t * (1.6 + agit * 3 + flinch * 6);
     g.save(); g.translate(x, y + 4); g.scale(MOTH_BIG, MOTH_BIG);
@@ -788,7 +788,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 點墨魷：皮膚疹子的症影。游過哪裡，墨點就留在哪裡
+  // 皮疹魷：皮膚疹子的症影。游過哪裡，墨點就留在哪裡
   function drawSquid(g, t, x, y, flinch, agit) {
     const wave = t * (2 + agit * 4 + flinch * 8);
     g.save(); g.translate(x, y); g.scale(MOTH_BIG, MOTH_BIG);
@@ -804,7 +804,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 啃月鼠：體重減輕的症影。每天夜裡把月亮啃掉一小口
+  // 消瘦鼠：體重減輕的症影。每天夜裡把月亮啃掉一小口
   function drawMouse(g, t, x, y, flinch, agit) {
     const nib = Math.max(0, Math.sin(t * (5 + agit * 6 + flinch * 10)));
     g.save(); g.translate(x + 4, y + 4); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
@@ -826,7 +826,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 電絲鰻：感覺異常的症影。游過的地方又麻又刺，像有細細的電
+  // 麻木鰻：感覺異常的症影。游過的地方又麻又刺，像有細細的電
   function drawEel(g, t, x, y, flinch, agit) {
     const sw = t * (2 + agit * 4 + flinch * 8);
     g.save(); g.translate(x, y + 2); g.scale(MOTH_BIG, MOTH_BIG);
@@ -975,7 +975,7 @@ export function createWard(canvas, opts = {}) {
     const ph = (t + 2.2) % 5.6;
     state.wince = still ? 0 : Math.max((ph < 1 ? Math.sin(ph * Math.PI) : 0) * (calm ? 0.5 : 1), state.slumpShown * 0.7);
     if (still) { sparks.length = 0; dust.length = 0; return; }
-    // 鐵翅蛾翅膀掉下來的鱗粉
+    // 胸悶蛾翅膀掉下來的鱗粉
     dustClock += dt;
     if (dustClock > 0.3 && state.veilShown < 0.85) {
       dustClock = 0;

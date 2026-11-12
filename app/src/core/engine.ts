@@ -60,7 +60,7 @@ export function veil(c: CaseDef, s: Session): number {
   return Math.max(0, Math.min(1, 1 - got / total));
 }
 
-/** 四盞燈的亮度：解讀過的線索，讓每個真身更像（正）或比較不像（負） */
+/** 四盞燈的亮度：解讀過的線索，讓每個診斷更像（正）或比較不像（負） */
 export function lights(c: CaseDef, s: Session): Record<string, number> {
   const out: Record<string, number> = Object.fromEntries(c.forms.map((f) => [f.id, 0]));
   for (const r of s.reads) { const k = clueOf(c, r.clue); if (k.tell) out[k.tell.form] += k.tell.dir * (k.key ? 2 : 1); }

@@ -5,7 +5,7 @@ export function validateCase(c: CaseDef): string[] {
   const errs: string[] = [];
   const ids = new Set<string>();
   const uniq = (kind: string, list: { id: string }[]) => list.forEach((k) => { if (ids.has(k.id)) errs.push(kind + ' 的代號重複：' + k.id); ids.add(k.id); });
-  uniq('線索', c.clues); uniq('問題', c.questions); uniq('評估', c.exams); uniq('檢查', c.tests); uniq('真身', c.forms);
+  uniq('線索', c.clues); uniq('問題', c.questions); uniq('評估', c.exams); uniq('檢查', c.tests); uniq('診斷', c.forms);
   uniq('摘要', c.summaries); uniq('回報的評估', c.sbar.assessments); uniq('回報的請求', c.sbar.requests); uniq('說明', c.explain);
 
   const clue = new Set(c.clues.map((k) => k.id)), form = new Set(c.forms.map((f) => f.id)), test = new Set(c.tests.map((t) => t.id)), used = new Set<string>(['c-vitals']);
@@ -21,19 +21,19 @@ export function validateCase(c: CaseDef): string[] {
   c.explain.forEach((e) => needClue('說明 ' + e.id, e.needsClue));
   c.clues.forEach((k) => {
     if (!used.has(k.id)) errs.push('線索 ' + k.id + ' 沒有任何行動拿得到');
-    [k.tell, ...(k.alsoOk ?? [])].forEach((t) => { if (t && !form.has(t.form)) errs.push('線索 ' + k.id + ' 的解讀指到不存在的真身：' + t.form); });
+    [k.tell, ...(k.alsoOk ?? [])].forEach((t) => { if (t && !form.has(t.form)) errs.push('線索 ' + k.id + ' 的解讀指到不存在的診斷：' + t.form); });
     if (k.tell && !k.why) errs.push('線索 ' + k.id + ' 要玩家解讀，卻沒有寫為什麼');
     if (!k.tell && k.alsoOk) errs.push('線索 ' + k.id + ' 只寫了「也算對」，沒有寫主要的解讀');
     if (k.tell && (k.alsoOk ?? []).some((t) => t.dir !== k.tell!.dir)) errs.push('線索 ' + k.id + ' 的「也算對」方向和主要的解讀不一樣（畫面只會問一個方向）');
   });
 
-  // 真身：固定四個；真身和要排除的都要存在
-  if (c.forms.length !== 4) errs.push('一個主訴要有四個真身，現在有 ' + c.forms.length + ' 個');
-  if (!form.has(c.answer.truth)) errs.push('真身不存在：' + c.answer.truth);
-  Object.keys(c.answer.exclude).forEach((id) => { if (!form.has(id)) errs.push('要排除的真身不存在：' + id); if (id === c.answer.truth) errs.push('真身不能同時列在要排除的裡面'); });
+  // 診斷：固定四個；診斷和要排除的都要存在
+  if (c.forms.length !== 4) errs.push('一個主訴要有四個診斷，現在有 ' + c.forms.length + ' 個');
+  if (!form.has(c.answer.truth)) errs.push('診斷不存在：' + c.answer.truth);
+  Object.keys(c.answer.exclude).forEach((id) => { if (!form.has(id)) errs.push('要排除的診斷不存在：' + id); if (id === c.answer.truth) errs.push('診斷不能同時列在要排除的裡面'); });
   const tells = c.clues.filter((k) => k.tell);
   if (tells.length < c.readsNeeded) errs.push('要解讀的線索只有 ' + tells.length + ' 條，不夠拿滿（需要 ' + c.readsNeeded + ' 條）');
-  if (!tells.some((k) => k.tell!.form === c.answer.truth && k.tell!.dir === 1)) errs.push('沒有任何線索支持真身');
+  if (!tells.some((k) => k.tell!.form === c.answer.truth && k.tell!.dir === 1)) errs.push('沒有任何線索支持正確的診斷');
 
   // 安全行動
   const tl = c.timeline;
@@ -45,7 +45,7 @@ export function validateCase(c: CaseDef): string[] {
     if (r.type === 'call' && (!c.vitals.worse || !c.lines.worsen || !c.lines.stepIn)) errs.push('會變差的病例要寫變差後的生命徵象、病人的話和岑禾接手的話');
     if (r.type === 'order' && !test.has(r.test)) errs.push('安全行動指到不存在的檢查：' + r.test);
     if (r.type === 'exclude') r.forms.forEach((f) => {
-      if (!form.has(f)) errs.push('安全行動要排除不存在的真身：' + f);
+      if (!form.has(f)) errs.push('安全行動要排除不存在的診斷：' + f);
       else if (!tells.some((k) => k.tell!.form === f && k.tell!.dir === -1)) errs.push('要求排除「' + f + '」，卻沒有任何線索能讓它比較不像');
     });
     if (r.type === 'explain' && !c.explain.some((e) => e.id === r.id && e.ok)) errs.push('安全行動指到不存在或不適合的說明：' + r.id);
@@ -62,9 +62,11 @@ export function validateCase(c: CaseDef): string[] {
   if (!c.explain.some((e) => e.concern && e.ok)) errs.push('說明裡少了回應病人擔心的那一句');
   c.debrief.teaching.forEach((t) => { if (!c.debrief.references.some((r) => r.id === t.ref)) errs.push('教學重點指到不存在的文獻：' + t.ref); });
   c.debrief.references.forEach((r) => { if (!/^10\.\d{4,}\//.test(r.doi)) errs.push('文獻 ' + r.id + ' 的 DOI 格式不對'); });
-  // 病室和回顧裡講臨床的話：圖鑑的詞（真身、症影、那一盞燈、症影的名字）會讓人分心去翻譯，
+  // 病室和回顧裡講臨床的話：圖鑑的詞（症影、那一盞燈、症影的名字）會讓人分心去翻譯，
   // 只留在結案的那一句（lines.closing）、症影自己的說明，還有公會和圖鑑的畫面。
-  const worldly = new RegExp('真身|症影|圖鑑|[這那同]一盞|[兩三四]盞|這盞|那盞|' + c.shadow.name);
+  const worldly = new RegExp('症影|圖鑑|[這那同]一盞|[兩三四]盞|這盞|那盞|' + c.shadow.name);
+  // 「真身」這個詞已經不用了（2026-11-12）：四盞燈就叫「診斷」，在哪裡都一樣
+  if (JSON.stringify(c).includes('\u771f\u8eab')) errs.push('用了已經不用的詞「\u771f\u8eab」：請改成「診斷」');
   const walk = (x: unknown, path: string): void => {
     if (path === '.lines.closing' || path === '.shadow') return;
     if (typeof x === 'string') { const m = x.match(worldly); if (m) errs.push('「' + path.slice(1) + '」用了圖鑑的詞「' + m[0] + '」：病室和回顧裡請用臨床的說法（診斷、排除），圖鑑的詞只留在結案的那一句'); return; }

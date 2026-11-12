@@ -138,7 +138,7 @@ export function moments(c: CaseDef, s: Session): { id: string; t: number; name: 
   return out.sort((a, b) => a.t - b.t);
 }
 
-/** 你的想法怎麼變：中途說最擔心的、結案時選的、實際的真身 */
+/** 你的想法怎麼變：中途說最擔心的、結案時選的、實際的診斷 */
 export function trajectory(c: CaseDef, s: Session): { steps: { t: number; name: string; right: boolean }[]; truth: string; verdict: string } {
   const steps = s.commits.map((k) => ({ t: k.t, name: formOf(c, k.form)!.name, right: k.form === c.answer.truth }));
   const truth = formOf(c, c.answer.truth)!.name, first = steps[0], last = steps[steps.length - 1];
@@ -171,7 +171,7 @@ export function takeaways(c: CaseDef, s: Session, sc: Score): string[] {
   return out.slice(0, 4);
 }
 
-/** 這一場可以寫進圖鑑的東西：解讀對的線索、有沒有認出真身 */
+/** 這一場可以寫進圖鑑的東西：解讀對的線索、診斷對不對 */
 export function harvest(c: CaseDef, s: Session): { reads: { clue: string; text: string; form: string; dir: 1 | -1 }[]; found: boolean; concern: boolean } {
   const reads = s.reads.filter((r) => r.ok).map((r) => { const k = clueOf(c, r.clue); return { clue: r.clue, text: k.text, form: k.tell!.form, dir: k.tell!.dir }; });
   return { reads, found: s.board.likely === c.answer.truth, concern: (s.explained ?? []).some((id) => c.explain.find((e) => e.id === id)?.concern) };

@@ -1,4 +1,4 @@
-// 主訴模組：頭痛。症影是篤篤鳥，底下有四個真身。
+// 主訴模組：頭痛。症影是頭痛鳥，底下有四個診斷。
 // 開場、病史、系統回顧用共用的骨架；主訴那一段的問法和身體評估是頭痛自己的：
 // 問法繞著「紅旗」問，評估多了一組神經學檢查。
 import type { ComplaintDef } from '../core/module.ts';
@@ -7,7 +7,7 @@ import { HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const HEADACHE: ComplaintDef = {
   id: 'headache',
   name: '頭痛',
-  shadow: { name: '篤篤鳥', look: 'bird', lore: '頭痛的症影。停在人的頭上，一下一下地啄。多半只是吵；有幾種啄法，是在報信。' },
+  shadow: { name: '頭痛鳥', look: 'bird', lore: '頭痛的症影。停在人的頭上，一下一下地啄。多半只是吵；有幾種啄法，是在報信。' },
   forms: [
     { id: 'primary', name: '原發性頭痛', mark: '原', danger: false, blurb: '頭痛本身就是病：偏頭痛、緊縮型頭痛。' },
     { id: 'bleed', name: '顱內出血', mark: '血', danger: true, blurb: '血管破了：蜘蛛膜下腔出血、腦出血。' },

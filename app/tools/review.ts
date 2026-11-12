@@ -132,7 +132,7 @@ function complaintDoc(id: string): string {
   const m = COMPLAINTS.find((k) => k.id === id)!, cases = CASES.filter((c) => c.complaint === id);
   const out: string[] = ['# 審查清單：' + m.name + '（' + m.shadow.name + '）', '', '這份檔案是程式從病例檔產生的（`npm run review`），不要手改。怎麼審、共用的設計和文獻在 [README.md](README.md)。', ''];
   out.push('**圖鑑上的說明**（遊戲的世界觀，不是臨床內容）：' + m.shadow.lore, '');
-  out.push('## 四個診斷', '', '同一個主訴底下可能的四類問題，玩家要在這四個裡面選最可能的、排除其他的（遊戲的圖鑑裡把它們叫做「真身」，病室裡一律說「診斷」）。這個分法是遊戲的骨架，請先看分得合不合理。', '');
+  out.push('## 四個診斷', '', '同一個主訴底下可能的四類問題，玩家要在這四個裡面選最可能的、排除其他的。這個分法是遊戲的骨架，請先看分得合不合理。', '');
   out.push(table(['診斷', '畫面上的字', '說明', '有哪位病人', '審查'], m.forms.map((f) => [f.name, f.mark, f.blurb, cases.filter((c) => c.answer.truth === f.id).map((c) => c.patient.name + '（' + c.id.toUpperCase() + '）').join('、') || '還沒有', BOX]), [2, 1, 7, 3, 2]), '');
   out.push('## 這個主訴的題目', '', '同一個主訴的每一位病人，畫面上的題目和檢查項目都一樣，只有回答不同。開場、病史、系統回顧是所有主訴共用的。', '');
   out.push(table(['分段', '按鈕', '玩家怎麼問', '份量'], m.questions.map((q) => [GROUP[q.group], q.label, said(q.ask), String(q.weight)]), [1, 2, 9, 1]), '');

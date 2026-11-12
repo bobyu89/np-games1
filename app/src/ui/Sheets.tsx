@@ -27,7 +27,7 @@ function Pick({ on, onClick, children, tone = '' }: { on: boolean; onClick(): vo
   return <button type="button" className={'pick ' + tone + (on ? ' on' : '')} aria-pressed={on} onClick={() => { sfx.tap(); onClick(); }}>{children}</button>;
 }
 
-/** 下診斷：一句問題摘要 → 最可能的真身、還要排除的真身。證據是你一路解讀下來的線索 */
+/** 下診斷：一句問題摘要 → 最可能的診斷、還要排除的診斷。證據是你一路解讀下來的線索 */
 export function BoardSheet({ c, s, onSave, onClose }: { c: CaseDef; s: Session; onSave(b: Board): void; onClose(): void }) {
   const [b, setB] = useState<Board>(s.board);
   const unasked = c.questions.filter((q) => q.weight > 0 && !s.asked.includes(q.id)).map((q) => q.label);

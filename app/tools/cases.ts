@@ -12,7 +12,7 @@ for (const c of CASES) {
   const tells = c.clues.filter((k) => k.tell).length, taps = acts.length + s.reads.length + s.commits.length;
   const ok = !errs.length && sc.safety === 'met' && sc.total >= 90;
   if (!ok) bad += 1;
-  console.log((ok ? '✓' : '✗') + ' ' + c.id + '｜' + c.complaintName + '｜' + c.kind + '｜' + c.title + '｜' + c.patient.name + '｜真身：' + formOf(c, c.answer.truth)!.name + '｜' + c.review.state);
+  console.log((ok ? '✓' : '✗') + ' ' + c.id + '｜' + c.complaintName + '｜' + c.kind + '｜' + c.title + '｜' + c.patient.name + '｜診斷：' + formOf(c, c.answer.truth)!.name + '｜' + c.review.state);
   console.log('    問題 ' + c.questions.length + '、評估 ' + c.exams.length + '、檢查 ' + c.tests.length + '、要解讀的線索 ' + tells + '、安全行動 ' + c.safety.map((r) => r.type).join('+'));
   console.log('    理想的打法：' + sc.total + ' 分、' + SAFETY_LABEL[sc.safety] + '、模擬時間 ' + Math.round(s.time / 60) + ' 分鐘、大約點 ' + taps + ' 下');
   errs.forEach((e) => console.log('    ✗ ' + e));
