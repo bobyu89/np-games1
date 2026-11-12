@@ -33,7 +33,7 @@ export const C09B: CaseSpec = {
     // 主訴
     'q-cc': { say: '我太太說我臉色差，叫我來。……其實是大便有血，半年了。我有痔瘡。', clue: { text: '主訴：血便半年，自己認為是痔瘡', kind: 'pos' } },
     'q-onset': { say: '半年前開始的。一開始偶爾才有，後來越來越常。', clue: { text: '半年前開始，慢慢變頻繁', kind: 'pos', key: true } },
-    'q-location': { say: '是大便。小便都正常，顏色是清的。', clue: { text: '異常的是大便；小便顏色正常', kind: 'neg', tell: { form: 'urinary', dir: -1 }, why: '小便是清的，沒有紅，也沒有血塊。泌尿道這一盞可以放下。' } },
+    'q-location': { say: '是大便。小便都正常，顏色是清的。', clue: { text: '異常的是大便；小便顏色正常', kind: 'neg', tell: { form: 'urinary', dir: -1 }, why: '小便是清的，沒有紅，也沒有血塊。泌尿道可以排除。' } },
     'q-duration': { say: '以前一天一次，很準。這半年有時候三四天不解，有時候一天跑四五次，稀稀的。', clue: { text: '排便習慣改變：便秘和稀便交替，半年', kind: 'pos', key: true, tell: { form: 'lower', dir: 1 }, why: '幾十年都一樣的排便習慣，在半年裡變了，而且一直沒有變回去。這是大腸本身出了問題的訊號。' } },
     'q-character': { say: '暗紅色的。大便變得比較細，像被壓扁過，有時候帶一點黏黏的東西。不是黑的。', clue: { text: '暗紅色的血；便變細、帶黏液；不是黑便', kind: 'pos', key: true, tell: { form: 'upper', dir: -1 }, why: '上面來的血，走到出口已經變成柏油一樣的黑。他是暗紅色、不黏不黑，源頭比較靠下面。' } },
     'q-assoc': { say: '肚子左下邊偶爾悶悶的。沒有吐，沒有發燒。皮膚沒有變黃。', clue: { text: '左下腹偶爾悶痛；沒有嘔吐或發燒', kind: 'pos' } },
@@ -53,7 +53,7 @@ export const C09B: CaseSpec = {
     // 系統回顧
     'q-ros-gen': { say: '很累。瘦了。沒有發燒，沒有盜汗。', clue: { text: '倦怠、體重減輕；沒有發燒', kind: 'pos' } },
     'q-ros-cp': { say: '爬樓梯會喘，心跳會快。沒有胸痛。', clue: { text: '活動時喘、心悸', kind: 'pos' } },
-    'q-ros-gi': { say: '沒有火燒心，上腹不痛，沒有吞不下去。小便不像茶，大便也沒有變成灰白色。', clue: { text: '沒有上腹症狀；尿不深、便不灰白', kind: 'neg', tell: { form: 'biliary', dir: -1 }, why: '膽汁流不下去，尿會像濃茶、便會變灰白。他都沒有，肝膽這一盞就比較不像。' } },
+    'q-ros-gi': { say: '沒有火燒心，上腹不痛，沒有吞不下去。小便不像茶，大便也沒有變成灰白色。', clue: { text: '沒有上腹症狀；尿不深、便不灰白', kind: 'neg', tell: { form: 'biliary', dir: -1 }, why: '膽汁流不下去，尿會像濃茶、便會變灰白。他都沒有，肝膽就比較不像。' } },
     'q-ros-limb': { say: '手腳不麻。腳沒有腫。', clue: { text: '四肢沒有症狀', kind: 'neg' } },
   },
   findings: {

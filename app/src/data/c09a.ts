@@ -57,7 +57,7 @@ export const C09A: CaseSpec = {
   },
   findings: {
     'x-look': { say: '臉色蒼白，額頭冒冷汗，講話有氣無力。意識清楚，對答切題。', clue: { text: '蒼白、冒冷汗；意識清楚', kind: 'pos', key: true } },
-    'x-eyes': { say: '眼白不黃。把下眼皮翻開，裡面幾乎是白的。', clue: { text: '結膜蒼白；眼白不黃', kind: 'pos', key: true, tell: { form: 'biliary', dir: -1 }, why: '膽汁流不下去，眼白會先變黃。他的眼白是白的，肝膽這一盞就比較不像。結膜這麼白，是血流掉了。' } },
+    'x-eyes': { say: '眼白不黃。把下眼皮翻開，裡面幾乎是白的。', clue: { text: '結膜蒼白；眼白不黃', kind: 'pos', key: true, tell: { form: 'biliary', dir: -1 }, why: '膽汁流不下去，眼白會先變黃。他的眼白是白的，肝膽就比較不像。結膜這麼白，是血流掉了。' } },
     'x-nodes': { say: '脖子和鎖骨上面摸不到腫大的淋巴結。', clue: { text: '鎖骨上沒有摸到淋巴結', kind: 'neg' } },
     'x-ortho': { say: '躺著：血壓 104/64，心跳 112。扶著他慢慢站起來一分鐘：血壓 86/54，心跳 134。他說眼前發黑，馬上讓他躺回去。', clue: { text: '站起來血壓掉到 86/54、心跳升到 134，頭暈', kind: 'pos', key: true } },
     'x-abd-look': { say: '腹部平坦，皮膚上沒有鼓起的血管。腸子的聲音很快、很響。', clue: { text: '腸音亢進；沒有腹壁靜脈曲張', kind: 'pos' } },

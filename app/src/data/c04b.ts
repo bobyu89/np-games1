@@ -67,7 +67,7 @@ export const C04B: CaseSpec = {
     'x-perfusion': { say: '手腳摸起來偏涼，微血管回填要 4 秒。兩腳的足背動脈都摸得到，比較弱。', clue: { text: '末梢偏涼，微血管回填 4 秒', kind: 'pos', key: true } },
   },
   results: {
-    't-urine': { say: '尿很濃。沒有白血球，亞硝酸鹽陰性。有尿糖。' + TEXT_RESULT, clue: { text: '驗尿：沒有感染的跡象', kind: 'neg', tell: { form: 'urinary', dir: -1 }, why: '尿是乾淨的。泌尿道這一盞，現在有憑據可以放下了。' } },
+    't-urine': { say: '尿很濃。沒有白血球，亞硝酸鹽陰性。有尿糖。' + TEXT_RESULT, clue: { text: '驗尿：沒有感染的跡象', kind: 'neg', tell: { form: 'urinary', dir: -1 }, why: '尿是乾淨的。泌尿道，現在有憑據可以排除了。' } },
     't-cxr': { say: '兩邊肺野清楚，沒有浸潤。' + TEXT_RESULT, clue: { text: '胸部 X 光：沒有肺炎', kind: 'neg' } },
     't-blood': { say: '白血球 19,600。乳酸偏高。腎功能的數字比正常高。血液培養已經送出，結果要等幾天。' + TEXT_RESULT, clue: { text: '抽血：白血球很高、乳酸偏高、腎功能變差', kind: 'pos', key: true, fog: 6 } },
     't-glucose': { say: '318 mg/dL。', clue: { text: '血糖 318 mg/dL', kind: 'pos', key: true } },

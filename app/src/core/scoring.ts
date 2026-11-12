@@ -34,7 +34,7 @@ function judge(c: CaseDef, s: Session, r: SafetyRule): { got: number; state: 'me
     case 'exclude': {
       const done = r.forms.filter((f) => s.reads.some((x) => x.ok && clueOf(c, x.clue).tell?.form === f && clueOf(c, x.clue).tell?.dir === -1));
       const left = r.forms.filter((f) => !done.includes(f)).map((f) => formOf(c, f)!.name);
-      if (!left.length) return { got: r.points, state: 'met', note: '每個危險的真身，都找到了讓它比較不像的線索。' };
+      if (!left.length) return { got: r.points, state: 'met', note: '每一個不能漏掉的診斷，都找到了讓它比較不像的線索。' };
       return { got: r.points * ratio(done.length, r.forms.length), state: done.length ? 'part' : 'miss', note: '還沒有線索讓這幾個比較不像：' + left.join('、') + '。' };
     }
     case 'explain': {

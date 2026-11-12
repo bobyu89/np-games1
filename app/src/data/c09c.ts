@@ -31,7 +31,7 @@ export const C09C: CaseSpec = {
     // 主訴
     'q-cc': { say: '小便……是紅的。', clue: { text: '主訴：小便變紅', kind: 'pos' } },
     'q-onset': { say: '第一次是兩個禮拜前，紅了兩天，自己好了。三天前又來，到今天還是紅的。', clue: { text: '兩週前第一次，自己停了；三天前再發', kind: 'pos', key: true } },
-    'q-location': { say: '是小便。大便正常，黃的，成形的。', clue: { text: '異常的是小便；大便的顏色和形狀正常', kind: 'neg', tell: { form: 'lower', dir: -1 }, why: '大便是黃的、成形的，沒有血，排便習慣也沒有變。下消化道這一盞比較不像。' } },
+    'q-location': { say: '是小便。大便正常，黃的，成形的。', clue: { text: '異常的是小便；大便的顏色和形狀正常', kind: 'neg', tell: { form: 'lower', dir: -1 }, why: '大便是黃的、成形的，沒有血，排便習慣也沒有變。下消化道比較不像。' } },
     'q-duration': { say: '這一次三天了，每一泡都紅。', clue: { text: '這次持續三天，每一次都紅', kind: 'pos' } },
     'q-character': { say: '紅的，像洗過肉的水，有時候更紅，裡面有一絲一絲的血塊。不是濃茶的顏色，也沒有很多泡泡。', clue: { text: '洗肉水到鮮紅色，帶血絲和血塊；不是茶色', kind: 'pos', key: true, tell: { form: 'urinary', dir: 1 }, why: '紅色、有血塊的尿，是血在泌尿道裡面流出來的。茶色、沒有血塊的深色尿，才要去想肝膽。' } },
     'q-assoc': { say: '沒有別的不舒服。腰不痛，肚子不痛，沒有發燒。皮膚沒有黃，身上不癢。', clue: { text: '沒有腰痛、腹痛或發燒', kind: 'neg', key: true } },
@@ -56,7 +56,7 @@ export const C09C: CaseSpec = {
   },
   findings: {
     'x-look': { say: '氣色還好，不蒼白。講到小便的時候，聲音會壓低。', clue: { text: '外觀不像急病，不蒼白', kind: 'neg' } },
-    'x-eyes': { say: '眼白不黃。下眼皮裡面是紅潤的。', clue: { text: '眼白不黃；結膜紅潤', kind: 'neg', key: true, tell: { form: 'biliary', dir: -1 }, why: '眼白是白的，尿是紅的、不是茶色。肝膽這一盞比較不像。結膜紅潤，也表示他沒有流掉很多血。' } },
+    'x-eyes': { say: '眼白不黃。下眼皮裡面是紅潤的。', clue: { text: '眼白不黃；結膜紅潤', kind: 'neg', key: true, tell: { form: 'biliary', dir: -1 }, why: '眼白是白的，尿是紅的、不是茶色。肝膽比較不像。結膜紅潤，也表示他沒有流掉很多血。' } },
     'x-nodes': { say: '脖子和鎖骨上面摸不到腫大的淋巴結。', clue: { text: '鎖骨上沒有摸到淋巴結', kind: 'neg' } },
     'x-ortho': { say: '躺著：血壓 134/82，心跳 78。站起來一分鐘：血壓 130/80，心跳 82。不會頭暈。', clue: { text: '站起來血壓和心跳沒有變化', kind: 'neg' } },
     'x-abd-look': { say: '腹部平坦，腸音正常。', clue: { text: '腹部平坦，腸音正常', kind: 'neg' } },

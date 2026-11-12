@@ -91,7 +91,7 @@ export function hintFor(c: CaseDef, s: Session): string {
   if (!vitalsAfterChange(s)) return who + '的樣子變了。你手上的數字還是剛才的。';
   // 有些關卡某一盞燈本來就放不下（沒有任何線索指向它），那一盞不提示
   const untouched = c.forms.find((f) => f.danger && c.clues.some((k) => k.tell?.form === f.id) && !s.reads.some((r) => clueOf(c, r.clue).tell?.form === f.id));
-  if (untouched) return '「' + untouched.name + '」那盞燈還沒動過。回到問診或評估，找一條能讓它更像或比較不像的線索。';
+  if (untouched) return '「' + untouched.name + '」還沒有任何線索談到。回到問診或評估，找一條能讓它更像或比較不像的線索。';
   if (!s.report) return '把你的診斷和打算，報給值班醫師。';
   if (!s.explained) return who + '還不知道自己怎麼了。結案之前，跟' + c.patient.pronoun + '說明。';
   return '該做的都做了。可以提交摘要了。';
@@ -238,13 +238,13 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
     }
     case 'read': {
       if (s.pending[0] !== a.clue) return reject('現在要想的不是這一條線索。');
-      if (!formOf(c, a.form)) return reject('沒有這個真身。');
+      if (!formOf(c, a.form)) return reject('沒有這個診斷。');
       if (s.tier >= 1 && a.dir === undefined) return reject('先決定這條線索是讓它更像，還是比較不像。');
       const k = clueOf(c, a.clue), formOk = hit(k, a.form), ok = formOk && (s.tier === 0 || a.dir === k.tell!.dir);
       s.pending = s.pending.slice(1);
       s.reads = [...s.reads, { clue: a.clue, form: a.form, ok, t: s.time }];
       note(x, 'read', a.clue, ok ? 'ok' : 'miss');
-      x.ev.push({ type: 'read', id: a.clue, ok }, { type: 'say', who: 'mentor', text: (ok ? '對。' : formOk ? '真身選對了，方向反了。' : '不是這一個。') + (k.why ?? '') });
+      x.ev.push({ type: 'read', id: a.clue, ok }, { type: 'say', who: 'mentor', text: (ok ? '對。' : formOk ? '診斷選對了，方向反了。' : '不是這一個。') + (k.why ?? '') });
       if (!s.pending.length && s.reads.length >= COMMIT_AFTER && !s.commits.length) {
         s.needCommit = true;
         x.ev.push({ type: 'say', who: 'mentor', text: '先停一下。到目前為止，你最擔心哪一個？' });
@@ -253,7 +253,7 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
     }
     case 'commit': {
       if (!s.needCommit) return reject('岑禾現在沒有問你。');
-      if (!formOf(c, a.form)) return reject('沒有這個真身。');
+      if (!formOf(c, a.form)) return reject('沒有這個診斷。');
       s.needCommit = false;
       s.commits = [...s.commits, { t: s.time, form: a.form }];
       note(x, 'commit', a.form);

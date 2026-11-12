@@ -48,7 +48,7 @@ function safetyText(c: CaseDef, r: SafetyRule): string {
   switch (r.type) {
     case 'call': return '病況變差之前通報（敲值班鐘，或直接向醫師回報）';
     case 'order': return '下診斷之後 ' + sec(r.within) + '內提出「' + c.tests.find((t) => t.id === r.test)!.label + '」';
-    case 'exclude': return '這幾個真身，各要有一條解讀正確的「比較不像」的線索：' + r.forms.map((f) => formOf(c, f)!.name).join('、');
+    case 'exclude': return '這幾個診斷，各要有一條解讀正確的「比較不像」的線索：' + r.forms.map((f) => formOf(c, f)!.name).join('、');
     case 'explain': return '向病人說明時要有這一句（' + (r.what ?? '交代什麼情況要馬上回來') + '）：「' + c.explain.find((e) => e.id === r.id)!.text + '」';
     case 'calm': return '病人穩定，不需要敲值班鐘（敲了算過度通報）';
   }
@@ -64,8 +64,8 @@ function caseSection(c: CaseDef): string {
 
   p('## ' + c.id.toUpperCase() + '｜' + c.title + '｜' + c.patient.name);
   p(table(['項目', '內容'], [
-    ['主訴（症影）', c.complaintName + '（' + c.shadow.name + '）'],
-    ['真身（這一關的答案）', truth.name + '。' + truth.blurb],
+    ['主訴（括號裡是遊戲圖鑑上的名字）', c.complaintName + '（' + c.shadow.name + '）'],
+    ['診斷（這一關的答案）', truth.name + '。' + truth.blurb],
     ['病人', c.patient.name + '，' + c.patient.age + ' 歲，' + c.patient.sex + '，' + c.patient.job],
     ['類型', c.kind],
     ['地點', SCENE[c.scene ?? 'ward']],
@@ -79,7 +79,7 @@ function caseSection(c: CaseDef): string {
   p('**讀完要想的三個問題**：' + c.reading.prompts.join('　'));
   p(table(['生命徵象', '血壓', '心跳', '呼吸', '血氧', '體溫'], [['一開始', ...vit(v.base)], ...(v.worse ? [['變差之後', ...vit(v.worse)]] : [])]));
 
-  p('### 1. 要玩家自己解讀的線索（' + tells.length + ' 條，解讀對 ' + c.readsNeeded + ' 條拿滿）', '玩家拿到線索之後，要選它讓哪一個真身更像或比較不像。請看「指向」和「理由」對不對、有沒有說得太滿。');
+  p('### 1. 要玩家自己解讀的線索（' + tells.length + ' 條，解讀對 ' + c.readsNeeded + ' 條拿滿）', '玩家拿到線索之後，要選它讓哪一個診斷更像或比較不像。請看「指向」和「理由」對不對、有沒有說得太滿。');
   p(table(['從哪裡來', '線索', '指向', '理由（解讀之後岑禾說的話）', '也算對的解讀', '審查'], tells.map((k: Clue) => [sourceOf(c, k.id), (k.key ? '★ ' : '') + k.text, tellText(c, k.tell!), k.why ?? '', (k.alsoOk ?? []).map((t) => tellText(c, t)).join('；') || '—', BOX]), [3, 4, 2, 6, 2, 3]));
 
   p('### 2. 其他關鍵線索（不用解讀，但沒拿到會被提醒）');
@@ -128,9 +128,9 @@ function caseSection(c: CaseDef): string {
 function complaintDoc(id: string): string {
   const m = COMPLAINTS.find((k) => k.id === id)!, cases = CASES.filter((c) => c.complaint === id);
   const out: string[] = ['# 審查清單：' + m.name + '（' + m.shadow.name + '）', '', '這份檔案是程式從病例檔產生的（`npm run review`），不要手改。怎麼審、共用的設計和文獻在 [README.md](README.md)。', ''];
-  out.push('**症影的說明**：' + m.shadow.lore, '');
-  out.push('## 四個真身', '', '同一個主訴底下可能的四類問題。這個分法是遊戲的骨架，請先看分得合不合理。', '');
-  out.push(table(['真身', '燈籠上的字', '說明', '有哪位病人', '審查'], m.forms.map((f) => [f.name, f.mark, f.blurb, cases.filter((c) => c.answer.truth === f.id).map((c) => c.patient.name + '（' + c.id.toUpperCase() + '）').join('、') || '還沒有', BOX]), [2, 1, 7, 3, 2]), '');
+  out.push('**圖鑑上的說明**（遊戲的世界觀，不是臨床內容）：' + m.shadow.lore, '');
+  out.push('## 四個診斷', '', '同一個主訴底下可能的四類問題，玩家要在這四個裡面選最可能的、排除其他的（遊戲的圖鑑裡把它們叫做「真身」，病室裡一律說「診斷」）。這個分法是遊戲的骨架，請先看分得合不合理。', '');
+  out.push(table(['診斷', '畫面上的字', '說明', '有哪位病人', '審查'], m.forms.map((f) => [f.name, f.mark, f.blurb, cases.filter((c) => c.answer.truth === f.id).map((c) => c.patient.name + '（' + c.id.toUpperCase() + '）').join('、') || '還沒有', BOX]), [2, 1, 7, 3, 2]), '');
   out.push('## 這個主訴的題目', '', '同一個主訴的每一位病人，畫面上的題目和檢查項目都一樣，只有回答不同。開場、病史、系統回顧是所有主訴共用的。', '');
   out.push(table(['分段', '按鈕', '玩家怎麼問', '份量'], m.questions.map((q) => [GROUP[q.group], q.label, q.ask, String(q.weight)]), [1, 2, 9, 1]), '');
   out.push(table(['部位', '評估項目', '動手之前對病人說的話', '份量'], m.exams.map((e) => [e.part, e.label, e.explain, String(e.weight)]), [1, 2, 9, 1]), '');
@@ -148,11 +148,11 @@ function readme(): string {
   p('《霧脈公會》現在有 ' + CASES.length + ' 個病例、' + COMPLAINTS.length + ' 個主訴。**全部都還沒經過臨床老師審查，不能當教材。**這份清單把每一關裡「有對錯」的地方攤開，請老師逐項看。');
   p('這一頁和各主訴的檔案都是程式從病例檔產生的（在 `app/` 底下跑 `npm run review`）。不要手改；病例改了，重跑一次就會更新。');
   p('## 怎麼審');
-  p('每個主訴一份檔案。先看四個真身分得合不合理，再一位一位看病人。每一位病人請看這七件事：');
-  p('1. **故事**：年齡、職業、病程、生命徵象，合不合理？', '2. **診斷和線索**：這個真身，和病人說的、評估到的，對不對得上？', '3. **要解讀的線索**：每一條的「指向」對不對？「理由」那句話有沒有說錯、說得太滿？', '4. **安全行動**：該不該敲值班鐘、時間限制合不合理、最關鍵的檢查是不是那一項？', '5. **回報和說明的選項**：標「對」的是不是真的對，標「錯」的是不是真的錯？有沒有超出專科護理師可以做的範圍？', '6. **教學重點**：敘述有沒有超出引用的文獻？', '7. **用語**：病人的話像不像病人會說的？有沒有不合臨床習慣的講法？');
+  p('每個主訴一份檔案。先看四個診斷分得合不合理，再一位一位看病人。每一位病人請看這七件事：');
+  p('1. **故事**：年齡、職業、病程、生命徵象，合不合理？', '2. **診斷和線索**：這個診斷，和病人說的、評估到的，對不對得上？', '3. **要解讀的線索**：每一條的「指向」對不對？「理由」那句話有沒有說錯、說得太滿？', '4. **安全行動**：該不該敲值班鐘、時間限制合不合理、最關鍵的檢查是不是那一項？', '5. **回報和說明的選項**：標「對」的是不是真的對，標「錯」的是不是真的錯？有沒有超出專科護理師可以做的範圍？', '6. **教學重點**：敘述有沒有超出引用的文獻？', '7. **用語**：病人的話像不像病人會說的？有沒有不合臨床習慣的講法？');
   if (boxes) p('每一列後面有「☐同意 ☐要改」。每一位病人最後有一個整體的四點評分（4 可以用、3 小修、2 大修、1 不適合），和專家效度常用的四點量表同一個刻度；這只是方便彙整，不是正式的效度工具。');
   p('## 索引');
-  p(table(['代號', '主訴', '真身', '病人', '穩不穩定', '狀態', '在哪一份'], CASES.map((c) => [c.id.toUpperCase(), c.complaintName, formOf(c, c.answer.truth)!.name, c.patient.name + '，' + c.patient.age + ' 歲，' + c.patient.job, c.timeline.worsenAfter !== undefined ? '不穩定' : '穩定', c.review.state, '[' + c.complaint + '.md](' + c.complaint + '.md)'])));
+  p(table(['代號', '主訴', '診斷', '病人', '穩不穩定', '狀態', '在哪一份'], CASES.map((c) => [c.id.toUpperCase(), c.complaintName, formOf(c, c.answer.truth)!.name, c.patient.name + '，' + c.patient.age + ' 歲，' + c.patient.job, c.timeline.worsenAfter !== undefined ? '不穩定' : '穩定', c.review.state, '[' + c.complaint + '.md](' + c.complaint + '.md)'])));
   p('## 每一關共用的設計');
   p('這幾項是所有病例共用的規則。請老師看它們本身合不合理。');
   p('**流程**：問診 → 身體評估 → 下診斷 → 檢查與處置。照考站的順序，整套做完才說計畫。真實的情境不會等：血氧低就先處理、先叫人。這一點寫在每一關的回顧裡。生命徵象和值班鐘任何時候都可以用，提早通報不扣分。');

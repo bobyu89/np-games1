@@ -51,7 +51,7 @@ export function Debrief({ c, session, seconds, fresh, onFinish }: Props) {
             </div>
             <p className="quote">{sc.safetyNote}</p>
             <h3>你的想法怎麼變</h3>
-            {tr.steps.length ? <ol className="path">{tr.steps.map((k, i) => <li key={i} className={k.right ? 'up' : 'down'}><b>{mmss(k.t)}</b>　{i === tr.steps.length - 1 && session.board.likely ? '結案時' : '岑禾問你時'}：{k.name}</li>)}<li><b>真身</b>　{tr.truth}</li></ol> : <p className="dim">這一場沒有留下你的判斷。真身是{tr.truth}。</p>}
+            {tr.steps.length ? <ol className="path">{tr.steps.map((k, i) => <li key={i} className={k.right ? 'up' : 'down'}><b>{mmss(k.t)}</b>　{i === tr.steps.length - 1 && session.board.likely ? '結案時' : '岑禾問你時'}：{k.name}</li>)}<li><b>實際上</b>　{tr.truth}</li></ol> : <p className="dim">這一場沒有留下你的判斷。實際上是{tr.truth}。</p>}
             <p className="quote">{tr.verdict}</p>
             {sc.rows.map((r) => (
               <div key={r.id} className="row">

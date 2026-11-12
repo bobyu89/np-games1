@@ -25,7 +25,7 @@ function Opt({ done, wait, onClick, children, cls = '' }: { done?: boolean; wait
   return <button type="button" className={'opt ' + cls + (done ? ' done' : '') + (wait ? ' wait' : '')} onClick={onClick}>{children}{done && <i aria-hidden="true">✓</i>}{wait && <i aria-hidden="true">…</i>}</button>;
 }
 
-/** 四個真身的按鈕：解讀線索和回答岑禾都用這一組 */
+/** 四個診斷的按鈕：解讀線索和回答岑禾都用這一組。病室裡一律說「診斷」，不說圖鑑裡的「真身」 */
 function Forms({ c, onPick }: { c: CaseDef; onPick(id: string): void }) {
   return <div className="forms">{c.forms.map((f) => <button key={f.id} type="button" className="form" onClick={() => onPick(f.id)}><i aria-hidden="true">{f.mark}</i>{f.name}</button>)}</div>;
 }
@@ -181,12 +181,12 @@ export function Ward({ c, tier, hero, takeaway, resume, onProgress, onDone, onQu
               <p><b>「{reading.text}」</b></p>
               {session.tier === 0 ? (
                 <>
-                  <p>這條線索，讓哪一個真身{reading.tell!.dir > 0 ? <em className="up">更像</em> : <em className="down">比較不像</em>}？</p>
+                  <p>這條線索，讓哪一個診斷{reading.tell!.dir > 0 ? <em className="up">更像</em> : <em className="down">比較不像</em>}？</p>
                   <Forms c={c} onPick={(form) => act({ type: 'read', clue: reading.id, form })} />
                 </>
               ) : dir === null ? (
                 <>
-                  <p>這條線索，是讓某一個真身更像，還是比較不像？</p>
+                  <p>這條線索，是讓某一個診斷更像，還是比較不像？</p>
                   <div className="forms dirs">
                     <button type="button" className="form" onClick={() => { sfx.tap(); setDir(1); }}><em className="up">更像</em>支持它</button>
                     <button type="button" className="form" onClick={() => { sfx.tap(); setDir(-1); }}><em className="down">比較不像</em>排除它</button>
@@ -194,7 +194,7 @@ export function Ward({ c, tier, hero, takeaway, resume, onProgress, onDone, onQu
                 </>
               ) : (
                 <>
-                  <p>讓哪一個真身{dir > 0 ? <em className="up">更像</em> : <em className="down">比較不像</em>}？<button type="button" className="redo" onClick={() => setDir(null)}>改方向</button></p>
+                  <p>讓哪一個診斷{dir > 0 ? <em className="up">更像</em> : <em className="down">比較不像</em>}？<button type="button" className="redo" onClick={() => setDir(null)}>改方向</button></p>
                   <Forms c={c} onPick={(form) => { setDir(null); act({ type: 'read', clue: reading.id, form, dir }); }} />
                 </>
               )}

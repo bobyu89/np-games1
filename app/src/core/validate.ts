@@ -62,6 +62,16 @@ export function validateCase(c: CaseDef): string[] {
   if (!c.explain.some((e) => e.concern && e.ok)) errs.push('說明裡少了回應病人擔心的那一句');
   c.debrief.teaching.forEach((t) => { if (!c.debrief.references.some((r) => r.id === t.ref)) errs.push('教學重點指到不存在的文獻：' + t.ref); });
   c.debrief.references.forEach((r) => { if (!/^10\.\d{4,}\//.test(r.doi)) errs.push('文獻 ' + r.id + ' 的 DOI 格式不對'); });
+  // 病室和回顧裡講臨床的話：圖鑑的詞（真身、症影、那一盞燈、症影的名字）會讓人分心去翻譯，
+  // 只留在結案的那一句（lines.closing）、症影自己的說明，還有公會和圖鑑的畫面。
+  const worldly = new RegExp('真身|症影|圖鑑|[這那同]一盞|[兩三四]盞|這盞|那盞|' + c.shadow.name);
+  const walk = (x: unknown, path: string): void => {
+    if (path === '.lines.closing' || path === '.shadow') return;
+    if (typeof x === 'string') { const m = x.match(worldly); if (m) errs.push('「' + path.slice(1) + '」用了圖鑑的詞「' + m[0] + '」：病室和回顧裡請用臨床的說法（診斷、排除），圖鑑的詞只留在結案的那一句'); return; }
+    if (Array.isArray(x)) { x.forEach((k, i) => walk(k, path + '.' + ((k as { id?: string })?.id ?? i))); return; }
+    if (x && typeof x === 'object') Object.entries(x).forEach(([k, v]) => walk(v, path + '.' + k));
+  };
+  walk(c, '');
   // 從教案轉出來的底稿，要補的地方都標了 TODO；還有沒補完的就不能上線
   const todo = (JSON.stringify(c).match(/TODO/g) ?? []).length;
   if (todo) errs.push('還有 ' + todo + ' 個 TODO 沒有補完');

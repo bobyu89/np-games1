@@ -67,7 +67,7 @@ export const C11A: CaseSpec = {
     'x-mood': { say: '這兩個禮拜沒有心情低落，也沒有對事情失去興趣。三樣東西記得住，日期答得對。注意力容易跑掉。', clue: { text: '兩題憂鬱篩檢都是「沒有」；認知正常', kind: 'neg', key: true } },
   },
   results: {
-    't-blood': { say: '甲狀腺素明顯升高；上面管它的那個訊號（甲狀腺刺激素）低到測不到。血糖正常。血球和發炎指數正常。' + TEXT_RESULT, clue: { text: '抽血：甲狀腺素升高、甲狀腺刺激素被壓低；血糖正常', kind: 'pos', key: true, fog: 6, tell: { form: 'endocrine', dir: 1 }, why: '甲狀腺素高，上面管它的訊號被壓到最低：是甲狀腺自己太旺。血糖正常，糖尿病可以放下。是哪一種原因造成的，醫師會再查。' } },
+    't-blood': { say: '甲狀腺素明顯升高；上面管它的那個訊號（甲狀腺刺激素）低到測不到。血糖正常。血球和發炎指數正常。' + TEXT_RESULT, clue: { text: '抽血：甲狀腺素升高、甲狀腺刺激素被壓低；血糖正常', kind: 'pos', key: true, fog: 6, tell: { form: 'endocrine', dir: 1 }, why: '甲狀腺素高，上面管它的訊號被壓到最低：是甲狀腺自己太旺。血糖正常，糖尿病可以排除。是哪一種原因造成的，醫師會再查。' } },
     't-stool': { say: '陰性。', clue: { text: '糞便潛血：陰性', kind: 'neg' } },
     't-cxr': { say: '兩邊肺野清楚，心臟不大。' + TEXT_RESULT, clue: { text: '胸部 X 光：正常', kind: 'neg' } },
     't-ecg': { say: '竇性心搏過速，每分鐘 112 下。沒有心房顫動。' + TEXT_RESULT, clue: { text: '心電圖：竇性心搏過速，沒有心房顫動', kind: 'pos', key: true } },

@@ -23,6 +23,16 @@ const dx = (c: typeof A, likely = c.answer.truth): Action => ({ type: 'board', b
 // ── 病例模組 ──
 test('每個病例都通過檢查器', () => { for (const c of CASES) assert.deepEqual(validateCase(c), [], c.id); });
 
+test('病室和回顧裡不用圖鑑的詞；結案的那一句可以', () => {
+  const said = (c: typeof CASES[number]) => validateCase(c).filter((e) => e.includes('圖鑑的詞'));
+  const base = CASES[0];
+  assert.deepEqual(said({ ...base, lines: { ...base.lines, closing: '霧散了。' + base.shadow.name + '的真身，寫進圖鑑吧。' } }), []);
+  assert.equal(said({ ...base, lines: { ...base.lines, opening: ['同一隻' + base.shadow.name + '，停在另一個人身上。'] } }).length, 1);
+  assert.equal(said({ ...base, clues: base.clues.map((k, i) => (i === 0 ? { ...k, why: '這條線索讓這個真身更像。' } : k)) }).length, 1);
+  assert.equal(said({ ...base, debrief: { ...base.debrief, alternatives: ['「血管急症」那一盞底下有兩個病。'] } }).length, 1);
+  assert.deepEqual(said({ ...base, sbar: { ...base.sbar, requests: base.sbar.requests.map((k, i) => (i === 0 ? { ...k, text: '夜裡留一盞燈，走動有人陪。' } : k)) } }), [], '真的燈不算');
+});
+
 test('每個病例照理想的打法，都能安全達成、九十分以上', () => {
   for (const c of CASES) {
     const s = run(c, idealActions(c)), sc = scoreSession(c, s);
@@ -104,7 +114,7 @@ test('提示拿掉一層：線索是更像還是比較不像要自己選，方�
   assert.equal(perform(A, got, { type: 'read', clue, form: 'cardiac' }).events[0].type, 'reject');   // 沒選方向
   const wrong = perform(A, got, { type: 'read', clue, form: 'cardiac', dir: -1 });
   assert.equal(wrong.session.reads[0].ok, false);
-  assert.ok(wrong.events.some((e) => e.type === 'say' && e.text.startsWith('真身選對了，方向反了')));
+  assert.ok(wrong.events.some((e) => e.type === 'say' && e.text.startsWith('診斷選對了，方向反了')));
   assert.equal(perform(A, got, { type: 'read', clue, form: 'cardiac', dir: 1 }).session.reads[0].ok, true);
   // 原本的那一層：不用選方向
   const easy = perform(A, createSession(A), ask('q-onset')).session;
