@@ -25,6 +25,15 @@ export const MACDUFF_2010 = { id: 'macduff2010', text: 'MacDuff, A., Arnold, A.,
 export const BANKS_2013 = { id: 'banks2013', text: 'Banks, P. A., et al. (2013). Classification of acute pancreatitis—2012: Revision of the Atlanta classification and definitions by international consensus. Gut, 62(1), 102–111.', doi: '10.1136/gutjnl-2012-302779' };
 export const PEERY_2021 = { id: 'peery2021', text: 'Peery, A. F., Shaukat, A., & Strate, L. L. (2021). AGA clinical practice update on medical management of colonic diverticulitis: Expert review. Gastroenterology, 160(3), 906–911.e1.', doi: '10.1053/j.gastro.2020.09.059' };
 
+// 第三章：發燒、頭痛
+export const EVANS_2021 = { id: 'evans2021', text: 'Evans, L., et al. (2021). Surviving Sepsis Campaign: International guidelines for management of sepsis and septic shock 2021. Critical Care Medicine, 49(11), e1063–e1143.', doi: '10.1097/CCM.0000000000005337' };
+export const JOHNSON_2018 = { id: 'johnson2018', text: 'Johnson, J. R., & Russo, T. A. (2018). Acute pyelonephritis in adults. New England Journal of Medicine, 378(1), 48–59.', doi: '10.1056/NEJMcp1702758' };
+export const STEVENS_2014 = { id: 'stevens2014', text: 'Stevens, D. L., et al. (2014). Practice guidelines for the diagnosis and management of skin and soft tissue infections: 2014 update by the Infectious Diseases Society of America. Clinical Infectious Diseases, 59(2), e10–e52.', doi: '10.1093/cid/ciu444' };
+export const DO_2019 = { id: 'do2019', text: 'Do, T. P., et al. (2019). Red and orange flags for secondary headaches in clinical practice: SNNOOP10 list. Neurology, 92(3), 134–144.', doi: '10.1212/WNL.0000000000006697' };
+export const PERRY_2013 = { id: 'perry2013', text: 'Perry, J. J., et al. (2013). Clinical decision rules to rule out subarachnoid hemorrhage for acute headache. JAMA, 310(12), 1248–1255.', doi: '10.1001/jama.2013.278018' };
+export const ICHD_2018 = { id: 'ichd2018', text: 'Headache Classification Committee of the International Headache Society. (2018). The International Classification of Headache Disorders, 3rd edition. Cephalalgia, 38(1), 1–211.', doi: '10.1177/0333102417738202' };
+export const HOH_2023 = { id: 'hoh2023', text: 'Hoh, B. L., et al. (2023). 2023 guideline for the management of patients with aneurysmal subarachnoid hemorrhage: A guideline from the American Heart Association/American Stroke Association. Stroke, 54(7), e314–e370.', doi: '10.1161/STR.0000000000000436' };
+
 // ── 給臨床老師的審查清單用（tools/review.ts）──
 
 /** 每一篇文獻核對到哪裡。abstract：引用它的教學重點對過摘要；沒列在這裡的，只核對了書目 */
@@ -35,6 +44,9 @@ export const REF_CHECK: Record<string, { level: 'abstract' | 'biblio'; note?: st
   disaverio2020: { level: 'abstract' },
   peery2021: { level: 'abstract' },
   banks2013: { level: 'abstract', note: '只有嚴重度分級對過摘要；診斷條件「三樣裡有兩樣」沒有對到原文' },
+  do2019: { level: 'abstract' },
+  perry2013: { level: 'abstract' },
+  stevens2014: { level: 'abstract', note: '摘要只支持「從輕微到壞死性筋膜炎都有、要靠臨床評估及早認出」；壞死性感染的警訊沒有對到原文' },
 };
 
 /** 寫的時候就知道沒把握、要請臨床老師特別看的地方。加了新病例，有這種地方就補一條 */
@@ -51,6 +63,14 @@ export const REVIEW_ASKS: string[] = [
   '**腹痛（C03C）**：胰臟炎的診斷條件（三樣裡有兩樣、脂肪酶超過正常上限三倍）沒有對到原文。',
   '**腹痛（C03D）**：遊戲裡的影像檢查只有腹部超音波，結果寫「醫師通常會再安排電腦斷層」。要不要把電腦斷層加成一項檢查？',
   '**沒有病人的鑑別**：消化性潰瘍，以及下腹的泌尿、婦科和疝氣。只在回顧的文字裡提到。',
-  '**指引類的文獻**：胸痛、急性冠心症、心衰竭、肺栓塞、膽囊炎、肺炎、氣胸的指引，只核對了書目。引用它們的教學重點請對照原文。',
+  '**發燒的四個真身**：呼吸道、泌尿道、皮膚與軟組織、非感染。教案分成感染和非感染兩類；這裡把感染照源頭拆成三個。肚子裡的感染和腦膜炎沒有放進這四盞（腦膜炎放在頭痛底下），只在回顧裡提到。這樣分合不合適？',
+  '**發燒（C04B）**：敗血症的處理寫「量乳酸、用抗生素之前留血液培養、盡快給抗生素和輸液」。指引沒有摘要，只核對了書目；「一張委託裡該由誰做哪一步」也請照實際的規定看。',
+  '**發燒（C04B）**：老人家在家量到 37.8 度、到院 38.4 度，用來教「燒不高不代表不嚴重」。數字合不合理？',
+  '**頭痛的四個真身**：原發性頭痛、顱內出血、中樞感染、顱內壓升高。顳動脈炎、急性青光眼、一氧化碳中毒、止痛藥過度使用沒有放進四盞，只在問診和評估裡各有一題在篩。',
+  '**頭痛（C05A）**：沒有紅旗的典型偏頭痛，回報時「請同意馬上做頭部電腦斷層」標成錯的選項。這一點沒有引用文獻，是設計上的判斷，請老師決定要不要保留。',
+  '**頭痛（C05A）**：偏頭痛的診斷條件（單側、搏動性、活動加重、噁心或畏光怕吵、持續幾小時到三天）只核對了書目。',
+  '**頭痛（C05B）**：變差之後的生命徵象寫成血壓升高、心跳變慢、一邊瞳孔變大。這是為了讓玩家看得出「在惡化」，數字和時間都是設計出來的，請看會不會誤導。血壓「要不要降、降到多少」一律寫成請醫師指示。',
+  '**頭痛的評估**：加了一組神經學檢查（腦神經、肌力與漂移、感覺與反射、協調與步態）和眼底。專科護理師在考站會不會被要求做眼底鏡，請老師確認。',
+  '**指引類的文獻**：胸痛、急性冠心症、心衰竭、肺栓塞、膽囊炎、肺炎、氣胸、敗血症、蜘蛛膜下腔出血的指引，以及腎盂腎炎的綜論和頭痛的分類，只核對了書目。引用它們的教學重點請對照原文。',
   '**甄審的規定**：遊戲的配分照 115 年度的口試。第一批玩家考的是下一年度，公告之後要再核對。',
 ];

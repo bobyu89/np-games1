@@ -234,6 +234,11 @@ const PATIENTS = {
   yang: { shirt: C.rose, shirt2: C.rose2, hair: C.hairBrown, brow: C.hairBrown, fast: true },
   chun: { shirt: C.rust, shirt2: C.wood2, hair: C.hairInk, brow: C.hairInk, moustache: true, beard: true, sweat: 2, pale: true },
   tao: { shirt: C.slate, shirt2: C.slate2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bun: true, calm: true },
+  // 第三章
+  he: { shirt: C.sea, shirt2: C.sea2, hair: C.hairBrown, brow: C.hairBrown, woman: true, pony: true, flush: true, sweat: 1 },
+  bai: { shirt: C.stone, shirt2: C.stone2, hair: C.cream, brow: C.hairGrey, moustache: true, fast: true, pale: true, sweat: 1 },
+  yun: { shirt: C.frog, shirt2: C.frog2, hair: C.hairInk, brow: C.hairInk, woman: true, bob: true, calm: true },
+  kui: { shirt: C.moss, shirt2: C.green2, hair: C.hairDark, brow: C.hairDark, woman: true, bun: true, pale: true, sweat: 2 },
 };
 
 // 第二章四位病人帶來的東西
@@ -266,6 +271,25 @@ function drawProps(g, who) {
   } else if (who === 'tao') {     // 鄔桃：一籃麵包
     basket(46, 262, C.mustard);
     [[54, 258, 0.2], [66, 255, -0.1], [78, 258, 0.3]].forEach(([x, y, r]) => { shape(g, ell(x, y, 8, 5, 10, r), { fill: C.ochre, lw: 1.2, step: 99 }); wline(g, [[x - 3, y - 2], [x - 1, y + 1]], C.wood2, 1); wline(g, [[x + 1, y - 2], [x + 3, y + 1]], C.wood2, 1); });
+  } else if (who === 'he') {      // 溫荷：一堆補到一半的漁網和一支梭子
+    shape(g, [[42, 282], [46, 266], [60, 259], [78, 262], [88, 272], [86, 282]], { fill: C.sea });
+    [[48, 268, 84, 280], [56, 262, 86, 274], [44, 276, 70, 282], [62, 260, 50, 282], [74, 262, 62, 282], [84, 268, 76, 282]].forEach(([a, b, c2, d]) => wline(g, [[a, b], [c2, d]], C.sea2, 1));
+    shape(g, [[98, 278], [106, 274], [122, 276], [114, 281]], { fill: C.wood }); wline(g, [[103, 277], [117, 278]], C.cream, 1.4);
+  } else if (who === 'bai') {     // 涂柏：一頂斗笠和一小盒魚鉤
+    shape(g, [[40, 281], [64, 258], [90, 281]], { fill: C.ochre }); oval(g, 65, 281, 26, 3.4, { fill: C.mustard, lw: 1.2 });
+    [[52, 270, 78, 270], [46, 276, 84, 276]].forEach(([a, b, c2, d]) => wline(g, [[a, b], [c2, d]], C.wood2, 1));
+    shape(g, rect(100, 272, 20, 10), { fill: C.wood }); wline(g, [[100, 276], [120, 276]], C.wood2, 1.1);
+    [[105, 270], [111, 269], [116, 270]].forEach(([x, y]) => wline(g, [[x, y + 2], [x, y - 3], [x + 2.5, y - 4.5], [x + 3.5, y - 2]], C.ink, 1.2));
+  } else if (who === 'yun') {     // 喬芸：一本攤開的帳冊、一支筆和一只茶杯
+    shape(g, [[42, 278], [62, 273], [64, 281], [44, 285]], { fill: C.paper }); shape(g, [[62, 273], [84, 277], [84, 285], [64, 281]], { fill: C.cream });
+    [[47, 279.5, 59, 277], [48, 282, 60, 279.5], [67, 278, 80, 280.5], [67, 280.5, 80, 283]].forEach(([a, b, c2, d]) => wline(g, [[a, b], [c2, d]], C.paperLine, 1));
+    wline(g, [[72, 270], [90, 262]], C.ink, 1.8); wline(g, [[90, 262], [94, 260]], C.cream, 2.4);
+    shape(g, [[102, 270], [118, 270], [116, 282], [104, 282]], { fill: C.teal }); wline(g, [[118, 273], [123, 275], [117, 279]], C.ink, 1.5);
+  } else if (who === 'kui') {     // 魏葵：一只魚箱和一桿秤
+    shape(g, rect(42, 264, 44, 18), { fill: C.plank }); [270, 276].forEach((y) => wline(g, [[42, y], [86, y]], C.plank2, 1.2));
+    [[50, 261, 0.2], [64, 259, -0.1], [77, 261, 0.3]].forEach(([x, y, r]) => { leaf(g, x, y, 8, 3, r, C.slate); dot(g, x + 5, y - 0.5, 0.8, C.ink); });
+    wline(g, [[94, 262], [126, 268]], C.wood2, 2.2); wline(g, [[100, 263], [100, 274]], C.ink, 1.1); oval(g, 100, 278, 6, 2.2, { fill: C.brass, lw: 1.1 });
+    wline(g, [[120, 267], [120, 276]], C.ink, 1.1); dot(g, 120, 279, 3.2, C.iron2);
   } else {                        // 邵棠：工具箱和一把刨刀
     shape(g, rect(44, 264, 40, 18), { fill: C.wood }); wline(g, [[44, 271], [84, 271]], C.wood2, 1.2); shape(g, rect(61, 268, 6, 5), { fill: C.brass, lw: 1 });
     wline(g, [[52, 264], [56, 256], [72, 256], [76, 264]], C.wood2, 2.4);
@@ -550,6 +574,54 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
+  // 餘燼蜥：發燒的症影。背上三塊炭一明一滅，尾巴捲著，鼻子冒一縷煙
+  function drawNewt(g, t, x, y, flinch, agit) {
+    const glow = t * (2.2 + agit * 4 + flinch * 8);
+    g.save(); g.translate(x, y + 6); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
+    const tail = [[16, 9], [29, 13], [38, 5], [36, -6], [28, -9], [24, -2], [29, 2]];
+    wline(g, tail, C.ink, 9, { boil: true, seed: 2300 }); wline(g, tail, C.newt2, 6.4, { boil: true, seed: 2300 });
+    [-1, 1].forEach((sd) => {
+      limb(g, [[sd * 13, 10], [sd * 25, 14], [sd * 22, 23]], 5.5, C.newt2, { boil: true, seed: 2304 });
+      shape(g, ell(sd * 24, 24.5, 6.5, 2.8, 8), { fill: C.newt2, boil: true, step: 99, seed: 2306 });
+    });
+    shape(g, ell(0, 6, 24, 15, 14), { fill: C.newt, boil: true, step: 99, seed: 2308 });
+    shape(g, ell(0, 13, 13, 6.5, 12), { fill: C.cream, lw: 1.2, boil: true, step: 99, seed: 2310 });
+    [[-12, -3, 0], [0, -7, 2.1], [12, -3, 4.2]].forEach(([dx, dy, ph], i) => {
+      const k = 0.5 + 0.5 * Math.sin(glow + ph);
+      g.globalAlpha = 0.25 + 0.45 * k; dot(g, dx, dy, 6.5 + k * 2.5, C.ochre); g.globalAlpha = 1;
+      shape(g, ell(dx, dy, 4.8, 3.9, 8), { fill: k > 0.5 ? C.pumpkin : C.rust, lw: 1.2, boil: true, step: 99, seed: 2312 + i });
+    });
+    shape(g, ell(0, -18, 15, 10.5, 12), { fill: C.newt, boil: true, step: 99, seed: 2320 });
+    [-1, 1].forEach((sd) => shape(g, ell(sd * 9, -25, 6.6, 6.4, 10), { fill: C.newt, boil: true, step: 99, seed: 2322 }));
+    const blink = (t * 0.8 + 1.3) % 4.4 < 0.14, r = 4.3 + flinch * 1.4;
+    eye(g, -9, -25, r, [-1.2, 1.2], blink ? 'blink' : 'open'); eye(g, 9, -25, r, [-1.2, 1.2], blink ? 'blink' : 'open');
+    wline(g, [[-8, -13.5], [0, -12], [8, -13.5]], C.ink, 1.4, { boil: true, seed: 2326 });
+    dot(g, -2.5, -17, 0.9, C.ink); dot(g, 2.5, -17, 0.9, C.ink);
+    for (let i = 0; i < 3; i++) { const k = (t * 0.55 + i / 3) % 1; g.globalAlpha = (1 - k) * 0.6; dot(g, 3 + Math.sin(k * 6 + i) * 2.5, -22 - k * 16, 1.4 + k * 2, C.cream); }
+    g.globalAlpha = 1;
+    g.restore();
+  }
+
+  // 篤篤鳥：頭痛的症影。停在半空，一下一下地往病人那一邊啄
+  function drawBird(g, t, x, y, flinch, agit) {
+    const beat = (t * (1.1 + agit * 1.3 + flinch * 2)) % 1, peck = beat < 0.18 ? Math.sin((beat / 0.18) * Math.PI) : 0;
+    g.save(); g.translate(x, y + 4); g.scale(-MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.03 + flinch * 0.2);
+    shape(g, [[-17, 5], [-34, 1], [-37, 9], [-21, 16]], { fill: C.slate2, boil: true, seed: 2400 });
+    [-5, 6].forEach((dx, i) => { wline(g, [[dx, 21], [dx, 28]], C.ink, 2, { boil: true, seed: 2402 + i }); wline(g, [[dx - 4, 29.5], [dx, 28], [dx + 4, 29.5]], C.ink, 1.6, { seed: 2404 + i }); });
+    shape(g, ell(0, 8, 21, 16, 14), { fill: C.slate, boil: true, step: 99, seed: 2406 });
+    shape(g, ell(4, 14, 12, 8.5, 12), { fill: C.cream, lw: 1.2, boil: true, step: 99, seed: 2408 });
+    shape(g, [[-15, 0], [-2, 1], [2, 13], [-10, 18], [-20, 10]], { fill: C.slate2, boil: true, seed: 2410 });
+    wline(g, [[-13, 8], [-3, 9.5]], C.ink, 1, { seed: 2412 }); wline(g, [[-12, 13], [-3, 14]], C.ink, 1, { seed: 2413 });
+    g.save(); g.translate(12, -9); g.rotate(peck * 0.8);
+    shape(g, [[-7, -13], [-3, -22], [0, -15], [4, -22], [7, -13]], { fill: C.crab, boil: true, seed: 2416 });
+    shape(g, ell(0, -4, 12.5, 11.5, 12), { fill: C.slate, boil: true, step: 99, seed: 2414 });
+    shape(g, [[10, -7], [28, -1], [10, 2]], { fill: C.ochre, boil: true, seed: 2418 }); wline(g, [[11, -2.5], [24, -1]], C.ink, 1, { seed: 2420 });
+    eye(g, 3, -6, 4.2 + flinch * 1.2, [1.2, 1], (t * 0.8 + 1.3) % 4.4 < 0.14 || peck > 0.5 ? 'blink' : 'open');
+    g.restore();
+    if (peck > 0.55) [[37, 9, 43, 12], [39, 3, 46, 1], [33, 14, 37, 20]].forEach(([a, b, c2, d]) => wline(g, [[a, b], [c2, d]], C.cream, 1.5, { amp: 0 }));
+    g.restore();
+  }
+
   function drawMoth(g, t) {
     K.seed = 2000;
     const flinch = state.flinch, agit = state.slumpShown;
@@ -562,6 +634,8 @@ export function createWard(canvas, opts = {}) {
     // 症影長什麼樣子，看是哪一個主訴
     if (opts.shadow === 'frog') { drawFrog(g, t, x, y, flinch, agit); return { x, y }; }
     if (opts.shadow === 'crab') { drawCrab(g, t, x, y, flinch, agit); return { x, y }; }
+    if (opts.shadow === 'newt') { drawNewt(g, t, x, y, flinch, agit); return { x, y }; }
+    if (opts.shadow === 'bird') { drawBird(g, t, x, y, flinch, agit); return { x, y }; }
     g.save(); g.translate(x, y); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.05 + flinch * 0.25);
     const flap = 0.8 + 0.2 * Math.sin(t * (3.2 + agit * 7 + flinch * 12));
     [-1, 1].forEach((side) => {

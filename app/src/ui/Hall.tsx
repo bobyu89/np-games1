@@ -11,7 +11,7 @@ import type { Save } from './store.ts';
 import { BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, unlocked, type Beat, type Entry } from './progress.ts';
 import { Portrait } from './Portrait.tsx';
 
-const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章' };
+const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章' };
 
 interface Props { save: Save; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void }
 
@@ -101,7 +101,7 @@ export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
                     <div className="quest-head">{CHAPTERS[mine[0].chapter] ?? ''}　{seen ? m.shadow.name + '｜' + m.name : '還沒送到的委託'}</div>
                     {mine.map((q) => {
                       const c = caseById(q.caseId), res = save.cases[c.id];
-                      if (!unlocked(q, save)) return <div key={c.id} className="quest paper locked" aria-disabled="true"><b>？？？</b><span>{q.chapter > 1 && !seen ? '第一章走完之後才會送到' : '完成上一張委託之後才會送到'}</span><em>還沒出現</em></div>;
+                      if (!unlocked(q, save)) return <div key={c.id} className="quest paper locked" aria-disabled="true"><b>？？？</b><span>{q.chapter > 1 && !seen ? CHAPTERS[q.chapter - 1] + '走完之後才會送到' : '完成上一張委託之後才會送到'}</span><em>還沒出現</em></div>;
                       return (
                         <button key={c.id} type="button" className={'quest paper' + (res ? '' : ' hint')} onClick={() => { sfx.page(); setReading(c); }}>
                           <i className="seal" aria-hidden="true" />
@@ -114,7 +114,7 @@ export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
                   </Fragment>
                 );
               })}
-              <div className="quest paper locked" aria-disabled="true"><b>第三章</b><span>別的症影</span><em>整理中</em></div>
+              <div className="quest paper locked" aria-disabled="true"><b>還有更多</b><span>發燒和頭痛剩下的四位，還有別的症影</span><em>整理中</em></div>
               <div className="quest paper locked" aria-disabled="true"><b>資格試煉</b><span>抽一個沒練過的主訴，15 分鐘</span><em>還沒開放</em></div>
             </div>
           )}

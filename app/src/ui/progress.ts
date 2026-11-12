@@ -9,12 +9,15 @@ import type { CaseRecord, Save } from './store.ts';
 import type { Shot } from './Portrait.tsx';
 
 /** 委託板上的一張委託。needs：要先完成哪一張才會出現 */
-export interface Quest { caseId: string; chapter: number; needs?: string }
+export interface Quest { caseId: string; chapter: number; needs?: string | string[] }
 export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b', chapter: 1, needs: 'c01a' }, { caseId: 'c01c', chapter: 1, needs: 'c01b' }, { caseId: 'c01d', chapter: 1, needs: 'c01c' },
   // 第二章：第一章走完才會貼上板子。兩隻症影可以交錯著接
   { caseId: 'c02a', chapter: 2, needs: 'c01d' }, { caseId: 'c02b', chapter: 2, needs: 'c02a' }, { caseId: 'c02c', chapter: 2, needs: 'c02b' }, { caseId: 'c02d', chapter: 2, needs: 'c02c' },
-  { caseId: 'c03a', chapter: 2, needs: 'c01d' }, { caseId: 'c03b', chapter: 2, needs: 'c03a' }, { caseId: 'c03c', chapter: 2, needs: 'c03b' }, { caseId: 'c03d', chapter: 2, needs: 'c03c' }];
-export const unlocked = (q: Quest, s: Save) => !q.needs || !!s.cases[q.needs];
+  { caseId: 'c03a', chapter: 2, needs: 'c01d' }, { caseId: 'c03b', chapter: 2, needs: 'c03a' }, { caseId: 'c03c', chapter: 2, needs: 'c03b' }, { caseId: 'c03d', chapter: 2, needs: 'c03c' },
+  // 第三章：第二章的八張都走完才會貼上板子
+  { caseId: 'c04a', chapter: 3, needs: ['c02d', 'c03d'] }, { caseId: 'c04b', chapter: 3, needs: 'c04a' },
+  { caseId: 'c05a', chapter: 3, needs: ['c02d', 'c03d'] }, { caseId: 'c05b', chapter: 3, needs: 'c05a' }];
+export const unlocked = (q: Quest, s: Save) => [q.needs ?? []].flat().every((id) => !!s.cases[id]);
 
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
 export interface Beat { id: string; title: string; when(s: Save): boolean; lines: Line[] }
@@ -70,6 +73,18 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '以前我會先告訴你，一條線索是讓某個真身更像，還是比較不像。現在這一步你自己來。' },
     { who: 'mentor', text: '還有，一張委託我只回答你三次。想清楚再問。' },
     { who: 'mo', text: '舊的委託也可以重接。同一位病人，少了提示，你看到的東西會不一樣。' },
+  ] },
+  { id: 'ch3-open', title: '第三章　被蓋掉的紀錄', when: (s) => tierOf(s) === 1, lines: [
+    { who: 'mo', text: '我在淹過水的櫃子底下，找到一疊舊索引。每一張上面只有一行字：「著涼」「年紀大了」「老毛病」。然後就歸檔了。' },
+    { who: 'mo', text: '這一疊對到兩隻症影。一隻背上的炭一明一滅，是發燒；一隻停在人頭上一下一下地啄，是頭痛。' },
+    { who: 'mentor', text: '太早寫下的結論，會把後面的線索都蓋掉。這一章，你把這幾張重新打開。' },
+    { who: 'mentor', text: '不過記住：舊索引不一定都寫錯。對的，你要替它找到憑據；錯的，你要說得出錯在哪裡。' },
+    { who: 'sys', text: '委託板上多了兩張新的。' },
+  ] },
+  { id: 'ch3-half', title: '第三章　打開了四張', when: (s) => ['c04a', 'c04b', 'c05a', 'c05b'].every((id) => !!s.cases[id]), lines: [
+    { who: 'mo', text: '四張舊索引，三張劃掉重寫，一張底下補了憑據。' },
+    { who: 'mentor', text: '兩張「老毛病」，一張是對的，一張差一點出事。差別不在那三個字，在寫的人有沒有查過。' },
+    { who: 'mentor', text: '餘燼蜥還有兩盞沒有人名，篤篤鳥也是。那幾張還在整理。' },
   ] },
 ];
 export const nextBeat = (s: Save) => BEATS.find((b) => !s.beats.includes(b.id) && b.when(s));
@@ -150,6 +165,10 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
     c02d: '三個月後他回到桅杆上。口袋裡那包菸，換成了一小袋炒豆子。',
     c03c: '那幾缸酒是徒弟顧出來的。之後試酒，他只含一口，再吐掉。',
     c03d: '發炎好了之後，她做了那個一直不敢做的檢查。出來的時候，她買了一袋青菜回麵包坊。',
+    c04a: '網子是隔壁的阿嬸交的。她現在補網的凳子旁邊，多了一只水壺。',
+    c04b: '腳保住了。孫女每天晚上幫他看一次腳底，他嘴上嫌煩，襪子倒是自己先脫好。',
+    c05a: '她在帳冊的最後一頁記下每一次頭痛的日子。亮線再出現的時候，她先去把燈調暗。',
+    c05b: '兒子的親事延了兩個月。那一天她坐在主桌，是自己走進去的。',
   };
   const patients: Entry[] = CASES.map((c) => {
     const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;

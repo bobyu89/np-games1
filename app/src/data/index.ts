@@ -16,9 +16,16 @@ import { C03A } from './c03a.ts';
 import { C03B } from './c03b.ts';
 import { C03C } from './c03c.ts';
 import { C03D } from './c03d.ts';
+import { FEVER } from './fever.ts';
+import { C04A } from './c04a.ts';
+import { C04B } from './c04b.ts';
+import { HEADACHE } from './headache.ts';
+import { C05A } from './c05a.ts';
+import { C05B } from './c05b.ts';
 
-export const COMPLAINTS: ComplaintDef[] = [CHEST_PAIN, DYSPNEA, ABDOMEN];
+export const COMPLAINTS: ComplaintDef[] = [CHEST_PAIN, DYSPNEA, ABDOMEN, FEVER, HEADACHE];
 export const CASES: CaseDef[] = [resolveCase(CHEST_PAIN, C01A), resolveCase(CHEST_PAIN, C01B), resolveCase(CHEST_PAIN, C01C), resolveCase(CHEST_PAIN, C01D),
   resolveCase(DYSPNEA, C02A), resolveCase(DYSPNEA, C02B), resolveCase(DYSPNEA, C02C), resolveCase(DYSPNEA, C02D),
-  resolveCase(ABDOMEN, C03A), resolveCase(ABDOMEN, C03B), resolveCase(ABDOMEN, C03C), resolveCase(ABDOMEN, C03D)];
+  resolveCase(ABDOMEN, C03A), resolveCase(ABDOMEN, C03B), resolveCase(ABDOMEN, C03C), resolveCase(ABDOMEN, C03D),
+  resolveCase(FEVER, C04A), resolveCase(FEVER, C04B), resolveCase(HEADACHE, C05A), resolveCase(HEADACHE, C05B)];
 export const caseById = (id: string) => CASES.find((c) => c.id === id)!;

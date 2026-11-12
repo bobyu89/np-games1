@@ -288,8 +288,8 @@ test('腫瘤那一位：關鍵的檢查是胸部 X 光；沒照就放回去要�
 });
 
 // ── 第二章：喘、腹痛 ──
-test('三隻症影各有自己的四個真身、自己的檢查；同一隻底下的病例選項一樣', () => {
-  assert.deepEqual(COMPLAINTS.map((m) => m.id), ['chest-pain', 'dyspnea', 'abdomen']);
+test('每隻症影各有自己的四個真身、自己的檢查；同一隻底下的病例選項一樣', () => {
+  assert.deepEqual(COMPLAINTS.map((m) => m.id), ['chest-pain', 'dyspnea', 'abdomen', 'fever', 'headache']);
   for (const m of COMPLAINTS) {
     const mine = CASES.filter((c) => c.complaint === m.id);
     assert.ok(mine.length >= 2, m.id);
@@ -330,12 +330,45 @@ test('腹痛：評估照看、聽、敲、摸的順序；讓病人吃東西或�
   assert.equal(scoreSession(G, run(G, quick)).safety, 'review');
 });
 
-test('三隻症影的四個真身，每一個都有一位病人', () => {
-  for (const m of COMPLAINTS) {
+test('前兩章三隻症影的四個真身，每一個都有一位病人', () => {
+  for (const m of COMPLAINTS.slice(0, 3)) {
     const truths = CASES.filter((c) => c.complaint === m.id).map((c) => c.answer.truth).sort();
     assert.deepEqual(truths, m.forms.map((f) => f.id).sort(), m.id);
   }
-  assert.equal(CASES.length, 12);
+  assert.equal(CASES.length, 16);
+});
+
+test('第三章：發燒和頭痛各有一位穩定、一位不穩定；頭痛的評估有神經學檢查', () => {
+  for (const id of ['c04b', 'c05b']) {
+    const c = caseById(id), late = run(c, [...toDx(c), ...times(watch, 5)]);
+    assert.ok(late.worsenedAt !== null, id);
+    assert.equal(scoreSession(c, run(c, idealActions(c))).safety, 'met', id);
+  }
+  for (const id of ['c04a', 'c05a']) {
+    const c = caseById(id), late = run(c, [...toDx(c), ...times(watch, 8)]);
+    assert.equal(late.worsenedAt, null, id);
+    assert.equal(scoreSession(c, run(c, [...idealActions(c).slice(0, -1), { type: 'call' }, { type: 'close' }])).safety, 'late', id + ' 穩定的病人敲鐘是過度通報');
+  }
+  const head = caseById('c05a');
+  assert.ok(head.exams.filter((e) => e.part === '神經').length >= 4);
+  assert.ok(head.exams.some((e) => e.id === 'x-neck') && head.exams.some((e) => e.id === 'x-eyes'));
+  // 發燒要脫襪子看腳；那一位的源頭就在那裡
+  const feet = caseById('c04b').exams.find((e) => e.id === 'x-skin')!;
+  assert.ok(feet.explain.includes('襪子') && feet.finding.includes('滲膿'));
+});
+
+test('同樣寫著「老毛病」的兩張：一張沒有紅旗，一張她自己說不一樣', () => {
+  const a = caseById('c05a'), b = caseById('c05b');
+  assert.equal(a.answer.truth, 'primary'); assert.equal(b.answer.truth, 'bleed');
+  // 沒有紅旗的那一張：沒有非做不可的檢查，但三個危險的真身都要有排除的線索；要求馬上做斷層是錯的選項
+  assert.ok(!a.safety.some((r) => r.type === 'order'));
+  assert.deepEqual(a.safety.flatMap((r) => (r.type === 'exclude' ? r.forms : [])).sort(), ['bleed', 'infect', 'pressure']);
+  assert.equal(a.sbar.requests.find((k) => k.id === 'r-ct')!.ok, false);
+  // 出血的那一張：關鍵的檢查是斷層；把她當成偏頭痛、讓她去睡，是錯的選項
+  assert.ok(b.safety.some((r) => r.type === 'order' && r.test === 't-ct'));
+  assert.equal(b.sbar.requests.find((k) => k.id === 'r-sleep')!.ok, false);
+  const skip = scoreSession(b, run(b, idealActions(b).filter((x) => !(x.type === 'test' && x.id === 't-ct')).map((x) => (x.type === 'report' ? { ...x, r: x.r.filter((id) => id !== 'r-ct') } : x))));
+  assert.equal(skip.safety, 'review');
 });
 
 test('第二章不穩定的三位：下了診斷不通報會變差；穩定的三位不會', () => {
