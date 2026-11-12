@@ -289,7 +289,7 @@ test('腫瘤那一位：關鍵的檢查是胸部 X 光；沒照就放回去要�
 
 // ── 第二章：喘、腹痛 ──
 test('每隻症影各有自己的四個真身、自己的檢查；同一隻底下的病例選項一樣', () => {
-  assert.deepEqual(COMPLAINTS.map((m) => m.id), ['chest-pain', 'dyspnea', 'abdomen', 'fever', 'headache']);
+  assert.deepEqual(COMPLAINTS.map((m) => m.id), ['chest-pain', 'dyspnea', 'abdomen', 'fever', 'headache', 'back-pain', 'leg-pain', 'swelling', 'excreta', 'rash', 'weight-loss', 'paresthesia']);
   for (const m of COMPLAINTS) {
     const mine = CASES.filter((c) => c.complaint === m.id);
     assert.ok(mine.length >= 2, m.id);
@@ -330,12 +330,12 @@ test('腹痛：評估照看、聽、敲、摸的順序；讓病人吃東西或�
   assert.equal(scoreSession(G, run(G, quick)).safety, 'review');
 });
 
-test('五隻症影的四個真身，每一個都有一位病人', () => {
+test('十二隻症影的四個真身，每一個都有一位病人', () => {
   for (const m of COMPLAINTS) {
     const truths = CASES.filter((c) => c.complaint === m.id).map((c) => c.answer.truth).sort();
     assert.deepEqual(truths, m.forms.map((f) => f.id).sort(), m.id);
   }
-  assert.equal(CASES.length, 20);
+  assert.equal(CASES.length, 48);
 });
 
 test('第三章：三位不穩定、五位穩定；頭痛的評估有神經學檢查', () => {

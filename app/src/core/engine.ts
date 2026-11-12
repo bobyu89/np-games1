@@ -89,7 +89,8 @@ export function hintFor(c: CaseDef, s: Session): string {
   if (c.safety.some((r) => r.type === 'call') && s.calledAt === null) return '你下了診斷。這位病人等得了嗎？該讓誰知道？';
   for (const r of c.safety) if (r.type === 'order' && !s.ordered.some((o) => o.id === r.test)) return '依你的診斷，有一項檢查要先做：' + c.tests.find((t) => t.id === r.test)!.label + '。';
   if (!vitalsAfterChange(s)) return who + '的樣子變了。你手上的數字還是剛才的。';
-  const untouched = c.forms.find((f) => f.danger && !s.reads.some((r) => clueOf(c, r.clue).tell?.form === f.id));
+  // 有些關卡某一盞燈本來就放不下（沒有任何線索指向它），那一盞不提示
+  const untouched = c.forms.find((f) => f.danger && c.clues.some((k) => k.tell?.form === f.id) && !s.reads.some((r) => clueOf(c, r.clue).tell?.form === f.id));
   if (untouched) return '「' + untouched.name + '」那盞燈還沒動過。回到問診或評估，找一條能讓它更像或比較不像的線索。';
   if (!s.report) return '把你的診斷和打算，報給值班醫師。';
   if (!s.explained) return who + '還不知道自己怎麼了。結案之前，跟' + c.patient.pronoun + '說明。';

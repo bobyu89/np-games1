@@ -4,6 +4,7 @@ import type { CaseDef, Score, Session } from '../core/types.ts';
 import type { ComplaintDef } from '../core/module.ts';
 import { harvest } from '../core/scoring.ts';
 import { CASES } from '../data/index.ts';
+import { AFTER_MORE } from '../data/extras.ts';
 import type { Line } from './Talk.tsx';
 import type { CaseRecord, Save } from './store.ts';
 import type { Shot } from './Portrait.tsx';
@@ -16,7 +17,15 @@ export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b'
   { caseId: 'c03a', chapter: 2, needs: 'c01d' }, { caseId: 'c03b', chapter: 2, needs: 'c03a' }, { caseId: 'c03c', chapter: 2, needs: 'c03b' }, { caseId: 'c03d', chapter: 2, needs: 'c03c' },
   // 第三章：第二章的八張都走完才會貼上板子
   { caseId: 'c04a', chapter: 3, needs: ['c02d', 'c03d'] }, { caseId: 'c04b', chapter: 3, needs: 'c04a' }, { caseId: 'c04c', chapter: 3, needs: 'c04b' }, { caseId: 'c04d', chapter: 3, needs: 'c04c' },
-  { caseId: 'c05a', chapter: 3, needs: ['c02d', 'c03d'] }, { caseId: 'c05b', chapter: 3, needs: 'c05a' }, { caseId: 'c05c', chapter: 3, needs: 'c05b' }, { caseId: 'c05d', chapter: 3, needs: 'c05c' }];
+  { caseId: 'c05a', chapter: 3, needs: ['c02d', 'c03d'] }, { caseId: 'c05b', chapter: 3, needs: 'c05a' }, { caseId: 'c05c', chapter: 3, needs: 'c05b' }, { caseId: 'c05d', chapter: 3, needs: 'c05c' },
+  // 第四章：第三章的八張都走完才會貼上板子。第五章：第四章的十二張都走完
+  { caseId: 'c06a', chapter: 4, needs: ['c04d', 'c05d'] }, { caseId: 'c06b', chapter: 4, needs: 'c06a' }, { caseId: 'c06c', chapter: 4, needs: 'c06b' }, { caseId: 'c06d', chapter: 4, needs: 'c06c' },
+  { caseId: 'c07a', chapter: 4, needs: ['c04d', 'c05d'] }, { caseId: 'c07b', chapter: 4, needs: 'c07a' }, { caseId: 'c07c', chapter: 4, needs: 'c07b' }, { caseId: 'c07d', chapter: 4, needs: 'c07c' },
+  { caseId: 'c08a', chapter: 4, needs: ['c04d', 'c05d'] }, { caseId: 'c08b', chapter: 4, needs: 'c08a' }, { caseId: 'c08c', chapter: 4, needs: 'c08b' }, { caseId: 'c08d', chapter: 4, needs: 'c08c' },
+  { caseId: 'c09a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c09b', chapter: 5, needs: 'c09a' }, { caseId: 'c09c', chapter: 5, needs: 'c09b' }, { caseId: 'c09d', chapter: 5, needs: 'c09c' },
+  { caseId: 'c10a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c10b', chapter: 5, needs: 'c10a' }, { caseId: 'c10c', chapter: 5, needs: 'c10b' }, { caseId: 'c10d', chapter: 5, needs: 'c10c' },
+  { caseId: 'c11a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c11b', chapter: 5, needs: 'c11a' }, { caseId: 'c11c', chapter: 5, needs: 'c11b' }, { caseId: 'c11d', chapter: 5, needs: 'c11c' },
+  { caseId: 'c12a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c12b', chapter: 5, needs: 'c12a' }, { caseId: 'c12c', chapter: 5, needs: 'c12b' }, { caseId: 'c12d', chapter: 5, needs: 'c12c' }];
 export const unlocked = (q: Quest, s: Save) => [q.needs ?? []].flat().every((id) => !!s.cases[id]);
 
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
@@ -91,7 +100,31 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '八張舊索引都重新打開了。七張劃掉重寫，一張底下補了憑據。' },
     { who: 'mentor', text: '這些字不是亂寫的。「感冒」「宿醉」「更年期」，十次裡有九次是對的。危險的是第十次，還有寫完就不再看的那個習慣。' },
     { who: 'mentor', text: '有一張的答案是「不是感染」，有一張是「真的只是老毛病」。把東西排除掉，跟把東西找出來，一樣是本事。' },
-    { who: 'mentor', text: '第三章到這裡。下一頁是別的症影，還在整理。' },
+    { who: 'mentor', text: '第三章到這裡。' },
+  ] },
+  { id: 'ch4-open', title: '第四章　撐著走來的人', when: (s) => chapterDone(3, s), lines: [
+    { who: 'mo', text: '這一頁開始，圖鑑上多了三隻：背上馱著石頭的龜、只用一隻腳站的鷺、一碰就鼓起來的豚。背痛、腳痛、腫。' },
+    { who: 'mentor', text: '這一章來的人，都是撐著、拖著才來的。能撐，不代表不要緊。' },
+    { who: 'mentor', text: '一樣是痛、一樣是腫，你要分出哪一個不能等。方法很土：把兩邊比一比，把該脫的鞋襪脫掉看。' },
+    { who: 'sys', text: '委託板上多了三張新的。' },
+  ] },
+  { id: 'ch4-complete', title: '第四章　完', when: (s) => chapterDone(4, s), lines: [
+    { who: 'mo', text: '三隻症影，十二盞燈，都有人名了。' },
+    { who: 'mentor', text: '他們進門的時候，幾乎都說「還撐得住」。裡面有幾位，是用鐘頭在算的。' },
+    { who: 'mentor', text: '這句話你以後聽到，要多看一眼：看另一邊、看襪子底下、看他是怎麼走進來的。' },
+    { who: 'mentor', text: '第四章到這裡。' },
+  ] },
+  { id: 'ch5-open', title: '第五章　說不出口的事', when: (s) => chapterDone(4, s), lines: [
+    { who: 'mo', text: '最後這四頁，我一直壓在最底下：排泄物、疹子、瘦了、麻了。來的人自己都講不清楚。' },
+    { who: 'mentor', text: '有些是不好意思說，有些是不知道怎麼說。要問，他才會說；怎麼問，決定他說不說。' },
+    { who: 'mentor', text: '簾子拉好，話說慢一點。該看的地方要看；看之前，先讓他知道為什麼。' },
+    { who: 'sys', text: '委託板上多了四張新的。' },
+  ] },
+  { id: 'ch5-complete', title: '第五章　完', when: (s) => chapterDone(5, s), lines: [
+    { who: 'mo', text: '十二隻症影，四十八盞燈。舊索引上的一行字，一行一行都改寫完了。' },
+    { who: 'mentor', text: '你現在看到一隻症影，想到的不是一個答案，是四個方向，還有哪一個不能漏。' },
+    { who: 'mentor', text: '圖鑑寫完了，可是來的人不會照著圖鑑生病。接下來是值班夜：兩張委託同時送到的時候，你先看哪一張？' },
+    { who: 'sys', text: '（後面的章節還在整理。）' },
   ] },
 ];
 export const nextBeat = (s: Save) => BEATS.find((b) => !s.beats.includes(b.id) && b.when(s));
@@ -180,6 +213,7 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
     c04d: '藥停掉的第三天，燒退了。他的紀錄上多了一行紅字，藥鋪的櫃台上也貼了一張。',
     c05c: '他在第九天認得出同伴。母親是他自己寫信去說的，信裡只寫了：「生了一場病，好了。」',
     c05d: '結果是醫師、她和女兒三個人一起聽的。之後的每一次回診，女兒都陪著。',
+    ...AFTER_MORE,   // 第四章以後的，寫在每個主訴自己的文獻檔裡
   };
   const patients: Entry[] = CASES.map((c) => {
     const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;

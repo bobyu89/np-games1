@@ -11,7 +11,7 @@ import type { Save } from './store.ts';
 import { BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, unlocked, type Beat, type Entry } from './progress.ts';
 import { Portrait } from './Portrait.tsx';
 
-const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章' };
+const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
 interface Props { save: Save; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void }
 
@@ -114,7 +114,7 @@ export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
                   </Fragment>
                 );
               })}
-              <div className="quest paper locked" aria-disabled="true"><b>第四章</b><span>別的症影</span><em>整理中</em></div>
+              <div className="quest paper locked" aria-disabled="true"><b>終章</b><span>大霧值班夜</span><em>整理中</em></div>
               <div className="quest paper locked" aria-disabled="true"><b>資格試煉</b><span>抽一個沒練過的主訴，15 分鐘</span><em>還沒開放</em></div>
             </div>
           )}

@@ -243,6 +243,47 @@ const PATIENTS = {
   shan: { shirt: C.plank, shirt2: C.plank2, hair: C.hairBrown, brow: C.hairBrown, beard: true, calm: true, flush: true },
   feng: { shirt: C.slate, shirt2: C.slate2, hair: C.hairInk, brow: C.hairInk, fast: true, flush: true, sweat: 2 },
   lan: { shirt: C.rose, shirt2: C.rose2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bob: true, calm: true, pale: true },
+  // 第四章：背痛、腳痛、腫脹。從這裡開始，樣子的代號就是病例的代號
+  c06a: { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairDark, brow: C.hairDark, sweat: 1 },
+  c06b: { shirt: C.paper, shirt2: C.paperLine, hair: C.hairInk, brow: C.hairInk, moustache: true, fast: true, sweat: 2 },
+  c06c: { shirt: C.sea, shirt2: C.sea2, hair: C.hairBrown, brow: C.hairBrown, woman: true, bun: true, pale: true, sweat: 1 },
+  c06d: { shirt: C.coat, shirt2: C.coat2, hair: C.cream, brow: C.hairGrey, moustache: true, beard: true, pale: true, fast: true, sweat: 2 },
+  c07a: { shirt: C.rust, shirt2: C.wood2, hair: C.hairDark, brow: C.hairDark, moustache: true, calm: true, flush: true },
+  c07b: { shirt: C.slate, shirt2: C.slate2, hair: C.cream, brow: C.hairGrey, cap: true, pale: true, fast: true, sweat: 1 },
+  c07c: { shirt: C.stone, shirt2: C.stone2, hair: C.hairInk, brow: C.hairInk, fast: true, sweat: 2 },
+  c07d: { shirt: C.moss, shirt2: C.green2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bun: true, calm: true },
+  c08a: { shirt: C.frog, shirt2: C.frog2, hair: C.hairDark, brow: C.hairDark, woman: true, pony: true, calm: true, pale: true },
+  c08b: { shirt: C.wood, shirt2: C.wood2, hair: C.cream, brow: C.hairGrey, moustache: true, pale: true, fast: true, sweat: 2 },
+  c08c: { shirt: C.amber, shirt2: C.amber2, hair: C.hairDark, brow: C.hairDark, woman: true, bun: true, calm: true },
+  c08d: { shirt: C.sky, shirt2: C.wall2, hair: C.hairInk, brow: C.hairInk, woman: true, bob: true, calm: true },
+  // 第五章：排泄物異常、皮膚疹子、體重減輕、感覺異常
+  c09a: { shirt: C.plank, shirt2: C.plank2, hair: C.hairGrey, brow: C.hairGrey, moustache: true, pale: true, fast: true, sweat: 1 },
+  c09b: { shirt: C.cloak, shirt2: C.cloak2, hair: C.hairDark, brow: C.hairDark, moustache: true, calm: true, pale: true },
+  c09c: { shirt: C.teal, shirt2: C.teal2, hair: C.hairGrey, brow: C.hairGrey, beard: true, calm: true },
+  c09d: { shirt: C.rose, shirt2: C.rose2, hair: C.cream, brow: C.hairGrey, woman: true, bun: true, calm: true },
+  c10a: { shirt: C.sea, shirt2: C.sea2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bun: true, calm: true },
+  c10b: { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairBrown, brow: C.hairBrown, woman: true, pony: true, fast: true, flush: true, sweat: 2 },
+  c10c: { shirt: C.paper, shirt2: C.paperLine, hair: C.hairInk, brow: C.hairInk, woman: true, bob: true, calm: true, flush: true },
+  c10d: { shirt: C.slate, shirt2: C.slate2, hair: C.hairDark, brow: C.hairDark, woman: true, pony: true, calm: true, pale: true },
+  c11a: { shirt: C.amber, shirt2: C.amber2, hair: C.hairBrown, brow: C.hairBrown, woman: true, bob: true, fast: true, flush: true, sweat: 1 },
+  c11b: { shirt: C.wood, shirt2: C.wood2, hair: C.hairGrey, brow: C.hairGrey, moustache: true, calm: true, pale: true },
+  c11c: { shirt: C.sky, shirt2: C.wall2, hair: C.hairBrown, brow: C.hairBrown, calm: true, pale: true },
+  c11d: { shirt: C.stone, shirt2: C.stone2, hair: C.cream, brow: C.hairGrey, beard: true, scarf: true, calm: true, pale: true },
+  c12a: { shirt: C.moss, shirt2: C.green2, hair: C.hairDark, brow: C.hairDark, moustache: true, calm: true },
+  c12b: { shirt: C.coat, shirt2: C.coat2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bun: true, pale: true, sweat: 1 },
+  c12c: { shirt: C.cloak, shirt2: C.cloak2, hair: C.hairGrey, brow: C.hairGrey, moustache: true, calm: true, pale: true },
+  c12d: { shirt: C.rose, shirt2: C.rose2, hair: C.hairInk, brow: C.hairInk, woman: true, pony: true, fast: true, flush: true, sweat: 1 },
+};
+
+// 第四、五章的病人帶來的東西：每個人一大一小，從下面的零件裡挑。[大的, 顏色, 小的]
+const KIT = {
+  c06a: ['crate', C.wood, 'rope'], c06b: ['books', C.cloak, 'abacus'], c06c: ['cloth', C.cream, 'needle'], c06d: ['chest', C.wood, 'cane'],
+  c07a: ['barrel', C.wood, 'cup'], c07b: ['bag', C.slate2, 'scroll'], c07c: ['chest', C.iron, 'hammer'], c07d: ['basket', C.sea, 'fish'],
+  c08a: ['cloth', C.frog, 'bottle'], c08b: ['crate', C.plank, 'bell'], c08c: ['jar', C.wood2, 'bottle'], c08d: ['bag', C.mustard, 'scroll'],
+  c09a: ['barrel', C.plank, 'hammer'], c09b: ['sack', C.mustard, 'bottle'], c09c: ['pot', C.rust, 'brush'], c09d: ['basket', C.cream, 'herbs'],
+  c10a: ['basket', C.moss, 'teapot'], c10b: ['basket', C.sea, 'fish'], c10c: ['cloth', C.rose, 'spool'], c10d: ['chest', C.plank, 'herbs'],
+  c11a: ['pot', C.slate, 'brush'], c11b: ['crate', C.wood, 'knife'], c11c: ['bag', C.wood, 'letter'], c11d: ['chest', C.wood2, 'cane'],
+  c12a: ['sack', C.moss, 'teapot'], c12b: ['books', C.rust, 'abacus'], c12c: ['pot', C.iron, 'cup'], c12d: ['bag', C.rose2, 'fan'],
 };
 
 // 第二章四位病人帶來的東西
@@ -253,7 +294,36 @@ function drawProps(g, who) {
     [5, 10, 15].forEach((d) => wline(g, [[x + 1 + d * 0.2, y + d], [x + 39 - d * 0.2, y + d]], C.wood2, 1));
     wline(g, [[x + 4, y], [x + 20, y - 12], [x + 36, y]], C.wood2, 2.2);
   };
-  if (who === 'song') {          // 駱松：一支黃銅望遠鏡、一雙脫下來的靴子
+  if (KIT[who]) {
+    const [big, col, small] = KIT[who];
+    if (big === 'crate') { shape(g, rect(44, 262, 40, 20), { fill: col }); [268, 275].forEach((y) => wline(g, [[44, y], [84, y]], C.wood2, 1.1)); [56, 72].forEach((x) => wline(g, [[x, 262], [x, 282]], C.wood2, 1.1)); }
+    if (big === 'books') [[44, 276, 40, col], [47, 270, 36, C.rust], [45, 264, 38, C.moss]].forEach(([x, y, w, c]) => { shape(g, rrect(x, y, w, 6, 1.5), { fill: c, lw: 1.1 }); wline(g, [[x + 4, y + 3], [x + w - 4, y + 3]], C.cream, 1); });
+    if (big === 'cloth') [[col, 0], [C.sea, 5], [col, 10], [C.ochre, 15]].forEach(([c, d]) => shape(g, rrect(44, 277 - d, 40, 5.4, 2), { fill: c, lw: 1.1 }));
+    if (big === 'chest') { shape(g, rect(44, 264, 40, 18), { fill: col }); wline(g, [[44, 271], [84, 271]], C.wood2, 1.2); shape(g, rect(61, 268, 6, 5), { fill: C.brass, lw: 1 }); wline(g, [[52, 264], [56, 257], [72, 257], [76, 264]], C.wood2, 2.2); }
+    if (big === 'barrel') { shape(g, [[48, 260], [80, 260], [84, 271], [80, 282], [48, 282], [44, 271]], { fill: col }); [265, 277].forEach((y) => wline(g, [[46, y], [82, y]], C.iron2, 1.8)); oval(g, 64, 260, 16, 2.6, { fill: C.wood2, lw: 1.1 }); }
+    if (big === 'bag') { shape(g, [[46, 282], [44, 268], [52, 260], [76, 260], [84, 268], [82, 282]], { fill: col }); wline(g, [[52, 260], [58, 250], [70, 250], [76, 260]], C.wood2, 2); shape(g, rect(60, 266, 8, 6), { fill: C.brass, lw: 1 }); }
+    if (big === 'basket') { basket(46, 262, C.mustard); shape(g, [[45, 263], [54, 257], [66, 259], [78, 256], [87, 263]], { fill: col, lw: 1.1 }); }
+    if (big === 'jar') { shape(g, [[50, 258], [78, 258], [84, 268], [82, 282], [46, 282], [44, 268]], { fill: col }); shape(g, rect(54, 253, 20, 6), { fill: C.cream, lw: 1.1 }); wline(g, [[46, 270], [82, 270]], C.rust, 2); }
+    if (big === 'sack') { shape(g, [[46, 282], [44, 268], [52, 259], [60, 262], [68, 258], [78, 262], [84, 270], [82, 282]], { fill: col }); wline(g, [[56, 262], [72, 262]], C.wood2, 2); }
+    if (big === 'pot') { shape(g, [[44, 268], [84, 268], [80, 282], [48, 282]], { fill: col }); oval(g, 64, 268, 20, 3.4, { fill: C.iron2, lw: 1.2 }); wline(g, [[40, 271], [44, 271]], C.ink, 2.4); wline(g, [[84, 271], [88, 271]], C.ink, 2.4); }
+    if (small === 'rope') [10, 7, 4].forEach((r, i) => oval(g, 108, 277, r, r * 0.55, { stroke: C.mustard, lw: 2.4, n: 12, double: false, seed: 970 + i }));
+    if (small === 'abacus') { shape(g, rect(96, 270, 26, 12), { fill: C.wood, lw: 1.1 }); [274, 278].forEach((y) => { wline(g, [[98, y], [120, y]], C.ink, 0.8); [101, 106, 112, 117].forEach((x) => dot(g, x, y, 1.4, C.rust)); }); }
+    if (small === 'needle') { wline(g, [[96, 282], [122, 266]], C.ink, 2); wline(g, [[96, 282], [122, 266]], C.brass, 0.9); wline(g, [[122, 266], [126, 258], [116, 262], [108, 270]], C.cream, 1.1); }
+    if (small === 'cane') { wline(g, [[98, 283], [120, 250]], C.wood2, 2.6); wline(g, [[120, 250], [125, 248], [127, 253]], C.wood2, 2.6); }
+    if (small === 'cup') { shape(g, [[100, 270], [116, 270], [114, 282], [102, 282]], { fill: C.teal }); wline(g, [[116, 273], [121, 275], [115, 279]], C.ink, 1.4); }
+    if (small === 'scroll') { shape(g, rrect(96, 274, 26, 8, 3), { fill: C.cream, lw: 1.1 }); oval(g, 96, 278, 2.2, 4, { fill: C.paperLine, lw: 1 }); wline(g, [[104, 278], [118, 278]], C.rust, 1); }
+    if (small === 'hammer') { wline(g, [[106, 276], [122, 284]], C.wood2, 2.6); shape(g, rrect(96, 267, 16, 9, 2), { fill: C.iron }); }
+    if (small === 'fish') { shape(g, [[97, 278], [91, 273], [92, 283]], { fill: C.slate2, lw: 1.1 }); shape(g, ell(108, 277, 12, 4.6, 10, -0.12), { fill: C.slate, lw: 1.2, step: 99 }); dot(g, 116, 275.5, 0.9, C.ink); }
+    if (small === 'bottle') { shape(g, [[102, 282], [101, 270], [105, 266], [105, 260], [111, 260], [111, 266], [115, 270], [114, 282]], { fill: C.moss }); shape(g, rect(104.5, 257, 7, 3.4), { fill: C.cork, lw: 1 }); }
+    if (small === 'bell') { shape(g, [[100, 282], [103, 268], [108, 264], [113, 268], [116, 282]], { fill: C.brass }); dot(g, 108, 283, 1.8, C.ink); wline(g, [[108, 264], [108, 260]], C.ink, 1.6); }
+    if (small === 'brush') { wline(g, [[96, 283], [118, 266]], C.wood2, 2.2); shape(g, [[116, 268], [122, 260], [125, 263], [120, 270]], { fill: C.rust, lw: 1.1 }); }
+    if (small === 'herbs') { [[102, 0.5], [108, 0], [114, -0.5]].forEach(([x, r]) => { wline(g, [[108, 283], [x, 266]], C.green2, 1.2); leaf(g, x, 264, 4.5, 2.4, r, C.moss); }); wline(g, [[104, 278], [112, 278]], C.cream, 2); }
+    if (small === 'teapot') { wline(g, [[117, 274], [123, 270]], C.ink, 2.2); wline(g, [[99, 272], [95, 275], [99, 279]], C.ink, 1.6); shape(g, ell(108, 275, 10, 7, 12), { fill: C.rose, lw: 1.2, step: 99 }); shape(g, rect(104, 266, 8, 3), { fill: C.rose2, lw: 1 }); }
+    if (small === 'spool') { shape(g, rect(102, 268, 12, 14), { fill: C.rust, lw: 1.1 }); shape(g, rect(99, 265, 18, 3.4), { fill: C.wood, lw: 1 }); shape(g, rect(99, 281, 18, 3.4), { fill: C.wood, lw: 1 }); wline(g, [[114, 274], [124, 278]], C.rust, 1); }
+    if (small === 'knife') { shape(g, [[98, 270], [118, 268], [120, 278], [100, 280]], { fill: C.iron }); wline(g, [[118, 273], [126, 272]], C.wood2, 3); }
+    if (small === 'letter') [[100, 270, -0.15], [106, 273, 0.12]].forEach(([x, y, r]) => { g.save(); g.translate(x + 8, y + 5); g.rotate(r); shape(g, rect(-9, -6, 18, 12), { fill: C.cream, lw: 1.1 }); wline(g, [[-9, -6], [0, 1], [9, -6]], C.paperLine, 1); dot(g, 0, 1, 1.6, C.rust); g.restore(); });
+    if (small === 'fan') { shape(g, [[108, 283], [94, 268], [100, 262], [108, 260], [116, 262], [122, 268]], { fill: C.rose, lw: 1.2 }); [[98, 265], [104, 261], [112, 261], [118, 265]].forEach(([x, y]) => wline(g, [[108, 283], [x, y]], C.rose2, 0.9)); }
+  } else if (who === 'song') {          // 駱松：一支黃銅望遠鏡、一雙脫下來的靴子
     shape(g, rrect(44, 271, 22, 8, 2), { fill: C.brass }); shape(g, rrect(64, 269, 16, 12, 2), { fill: C.brass }); wline(g, [[58, 271.5], [58, 279]], C.ink, 1.1);
     shape(g, [[92, 262], [100, 262], [101, 276], [112, 279], [112, 283], [91, 283]], { fill: C.boot }); shape(g, [[108, 266], [115, 266], [116, 277], [124, 280], [124, 283], [107, 283]], { fill: C.boot });
   } else if (who === 'zhang') {   // 霍樟：一籃燻魚
@@ -642,6 +712,133 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
+  // 負石龜：背痛的症影。背上疊著石頭，走一步、沉一分
+  function drawTortoise(g, t, x, y, flinch, agit) {
+    const sag = Math.sin(t * (1.6 + agit * 3 + flinch * 6)) * (1 + agit * 1.5);
+    g.save(); g.translate(x, y + 8 + sag * 0.6); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.8) * 0.02 + flinch * 0.15);
+    [-1, 1].forEach((sd) => shape(g, ell(sd * 17, 15, 6, 5.5, 8), { fill: C.stone, boil: true, step: 99, seed: 2500 }));
+    shape(g, [[22, 8], [30, 11], [23, 13]], { fill: C.stone, boil: true, seed: 2502 });
+    shape(g, ell(-27, 4, 9.5, 8, 10), { fill: C.stone, boil: true, step: 99, seed: 2504 });
+    shape(g, [[-22, 12], [-20, -1], [-10, -9], [8, -9], [19, -2], [22, 12]], { fill: C.moss, boil: true, seed: 2506 });
+    wline(g, [[-21, 6], [21, 6]], C.green2, 1.4, { boil: true, seed: 2508 }); [[-9, -8, -11, 6], [5, -9, 7, 6]].forEach(([a, b, c2, d]) => wline(g, [[a, b], [c2, d]], C.green2, 1.3, { seed: 2510 }));
+    shape(g, [[-22, 12], [22, 12], [18, 16], [-18, 16]], { fill: C.cream, lw: 1.2, boil: true, seed: 2512 });
+    [[-4, -15, 13, 6, 0.04], [3, -25, 10.5, 5.5, -0.07], [-2, -34, 8, 5, 0.1]].forEach(([sx, sy, rx, ry, rot], i) => { g.save(); g.translate(sx + sag * (i + 1) * 0.5, sy); g.rotate(rot + sag * 0.02 * (i + 1)); shape(g, ell(0, 0, rx, ry, 9), { fill: i === 1 ? C.stone2 : C.iron, boil: true, step: 99, seed: 2514 + i }); g.restore(); });
+    eye(g, -29, 2, 3.8 + flinch, [-1.2, 1.2], (t * 0.8 + 1.3) % 4.4 < 0.14 ? 'blink' : 'open');
+    wline(g, [[-35, 7], [-30, 8.5]], C.ink, 1.2, { seed: 2520 });
+    g.restore();
+  }
+
+  // 單腳鷺：腳痛的症影。只用一隻腳站著，另一隻縮起來不讓人看
+  function drawHeron(g, t, x, y, flinch, agit) {
+    const sway = Math.sin(t * (1.4 + agit * 3 + flinch * 7)) * (0.04 + agit * 0.05);
+    g.save(); g.translate(x, y - 6); g.scale(MOTH_BIG, MOTH_BIG);
+    const leg = [[2, 8], [1, 22], [3, 31]];
+    wline(g, leg, C.ink, 2.6, { boil: true, seed: 2600 }); wline(g, leg, C.ochre, 1.3, { boil: true, seed: 2600 }); wline(g, [[-4, 32], [3, 31], [10, 32]], C.ink, 1.8, { seed: 2602 });
+    g.rotate(sway);
+    const tuck = [[-4, 8], [-9, 15], [-3, 18]];
+    wline(g, tuck, C.ink, 2.4, { boil: true, seed: 2604 }); wline(g, tuck, C.ochre, 1.2, { boil: true, seed: 2604 });
+    shape(g, ell(0, 0, 17, 11.5, 12, -0.25), { fill: C.cream, boil: true, step: 99, seed: 2606 });
+    shape(g, [[-4, -6], [14, -2], [22, 6], [8, 8], [-6, 3]], { fill: C.iron, boil: true, seed: 2608 });
+    wline(g, [[2, 0], [14, 3]], C.iron2, 1.1, { seed: 2610 }); wline(g, [[0, 4], [10, 6]], C.iron2, 1.1, { seed: 2611 });
+    const neck = [[-12, -5], [-19, -14], [-11, -22], [-16, -31]];
+    wline(g, neck, C.ink, 7, { boil: true, seed: 2612 }); wline(g, neck, C.cream, 4.6, { boil: true, seed: 2612 });
+    shape(g, [[-24, -36], [-40, -32], [-24, -31]], { fill: C.ochre, boil: true, seed: 2618 });
+    shape(g, ell(-18, -34, 7, 6, 10), { fill: C.cream, boil: true, step: 99, seed: 2614 });
+    wline(g, [[-14, -38], [-6, -42]], C.iron2, 1.8, { seed: 2616 });
+    eye(g, -19, -35, 3 + flinch, [-1, 0.8], (t * 0.8 + 1.3) % 4.4 < 0.14 ? 'blink' : 'open');
+    g.restore();
+  }
+
+  // 漲水豚：腫脹的症影。一鼓一消
+  function drawPuffer(g, t, x, y, flinch, agit) {
+    const puff = 0.5 + 0.5 * Math.sin(t * (1.8 + agit * 3.5 + flinch * 8)), r = 19 + puff * 6;
+    g.save(); g.translate(x, y + 4); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.05 + flinch * 0.2);
+    shape(g, [[r - 3, -2], [r + 11, -9], [r + 9, 0], [r + 11, 9], [r - 3, 3]], { fill: C.mustard, boil: true, seed: 2700 });
+    [-1, 1].forEach((sd) => shape(g, [[2, sd * (r - 3)], [10, sd * (r + 6)], [-4, sd * (r + 5)]], { fill: C.mustard, boil: true, seed: 2702 }));
+    for (let i = 0; i < 12; i++) { const a = (i / 12) * TAU + 0.26, r2 = r + 3 + puff * 2.5; wline(g, [[Math.cos(a) * (r - 1), Math.sin(a) * (r - 1) * 0.92], [Math.cos(a) * r2, Math.sin(a) * r2 * 0.92]], C.ink, 1.5, { amp: 0 }); }
+    shape(g, ell(0, 0, r, r * 0.92, 16), { fill: C.ochre, boil: true, step: 99, seed: 2704 });
+    shape(g, ell(-2, r * 0.3, r * 0.7, r * 0.5, 12), { fill: C.cream, lw: 1.1, boil: true, step: 99, seed: 2706 });
+    [[5, -8], [11, -3], [1, -13], [10, -12]].forEach(([dx, dy]) => dot(g, dx, dy, 1.3, C.mustard));
+    eye(g, -11, -6, 4.2 + flinch * 1.2, [-1.2, 1], (t * 0.8 + 1.3) % 4.4 < 0.14 ? 'blink' : 'open');
+    oval(g, -r + 3, 3, 2.6, 2.2 + puff, { fill: C.rust, lw: 1.1 });
+    g.restore();
+  }
+
+  // 渾水獺：排泄物異常的症影。把水攪渾了就躲起來
+  function drawOtter(g, t, x, y, flinch, agit) {
+    const stir = t * (1.6 + agit * 3 + flinch * 6);
+    g.save(); g.translate(x, y + 4); g.scale(MOTH_BIG, MOTH_BIG);
+    [[26, 9, 0], [19, 6.5, 2]].forEach(([rx, ry, ph], i) => { const pts = []; for (let k = 0; k <= 14; k++) { const a = (k / 14) * TAU * 0.86 + stir * 0.5 + ph; pts.push([Math.cos(a) * rx, 17 + Math.sin(a) * ry]); } wline(g, pts, i ? C.plank2 : C.plank, 2.2, { amp: 0.4, seed: 2800 + i }); });
+    g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
+    const tail = [[10, 10], [22, 12], [30, 6], [33, -2]];
+    wline(g, tail, C.ink, 7.5, { boil: true, seed: 2804 }); wline(g, tail, C.fur2, 5, { boil: true, seed: 2804 });
+    shape(g, ell(0, 4, 15, 13, 12), { fill: C.fur, boil: true, step: 99, seed: 2806 });
+    shape(g, ell(-1, 8, 9, 8, 10), { fill: C.cream, lw: 1.1, boil: true, step: 99, seed: 2808 });
+    [-1, 1].forEach((sd) => limb(g, [[sd * 11, 0], [sd * 7, 8], [sd * 2, 7]], 4.2, C.fur2, { boil: true, seed: 2810 }));
+    [-1, 1].forEach((sd) => shape(g, ell(-2 + sd * 10.5, -23, 3.6, 3.2, 8), { fill: C.fur2, boil: true, step: 99, seed: 2814 }));
+    shape(g, ell(-2, -15, 13, 10.5, 12), { fill: C.fur, boil: true, step: 99, seed: 2812 });
+    shape(g, ell(-2, -11, 7.5, 5, 10), { fill: C.cream, lw: 1.1, boil: true, step: 99, seed: 2816 });
+    dot(g, -2, -13, 1.8, C.ink);
+    [-1, 1].forEach((sd) => { wline(g, [[-2 + sd * 5, -11], [-2 + sd * 14, -12]], C.ink, 0.8, { amp: 0 }); wline(g, [[-2 + sd * 5, -9.5], [-2 + sd * 13, -8]], C.ink, 0.8, { amp: 0 }); });
+    const blink = (t * 0.8 + 1.3) % 4.4 < 0.14, r = 3.4 + flinch;
+    eye(g, -8, -18, r, [-1, 1], blink ? 'blink' : 'open'); eye(g, 4, -18, r, [-1, 1], blink ? 'blink' : 'open');
+    g.restore();
+  }
+
+  // 點墨魷：皮膚疹子的症影。游過哪裡，墨點就留在哪裡
+  function drawSquid(g, t, x, y, flinch, agit) {
+    const wave = t * (2 + agit * 4 + flinch * 8);
+    g.save(); g.translate(x, y); g.scale(MOTH_BIG, MOTH_BIG);
+    [[-30, -8, 2.2], [-34, 8, 1.6], [28, -14, 2], [33, 4, 2.6], [-22, 20, 1.8], [24, 20, 1.5], [-12, -30, 1.4], [14, -31, 1.8]].forEach(([dx, dy, r], i) => { g.globalAlpha = 0.35 + 0.4 * (0.5 + 0.5 * Math.sin(wave * 0.6 + i * 1.3)); dot(g, dx, dy, r, i % 3 ? C.ink : C.rust); });
+    g.globalAlpha = 1;
+    g.rotate(Math.sin(t * 0.9) * 0.05 + flinch * 0.2);
+    for (let i = 0; i < 6; i++) { const bx = -10 + i * 4, sw = Math.sin(wave + i * 0.9) * 3, pts = [[bx, 6], [bx + sw, 16], [bx - sw * 0.6, 25], [bx + sw, 32]]; wline(g, pts, C.ink, 4, { boil: true, seed: 2900 + i }); wline(g, pts, C.rose2, 2.4, { boil: true, seed: 2900 + i }); }
+    [-1, 1].forEach((sd) => shape(g, [[sd * 8, -22], [sd * 21, -16], [sd * 10, -8]], { fill: C.rose2, boil: true, seed: 2910 }));
+    shape(g, [[0, -34], [10, -22], [12, -2], [8, 8], [-8, 8], [-12, -2], [-10, -22]], { fill: C.rose, boil: true, seed: 2912 });
+    [[-4, -22], [5, -16], [-2, -10]].forEach(([dx, dy]) => dot(g, dx, dy, 1.5, C.rose2));
+    const blink = (t * 0.8 + 1.3) % 4.4 < 0.14, r = 3.8 + flinch * 1.2;
+    eye(g, -6, 1, r, [-1, 1], blink ? 'blink' : 'open'); eye(g, 6, 1, r, [1, 1], blink ? 'blink' : 'open');
+    g.restore();
+  }
+
+  // 啃月鼠：體重減輕的症影。每天夜裡把月亮啃掉一小口
+  function drawMouse(g, t, x, y, flinch, agit) {
+    const nib = Math.max(0, Math.sin(t * (5 + agit * 6 + flinch * 10)));
+    g.save(); g.translate(x + 4, y + 4); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
+    const moon = [];
+    for (let k = 0; k <= 10; k++) { const a = ((60 + k * 24) * Math.PI) / 180; moon.push([Math.cos(a) * 15, Math.sin(a) * 15]); }
+    for (let k = 10; k >= 0; k--) { const a = ((75 + k * 21) * Math.PI) / 180; moon.push([6 + Math.cos(a) * 12.5, Math.sin(a) * 12.5]); }
+    g.save(); g.translate(-20, -6); shape(g, moon, { fill: C.ochre, boil: true, seed: 3000 }); g.restore();
+    [[-9, 7], [-6, 11], [-12, 12]].forEach(([dx, dy]) => dot(g, dx, dy + nib, 1, C.ochre));
+    const tail = [[14, 12], [24, 14], [31, 8], [28, 0]];
+    wline(g, tail, C.ink, 3, { boil: true, seed: 3004 }); wline(g, tail, C.rose, 1.6, { boil: true, seed: 3004 });
+    shape(g, ell(8, 6, 13, 11, 12), { fill: C.iron, boil: true, step: 99, seed: 3006 });
+    shape(g, ell(6, 10, 7, 6, 10), { fill: C.cream, lw: 1.1, boil: true, step: 99, seed: 3008 });
+    [[3, -13, 5.5], [10, -10, 5]].forEach(([dx, dy, r], i) => { shape(g, ell(dx, dy, r, r, 9), { fill: C.iron, boil: true, step: 99, seed: 3012 + i }); dot(g, dx, dy, r * 0.5, C.rose); });
+    shape(g, [[-9 - nib, -2], [2, -11], [10, -6], [8, 3], [0, 4]], { fill: C.iron, boil: true, seed: 3010 });
+    dot(g, -9 - nib, -2, 1.5, C.ink);
+    [-1, 1].forEach((sd) => wline(g, [[-6, -1], [-13, -1 + sd * 3]], C.ink, 0.7, { amp: 0 }));
+    eye(g, 1, -4, 3.2 + flinch, [-1.2, 0.6], (t * 0.8 + 1.3) % 4.4 < 0.14 ? 'blink' : 'open');
+    [[-3, 3], [-1, 7]].forEach(([dx, dy], i) => shape(g, ell(dx, dy, 2.6, 2, 7), { fill: C.rose, lw: 1, boil: true, step: 99, seed: 3016 + i }));
+    g.restore();
+  }
+
+  // 電絲鰻：感覺異常的症影。游過的地方又麻又刺，像有細細的電
+  function drawEel(g, t, x, y, flinch, agit) {
+    const sw = t * (2 + agit * 4 + flinch * 8);
+    g.save(); g.translate(x, y + 2); g.scale(MOTH_BIG, MOTH_BIG);
+    const body = [];
+    for (let k = 0; k <= 12; k++) { const u = k / 12; body.push([-30 + u * 60, Math.sin(u * 5.2 + sw) * (7 - u * 2) + (u - 0.5) * 6]); }
+    wline(g, body, C.ink, 11, { amp: 0.3, seed: 3100 }); wline(g, body, C.teal, 8.4, { amp: 0.3, seed: 3100 });
+    wline(g, body.map(([px, py]) => [px, py + 2.6]), C.cream, 1.6, { amp: 0.2, seed: 3102 });
+    const [hx, hy] = body[0];
+    shape(g, ell(hx - 2, hy, 8.5, 7, 10), { fill: C.teal, boil: true, step: 99, seed: 3104 });
+    wline(g, [[hx - 9, hy + 2.5], [hx - 4, hy + 3.5]], C.ink, 1.2, { seed: 3106 });
+    eye(g, hx - 3, hy - 2, 3.2 + flinch, [-1.2, 0.8], (t * 0.8 + 1.3) % 4.4 < 0.14 ? 'blink' : 'open');
+    [[-12, -16], [6, -18], [20, -10], [-2, 18], [16, 16], [-22, 14]].forEach(([dx, dy], i) => { if ((Math.floor(sw * 1.4) + i) % 3) return; wline(g, [[dx, dy], [dx + 3, dy + 4], [dx - 1, dy + 5], [dx + 2, dy + 10]], C.ochre, 1.6, { amp: 0 }); });
+    g.restore();
+  }
+
   function drawMoth(g, t) {
     K.seed = 2000;
     const flinch = state.flinch, agit = state.slumpShown;
@@ -656,6 +853,8 @@ export function createWard(canvas, opts = {}) {
     if (opts.shadow === 'crab') { drawCrab(g, t, x, y, flinch, agit); return { x, y }; }
     if (opts.shadow === 'newt') { drawNewt(g, t, x, y, flinch, agit); return { x, y }; }
     if (opts.shadow === 'bird') { drawBird(g, t, x, y, flinch, agit); return { x, y }; }
+    const more = { tortoise: drawTortoise, heron: drawHeron, puffer: drawPuffer, otter: drawOtter, squid: drawSquid, mouse: drawMouse, eel: drawEel }[opts.shadow];
+    if (more) { more(g, t, x, y, flinch, agit); return { x, y }; }
     g.save(); g.translate(x, y); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.05 + flinch * 0.25);
     const flap = 0.8 + 0.2 * Math.sin(t * (3.2 + agit * 7 + flinch * 12));
     [-1, 1].forEach((side) => {

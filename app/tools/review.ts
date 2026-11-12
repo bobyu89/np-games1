@@ -8,7 +8,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CASES, COMPLAINTS } from '../src/data/index.ts';
-import { REF_CHECK, REVIEW_ASKS } from '../src/data/shared.ts';
+import { ALL_REF_CHECK as REF_CHECK, ALL_REVIEW_ASKS as REVIEW_ASKS } from '../src/data/extras.ts';
 import { COST, formOf } from '../src/core/engine.ts';
 import { idealActions, run } from '../src/core/autoplay.ts';
 import { scoreSession, SAFETY_LABEL } from '../src/core/scoring.ts';
