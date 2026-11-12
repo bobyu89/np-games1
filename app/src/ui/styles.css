@@ -268,6 +268,10 @@ button.act.hint, .quest.hint, .opt.hint:not(.done) { animation: hint 1.8s ease-i
 .safety.review { background: var(--grain), var(--rust-2); }
 .safety b { font-size: 1.1em; line-height: 1.64; }
 .row-top { display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
+/* 委託板上，一隻症影一個小標題 */
+.quest-head { flex: none; color: var(--on-page-soft); font-size: 0.86em; letter-spacing: 0.04em; padding: 2px 2px 0; }
+.quest-head:not(:first-child) { margin-top: 4px; }
+
 /* 圖鑑的人物和場景：一張卡一個，沒遇到的是暗的 */
 .album { display: flex; flex-direction: column; gap: 8px; }
 .card { display: grid; grid-template-columns: 5.4em minmax(0, 1fr); gap: 10px; align-items: start; border: 2px solid var(--ink); border-radius: var(--r-b); padding: 7px; background: var(--grain), var(--paper); }

@@ -10,7 +10,9 @@ import type { Shot } from './Portrait.tsx';
 
 /** 委託板上的一張委託。needs：要先完成哪一張才會出現 */
 export interface Quest { caseId: string; chapter: number; needs?: string }
-export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b', chapter: 1, needs: 'c01a' }, { caseId: 'c01c', chapter: 1, needs: 'c01b' }, { caseId: 'c01d', chapter: 1, needs: 'c01c' }];
+export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b', chapter: 1, needs: 'c01a' }, { caseId: 'c01c', chapter: 1, needs: 'c01b' }, { caseId: 'c01d', chapter: 1, needs: 'c01c' },
+  // 第二章：第一章走完才會貼上板子。兩隻症影可以交錯著接
+  { caseId: 'c02a', chapter: 2, needs: 'c01d' }, { caseId: 'c02b', chapter: 2, needs: 'c02a' }, { caseId: 'c03a', chapter: 2, needs: 'c01d' }, { caseId: 'c03b', chapter: 2, needs: 'c03a' }];
 export const unlocked = (q: Quest, s: Save) => !q.needs || !!s.cases[q.needs];
 
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
@@ -44,6 +46,17 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '同一句「胸口痛」，一個要馬上叫人，一個可以回家，一個不能放走，一個差點被當成緊張。' },
     { who: 'mentor', text: '第一章到這裡。下一頁是別的症影，還在整理，好了會貼到委託板上。' },
     { who: 'sys', text: '你升為「巡診專科護理師」。' },
+  ] },
+  { id: 'ch2-open', title: '第二章　同一張面孔', when: (s) => !!s.cases.c01a && !!s.cases.c01b && !!s.cases.c01c && !!s.cases.c01d, lines: [
+    { who: 'mo', text: '下一頁有兩隻。一隻肚子像風箱，一鼓一縮；一隻把繩子打成結，抱在懷裡不放。' },
+    { who: 'mentor', text: '風箱蛙是喘，結繩蟹是腹痛。這兩隻最會騙人：來的人講的話都差不多，底下卻完全不一樣。' },
+    { who: 'mentor', text: '流程你已經熟了。這一章要練的是聽：同樣一句「我很喘」「我肚子痛」，要問到它們不一樣的地方。' },
+    { who: 'sys', text: '委託板上多了兩張新的。' },
+  ] },
+  { id: 'ch2-half', title: '第二章　寫回一半', when: (s) => !!s.cases.c02a && !!s.cases.c02b && !!s.cases.c03a && !!s.cases.c03b, lines: [
+    { who: 'mo', text: '兩頁各寫回了一半。風箱蛙還有「肺部感染」和「突發急症」，結繩蟹還有「胰臟與胃」和「大腸憩室」，底下都還沒有人名。' },
+    { who: 'mentor', text: '一個是水，一個是氣；一個吃完油的才痛，一個從肚臍開始痛。這些差別，都是你自己問出來的。' },
+    { who: 'mentor', text: '另外四位還在路上。等委託送到，板子上會多出來。' },
   ] },
 ];
 export const nextBeat = (s: Save) => BEATS.find((b) => !s.beats.includes(b.id) && b.when(s));
@@ -88,6 +101,9 @@ export const HEROES = [
   { id: 'cheng', name: '葉澄', tag: '內科病房出身', line: '習慣把每一件事寫下來，筆記本從不離手。' },
   { id: 'yuan', name: '高遠', tag: '急診出身', line: '手腳很快，正在學慢下來把話問完。巡夜的時候提著一盞小燈。' },
   { id: 'zhi', name: '白芷', tag: '社區巡診出身', line: '很會聽人說話。出診包裡總有一把剛採的草藥。' },
+  { id: 'heng', name: '杜衡', tag: '外科病房出身', line: '手很穩，話很少。口袋裡永遠有一捲繃帶。' },
+  { id: 'mu', name: '蘇木', tag: '兒科病房出身', line: '會蹲下來跟孩子說話。手上那隻布做的小魚，是哄人用的。' },
+  { id: 'qiao', name: '連翹', tag: '加護病房出身', line: '習慣看著懷錶數呼吸。別人慌的時候，她的聲音會慢下來。' },
 ] as const;
 export const heroOf = (id: string | null) => HEROES.find((h) => h.id === id) ?? HEROES[0];
 const heroShot = (id: string): Shot => ({ kind: 'hall', hero: id, view: { w: 112, h: 112, cx: 189, cy: 212 } });
@@ -109,6 +125,10 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
     c01b: '那一船貨，她隔了三天才回去卸。現在會催同事來公會。',
     c01c: '檢查的結果，他是自己先聽的。過了兩天，才帶兒子一起來。',
     c01d: '帳冊有人幫她收好了。那一趟船，是別人代她出的海。',
+    c02a: '藥調好之後，腳消了。孫子出海那天，他自己走到了碼頭。',
+    c02b: '那一批魚是徒弟出的貨。他回到坊裡，把菸斗掛在牆上，沒有再點。',
+    c03a: '攤子歇了十天。再開張的時候，滷肥肉從菜單上劃掉了。',
+    c03b: '師傅沒有不要他。工寮的人輪流送了一個禮拜的粥。',
   };
   const patients: Entry[] = CASES.map((c) => {
     const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;
@@ -132,6 +152,9 @@ export function placesOf(save: Save): Entry[] {
     { id: 'yard', name: '船塢的工寮', tag: '還沒去過', lines: [], shot: { kind: 'hall' }, open: false, hint: '之後的章節' },
   ];
 }
+
+/** 症影那一頁整體寫回了多少：每隻症影的百分比平均 */
+export const codexPercent = (list: ComplaintDef[], save: Save) => (list.length ? Math.round(list.reduce((n, m) => n + codexOf(m, save).percent, 0) / list.length) : 0);
 
 /** 人物和場景加起來打開了幾個 */
 export function albumCount(save: Save): { got: number; total: number } {

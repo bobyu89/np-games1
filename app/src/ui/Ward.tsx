@@ -139,7 +139,7 @@ export function Ward({ c, hero, takeaway, onDone, onQuit }: Props) {
   return (
     <div className="screen ward">
       <div className="left">
-        <Stage kind="ward" patient={c.patient.look} scene={c.scene} hero={hero} stage={stage} onFrame={onFrame} label={(c.scene === 'dock' ? '碼頭的貨棧：' : '霧脈公會的病室：') + who + '坐在床上，你站在床尾，岑禾拿著紀錄板站在旁邊，房間中間飄著被霧裹住的症影，底下掛著四盞燈'}>
+        <Stage kind="ward" patient={c.patient.look} scene={c.scene} shadow={c.shadow.look} hero={hero} stage={stage} onFrame={onFrame} label={(c.scene === 'dock' ? '碼頭的貨棧：' : '霧脈公會的病室：') + who + '坐在床上，你站在床尾，岑禾拿著紀錄板站在旁邊，房間中間飄著被霧裹住的症影，底下掛著四盞燈'}>
           <button type="button" className="tag tag-back" onClick={() => (closed ? finish() : setSheet('quit'))}>‹ 公會</button>
           <span className="tag tag-clock" aria-label={'已經過了 ' + mmss(session.time)}>{mmss(session.time)}</span>
           <div className="bubble" ref={bubble} hidden>…</div>

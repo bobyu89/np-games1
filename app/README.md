@@ -1,8 +1,8 @@
 # 霧脈公會：互動原型
 
-繪本畫風的可以玩的版本。第一章有四張委託，是同一隻症影（胸痛）的四個真身：林秋、簡晴、莫桐和阮舟。序章之後從三位見習專科護理師裡選一位當主角；從公會接案玩到關後回顧，圖鑑會跟著寫回來。
+繪本畫風的可以玩的版本。兩章、三隻症影、八張委託：第一章是胸痛（鐵翅蛾）的四位病人，第二章是喘（風箱蛙）和腹痛（結繩蟹）各兩位。序章之後從六位見習專科護理師裡選一位當主角；從公會接案玩到關後回顧，圖鑑會跟著寫回來。
 
-![選主角、出診到碼頭的貨棧、圖鑑的人物和場景](../docs/art/app-prototype.jpg)
+![委託板、喘的症影風箱蛙、腹痛的症影結繩蟹、六位主角](../docs/art/app-prototype.jpg)
 
 ## 怎麼跑
 
@@ -18,7 +18,7 @@ npm run dev
 
 | 指令 | 做什麼 |
 |---|---|
-| `npm test` | 規則和評分的測試（36 項） |
+| `npm test` | 規則和評分的測試（39 項） |
 | `npm run cases` | 檢查所有病例，印出一張總表 |
 | `npm run check` | 型別檢查 |
 | `npm run build` | 型別檢查之後打包到 `dist/`，是純靜態檔，放到任何主機都能跑 |
@@ -54,7 +54,8 @@ npm run dev
 - **時間只在做行動的時候走。** 看字、解讀線索、下診斷都不扣時間。問診和評估整套做完，模擬的時鐘大約走 15 分鐘，和考站差不多。
 - **沒量過就是不知道。** 生命徵象一開始沒有數字；病人變差之後要重測才知道。
 - **四位病人的選項一模一樣，真身不一樣。** 林秋（心因性）下了診斷之後，兩分鐘內沒有通報會變差。簡晴（肌肉骨骼）很穩定，敲值班鐘反而是過度通報，要做的是把危險的真身一個一個排除。莫桐（胸腔腫瘤）不急，但不能當成老毛病放回去，說明的時候也不能搶著說出診斷。阮舟（血管急症，肺栓塞）年輕、沒有病史，喘和心跳快很容易被當成緊張；要看血氧和小腿。
-- **三位主角只有外表不同。** 葉澄、高遠、白芷能做的事、題目和分數完全一樣。
+- **每一隻症影有自己的四個真身。** 喘：心因性、氣道阻塞、肺部感染、突發急症。腹痛照四個象限：膽囊與膽道、胰臟與胃、闌尾、大腸憩室。問診的開場、病史和系統回顧三隻都一樣；主訴那一段的問法、檢查項目各自不同；腹痛的身體評估換成腹部的做法（看、聽、敲、摸）。
+- **六位主角只有外表不同。** 葉澄、高遠、白芷、杜衡、蘇木、連翹能做的事、題目和分數完全一樣。
 - **回報的內容來自你問到的東西。** 沒問他擔心什麼，說明的時候就沒有那一句可以選。
 - **圖鑑只收你自己解讀對的線索。** 另外兩頁（人物、場景）是遇到了、去過了才打開；小圖直接用真正的場景畫出來，不是另外的圖檔。
 - **地點會換。** 阮舟那一張是出診，在碼頭的貨棧；莫桐來的那天在下雨。
@@ -74,9 +75,10 @@ src/
     scoring.ts   評分（55 / 45）、安全狀態、回顧和圖鑑用的資料
     validate.ts  病例檢查器
     autoplay.ts  照病例的資料走出理想的打法，用來驗證病例
-  data/      內容：共用的骨架（skeleton.ts）、主訴模組（chest-pain.ts）、病例（c01a.ts 到 c01d.ts）、目錄（index.ts）
+  data/      內容：共用的骨架（skeleton.ts）、主訴模組（chest-pain.ts、dyspnea.ts、abdomen.ts）、
+             病例（胸痛 c01a–d、喘 c02a–b、腹痛 c03a–b）、目錄（index.ts）
              怎麼寫新病例：data/README.md
-  art/       繪本風的畫：色盤和畫筆、角色（含三位主角）、病室和碼頭的貨棧、公會大廳（Canvas，沒有圖檔）
+  art/       繪本風的畫：色盤和畫筆、角色（含六位主角）、病室和碼頭的貨棧、三隻症影、公會大廳（Canvas，沒有圖檔）
   ui/        畫面（React）：公會、病室、各種紙片、回顧；progress.ts 管故事、解鎖和圖鑑；Portrait.tsx 畫圖鑑的小圖
 tools/
   cases.ts            npm run cases
@@ -88,7 +90,8 @@ tools/
 
 ## 還沒有的
 
-- 只有第一章的四張委託（胸痛）。其他主訴、資格試煉（真實倒數 15 分鐘）都還沒做。
+- 第二章只做了一半：喘和腹痛各兩位病人，各還有兩個真身沒有病人（喘：肺部感染、突發急症；腹痛：胰臟與胃、大腸憩室）。其他主訴、資格試煉（真實倒數 15 分鐘）都還沒做。
+- 腹痛的四個真身照位置分，有可能被只看「痛在哪裡」猜中。現在的做法是：沒有把另外三個排除就下診斷，安全行動會是「需要複核」。夠不夠要再看。
 - 場景只有公會大廳、病室（含下雨天）和碼頭的貨棧。圖鑑裡另外兩格（燈塔的值夜房、船塢的工寮）還只是名字。
 - 主角只有外表不同；故事裡的對話還不會因為選了誰而改變。
 - 沒有伺服器。進度存在這台裝置的瀏覽器裡；**病例的答案現在在瀏覽器裡看得到**，正式版要搬到伺服器。
@@ -102,17 +105,21 @@ tools/
 - 問診和評估的骨架（開場、OLD CARTS、個人與過去病史、系統回顧、五個模組）參考臨床老師的 OSCE 教案；題目的文字和三位病人都是為這個專案重寫的，沒有用教案的原文。
 - 畫是用程式畫的，角色、房間和構圖都是為這個專案重新設計的。
 - 在真的手機上試過一次（改流程之前的版本）：系統字體調大的時候文字會疊在一起、對話被切掉。已經把版面改成跟著字的大小伸縮。這一版在模擬手機上重測過（390×760、385×700 字放大 1.25 倍、375×600），**還沒有在真的手機上確認**。
-- 肺栓塞那一關引用的指引，書目資料用 PubMed 核對過；指引的內文我沒有逐句對原文，要請臨床老師確認。
 - 遊戲的分數是訓練用的，不代表正式甄審的成績。
 
 ## 病例的出處
 
 - Gulati, M., et al. (2021). 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR guideline for the evaluation and diagnosis of chest pain. *Circulation, 144*(22), e368–e454. https://doi.org/10.1161/CIR.0000000000001029
 - Hamilton, W., Peters, T. J., Round, A., & Sharp, D. (2005). What are the clinical features of lung cancer before the diagnosis is made? A population based case-control study. *Thorax, 60*(12), 1059–1065. https://doi.org/10.1136/thx.2005.045880
+- Austin, M. A., et al. (2010). Effect of high flow oxygen on mortality in chronic obstructive pulmonary disease patients in prehospital setting: Randomised controlled trial. *BMJ, 341*, c5462. https://doi.org/10.1136/bmj.c5462
 - Baile, W. F., et al. (2000). SPIKES—A six-step protocol for delivering bad news: Application to the patient with cancer. *The Oncologist, 5*(4), 302–311. https://doi.org/10.1634/theoncologist.5-4-302
+- Di Saverio, S., et al. (2020). Diagnosis and treatment of acute appendicitis: 2020 update of the WSES Jerusalem guidelines. *World Journal of Emergency Surgery, 15*, 27. https://doi.org/10.1186/s13017-020-00306-3
+- Heidenreich, P. A., et al. (2022). 2022 AHA/ACC/HFSA guideline for the management of heart failure. *Circulation, 145*(18), e895–e1032. https://doi.org/10.1161/CIR.0000000000001063
 - Konstantinides, S. V., et al. (2020). 2019 ESC guidelines for the diagnosis and management of acute pulmonary embolism developed in collaboration with the European Respiratory Society (ERS). *European Heart Journal, 41*(4), 543–603. https://doi.org/10.1093/eurheartj/ehz405
 - Rao, S. V., et al. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. *Journal of the American College of Cardiology, 85*(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009
 
 - Wells, P. S., et al. (2001). Excluding pulmonary embolism at the bedside without diagnostic imaging: Management of patients with suspected pulmonary embolism presenting to the emergency department by using a simple clinical model and D-dimer. *Annals of Internal Medicine, 135*(2), 98–107. https://doi.org/10.7326/0003-4819-135-2-200107170-00010
+- Wang, C. S., et al. (2005). Does this dyspneic patient in the emergency department have congestive heart failure? *JAMA, 294*(15), 1944–1956. https://doi.org/10.1001/jama.294.15.1944
+- Yokoe, M., et al. (2018). Tokyo Guidelines 2018: Diagnostic criteria and severity grading of acute cholecystitis (with videos). *Journal of Hepato-Biliary-Pancreatic Sciences, 25*(1), 41–54. https://doi.org/10.1002/jhbp.515
 
-六篇的書目資料都用 PubMed 核對過。
+十一篇的書目資料都用 PubMed 核對過。有摘要的幾篇（Wang、Austin、Wells、Di Saverio），教學重點對過摘要；指引類的（心衰竭、肺栓塞、膽囊炎）只核對了書目，內文要請臨床老師確認。

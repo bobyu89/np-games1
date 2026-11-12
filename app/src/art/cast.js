@@ -165,6 +165,9 @@ export const HERO_LOOKS = {
   cheng: { cape: C.moss, cape2: C.green, hair: C.hairDark, style: 'bob', item: 'book' },
   yuan: { cape: C.pumpkin, cape2: C.rust, hair: C.hairInk, style: 'short', item: 'lamp', skin: C.skin2 },
   zhi: { cape: C.rose, cape2: C.rose2, hair: C.hairBrown, style: 'braid', item: 'herb' },
+  heng: { cape: C.cloak, cape2: C.cloak2, hair: C.hairInk, style: 'curly', item: 'roll', skin: C.skin2 },
+  mu: { cape: C.amber, cape2: C.amber2, hair: C.hairBrown, style: 'cap', item: 'toy' },
+  qiao: { cape: C.slate, cape2: C.slate2, hair: C.hairDark, style: 'bun', item: 'watch' },
 };
 
 /** o：{ x, y, look, talking, scale }。面向左邊，和岑禾一樣看著病人 */
@@ -208,6 +211,16 @@ export function drawHero(g, t, o) {
     shape(g, [[hx - 5.5, hy + 7.5], [hx - 1, hy + 5], [hx + 3.5, hy + 7.5]], { fill: C.brass, lw: 1.1 });
     shape(g, rrect(hx - 6, hy + 7.5, 10, 11, 2.5), { fill: C.glow, boil: true });
     shape(g, rect(hx - 5.5, hy + 18.5, 9, 2.4), { fill: C.brass, lw: 1 });
+  } else if (L.item === 'roll') {     // 一捲繃帶
+    shape(g, ell(hx - 2, hy - 6, 5.6, 4.6, 10), { fill: C.cream, lw: 1.2, boil: true, step: 99 });
+    oval(g, hx - 2, hy - 6, 2.4, 2, { lw: 1, double: false }); wline(g, [[hx + 3, hy - 4], [hx + 6, hy + 3], [hx + 4, hy + 8]], C.cream, 2.4, { boil: true });
+  } else if (L.item === 'toy') {      // 一隻布做的小魚
+    leaf(g, hx - 3, hy - 7, 6.5, 3.6, -0.35, C.pumpkin); shape(g, [[hx + 2, hy - 9.5], [hx + 7, hy - 14], [hx + 7, hy - 6]], { fill: C.pumpkin, lw: 1, step: 99 });
+    dot(g, hx - 6, hy - 6.5, 0.9, C.ink); wline(g, [[hx - 3, hy - 9], [hx - 1, hy - 5.5]], C.cream, 1);
+  } else if (L.item === 'watch') {    // 一只懷錶
+    wline(g, [[4, -32], [-4, -36], [hx + 1, hy - 3]], C.brass, 1.2, { amp: 0.3, boil: true });
+    oval(g, hx - 1, hy - 6, 4.6, 4.6, { fill: C.brass, lw: 1.2, boil: true }); dot(g, hx - 1, hy - 6, 3, C.cream);
+    wline(g, [[hx - 1, hy - 6], [hx - 1, hy - 8.4]], C.ink, 0.9, { amp: 0 }); wline(g, [[hx - 1, hy - 6], [hx + 0.8, hy - 5.2]], C.ink, 0.9, { amp: 0 });
   } else {                            // 一把剛採的草藥
     [-3, 0, 3].forEach((dx, k) => { wline(g, [[hx, hy], [hx - 2 + dx, hy - 12 - (k % 2) * 2]], C.green, 1.3, { boil: true }); leaf(g, hx - 2 + dx, hy - 13 - (k % 2) * 2, 3.4, 1.9, dx * 0.2, k === 1 ? C.ochre : C.moss); });
   }
@@ -215,13 +228,20 @@ export function drawHero(g, t, o) {
   shape(g, [[-8, -73], [0, -68.5], [8, -73], [5.5, -77], [-5.5, -77]], { fill: C.cream, lw: 1.2, boil: true });
   // 頭
   g.save(); g.translate(-1, -92); g.rotate(-0.03 + (talking ? Math.sin(t * 8) * 0.025 : Math.sin(t * 0.7) * 0.015));
+  if (L.style === 'bun') { oval(g, 9, -21, 7.6, 7, { fill: L.hair, boil: true }); wline(g, [[3, -27], [16, -17]], C.ink, 2.4, { amp: 0 }); wline(g, [[3, -27], [16, -17]], C.brass, 1.1, { amp: 0 }); }
   if (L.style === 'bob') shape(g, ell(3, 0, 21.5, 21.5, 14), { fill: L.hair, boil: true, step: 99 });
   else if (L.style === 'braid') shape(g, ell(3.5, -2, 20.5, 20, 14), { fill: L.hair, boil: true, step: 99 });
   else shape(g, ell(2.5, -3, 19.5, 18.5, 14), { fill: L.hair, boil: true, step: 99 });
   shape(g, ell(-1.5, 1.5, 18, 17.5, 14), { fill: skin, boil: true, step: 99 });
-  if (L.style === 'short') shape(g, [[-18, -4], [-17, -13], [-9, -19.5], [3, -21], [13, -18], [19, -9], [18, -2], [11, -9], [3, -13], [-6, -13], [-13, -9]], { fill: L.hair, boil: true });
+  if (L.style === 'short' || L.style === 'cap') shape(g, [[-18, -4], [-17, -13], [-9, -19.5], [3, -21], [13, -18], [19, -9], [18, -2], [11, -9], [3, -13], [-6, -13], [-13, -9]], { fill: L.hair, boil: true });
+  else if (L.style === 'curly') { shape(g, [[-18, -3], [-17, -13], [-9, -19.5], [3, -21], [13, -18], [19, -9], [18, -1], [11, -8], [3, -11], [-6, -11], [-13, -7]], { fill: L.hair, boil: true }); [[-15, -13], [-8, -19], [1, -21.5], [10, -19.5], [17, -13], [20, -5]].forEach(([cx, cy], i) => oval(g, cx, cy, 4.6, 4.4, { fill: L.hair, lw: 1.1, boil: true, seed: 5260 + i })); }
+  else if (L.style === 'bun') shape(g, [[-18.5, -2], [-17.5, -13], [-9, -20], [3, -21.5], [13, -18.5], [19.5, -9], [19, 0], [13, -8], [4, -12], [-5, -11], [-12, -8]], { fill: L.hair, boil: true });
   else if (L.style === 'bob') shape(g, [[-19, 2], [-18.5, -12], [-10, -20], [2, -22], [13, -19], [20, -10], [21, 8], [15, -3], [8, -10.5], [-2, -9], [-9, -11], [-14, -4]], { fill: L.hair, boil: true });
   else { shape(g, [[-18.5, -2], [-17.5, -13], [-9, -20], [3, -21.5], [13, -18.5], [19.5, -9], [19, 0], [14, -8], [5, -12.5], [-4, -10], [-12, -12]], { fill: L.hair, boil: true }); wline(g, [[-3, -20], [-5, -11]], C.ink, 0.9, { amp: 0.2 }); }
+  if (L.style === 'cap') {   // 一頂軟帽
+    shape(g, [[-19.5, -8], [-18, -18], [-6, -25], [9, -24], [19, -15], [20, -8], [8, -12.5], [-6, -12]], { fill: L.cape2, boil: true });
+    shape(g, [[-21, -7.5], [-19.5, -9.5], [-6, -13.5], [-8, -9.5]], { fill: L.cape, lw: 1, boil: true }); dot(g, 4, -24, 2, C.cream);
+  }
   g.globalAlpha = 0.6; leaf(g, -15, 7, 3.6, 2.4, 0, C.blush); leaf(g, 4.5, 7, 4, 2.5, 0, C.blush); g.globalAlpha = 1;
   const look = talking ? [0, 0.5] : [-1.3, 0.6], mode = blink ? 'blink' : 'open';
   eye(g, -11, -0.5, 4, look, mode); eye(g, 0, -0.5, 4.3, look, mode);

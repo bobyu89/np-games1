@@ -261,6 +261,49 @@ test('腫瘤那一位：關鍵的檢查是胸部 X 光；沒照就放回去要�
   assert.ok(s.results.includes('t-cxr') && s.reads.some((r) => r.clue === 'c-cxr' && r.ok));
 });
 
+// ── 第二章：喘、腹痛 ──
+test('三隻症影各有自己的四個真身、自己的檢查；同一隻底下的病例選項一樣', () => {
+  assert.deepEqual(COMPLAINTS.map((m) => m.id), ['chest-pain', 'dyspnea', 'abdomen']);
+  for (const m of COMPLAINTS) {
+    const mine = CASES.filter((c) => c.complaint === m.id);
+    assert.ok(mine.length >= 2, m.id);
+    assert.equal(m.forms.length, 4);
+    assert.ok(m.shadow.look, m.id + ' 沒有寫症影的樣子');
+    const shape = (c: typeof A) => JSON.stringify([c.questions.map((q) => [q.id, q.label, q.ask]), c.exams.map((e) => [e.id, e.part, e.label]), c.tests.map((t) => [t.id, t.label])]);
+    mine.forEach((c) => assert.equal(shape(c), shape(mine[0]), c.id));
+    assert.equal(new Set(mine.map((c) => c.answer.truth)).size, mine.length, m.id + ' 有兩位病人是同一個真身');
+    // 開場、病史、系統回顧每一隻都一樣；只有主訴那一段的問法不同
+    const shared = (c: typeof A) => JSON.stringify(c.questions.filter((q) => q.group !== 'cc').map((q) => [q.id, q.ask]));
+    assert.equal(shared(mine[0]), shared(A));
+  }
+});
+
+test('喘：氣吐不出去的那一位，氧氣衝到最高是錯的；把它當成心臟也是錯的', () => {
+  const E = caseById('c02b'), acts = idealActions(E);
+  assert.equal(E.answer.truth, 'airway');
+  const withHigh = acts.map((a) => (a.type === 'report' ? { ...a, r: [...a.r, 'r-o2high'] } : a));
+  assert.ok(row(E, withHigh, 'care').got < row(E, acts, 'care').got);
+  const asHeart = acts.map((a) => (a.type === 'report' ? { ...a, a: 'a-hf' } : a));
+  assert.ok(row(E, asHeart, 'care').got < row(E, acts, 'care').got);
+  // 下了診斷不通報一樣會變差
+  assert.ok(run(E, [...toDx(E), ...times(watch, 4)]).worsenedAt !== null);
+  // 慢慢變喘的那一位很穩定，不會變差
+  assert.equal(run(caseById('c02a'), [...toDx(caseById('c02a')), ...times(watch, 12)]).worsenedAt, null);
+});
+
+test('腹痛：評估照看、聽、敲、摸的順序；讓病人吃東西或灌腸是錯的', () => {
+  const F = caseById('c03a'), G = caseById('c03b');
+  const abd = F.exams.filter((e) => e.part === '腹部').map((e) => e.id);
+  assert.deepEqual(abd.slice(0, 4), ['x-abd-look', 'x-abd-perc', 'x-abd-light', 'x-abd-deep']);
+  for (const [c, bad] of [[F, 'r-eat'], [G, 'r-enema']] as const) {
+    const acts = idealActions(c), worse = acts.map((a) => (a.type === 'report' ? { ...a, r: [...a.r, bad] } : a));
+    assert.ok(row(c, worse, 'care').got < row(c, acts, 'care').got, c.id);
+  }
+  // 只憑位置就下診斷、沒有把其他三個排除：需要複核
+  const quick: Action[] = [ask('q-intro'), ask('q-location'), next, { type: 'vitals' }, exam('x-abd-deep'), next, dx(G), { type: 'test', id: 't-us' }, { type: 'explain', ids: ['e-why', 'e-warn'] }, { type: 'close' }];
+  assert.equal(scoreSession(G, run(G, quick)).safety, 'review');
+});
+
 // ── 評分 ──
 test('開場三件事和動手前的說明，都算在同意與說明那一項', () => {
   const open = ['q-wash', 'q-intro', 'q-explain'].map(ask);

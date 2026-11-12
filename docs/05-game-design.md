@@ -279,6 +279,21 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 
 細節在 [`06-progression.md`](06-progression.md) 第 8.5 節。
 
+## 16. 第二章：喘和腹痛（2026-11-12）
+
+你決定：主角維持只有外表不同，可以再多幾位；先做第二章的喘和腹痛。
+
+| 項目 | 做法 |
+|---|---|
+| 主角 | 從三位加到六位（多了杜衡、蘇木、連翹） |
+| 喘的症影 | 風箱蛙。四個真身：心因性、氣道阻塞、肺部感染、突發急症 |
+| 腹痛的症影 | 結繩蟹。四個真身照四個象限：膽囊與膽道、胰臟與胃、闌尾、大腸憩室 |
+| 病人 | 每隻症影先兩位：駱松（心衰竭）、霍樟（慢性阻塞性肺病急性惡化）、方苓（膽囊炎）、邵棠（闌尾炎）。都還沒經過臨床老師審查 |
+| 腹痛的身體評估 | 換成腹部的做法：看、聽、敲、摸，共六項 |
+| 解鎖 | 第一章四張走完，第二章才出現；兩隻症影可以交錯接 |
+
+細節在 [`06-progression.md`](06-progression.md) 第 8.6 節。
+
 ## References
 
 甄審規定（衛生福利部護理及健康照護司，2026）：
@@ -289,11 +304,16 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 
 依 PubMed 查到的文獻：
 
+- Austin, M. A., Wills, K. E., Blizzard, L., Walters, E. H., & Wood-Baker, R. (2010). Effect of high flow oxygen on mortality in chronic obstructive pulmonary disease patients in prehospital setting: Randomised controlled trial. *BMJ, 341*, c5462. https://doi.org/10.1136/bmj.c5462
 - Baile, W. F., Buckman, R., Lenzi, R., Glober, G., Beale, E. A., & Kudelka, A. P. (2000). SPIKES—A six-step protocol for delivering bad news: Application to the patient with cancer. *The Oncologist, 5*(4), 302–311. https://doi.org/10.1634/theoncologist.5-4-302
 - Croskerry, P. (2003). The importance of cognitive errors in diagnosis and strategies to minimize them. *Academic Medicine, 78*(8), 775–780. https://doi.org/10.1097/00001888-200308000-00003
+- Di Saverio, S., Podda, M., De Simone, B., Ceresoli, M., Augustin, G., Gori, A., Boermeester, M., Sartelli, M., Coccolini, F., Tarasconi, A., De' Angelis, N., Weber, D. G., Tolonen, M., Birindelli, A., Biffl, W., Moore, E. E., Kelly, M., Soreide, K., Kashuk, J., … Catena, F. (2020). Diagnosis and treatment of acute appendicitis: 2020 update of the WSES Jerusalem guidelines. *World Journal of Emergency Surgery, 15*, 27. https://doi.org/10.1186/s13017-020-00306-3
 - Fanning, R. M., & Gaba, D. M. (2007). The role of debriefing in simulation-based learning. *Simulation in Healthcare, 2*(2), 115–125. https://doi.org/10.1097/SIH.0b013e3180315539
 - Hamilton, W., Peters, T. J., Round, A., & Sharp, D. (2005). What are the clinical features of lung cancer before the diagnosis is made? A population based case-control study. *Thorax, 60*(12), 1059–1065. https://doi.org/10.1136/thx.2005.045880
+- Heidenreich, P. A., Bozkurt, B., Aguilar, D., Allen, L. A., Byun, J. J., Colvin, M. M., Deswal, A., Drazner, M. H., Dunlay, S. M., Evers, L. R., Fang, J. C., Fedson, S. E., Fonarow, G. C., Hayek, S. S., Hernandez, A. F., Khazanie, P., Kittleson, M. M., Lee, C. S., Link, M. S., … Yancy, C. W. (2022). 2022 AHA/ACC/HFSA guideline for the management of heart failure. *Circulation, 145*(18), e895–e1032. https://doi.org/10.1161/CIR.0000000000001063
 - Konstantinides, S. V., Meyer, G., Becattini, C., Bueno, H., Geersing, G.-J., Harjola, V.-P., Huisman, M. V., Humbert, M., Jennings, C. S., Jiménez, D., Kucher, N., Lang, I. M., Lankeit, M., Lorusso, R., Mazzolai, L., Meneveau, N., Ní Áinle, F., Prandoni, P., Pruszczyk, P., … Zamorano, J. L. (2020). 2019 ESC guidelines for the diagnosis and management of acute pulmonary embolism developed in collaboration with the European Respiratory Society (ERS). *European Heart Journal, 41*(4), 543–603. https://doi.org/10.1093/eurheartj/ehz405
 - Rao, S. V., O'Donoghue, M. L., Ruel, M., Rab, T., Tamis-Holland, J. E., Alexander, J. H., Baber, U., Baker, H., Cohen, M. G., Cruz-Ruiz, M., Davis, L. L., de Lemos, J. A., DeWald, T. A., Elgendy, I. Y., Feldman, D. N., Goyal, A., Isiadinso, I., Menon, V., Morrow, D. A., . . . Williams, M. S. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. *Journal of the American College of Cardiology, 85*(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009
 - Tanner, C. A. (2006). Thinking like a nurse: A research-based model of clinical judgment in nursing. *Journal of Nursing Education, 45*(6), 204–211. https://doi.org/10.3928/01484834-20060601-04
 - Wells, P. S., Anderson, D. R., Rodger, M., Stiell, I., Dreyer, J. F., Barnes, D., Forgie, M., Kovacs, G., Ward, J., & Kovacs, M. J. (2001). Excluding pulmonary embolism at the bedside without diagnostic imaging: Management of patients with suspected pulmonary embolism presenting to the emergency department by using a simple clinical model and D-dimer. *Annals of Internal Medicine, 135*(2), 98–107. https://doi.org/10.7326/0003-4819-135-2-200107170-00010
+- Wang, C. S., FitzGerald, J. M., Schulzer, M., Mak, E., & Ayas, N. T. (2005). Does this dyspneic patient in the emergency department have congestive heart failure? *JAMA, 294*(15), 1944–1956. https://doi.org/10.1001/jama.294.15.1944
+- Yokoe, M., Hata, J., Takada, T., Strasberg, S. M., Asbun, H. J., Wakabayashi, G., Kozaka, K., Endo, I., Deziel, D. J., Miura, F., Okamoto, K., Hwang, T.-L., Huang, W. S.-W., Ker, C.-G., Chen, M.-F., Han, H.-S., Yoon, Y.-S., Choi, I.-S., Yoon, D.-S., … Yamamoto, M. (2018). Tokyo Guidelines 2018: Diagnostic criteria and severity grading of acute cholecystitis (with videos). *Journal of Hepato-Biliary-Pancreatic Sciences, 25*(1), 41–54. https://doi.org/10.1002/jhbp.515

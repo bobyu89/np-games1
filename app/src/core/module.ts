@@ -10,7 +10,8 @@ import type { CaseDef, Clue, Exam, Question, TestDef, TrueForm, Vitals } from '.
 export interface ComplaintDef {
   id: string;
   name: string;
-  shadow: { name: string; lore: string };
+  /** look：症影長什麼樣子，只給畫面用 */
+  shadow: { name: string; lore: string; look?: string };
   /** 四個真身 */
   forms: TrueForm[];
   questions: Omit<Question, 'answer' | 'clue'>[];

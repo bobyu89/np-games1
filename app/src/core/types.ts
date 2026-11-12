@@ -96,7 +96,7 @@ export interface CaseDef {
   patient: { name: string; age: number; sex: string; job: string; look: string; pronoun: string };
   /** 這張委託在哪裡進行。只給畫面用，規則不看。沒寫就是公會的病室 */
   scene?: 'ward' | 'ward-rain' | 'dock';
-  shadow: { name: string; lore: string };
+  shadow: { name: string; lore: string; look?: string };
   forms: TrueForm[];
   reading: { lines: string[]; prompts: string[] };
   vitals: { base: Vitals; worse?: Vitals };

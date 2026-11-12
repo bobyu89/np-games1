@@ -1,5 +1,5 @@
 // 公會大廳：故事的段落、委託板、圖鑑（症影、人物、場景）、選主角。
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import type { CaseDef } from '../core/types.ts';
 import { SAFETY_LABEL } from '../core/scoring.ts';
 import { COMPLAINTS, caseById } from '../data/index.ts';
@@ -8,8 +8,10 @@ import { Talk, type TalkHandle, type Who } from './Talk.tsx';
 import { Sheet } from './Sheets.tsx';
 import { sfx, sound } from './sound.ts';
 import type { Save } from './store.ts';
-import { BEATS, HEROES, QUESTS, albumCount, codexOf, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, unlocked, type Beat, type Entry } from './progress.ts';
+import { BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, unlocked, type Beat, type Entry } from './progress.ts';
 import { Portrait } from './Portrait.tsx';
+
+const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章' };
 
 interface Props { save: Save; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void }
 
@@ -90,25 +92,35 @@ export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
             </div>
           ) : (
             <div className="quests">
-              {QUESTS.map((q) => {
-                const c = caseById(q.caseId), res = save.cases[c.id];
-                if (!unlocked(q, save)) return <div key={c.id} className="quest paper locked" aria-disabled="true"><b>？？？</b><span>完成上一張委託之後才會送到</span><em>還沒出現</em></div>;
+              {COMPLAINTS.map((m) => {
+                const mine = QUESTS.filter((q) => caseById(q.caseId).complaint === m.id);
+                if (!mine.length) return null;
+                const seen = mine.some((q) => unlocked(q, save));
                 return (
-                  <button key={c.id} type="button" className={'quest paper' + (res ? '' : ' hint')} onClick={() => { sfx.page(); setReading(c); }}>
-                    <i className="seal" aria-hidden="true" />
-                    <b>{c.title}</b>
-                    <span>{c.patient.name}｜{c.complaintName}</span>
-                    <em>{res ? '最佳 ' + res.best + ' 分・' + SAFETY_LABEL[res.safety] : '新的委託'}</em>
-                  </button>
+                  <Fragment key={m.id}>
+                    <div className="quest-head">{CHAPTERS[mine[0].chapter] ?? ''}　{seen ? m.shadow.name + '｜' + m.name : '還沒送到的委託'}</div>
+                    {mine.map((q) => {
+                      const c = caseById(q.caseId), res = save.cases[c.id];
+                      if (!unlocked(q, save)) return <div key={c.id} className="quest paper locked" aria-disabled="true"><b>？？？</b><span>{q.chapter > 1 && !seen ? '第一章走完之後才會送到' : '完成上一張委託之後才會送到'}</span><em>還沒出現</em></div>;
+                      return (
+                        <button key={c.id} type="button" className={'quest paper' + (res ? '' : ' hint')} onClick={() => { sfx.page(); setReading(c); }}>
+                          <i className="seal" aria-hidden="true" />
+                          <b>{c.title}</b>
+                          <span>{c.patient.name}｜{c.complaintName}{c.scene === 'dock' ? '｜出診' : ''}</span>
+                          <em>{res ? '最佳 ' + res.best + ' 分・' + SAFETY_LABEL[res.safety] : '新的委託'}</em>
+                        </button>
+                      );
+                    })}
+                  </Fragment>
                 );
               })}
-              <div className="quest paper locked" aria-disabled="true"><b>第二章</b><span>另一隻症影</span><em>整理中</em></div>
+              <div className="quest paper locked" aria-disabled="true"><b>第二章的其他委託</b><span>喘和腹痛，各還有兩位在路上</span><em>整理中</em></div>
               <div className="quest paper locked" aria-disabled="true"><b>資格試煉</b><span>抽一個沒練過的主訴，15 分鐘</span><em>還沒開放</em></div>
             </div>
           )}
         </div>
         <div className="foot">
-          <button type="button" onClick={() => { sfx.page(); setCodex(true); }}>圖鑑{COMPLAINTS.length ? ' ' + codexOf(COMPLAINTS[0], save).percent + '%' : ''}</button>
+          <button type="button" onClick={() => { sfx.page(); setCodex(true); }}>圖鑑 {codexPercent(COMPLAINTS, save)}%</button>
           {!beat && <button type="button" onClick={() => { setBeat(BEATS[0]); setStep(0); }}>重看開場</button>}
           <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
         </div>

@@ -6,7 +6,7 @@ import { EXAMS, HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const CHEST_PAIN: ComplaintDef = {
   id: 'chest-pain',
   name: '胸痛',
-  shadow: { name: '鐵翅蛾', lore: '胸痛的症影。翅膀像鐵片一樣壓在胸口。同樣的外形底下，可能是好幾種不同的病。' },
+  shadow: { name: '鐵翅蛾', look: 'moth', lore: '胸痛的症影。翅膀像鐵片一樣壓在胸口。同樣的外形底下，可能是好幾種不同的病。' },
   forms: [
     { id: 'cardiac', name: '心因性', mark: '心', danger: true, blurb: '心臟的血管堵住或快要堵住：心絞痛、急性冠心症。' },
     { id: 'vascular', name: '血管急症', mark: '脈', danger: true, blurb: '大血管出事：主動脈剝離、肺栓塞。' },

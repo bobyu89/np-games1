@@ -73,14 +73,14 @@ export function hintFor(c: CaseDef, s: Session): string {
   const who = c.patient.name, asked = (g: string) => c.questions.filter((q) => q.group === g && s.asked.includes(q.id)).length, all = (g: string) => c.questions.filter((q) => q.group === g).length;
   if (s.phase === 1) {
     if (asked('open') < all('open')) return '開場還沒做完：洗手、自我介紹和核對身分、說明流程。';
-    if (asked('cc') < Math.min(6, all('cc'))) return '先把主訴問清楚：什麼時候開始、在哪裡、多久、怎麼樣的痛、什麼會加重或緩解、會不會傳到別處。';
+    if (asked('cc') < Math.min(6, all('cc'))) return '先把主訴問清楚：什麼時候開始、多久、是怎麼樣的不舒服、什麼會加重或緩解、還有哪些伴隨的症狀。';
     if (asked('hx') < 4) return '主訴之後是個人和過去的病史：慢性病、家族史、過敏、菸酒、工作和接觸史。';
     if (asked('ros') < 3) return '最後用系統回顧補一遍，看有沒有漏掉的症狀。';
     return '問得差不多了，就進到評估。之後想到還可以回來補問。';
   }
   if (s.phase === 2) {
     if (s.vitalsSeen === null) return '你還不知道' + who + '的血壓和心跳。先量生命徵象。';
-    if (s.examined.length < 4) return '照模組從頭做到腳：頭頸、胸部、心臟、腹部、四肢。動手之前先說明。';
+    if (s.examined.length < 4) return '照順序從頭做到腳，一個模組一個模組來。動手之前先說明。';
     return '評估得差不多了，就去下診斷。';
   }
   if (s.phase === 3) return '把線索排一排：一句話說出問題，最可能的是哪一個，還要排除哪幾個。';

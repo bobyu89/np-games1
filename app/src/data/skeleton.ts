@@ -28,7 +28,8 @@ export const OLD_CARTS = [
   ['q-severity', '幾分', 1],
 ] as const;
 export type OldCartsId = (typeof OLD_CARTS)[number][0];
-export const oldCarts = (ask: Record<OldCartsId, string>): Q[] => OLD_CARTS.map(([id, label, weight]) => ({ id, group: 'cc', label, ask: ask[id], weight }));
+/** label：有些主訴要換掉按鈕上的字。例如喘沒有「會傳到哪」，那一格改問夜裡和躺平 */
+export const oldCarts = (ask: Record<OldCartsId, string>, label: Partial<Record<OldCartsId, string>> = {}): Q[] => OLD_CARTS.map(([id, name, weight]) => ({ id, group: 'cc', label: label[id] ?? name, ask: ask[id], weight }));
 
 /** 個人與過去病史 */
 export const HISTORY: Q[] = [
