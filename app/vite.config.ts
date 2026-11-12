@@ -8,7 +8,7 @@ export default defineConfig({
   build: {
     target: 'es2022',
     cssCodeSplit: false,
-    chunkSizeWarningLimit: 900,   // 病例的文字都打包在同一個檔裡；之後搬到伺服器就會變小
+    chunkSizeWarningLimit: 1500,  // 48 個病例的文字都打包在同一個檔裡（約 1.2 MB，壓縮後約三分之一）；之後搬到伺服器就會變小
     rollupOptions: { output: { entryFileNames: 'app.js', chunkFileNames: 'app-[name].js', assetFileNames: 'app[extname]' } },
   },
 });

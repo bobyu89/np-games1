@@ -740,12 +740,15 @@ export function createWard(canvas, opts = {}) {
     shape(g, ell(0, 0, 17, 11.5, 12, -0.25), { fill: C.cream, boil: true, step: 99, seed: 2606 });
     shape(g, [[-4, -6], [14, -2], [22, 6], [8, 8], [-6, 3]], { fill: C.iron, boil: true, seed: 2608 });
     wline(g, [[2, 0], [14, 3]], C.iron2, 1.1, { seed: 2610 }); wline(g, [[0, 4], [10, 6]], C.iron2, 1.1, { seed: 2611 });
-    const neck = [[-12, -5], [-19, -14], [-11, -22], [-16, -31]];
+    // 霧還濃的時候把脖子縮起來，頭才不會從霧裡冒出來；霧散了再伸直
+    const n = smooth(0.4, 0.75, state.veilShown), mix = (a, b) => a.map(([px, py], i) => [px + (b[i][0] - px) * n, py + (b[i][1] - py) * n]);
+    const neck = mix([[-12, -5], [-19, -14], [-11, -22], [-16, -31]], [[-12, -5], [-17, -9], [-11, -12], [-13, -14]]);
+    const [[hx, hy], [ex, ey]] = mix([[-18, -34], [-19, -35]], [[-14, -16], [-15, -17]]);
     wline(g, neck, C.ink, 7, { boil: true, seed: 2612 }); wline(g, neck, C.cream, 4.6, { boil: true, seed: 2612 });
-    shape(g, [[-24, -36], [-40, -32], [-24, -31]], { fill: C.ochre, boil: true, seed: 2618 });
-    shape(g, ell(-18, -34, 7, 6, 10), { fill: C.cream, boil: true, step: 99, seed: 2614 });
-    wline(g, [[-14, -38], [-6, -42]], C.iron2, 1.8, { seed: 2616 });
-    eye(g, -19, -35, 3 + flinch, [-1, 0.8], (t * 0.8 + 1.3) % 4.4 < 0.14 ? 'blink' : 'open');
+    shape(g, mix([[-24, -36], [-40, -32], [-24, -31]], [[-19, -18], [-30, -13], [-19, -13]]), { fill: C.ochre, boil: true, seed: 2618 });
+    shape(g, ell(hx, hy, 7, 6, 10), { fill: C.cream, boil: true, step: 99, seed: 2614 });
+    wline(g, mix([[-14, -38], [-6, -42]], [[-10, -20], [-3, -23]]), C.iron2, 1.8, { seed: 2616 });
+    eye(g, ex, ey, 3 + flinch, [-1, 0.8], (t * 0.8 + 1.3) % 4.4 < 0.14 ? 'blink' : 'open');
     g.restore();
   }
 

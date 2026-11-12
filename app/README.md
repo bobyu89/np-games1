@@ -1,8 +1,8 @@
 # 霧脈公會：互動原型
 
-繪本畫風的可以玩的版本。三章、五隻症影、二十張委託：第一章是胸痛（鐵翅蛾）的四位病人，第二章是喘（風箱蛙）和腹痛（結繩蟹）各四位，第三章是發燒（餘燼蜥）和頭痛（篤篤鳥）各四位。每隻症影的四個真身，各有一位病人。第二章走完會升一階、少一層提示。
+繪本畫風的可以玩的版本。五章、十二隻症影、48 張委託：臨床老師教案的十二個主訴（胸痛、喘、腹痛、發燒、頭痛、背痛、腳痛、腫脹、排泄物異常、皮膚疹子、體重減輕、感覺異常）都有了，每個主訴四個真身、各一位病人。第二章走完會升一階、少一層提示。
 
-![第三章後來補上的四位病人：池榆（懷疑肺結核）、尤杉（藥物熱）、賀楓（細菌性腦膜炎，出診到碼頭）、季蘭（腦內佔位病灶）](../docs/art/app-prototype.jpg)
+![第四、五章的四位病人和他們的症影：辛桑（腹主動脈瘤，出診到碼頭；負石龜）、穆槐（心衰竭合併肺水腫；漲水豚）、韋茜（過敏性休克，出診到碼頭；點墨魷）、裴柚（老年憂鬱；啃月鼠）](../docs/art/app-prototype.jpg)
 
 ## 怎麼跑
 
@@ -80,10 +80,11 @@ src/
   data/      內容：共用的骨架（skeleton.ts）、主訴模組（chest-pain.ts、dyspnea.ts、abdomen.ts）、
              病例（胸痛 c01a–d、喘 c02a–d、腹痛 c03a–d）、目錄（index.ts）
              怎麼寫新病例：data/README.md
-  art/       繪本風的畫：色盤和畫筆、角色（含六位主角）、病室和碼頭的貨棧、五隻症影、公會大廳（Canvas，沒有圖檔）
+  art/       繪本風的畫：色盤和畫筆、角色（含六位主角）、病室和碼頭的貨棧、十二隻症影、每位病人床邊的隨身物、公會大廳（Canvas，沒有圖檔）
   ui/        畫面（React）：公會、病室、各種紙片、回顧；progress.ts 管故事、解鎖和圖鑑；Portrait.tsx 畫圖鑑的小圖
 tools/
   cases.ts            npm run cases
+  check_draft.ts      還沒登記的主訴和病例，先單獨檢查
   review.ts           npm run review：從病例檔產生審查清單
   review_docx.py      把審查清單轉成 Word 檔
   convert_script.py   教案 → 病例的底稿（寫到 drafts/，不進版本控制）
@@ -94,15 +95,15 @@ tools/
 
 ## 還沒有的
 
-- 只有胸痛、喘、腹痛、發燒、頭痛五個主訴。其他主訴、資格試煉（真實倒數 15 分鐘）都還沒做。
+- 資格試煉（真實倒數 15 分鐘、沒有提示）還沒做。終章（兩張委託同時送到）也還沒做。
+- 第四、五章的 28 位病人是分七路同時寫、再整合的。檢查和瀏覽器試玩都過了，但我沒有逐字讀完每一個病例檔；這 28 位比前面 20 位更需要臨床老師逐項看。
 - 提示只拿掉了第一層（第二章走完之後：線索的方向自己選、岑禾一張委託回答三次）。更後面的幾層還沒做。
-- 每個真身只有一位病人，所以同一個真身還沒有「不典型的說法」可以練。有些鑑別沒有對應的病人：消化性潰瘍、從喘進來的肺栓塞，以及下腹的泌尿、婦科和疝氣。
+- 每個真身只有一位病人，所以同一個真身還沒有「不典型的說法」可以練。
 - 腹痛的四個真身照位置分，有可能被只看「痛在哪裡」猜中。現在的做法是：沒有把另外三個排除就下診斷，安全行動會是「需要複核」。夠不夠要再看。
 - 場景只有公會大廳、病室（含下雨天）和碼頭的貨棧。圖鑑裡另外兩格（燈塔的值夜房、船塢的工寮）還只是名字。
 - 主角只有外表不同；故事裡的對話還不會因為選了誰而改變。
 - 沒有伺服器。進度存在這台裝置的瀏覽器裡；**病例的答案現在在瀏覽器裡看得到**，正式版要搬到伺服器。
 - 真身、回報和說明都是從清單選，還不能自己寫。
-- 提示還沒有照階級一層一層拿掉（設計在 `docs/06-progression.md` 第 7 節）。
 - 心電圖只有文字結果，沒有波形。
 
 ## 要知道的
@@ -115,32 +116,60 @@ tools/
 
 ## 病例的出處
 
+- Aringer, M., et al. (2019). 2019 European League Against Rheumatism/American College of Rheumatology classification criteria for systemic lupus erythematosus. *Annals of the Rheumatic Diseases, 78*(9), 1151–1159. https://doi.org/10.1136/annrheumdis-2018-214819
+- Austin, M. A., Wills, K. E., Blizzard, L., Walters, E. H., & Wood-Baker, R. (2010). Effect of high flow oxygen on mortality in chronic obstructive pulmonary disease patients in prehospital setting: Randomised controlled trial. *BMJ, 341*, c5462. https://doi.org/10.1136/bmj.c5462
+- Baile, W. F., Buckman, R., Lenzi, R., Glober, G., Beale, E. A., & Kudelka, A. P. (2000). SPIKES—A six-step protocol for delivering bad news: Application to the patient with cancer. *The Oncologist, 5*(4), 302–311. https://doi.org/10.1634/theoncologist.5-4-302
+- Banks, P. A., et al. (2013). Classification of acute pancreatitis—2012: Revision of the Atlanta classification and definitions by international consensus. *Gut, 62*(1), 102–111. https://doi.org/10.1136/gutjnl-2012-302779
+- Barocas, D. A., et al. (2020). Microhematuria: AUA/SUFU guideline. *The Journal of Urology, 204*(4), 778–786. https://doi.org/10.1097/JU.0000000000001297
+- Biggins, S. W., Angeli, P., Garcia-Tsao, G., Ginès, P., Ling, S. C., Nadim, M. K., Wong, F., & Kim, W. R. (2021). Diagnosis, evaluation, and management of ascites, spontaneous bacterial peritonitis and hepatorenal syndrome: 2021 practice guidance by the American Association for the Study of Liver Diseases. *Hepatology, 74*(2), 1014–1048. https://doi.org/10.1002/hep.31884
+- Björck, M., et al. (2020). Editor's choice – European Society for Vascular Surgery (ESVS) 2020 clinical practice guidelines on the management of acute limb ischaemia. *European Journal of Vascular and Endovascular Surgery, 59*(2), 173–218. https://doi.org/10.1016/j.ejvs.2019.09.006
+- Callaham, M. (1989). Hypoxic hazards of traditional paper bag rebreathing in hyperventilating patients. *Annals of Emergency Medicine, 18*(6), 622–628. https://doi.org/10.1016/s0196-0644(89)80515-3
+- Chaikof, E. L., et al. (2018). The Society for Vascular Surgery practice guidelines on the care of patients with an abdominal aortic aneurysm. *Journal of Vascular Surgery, 67*(1), 2–77.e2. https://doi.org/10.1016/j.jvs.2017.10.044
+- Chou, R., Qaseem, A., Owens, D. K., & Shekelle, P. (2011). Diagnostic imaging for low back pain: Advice for high-value health care from the American College of Physicians. *Annals of Internal Medicine, 154*(3), 181–189. https://doi.org/10.7326/0003-4819-154-3-201102010-00008
+- Di Saverio, S., et al. (2020). Diagnosis and treatment of acute appendicitis: 2020 update of the WSES Jerusalem guidelines. *World Journal of Emergency Surgery, 15*, 27. https://doi.org/10.1186/s13017-020-00306-3
+- Do, T. P., et al. (2019). Red and orange flags for secondary headaches in clinical practice: SNNOOP10 list. *Neurology, 92*(3), 134–144. https://doi.org/10.1212/WNL.0000000000006697
+- Downie, A., et al. (2013). Red flags to screen for malignancy and fracture in patients with low back pain: Systematic review. *BMJ, 347*, f7095. https://doi.org/10.1136/bmj.f7095
+- Dworkin, R. H., et al. (2007). Recommendations for the management of herpes zoster. *Clinical Infectious Diseases, 44*(Suppl. 1), S1–S26. https://doi.org/10.1086/510206
+- Evans, L., et al. (2021). Surviving Sepsis Campaign: International guidelines for management of sepsis and septic shock 2021. *Critical Care Medicine, 49*(11), e1063–e1143. https://doi.org/10.1097/CCM.0000000000005337
+- Gardner, A., Gardner, E., & Morley, T. (2011). Cauda equina syndrome: A review of the current clinical and medico-legal position. *European Spine Journal, 20*(5), 690–697. https://doi.org/10.1007/s00586-010-1668-3
 - Gulati, M., et al. (2021). 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR guideline for the evaluation and diagnosis of chest pain. *Circulation, 144*(22), e368–e454. https://doi.org/10.1161/CIR.0000000000001029
 - Hamilton, W., Peters, T. J., Round, A., & Sharp, D. (2005). What are the clinical features of lung cancer before the diagnosis is made? A population based case-control study. *Thorax, 60*(12), 1059–1065. https://doi.org/10.1136/thx.2005.045880
-- Austin, M. A., et al. (2010). Effect of high flow oxygen on mortality in chronic obstructive pulmonary disease patients in prehospital setting: Randomised controlled trial. *BMJ, 341*, c5462. https://doi.org/10.1136/bmj.c5462
-- Banks, P. A., et al. (2013). Classification of acute pancreatitis—2012: Revision of the Atlanta classification and definitions by international consensus. *Gut, 62*(1), 102–111. https://doi.org/10.1136/gutjnl-2012-302779
-- Baile, W. F., et al. (2000). SPIKES—A six-step protocol for delivering bad news: Application to the patient with cancer. *The Oncologist, 5*(4), 302–311. https://doi.org/10.1634/theoncologist.5-4-302
-- Do, T. P., et al. (2019). Red and orange flags for secondary headaches in clinical practice: SNNOOP10 list. *Neurology, 92*(3), 134–144. https://doi.org/10.1212/WNL.0000000000006697
-- Evans, L., et al. (2021). Surviving Sepsis Campaign: International guidelines for management of sepsis and septic shock 2021. *Critical Care Medicine, 49*(11), e1063–e1143. https://doi.org/10.1097/CCM.0000000000005337
-- Di Saverio, S., et al. (2020). Diagnosis and treatment of acute appendicitis: 2020 update of the WSES Jerusalem guidelines. *World Journal of Emergency Surgery, 15*, 27. https://doi.org/10.1186/s13017-020-00306-3
-- Headache Classification Committee of the International Headache Society. (2018). The International Classification of Headache Disorders, 3rd edition. *Cephalalgia, 38*(1), 1–211. https://doi.org/10.1177/0333102417738202
+- Hamilton, W., Round, A., Sharp, D., & Peters, T. J. (2005). Clinical features of colorectal cancer before diagnosis: A population-based case-control study. *British Journal of Cancer, 93*(4), 399–405. https://doi.org/10.1038/sj.bjc.6602714
+- Headache Classification Committee of the International Headache Society. (2018). *The International Classification of Headache Disorders, 3*rd edition. Cephalalgia, 38(1), 1–211. https://doi.org/10.1177/0333102417738202
 - Heidenreich, P. A., et al. (2022). 2022 AHA/ACC/HFSA guideline for the management of heart failure. *Circulation, 145*(18), e895–e1032. https://doi.org/10.1161/CIR.0000000000001063
 - Hoh, B. L., et al. (2023). 2023 guideline for the management of patients with aneurysmal subarachnoid hemorrhage: A guideline from the American Heart Association/American Stroke Association. *Stroke, 54*(7), e314–e370. https://doi.org/10.1161/STR.0000000000000436
+- Hull, R. P., & Goldsmith, D. J. A. (2008). Nephrotic syndrome in adults. *BMJ, 336*(7654), 1185–1189. https://doi.org/10.1136/bmj.39576.709711.80
+- Janssens, H. J. E. M., Fransen, J., van de Lisdonk, E. H., van Riel, P. L. C. M., van Weel, C., & Janssen, M. (2010). A diagnostic rule for acute gouty arthritis in primary care without joint fluid analysis. *Archives of Internal Medicine, 170*(13), 1120–1126. https://doi.org/10.1001/archinternmed.2010.196
 - Johnson, J. R., & Russo, T. A. (2018). Acute pyelonephritis in adults. *New England Journal of Medicine, 378*(1), 48–59. https://doi.org/10.1056/NEJMcp1702758
 - Konstantinides, S. V., et al. (2020). 2019 ESC guidelines for the diagnosis and management of acute pulmonary embolism developed in collaboration with the European Respiratory Society (ERS). *European Heart Journal, 41*(4), 543–603. https://doi.org/10.1093/eurheartj/ehz405
+- Kothari, R. U., Pancioli, A., Liu, T., Brott, T., & Broderick, J. (1999). Cincinnati Prehospital Stroke Scale: Reproducibility and validity. *Annals of Emergency Medicine, 33*(4), 373–378. https://doi.org/10.1016/s0196-0644(99)70299-4
+- Kroenke, K., Spitzer, R. L., & Williams, J. B. W. (2003). The Patient Health Questionnaire-2: Validity of a two-item depression screener. *Medical Care, 41*(11), 1284–1292. https://doi.org/10.1097/01.MLR.0000093487.78664.3C
+- Laine, L., Barkun, A. N., Saltzman, J. R., Martel, M., & Leontiadis, G. I. (2021). ACG clinical guideline: Upper gastrointestinal and ulcer bleeding. *American Journal of Gastroenterology, 116*(5), 899–917. https://doi.org/10.14309/ajg.0000000000001245
 - Lewinsohn, D. M., et al. (2017). Official American Thoracic Society/Infectious Diseases Society of America/Centers for Disease Control and Prevention clinical practice guidelines: Diagnosis of tuberculosis in adults and children. *Clinical Infectious Diseases, 64*(2), 111–115. https://doi.org/10.1093/cid/ciw778
+- Lichtenstein, G. R., Loftus, E. V., Isaacs, K. L., Regueiro, M. D., Gerson, L. B., & Sands, B. E. (2018). ACG clinical guideline: Management of Crohn's disease in adults. *American Journal of Gastroenterology, 113*(4), 481–517. https://doi.org/10.1038/ajg.2018.27
 - MacDuff, A., Arnold, A., & Harvey, J. (2010). Management of spontaneous pneumothorax: British Thoracic Society pleural disease guideline 2010. *Thorax, 65*(Suppl. 2), ii18–ii31. https://doi.org/10.1136/thx.2010.136986
 - Metlay, J. P., et al. (2019). Diagnosis and treatment of adults with community-acquired pneumonia: An official clinical practice guideline of the American Thoracic Society and Infectious Diseases Society of America. *American Journal of Respiratory and Critical Care Medicine, 200*(7), e45–e67. https://doi.org/10.1164/rccm.201908-1581ST
+- Neunert, C., et al. (2019). American Society of Hematology 2019 guidelines for immune thrombocytopenia. *Blood Advances, 3*(23), 3829–3866. https://doi.org/10.1182/bloodadvances.2019000966
 - Patel, R. A., & Gallagher, J. C. (2010). Drug fever. *Pharmacotherapy, 30*(1), 57–69. https://doi.org/10.1592/phco.30.1.57
 - Peery, A. F., Shaukat, A., & Strate, L. L. (2021). AGA clinical practice update on medical management of colonic diverticulitis: Expert review. *Gastroenterology, 160*(3), 906–911.e1. https://doi.org/10.1053/j.gastro.2020.09.059
 - Perry, J. J., et al. (2013). Clinical decision rules to rule out subarachnoid hemorrhage for acute headache. *JAMA, 310*(12), 1248–1255. https://doi.org/10.1001/jama.2013.278018
+- Pop-Busui, R., Boulton, A. J. M., Feldman, E. L., Bril, V., Freeman, R., Malik, R. A., Sosenko, J. M., & Ziegler, D. (2017). Diabetic neuropathy: A position statement by the American Diabetes Association. *Diabetes Care, 40*(1), 136–154. https://doi.org/10.2337/dc16-2042
+- Powers, W. J., et al. (2019). Guidelines for the early management of patients with acute ischemic stroke: 2019 update to the 2018 guidelines for the early management of acute ischemic stroke: A guideline for healthcare professionals from the American Heart Association/American Stroke Association. *Stroke, 50*(12), e344–e418. https://doi.org/10.1161/STR.0000000000000211
 - Rao, S. V., et al. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. *Journal of the American College of Cardiology, 85*(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009
+- Ropper, A. H., & Zafonte, R. D. (2015). Sciatica. *New England Journal of Medicine, 372*(13), 1240–1248. https://doi.org/10.1056/NEJMra1410151
+- Ross, D. S., et al. (2016). 2016 American Thyroid Association guidelines for diagnosis and management of hyperthyroidism and other causes of thyrotoxicosis. *Thyroid, 26*(10), 1343–1421. https://doi.org/10.1089/thy.2016.0229
+- Sampson, H. A., et al. (2006). Second symposium on the definition and management of anaphylaxis: Summary report—Second National Institute of Allergy and Infectious Disease/Food Allergy and Anaphylaxis Network symposium. *Journal of Allergy and Clinical Immunology, 117*(2), 391–397. https://doi.org/10.1016/j.jaci.2005.12.1303
+- Stabler, S. P. (2013). Vitamin B12 deficiency. *New England Journal of Medicine, 368*(2), 149–160. https://doi.org/10.1056/NEJMcp1113996
 - Stevens, D. L., et al. (2014). Practice guidelines for the diagnosis and management of skin and soft tissue infections: 2014 update by the Infectious Diseases Society of America. *Clinical Infectious Diseases, 59*(2), e10–e52. https://doi.org/10.1093/cid/ciu444
-- van de Beek, D., et al. (2016). ESCMID guideline: Diagnosis and treatment of acute bacterial meningitis. *Clinical Microbiology and Infection, 22*(Suppl. 3), S37–S62. https://doi.org/10.1016/j.cmi.2016.01.007
+- Türk, C., et al. (2016). EAU guidelines on diagnosis and conservative management of urolithiasis. *European Urology, 69*(3), 468–474. https://doi.org/10.1016/j.eururo.2015.07.040
 - van de Beek, D., de Gans, J., Spanjaard, L., Weisfelt, M., Reitsma, J. B., & Vermeulen, M. (2004). Clinical features and prognostic factors in adults with bacterial meningitis. *New England Journal of Medicine, 351*(18), 1849–1859. https://doi.org/10.1056/NEJMoa040845
-
+- van de Beek, D., et al. (2016). ESCMID guideline: Diagnosis and treatment of acute bacterial meningitis. *Clinical Microbiology and Infection, 22*(Suppl. 3), S37–S62. https://doi.org/10.1016/j.cmi.2016.01.007
+- von Keudell, A. G., Weaver, M. J., Appleton, P. T., Bae, D. S., Dyer, G. S. M., Heng, M., Jupiter, J. B., & Vrahas, M. S. (2015). Diagnosis and treatment of acute extremity compartment syndrome. *The Lancet, 386*(10000), 1299–1310. https://doi.org/10.1016/S0140-6736(15)00277-9
+- Wang, C. S., FitzGerald, J. M., Schulzer, M., Mak, E., & Ayas, N. T. (2005). *Does this dyspneic patient in the emergency department have congestive heart failure? JAMA, 294*(15), 1944–1956. https://doi.org/10.1001/jama.294.15.1944
+- Wells, P. S., Anderson, D. R., Rodger, M., Forgie, M., Kearon, C., Dreyer, J., Kovacs, G., Mitchell, M., Lewandowski, B., & Kovacs, M. J. (2003). Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis. *New England Journal of Medicine, 349*(13), 1227–1235. https://doi.org/10.1056/NEJMoa023153
 - Wells, P. S., et al. (2001). Excluding pulmonary embolism at the bedside without diagnostic imaging: Management of patients with suspected pulmonary embolism presenting to the emergency department by using a simple clinical model and D-dimer. *Annals of Internal Medicine, 135*(2), 98–107. https://doi.org/10.7326/0003-4819-135-2-200107170-00010
-- Wang, C. S., et al. (2005). Does this dyspneic patient in the emergency department have congestive heart failure? *JAMA, 294*(15), 1944–1956. https://doi.org/10.1001/jama.294.15.1944
+- Winger, J., & Michelfelder, A. (2011). Diagnostic approach to the patient with jaundice. *Primary Care: Clinics in Office Practice, 38*(3), 469–482. https://doi.org/10.1016/j.pop.2011.05.004
+- Wong, C. J. (2014). Involuntary weight loss. *Medical Clinics of North America, 98*(3), 625–643. https://doi.org/10.1016/j.mcna.2014.01.012
 - Yokoe, M., et al. (2018). Tokyo Guidelines 2018: Diagnostic criteria and severity grading of acute cholecystitis (with videos). *Journal of Hepato-Biliary-Pancreatic Sciences, 25*(1), 41–54. https://doi.org/10.1002/jhbp.515
 
-二十六篇的書目資料都用 PubMed 核對過。教學重點對過摘要的有：Wang、Austin、Wells、Di Saverio、Peery、Do、Perry、Patel、van de Beek（2004），以及 Banks 的嚴重度分級和 Stevens 的概括敘述。只核對了書目、內文沒有逐句對的有：胸痛、急性冠心症、心衰竭、肺栓塞、膽囊炎、肺炎、氣胸、敗血症、蜘蛛膜下腔出血、結核病、細菌性腦膜炎的指引，腎盂腎炎的綜論、頭痛的分類，還有 Banks 的診斷條件（三樣裡有兩樣）。每一篇核對到哪裡、用在哪幾關，列在 [`docs/review/README.md`](../docs/review/README.md)。
+這 55 篇的書目資料都用 PubMed 核對過（前三章的 26 篇是寫的時候逐篇查的；第四、五章的 29 篇是分頭寫的時候各自查的，整合之後我再逐篇確認 PubMed 上有這一筆、DOI 對得上）。其中 33 篇，引用它的教學重點對過摘要；其餘的（多半是沒有摘要的指引和綜論）只核對了書目，內文沒有逐句對。每一篇核對到哪裡、用在哪幾關，列在 [`docs/review/README.md`](../docs/review/README.md)。寫的時候就沒把握的地方有 71 條，也列在那裡。

@@ -125,6 +125,26 @@ timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
 
 如果新的主訴需要骨架裡沒有的題目或評估（例如神經學檢查），寫在主訴模組自己的清單裡，不要改骨架：骨架一改，每個主訴的每個病例都要補回答。
 
+### 第四章以後的寫法：一個主訴一組檔案
+
+第四、五章的七個主訴是分頭同時寫的。為了不互相改到同一個檔案，每個主訴自己帶齊：
+
+| 檔案 | 放什麼 |
+|---|---|
+| `<主訴>.ts` | 症影、四個真身、題目、評估、檢查 |
+| `<主訴>.refs.ts` | 這個主訴用到的文獻，加上三個匯出：`REF_CHECK_ADD`（哪幾篇對過摘要、對到什麼）、`REVIEW_ASKS_ADD`（寫的時候就沒把握、要請老師看的地方）、`AFTER_ADD`（每一關結束後岑禾說的話） |
+| `c06a.ts` … | 病人，一個真身一位。`patient.look` 用病例的代號，對到 `src/art/ward.js` 的 `PATIENTS` 和 `KIT` |
+
+`extras.ts` 把每個主訴的 `*_ADD` 併成 `ALL_REF_CHECK`、`ALL_REVIEW_ASKS`、`AFTER_MORE`，審查清單和大廳從那裡讀。新的主訴寫好之後要在三個地方登記：`index.ts`（`COMPLAINTS` 和 `CASES`）、`extras.ts`（`ADD`）、`src/ui/progress.ts`（委託和先後順序）。
+
+還沒登記之前，可以先單獨檢查：
+
+```bash
+node tools/check_draft.ts ./src/data/back-pain.ts ./src/data/c06a.ts ./src/data/c06b.ts
+```
+
+它做的事和 `npm run cases` 一樣（分數加起來對不對、每一題有沒有回答、照最好的打法走得走得到滿分），只是不需要先改 `index.ts`。
+
 ## 一定要有的
 
 - 每個病例都要寫 `review`。還沒經過臨床老師看過的，寫「未審查」，畫面上會顯示。
