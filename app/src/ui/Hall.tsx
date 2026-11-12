@@ -114,7 +114,7 @@ export function Hall({ save, onHero, onBeatSeen, onStart }: Props) {
                   </Fragment>
                 );
               })}
-              <div className="quest paper locked" aria-disabled="true"><b>第二章的其他委託</b><span>喘和腹痛，各還有兩位在路上</span><em>整理中</em></div>
+              <div className="quest paper locked" aria-disabled="true"><b>第三章</b><span>別的症影</span><em>整理中</em></div>
               <div className="quest paper locked" aria-disabled="true"><b>資格試煉</b><span>抽一個沒練過的主訴，15 分鐘</span><em>還沒開放</em></div>
             </div>
           )}

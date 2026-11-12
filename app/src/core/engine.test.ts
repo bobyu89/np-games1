@@ -304,6 +304,35 @@ test('腹痛：評估照看、聽、敲、摸的順序；讓病人吃東西或�
   assert.equal(scoreSession(G, run(G, quick)).safety, 'review');
 });
 
+test('三隻症影的四個真身，每一個都有一位病人', () => {
+  for (const m of COMPLAINTS) {
+    const truths = CASES.filter((c) => c.complaint === m.id).map((c) => c.answer.truth).sort();
+    assert.deepEqual(truths, m.forms.map((f) => f.id).sort(), m.id);
+  }
+  assert.equal(CASES.length, 12);
+});
+
+test('第二章不穩定的三位：下了診斷不通報會變差；穩定的三位不會', () => {
+  for (const id of ['c02b', 'c02d', 'c03c']) {
+    const c = caseById(id);
+    assert.ok(run(c, [...toDx(c), ...times(watch, 4)]).worsenedAt !== null, id);
+    assert.equal(scoreSession(c, run(c, [...toDx(c), ...times(watch, 10), { type: 'close' }])).safety, 'review', id);
+  }
+  for (const id of ['c02a', 'c02c', 'c03a', 'c03b', 'c03d']) {
+    const c = caseById(id);
+    assert.equal(run(c, [...toDx(c), ...times(watch, 12)]).worsenedAt, null, id);
+  }
+});
+
+test('胰臟炎那一位：關鍵的檢查是抽血，結果這一關等得到；氣胸那一位：叫他起來深呼吸是錯的', () => {
+  const P = caseById('c03c'), s = run(P, idealActions(P));
+  assert.ok(s.results.includes('t-blood') && s.reads.some((r) => r.clue === 'c-blood' && r.ok));
+  assert.ok(s.testRead);
+  const X = caseById('c02d'), acts = idealActions(X);
+  const worse = acts.map((a) => (a.type === 'report' ? { ...a, r: [...a.r, 'r-breathe'] } : a));
+  assert.ok(row(X, worse, 'care').got < row(X, acts, 'care').got);
+});
+
 // ── 評分 ──
 test('開場三件事和動手前的說明，都算在同意與說明那一項', () => {
   const open = ['q-wash', 'q-intro', 'q-explain'].map(ask);

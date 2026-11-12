@@ -12,7 +12,8 @@ import type { Shot } from './Portrait.tsx';
 export interface Quest { caseId: string; chapter: number; needs?: string }
 export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b', chapter: 1, needs: 'c01a' }, { caseId: 'c01c', chapter: 1, needs: 'c01b' }, { caseId: 'c01d', chapter: 1, needs: 'c01c' },
   // 第二章：第一章走完才會貼上板子。兩隻症影可以交錯著接
-  { caseId: 'c02a', chapter: 2, needs: 'c01d' }, { caseId: 'c02b', chapter: 2, needs: 'c02a' }, { caseId: 'c03a', chapter: 2, needs: 'c01d' }, { caseId: 'c03b', chapter: 2, needs: 'c03a' }];
+  { caseId: 'c02a', chapter: 2, needs: 'c01d' }, { caseId: 'c02b', chapter: 2, needs: 'c02a' }, { caseId: 'c02c', chapter: 2, needs: 'c02b' }, { caseId: 'c02d', chapter: 2, needs: 'c02c' },
+  { caseId: 'c03a', chapter: 2, needs: 'c01d' }, { caseId: 'c03b', chapter: 2, needs: 'c03a' }, { caseId: 'c03c', chapter: 2, needs: 'c03b' }, { caseId: 'c03d', chapter: 2, needs: 'c03c' }];
 export const unlocked = (q: Quest, s: Save) => !q.needs || !!s.cases[q.needs];
 
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
@@ -56,7 +57,13 @@ export const BEATS: Beat[] = [
   { id: 'ch2-half', title: '第二章　寫回一半', when: (s) => !!s.cases.c02a && !!s.cases.c02b && !!s.cases.c03a && !!s.cases.c03b, lines: [
     { who: 'mo', text: '兩頁各寫回了一半。風箱蛙還有「肺部感染」和「突發急症」，結繩蟹還有「胰臟與胃」和「大腸憩室」，底下都還沒有人名。' },
     { who: 'mentor', text: '一個是水，一個是氣；一個吃完油的才痛，一個從肚臍開始痛。這些差別，都是你自己問出來的。' },
-    { who: 'mentor', text: '另外四位還在路上。等委託送到，板子上會多出來。' },
+    { who: 'mentor', text: '剩下的四盞，委託已經送到了。有兩位不太穩，你要一邊問、一邊看著他們。' },
+  ] },
+  { id: 'ch2-complete', title: '第二章　完', when: (s) => ['c02a', 'c02b', 'c02c', 'c02d', 'c03a', 'c03b', 'c03c', 'c03d'].every((id) => !!s.cases[id]), lines: [
+    { who: 'mo', text: '風箱蛙四盞，結繩蟹四盞，都有人名了。圖鑑寫回了三頁。' },
+    { who: 'mentor', text: '八個人，講的幾乎是同樣兩句話：「我很喘」「我肚子痛」。你問到了他們不一樣的地方。' },
+    { who: 'mentor', text: '還有一件事：最後那一位怕的不是痛。她怕什麼，不問是聽不到的。' },
+    { who: 'mentor', text: '第二章到這裡。下一頁是別的症影，還在整理。' },
   ] },
 ];
 export const nextBeat = (s: Save) => BEATS.find((b) => !s.beats.includes(b.id) && b.when(s));
@@ -129,6 +136,10 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
     c02b: '那一批魚是徒弟出的貨。他回到坊裡，把菸斗掛在牆上，沒有再點。',
     c03a: '攤子歇了十天。再開張的時候，滷肥肉從菜單上劃掉了。',
     c03b: '師傅沒有不要他。工寮的人輪流送了一個禮拜的粥。',
+    c02c: '大拍賣是老陳代的。他躺在病室裡聽人轉述，一邊聽一邊糾正喊價的節奏。',
+    c02d: '三個月後他回到桅杆上。口袋裡那包菸，換成了一小袋炒豆子。',
+    c03c: '那幾缸酒是徒弟顧出來的。之後試酒，他只含一口，再吐掉。',
+    c03d: '發炎好了之後，她做了那個一直不敢做的檢查。出來的時候，她買了一袋青菜回麵包坊。',
   };
   const patients: Entry[] = CASES.map((c) => {
     const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;

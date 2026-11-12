@@ -220,7 +220,7 @@ function drawMid(g) {
 
 // 每位病人的樣子。shirt、hair 是顏色；其他是畫不畫某個東西
 //   woman 女性的瀏海和嘴、pony 馬尾、bob 齊耳短髮、bun 髮髻、moustache 鬍子、beard 落腮鬍、cap 船長帽、scarf 圍巾
-//   calm 坐得穩（不痛得往前彎）、fast 呼吸又快又淺、sweat 幾滴冷汗、pale 臉色差
+//   calm 坐得穩（不痛得往前彎）、fast 呼吸又快又淺、sweat 幾滴冷汗、pale 臉色差、flush 發燒的潮紅
 const PATIENTS = {
   lin: { shirt: C.shirt, shirt2: C.shirt2, hair: C.hairGrey, brow: C.hairGrey, moustache: true, sweat: 2 },
   jian: { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairDark, brow: C.hairDark, woman: true, pony: true, calm: true },
@@ -230,6 +230,10 @@ const PATIENTS = {
   zhang: { shirt: C.wood, shirt2: C.wood2, hair: C.hairGrey, brow: C.hairGrey, moustache: true, fast: true, sweat: 2 },
   ling: { shirt: C.amber, shirt2: C.amber2, hair: C.hairDark, brow: C.hairDark, woman: true, bun: true, sweat: 1 },
   tang: { shirt: C.paper, shirt2: C.paperLine, hair: C.hairInk, brow: C.hairInk, sweat: 1 },
+  pu: { shirt: C.cloak, shirt2: C.cloak2, hair: C.hairDark, brow: C.hairDark, moustache: true, fast: true, flush: true, sweat: 1 },
+  yang: { shirt: C.rose, shirt2: C.rose2, hair: C.hairBrown, brow: C.hairBrown, fast: true },
+  chun: { shirt: C.rust, shirt2: C.wood2, hair: C.hairInk, brow: C.hairInk, moustache: true, beard: true, sweat: 2, pale: true },
+  tao: { shirt: C.slate, shirt2: C.slate2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bun: true, calm: true },
 };
 
 // 第二章四位病人帶來的東西
@@ -250,6 +254,18 @@ function drawProps(g, who) {
     basket(46, 262, C.mustard);
     shape(g, [[45, 263], [52, 257], [66, 259], [80, 256], [87, 263]], { fill: C.cream }); wline(g, [[50, 261], [82, 260]], C.teal, 1.1);
     wline(g, [[96, 282], [118, 262]], C.wood2, 2); wline(g, [[100, 283], [122, 264]], C.wood2, 2);
+  } else if (who === 'pu') {      // 柯蒲：拍賣用的小木槌和一疊號牌
+    shape(g, rrect(46, 270, 20, 11, 3), { fill: C.wood }); wline(g, [[66, 275.5], [88, 279]], C.wood2, 3);
+    [[96, 268, -0.2, C.cream], [102, 271, 0.1, C.paper], [108, 269, 0.3, C.cream]].forEach(([x, y, r, col]) => { g.save(); g.translate(x, y); g.rotate(r); shape(g, rect(-6, -8, 12, 16), { fill: col, lw: 1.1 }); wline(g, [[-3, -2], [3, -2]], C.ink, 1); g.restore(); });
+  } else if (who === 'yang') {    // 岳楊：一捲索具和一根穿帆的大針
+    [15, 11, 7].forEach((r, i) => oval(g, 62, 274, r, r * 0.55, { stroke: C.mustard, lw: 2.8, n: 14, double: false, seed: 930 + i }));
+    wline(g, [[86, 281], [116, 266]], C.ink, 2.2); wline(g, [[86, 281], [116, 266]], C.brass, 1); wline(g, [[116, 266], [122, 258], [112, 262]], C.cream, 1.2);
+  } else if (who === 'chun') {    // 龔椿：一只酒罈和一個倒著的杯子
+    shape(g, [[48, 258], [70, 258], [78, 268], [76, 282], [44, 282], [41, 268]], { fill: C.wood2 }); shape(g, rect(51, 253, 16, 6), { fill: C.cream, lw: 1.1 }); wline(g, [[45, 270], [77, 270]], C.rust, 2.4);
+    shape(g, [[94, 276], [108, 273], [110, 281], [96, 284]], { fill: C.cream }); oval(g, 102, 284, 9, 1.6, { fill: C.shadow, stroke: null });
+  } else if (who === 'tao') {     // 鄔桃：一籃麵包
+    basket(46, 262, C.mustard);
+    [[54, 258, 0.2], [66, 255, -0.1], [78, 258, 0.3]].forEach(([x, y, r]) => { shape(g, ell(x, y, 8, 5, 10, r), { fill: C.ochre, lw: 1.2, step: 99 }); wline(g, [[x - 3, y - 2], [x - 1, y + 1]], C.wood2, 1); wline(g, [[x + 1, y - 2], [x + 3, y + 1]], C.wood2, 1); });
   } else {                        // 邵棠：工具箱和一把刨刀
     shape(g, rect(44, 264, 40, 18), { fill: C.wood }); wline(g, [[44, 271], [84, 271]], C.wood2, 1.2); shape(g, rect(61, 268, 6, 5), { fill: C.brass, lw: 1 });
     wline(g, [[52, 264], [56, 256], [72, 256], [76, 264]], C.wood2, 2.4);
@@ -454,7 +470,7 @@ export function createWard(canvas, opts = {}) {
       wline(g, [[-14, -13], [-9, -16]], C.cream, 1); wline(g, [[-16, -6], [-13, -10]], C.cream, 1);
     }
     // 臉頰、眼睛、眉毛
-    g.globalAlpha = (LOOK.pale ? 0.22 : woman ? 0.62 : 0.42) - slump * 0.2; leaf(g, -4, 6, 4, 2.4, 0, C.blush); leaf(g, 17, 6, 2.8, 2.2, 0, C.blush); g.globalAlpha = 1;
+    g.globalAlpha = (LOOK.flush ? 0.95 : LOOK.pale ? 0.22 : woman ? 0.62 : 0.42) - slump * 0.2; leaf(g, -4, 6, 4, 2.4, 0, C.blush); leaf(g, 17, 6, 2.8, 2.2, 0, C.blush); g.globalAlpha = 1;
     const mode = wince > 0.45 ? 'wince' : (blink || slump > 0.6) ? 'blink' : 'open', look = talking ? [0.9, 0.2] : [1.2, 0.9];
     eye(g, 3, -2.5, 4.2, look, mode, -1); eye(g, 13.5, -2.5, 3.9, look, mode, 1);
     const w = 1.2 + wince * 2;   // 眉頭往上皺

@@ -45,7 +45,7 @@ export const ABDOMEN: ComplaintDef = {
   ],
   tests: [
     { id: 't-us', label: '腹部超音波', kind: 'order', cost: 10, delay: 110 },
-    { id: 't-blood', label: '抽血（血球、肝膽胰指數）', kind: 'order', cost: 20 },
+    { id: 't-blood', label: '抽血（血球、肝膽胰指數）', kind: 'order', cost: 20, delay: 130 },
     { id: 't-urine', label: '驗尿（需要時含驗孕）', kind: 'order', cost: 10, delay: 60 },
     { id: 't-ecg', label: '12 導程心電圖', kind: 'order', cost: 10, delay: 90 },
   ],

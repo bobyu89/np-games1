@@ -66,7 +66,7 @@ export const C03A: CaseSpec = {
   },
   results: {
     't-us': { say: '膽囊裡有好幾顆結石，膽囊壁變厚，膽囊旁邊有一點積水；探頭壓在膽囊上，她會喊痛。膽管沒有變粗。' + TEXT_RESULT, clue: { text: '超音波：膽結石、膽囊壁增厚、膽囊周圍積液', kind: 'pos', key: true, fog: 6, tell: { form: 'biliary', dir: 1 }, why: '局部的徵象（Murphy 徵象、右上腹壓痛）、全身的發炎（發燒），再加上影像的發現，三樣都有了。' } },
-    't-blood': { pending: '血已經抽好送出，結果要等一段時間，這一關裡等不到。' },
+    't-blood': { say: '白血球 14,200，發炎指數上升。肝指數和膽紅素只高一點點。脂肪酶正常。' + TEXT_RESULT, clue: { text: '抽血：白血球和發炎指數上升，脂肪酶正常', kind: 'pos' } },
     't-urine': { say: '尿裡沒有血，沒有發炎的跡象。驗孕是陰性。' + TEXT_RESULT, clue: { text: '驗尿正常，驗孕陰性', kind: 'neg' } },
     't-ecg': { say: '竇性心律，每分鐘 96 下，沒有 ST 段或 T 波的變化。' + TEXT_RESULT, clue: { text: '心電圖：竇性心律，沒有 ST-T 變化', kind: 'neg' } },
   },
