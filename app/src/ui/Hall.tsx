@@ -11,7 +11,8 @@ import type { Run, Save } from './store.ts';
 import { Settings, StatsFacts } from './Settings.tsx';
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
-import { BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, unlocked, type Beat, type Entry } from './progress.ts';
+import { BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
+import { WELCOME, WORLD } from './world.ts';
 import { Portrait } from './Portrait.tsx';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
@@ -43,11 +44,14 @@ function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(i
 }
 
 export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropRun, onImport, onReset }: Props) {
-  const [beat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
+  const [pendingBeat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
+  // 先知道自己是誰，故事才開始：還沒選主角之前，序章先等著
+  const beat = save.hero === null ? null : pendingBeat;
+  const [welcomed, setWelcomed] = useState(() => save.hero !== null || save.beats.length > 0);
   const [step, setStep] = useState(0);
   const [reading, setReading] = useState<CaseDef | null>(null);
   const [codex, setCodex] = useState(false);
-  const [tab, setTab] = useState<'shadow' | 'people' | 'places'>('shadow');
+  const [tab, setTab] = useState<'shadow' | 'people' | 'places' | 'world'>('shadow');
   const [soundOn, setSoundOn] = useState(sound.on);
   const [settings, setSettings] = useState(false);
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
@@ -58,12 +62,13 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
   const open = QUESTS.filter((q) => unlocked(q, save)), fresh = open.find((q) => !save.cases[q.caseId]);
 
   useEffect(() => {
-    if (beat) { talk.current?.say([beat.lines[step]]); return; }
+    if (save.hero === null) return;
+    if (beat) { talk.current?.say([{ ...beat.lines[step], text: toYou(beat.lines[step].text, save.hero) }]); return; }
     const last = save.takeaways[0];
     if (pending) { talk.current?.say([{ who: 'mentor', text: run!.session.closedAt !== null ? pending.patient.name + '那一張結案了，回顧還沒看完。' : pending.patient.name + '還在等你。上次做到一半，可以接著做。' }]); return; }
     talk.current?.say([{ who: 'mentor', text: last ? '你上次說，下次要做到：' + last : fresh ? '委託板上有一張新的。準備好了就接。' : '板子上的委託都走過了。想再走一次也可以，圖鑑還有空白。' }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [beat, step]);
+  }, [beat, step, save.hero]);
 
   const endBeat = () => {
     if (!beat) return;
@@ -166,16 +171,24 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
           <p className="dim">之後想改，在「設定」裡。你選之前，什麼都不會送出去。</p>
         </Sheet>
       )}
-      {!beat && save.hero === null && !settings && (
+      {save.hero === null && !welcomed && !settings && (
+        <Sheet title="霧脈公會" onClose={() => setWelcomed(true)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setWelcomed(true); }}>開始</button>}>
+          <p>{WELCOME.what}</p>
+          <dl className="pairs">{WELCOME.points.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+          <p className="dim">{WELCOME.note}</p>
+        </Sheet>
+      )}
+      {save.hero === null && welcomed && !settings && (
         <Sheet title="你是哪一位？" onClose={() => onHero(HEROES[0].id)}>
-          <p className="dim">三位都是剛到霧脈公會的見習專科護理師。只有外表和帶的東西不同，能做的事一模一樣；之後可以在圖鑑的「人物」裡換。</p>
+          <p>你剛結束訓練，今天第一天到霧脈公會報到。選一位當你自己。</p>
+          <p className="dim">六位都是見習專科護理師。只有來歷、外表和帶的東西不同，能做的事一模一樣；之後可以在圖鑑的「人物」裡換。</p>
           <HeroCards picked={null} onPick={onHero} action="就是這一位" />
         </Sheet>
       )}
       {codex && (
         <Sheet title="圖鑑" onClose={() => setCodex(false)}>
-          <div className="steps" role="tablist">
-            {([['shadow', '症影'], ['people', '人物'], ['places', '場景']] as const).map(([id, name]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => { sfx.tap(); setTab(id); }}>{name}</button>)}
+          <div className="steps four" role="tablist">
+            {([['shadow', '症影'], ['people', '人物'], ['places', '場景'], ['world', '公會']] as const).map(([id, name]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => { sfx.tap(); setTab(id); }}>{name}</button>)}
           </div>
           {tab === 'people' && (() => {
             const { guild, patients } = peopleOf(save);
@@ -189,6 +202,14 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
               <div className="album">{patients.map((e) => <Card key={e.id} e={e} />)}</div>
             </>;
           })()}
+          {tab === 'world' && <>
+            {WORLD.paragraphs.map((t) => <p key={t}>{t}</p>)}
+            <h3>這裡的東西，對到現實的什麼</h3>
+            <dl className="pairs">{WORLD.map.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+            <h3>這是什麼</h3>
+            <p>{WELCOME.what}</p>
+            <p className="dim">{WELCOME.note}</p>
+          </>}
           {tab === 'places' && <>
             <p className="dim">去過的地方會記在這裡。出診的委託，會帶你到公會以外的地方。</p>
             <div className="album">{placesOf(save).map((e) => <Card key={e.id} e={e} wide />)}</div>

@@ -42,7 +42,7 @@ export function App() {
 
   if (screen.name === 'ward') {
     const { c } = screen;
-    return <Ward key={screen.n} c={c} tier={screen.tier} hero={save.hero} takeaway={save.takeaways[0] ?? null} resume={screen.resume}
+    return <Ward key={screen.n} c={c} tier={screen.tier} hero={save.hero} takeaway={save.takeaways[0] ?? null} resume={screen.resume} coach={Object.keys(save.cases).length === 0}
       onProgress={(session, seconds) => keepRun({ v: 1, caseId: c.id, session, seconds, at: Date.now() })}
       onQuit={() => { if (run?.caseId === c.id) track({ t: 'leave', c: c.id, tier: run.session.tier, ph: run.session.phase, gt: run.session.time, h: run.session.hints }); toHall(); }}
       onDone={(session, seconds) => setScreen({ name: 'debrief', c, session, seconds })} />;

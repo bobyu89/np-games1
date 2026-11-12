@@ -31,11 +31,18 @@ export const unlocked = (q: Quest, s: Save) => [q.needs ?? []].flat().every((id)
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
 export interface Beat { id: string; title: string; when(s: Save): boolean; lines: Line[] }
 export const BEATS: Beat[] = [
+  // 序章要交代四件事：這是哪裡、你是誰、出了什麼事、你要做什麼。{you} 和 {greet} 在大廳換成玩家選的那一位
   { id: 'prologue', title: '序章　遺失的一頁', when: () => true, lines: [
-    { who: 'sys', text: '霧港。霧脈公會的大廳。' },
-    { who: 'mo', text: '檔案室淹水了。圖鑑只救回症影的外形，底下寫的東西都糊掉了。' },
-    { who: 'mentor', text: '所以從今天起，每一張委託都要重新看。你來得正好，見習生。' },
-    { who: 'mentor', text: '症影只告訴你「哪裡不舒服」，不告訴你「為什麼」。為什麼，要你自己問出來。' },
+    { who: 'sys', text: '霧港。依山傍海的港城，一年裡有大半的日子起霧。' },
+    { who: 'sys', text: '幾十年前，這裡的霧開始會凝成形狀。人在痛、在喘、說不清自己怎麼了的時候，身邊會浮出一團有形的霧。港城的人叫它「症影」。' },
+    { who: 'sys', text: '霧脈公會，是港城的人不舒服的時候會來的地方。你，{you}，剛結束訓練，今天第一天來報到。' },
+    { who: 'mentor', text: '{you}？我是岑禾，在這裡值班十幾年了。{greet}' },
+    { who: 'mentor', text: '櫃台後面寫字的是眠墨，管檔案室。值班的醫師叫沈渡；敲值班鐘，他就會來。' },
+    { who: 'mo', text: '……抱歉，沒辦法好好招呼你。檔案室昨晚淹水了。圖鑑只救回症影的外形，底下寫的字都糊掉了。' },
+    { who: 'mentor', text: '圖鑑是前人一筆一筆記下來的：每一種症影，背後可能是哪幾種病，該問什麼，什麼時候不能等。' },
+    { who: 'mentor', text: '現在只剩圖。所以從今天起，每一位進來的人都要重新看，一頁一頁寫回來。你來得正好。' },
+    { who: 'mentor', text: '記住一件事：症影只告訴你「哪裡不舒服」，不告訴你「為什麼」。同一隻症影，背後可能是四種完全不同的病。' },
+    { who: 'mentor', text: '你要做的事，和受訓的時候學的一樣：問診、身體評估、下診斷、提出檢查、向醫師回報、跟病人說明。我在旁邊；卡住了就問我。' },
     { who: 'mentor', text: '板子上那張蓋了紅蠟的，是剛送來的。去看看吧。' },
   ] },
   { id: 'ch1-second', title: '第一章　鐘聲之前', when: (s) => !!s.cases.c01a, lines: [
@@ -170,14 +177,16 @@ export function codexOf(m: ComplaintDef, save: Save) {
 
 /** 主角：三位見習專科護理師。只有外表和帶的東西不同，能做的事一模一樣 */
 export const HEROES = [
-  { id: 'cheng', name: '葉澄', tag: '內科病房出身', line: '習慣把每一件事寫下來，筆記本從不離手。' },
-  { id: 'yuan', name: '高遠', tag: '急診出身', line: '手腳很快，正在學慢下來把話問完。巡夜的時候提著一盞小燈。' },
-  { id: 'zhi', name: '白芷', tag: '社區巡診出身', line: '很會聽人說話。出診包裡總有一把剛採的草藥。' },
-  { id: 'heng', name: '杜衡', tag: '外科病房出身', line: '手很穩，話很少。口袋裡永遠有一捲繃帶。' },
-  { id: 'mu', name: '蘇木', tag: '兒科病房出身', line: '會蹲下來跟孩子說話。手上那隻布做的小魚，是哄人用的。' },
-  { id: 'qiao', name: '連翹', tag: '加護病房出身', line: '習慣看著懷錶數呼吸。別人慌的時候，她的聲音會慢下來。' },
+  { id: 'cheng', name: '葉澄', tag: '內科病房出身', line: '習慣把每一件事寫下來，筆記本從不離手。', greet: '內科病房來的？寫紀錄的習慣留著，這裡用得上。' },
+  { id: 'yuan', name: '高遠', tag: '急診出身', line: '手腳很快，正在學慢下來把話問完。巡夜的時候提著一盞小燈。', greet: '急診來的？手腳快是好事。在這裡，先學把話問完。' },
+  { id: 'zhi', name: '白芷', tag: '社區巡診出身', line: '很會聽人說話。出診包裡總有一把剛採的草藥。', greet: '社區巡診來的？會聽人說話，就已經贏一半了。' },
+  { id: 'heng', name: '杜衡', tag: '外科病房出身', line: '手很穩，話很少。口袋裡永遠有一捲繃帶。', greet: '外科病房來的？手穩很好。話少沒關係，該問的要問出口。' },
+  { id: 'mu', name: '蘇木', tag: '兒科病房出身', line: '會蹲下來跟孩子說話。手上那隻布做的小魚，是哄人用的。', greet: '兒科病房來的？會蹲下來說話的人，大人也願意跟你講。' },
+  { id: 'qiao', name: '連翹', tag: '加護病房出身', line: '習慣看著懷錶數呼吸。別人慌的時候，她的聲音會慢下來。', greet: '加護病房來的？你習慣看數字。在這裡，數字之前先看人。' },
 ] as const;
 export const heroOf = (id: string | null) => HEROES.find((h) => h.id === id) ?? HEROES[0];
+/** 故事裡的 {you}、{greet}：換成玩家選的那一位的名字，和岑禾見到他說的第一句話 */
+export const toYou = (text: string, hero: string | null) => text.replaceAll('{you}', heroOf(hero).name).replaceAll('{greet}', heroOf(hero).greet);
 const heroShot = (id: string): Shot => ({ kind: 'hall', hero: id, view: { w: 112, h: 112, cx: 189, cy: 212 } });
 export const heroShots = Object.fromEntries(HEROES.map((h) => [h.id, heroShot(h.id)])) as Record<string, Shot>;
 

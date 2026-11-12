@@ -10,7 +10,7 @@ type X = ComplaintDef['exams'][number];
 /** 開場：三件事，每一位病人都一樣 */
 export const OPENING: Q[] = [
   { id: 'q-wash', group: 'open', label: '洗手', ask: '（敲門進來，先把手洗乾淨。）', weight: 0 },
-  { id: 'q-intro', group: 'open', label: '介紹與核對', ask: '您好，我是今天照顧您的專科護理師。請告訴我您的名字和生日，我對一下您的手圈。', weight: 0 },
+  { id: 'q-intro', group: 'open', label: '介紹與核對', ask: '您好，我是專科護理師{you}，今天由我照顧您。請告訴我您的名字和生日，我對一下您的手圈。', weight: 0 },
   { id: 'q-explain', group: 'open', label: '說明流程', ask: '接下來我會先問您一些問題，再做身體評估，結果會跟值班醫師討論。我把簾子拉上；中間有任何不舒服，隨時跟我說。', weight: 0 },
 ];
 

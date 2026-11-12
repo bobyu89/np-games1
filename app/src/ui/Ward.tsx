@@ -7,6 +7,7 @@ import { Stage, type StageHandle } from './Stage.tsx';
 import { Talk, type Line, type TalkHandle, type Who } from './Talk.tsx';
 import { BoardSheet, CluesSheet, ConfirmSheet, ExplainSheet, ReportSheet } from './Sheets.tsx';
 import { buzz, sfx, sound } from './sound.ts';
+import { toYou } from './progress.ts';
 
 // 一排七個分頁，就是一場的順序：問診（開場、主訴、病史、系統回顧）→ 評估 → 診斷 → 檢查。
 // 前面的隨時可以回去補；後面的要等前一個階段做完才打開。
@@ -17,6 +18,15 @@ const TABS: { id: Tab; name: string; phase: 1 | 2 | 3 | 4 }[] = [
 ];
 const GROUP_NAME: Record<QuestionGroup, string> = { open: '開場', cc: '主訴', hx: '病史', ros: '系統回顧' };
 const NEXT_GROUP: Partial<Record<QuestionGroup, QuestionGroup>> = { open: 'cc', cc: 'hx', hx: 'ros' };
+/** 第一張委託，岑禾在每一步開始的時候說的話：只講「現在要做什麼、畫面上哪裡按」 */
+const COACH = {
+  start: '第一次，我帶著你走。下面那一排，從「開場」到「檢查」，就是順序。先從最左邊開始：洗手、介紹自己、說明流程。點一下，就是做一件事。',
+  cc: '開場做完了。接下來問主訴：從「怎麼不舒服」開始，一題一題問。問過的會打勾；時間只在你做事的時候走，慢慢看沒關係。',
+  read: '這一條是重要的線索，要你判斷：它讓哪一個診斷更像，還是比較不像。判斷對了，畫面上對應的那盞燈會跟著變，霧也會散一點。',
+  exam: '問診到這裡。評估先量生命徵象：點上面那一格。每一項檢查動手之前，先跟病人說明。',
+  dx: '現在下診斷：一句話說出問題，選最可能的，再選還要排除的。這一步不扣時間，想清楚再按。',
+  plan: '診斷下了，從現在開始算時間。病人等不了就敲值班鐘；該做的檢查先提出，然後向醫師回報、跟病人說明，最後結案。',
+};
 type SheetName = null | 'board' | 'report' | 'explain' | 'clues' | 'confirm' | 'quit' | 'next' | 'bell';
 const HEART = <svg viewBox="0 0 22 20" aria-hidden="true"><path fill="currentColor" stroke="#2c2a25" strokeWidth="2" strokeLinejoin="round" d="M11 18.5C4.5 13.6 1.3 10.2 1.3 6.5 1.3 3.6 3.5 1.5 6.2 1.5c1.9 0 3.6 1 4.8 2.7 1.2-1.7 2.9-2.7 4.8-2.7 2.7 0 4.9 2.1 4.9 5 0 3.7-3.2 7.1-9.7 12z" /></svg>;
 const mmss = (t: number) => String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
@@ -30,13 +40,13 @@ function Forms({ c, onPick }: { c: CaseDef; onPick(id: string): void }) {
   return <div className="forms">{c.forms.map((f) => <button key={f.id} type="button" className="form" onClick={() => onPick(f.id)}><i aria-hidden="true">{f.mark}</i>{f.name}</button>)}</div>;
 }
 
-/** resume：上次做到一半的那一場。onProgress：每做一個行動就交出去存，中途離開回來可以接著做 */
-interface Props { c: CaseDef; tier: 0 | 1; hero: string | null; takeaway: string | null; resume?: { session: Session; seconds: number } | null; onProgress?(s: Session, seconds: number): void; onDone(s: Session, seconds: number): void; onQuit(): void }
+/** resume：上次做到一半的那一場。onProgress：每做一個行動就交出去存，中途離開回來可以接著做。coach：第一張委託，岑禾一步一步帶 */
+interface Props { c: CaseDef; tier: 0 | 1; hero: string | null; takeaway: string | null; coach?: boolean; resume?: { session: Session; seconds: number } | null; onProgress?(s: Session, seconds: number): void; onDone(s: Session, seconds: number): void; onQuit(): void }
 /** 接著做的時候，翻到做到一半的那一頁 */
 const tabFor = (c: CaseDef, s: Session): Tab => (s.phase === 2 ? 'exam' : s.phase === 3 ? 'dx' : s.phase === 4 ? 'plan'
   : (['open', 'cc', 'hx', 'ros'] as QuestionGroup[]).find((g) => c.questions.some((q) => q.group === g && !s.asked.includes(q.id))) ?? 'ros');
 
-export function Ward({ c, tier, hero, takeaway, resume, onProgress, onDone, onQuit }: Props) {
+export function Ward({ c, tier, hero, takeaway, coach, resume, onProgress, onDone, onQuit }: Props) {
   const [session, setSession] = useState(() => resume?.session ?? createSession(c, tier));
   const [dir, setDir] = useState<1 | -1 | null>(null);   // 提示拿掉一層之後，線索的方向要自己選
   const [tab, setTab] = useState<Tab>(() => (resume ? tabFor(c, resume.session) : 'open'));   // 第一步是開場：洗手、自我介紹、說明流程
@@ -56,6 +66,9 @@ export function Ward({ c, tier, hero, takeaway, resume, onProgress, onDone, onQu
     bannerTimer.current = window.setTimeout(() => setBanner((b) => ({ ...b, show: false })), 1800);
   };
   const elapsed = () => Math.round((performance.now() - began.current) / 1000);
+  // 第一張委託：每到新的一步，岑禾說一次這一步要做什麼。說過的不再說
+  const coached = useRef(new Set<string>());
+  const teach = (key: keyof typeof COACH): Line[] => { if (!coach || coached.current.has(key)) return []; coached.current.add(key); return [{ who: 'mentor', text: COACH[key] }]; };
   const finish = () => onDone(live.current, elapsed());
 
   // 進門：岑禾的第一句話
@@ -65,6 +78,7 @@ export function Ward({ c, tier, hero, takeaway, resume, onProgress, onDone, onQu
     else {
       if (takeaway) lines.push({ who: 'sys', text: '你上次說這次要做到：' + takeaway });
       c.lines.opening.forEach((text) => lines.push({ who: 'mentor', text }));
+      lines.push(...teach('start'));
     }
     talk.current?.say(lines);
     return () => window.clearTimeout(bannerTimer.current);
@@ -102,7 +116,10 @@ export function Ward({ c, tier, hero, takeaway, resume, onProgress, onDone, onQu
       if (to && c.questions.filter((q) => q.group === g).every((q) => next.asked.includes(q.id))) setTab((t) => (t === g ? to : t));
     }
     if (next.phase !== before.phase) setTab(next.phase === 2 ? 'exam' : next.phase === 3 ? 'dx' : 'plan');
-    const lines: Line[] = events.flatMap((e) => (e.type === 'say' ? [{ who: e.who, text: e.text, bad: e.bad }] : []));
+    const lines: Line[] = events.flatMap((e) => (e.type === 'say' ? [{ who: e.who, text: e.who === 'you' ? toYou(e.text, hero) : e.text, bad: e.bad }] : []));
+    if (next.pending.length && !before.pending.length) lines.push(...teach('read'));
+    if (next.phase !== before.phase) lines.push(...teach(next.phase === 2 ? 'exam' : next.phase === 3 ? 'dx' : 'plan'));
+    else if (a.type === 'ask' && before.asked.length < 3 && next.asked.length === 3 && c.questions.filter((q) => q.group === 'open').every((q) => next.asked.includes(q.id))) lines.push(...teach('cc'));
     if (a.type === 'exam' && !a.explain && !nudged.current) { nudged.current = true; lines.push({ who: 'mentor', text: c.lines.hintNoExplain }); }
     // 馬上演的
     for (const e of events) {

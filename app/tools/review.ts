@@ -23,6 +23,9 @@ const boxes = !process.argv.includes('--no-boxes');
 
 const esc = (s: string) => s.replace(/\|/g, '｜').replace(/\n/g, ' ');
 /** 最後一欄叫「審查」的表格，不印格子的時候整欄拿掉。widths：各欄的相對寬度（pandoc 轉 Word 的時候用） */
+/** 玩家說的話裡，名字的位置在遊戲裡會換成玩家選的那一位 */
+const said = (t: string) => t.replaceAll('{you}', '（主角的名字）');
+
 function table(head: string[], rows: string[][], widths?: number[]): string {
   const drop = !boxes && head[head.length - 1] === '審查', cut = <T>(r: T[]) => (drop ? r.slice(0, -1) : r);
   const h = cut(head), w = cut(widths ?? head.map(() => 1));
@@ -109,7 +112,7 @@ function caseSection(c: CaseDef): string {
   p(table(['教學重點', '出處', '核對到哪裡', '審查'], c.debrief.teaching.map((t) => { const r = c.debrief.references.find((k) => k.id === t.ref); return [t.text, r ? r.text.split('(')[0].trim().replace(/,$/, '') + '（' + (r.text.match(/\((\d{4})\)/)?.[1] ?? '') + '）' : t.ref, checkOf(t.ref), BOX]; }), [7, 3, 3, 2]));
 
   p('### 8. 完整的腳本', '<details><summary>問診 ' + c.questions.length + ' 題、身體評估 ' + c.exams.length + ' 項、檢查 ' + c.tests.length + ' 項、劇本裡的對話</summary>', '');
-  p(table(['分段', '按鈕', '玩家怎麼問', '病人怎麼回答', '記下的線索'], c.questions.map((q) => [GROUP[q.group], q.label, q.ask, q.answer, q.clue ? c.clues.find((k) => k.id === q.clue)!.text : '—']), [1, 2, 5, 6, 4]));
+  p(table(['分段', '按鈕', '玩家怎麼問', '病人怎麼回答', '記下的線索'], c.questions.map((q) => [GROUP[q.group], q.label, said(q.ask), q.answer, q.clue ? c.clues.find((k) => k.id === q.clue)!.text : '—']), [1, 2, 5, 6, 4]));
   p(table(['部位', '評估項目', '看到、聽到、摸到的', '記下的線索'], c.exams.map((e) => [e.part, e.label, e.finding, e.clue ? c.clues.find((k) => k.id === e.clue)!.text : '—']), [1, 2, 7, 4]));
   p(table(['檢查', '多久有結果', '結果'], c.tests.map((t) => [t.label, t.delay ? sec(t.delay) : '這一關等不到', t.result ?? t.pending ?? '']), [3, 2, 9]));
   const L = c.lines;
@@ -132,7 +135,7 @@ function complaintDoc(id: string): string {
   out.push('## 四個診斷', '', '同一個主訴底下可能的四類問題，玩家要在這四個裡面選最可能的、排除其他的（遊戲的圖鑑裡把它們叫做「真身」，病室裡一律說「診斷」）。這個分法是遊戲的骨架，請先看分得合不合理。', '');
   out.push(table(['診斷', '畫面上的字', '說明', '有哪位病人', '審查'], m.forms.map((f) => [f.name, f.mark, f.blurb, cases.filter((c) => c.answer.truth === f.id).map((c) => c.patient.name + '（' + c.id.toUpperCase() + '）').join('、') || '還沒有', BOX]), [2, 1, 7, 3, 2]), '');
   out.push('## 這個主訴的題目', '', '同一個主訴的每一位病人，畫面上的題目和檢查項目都一樣，只有回答不同。開場、病史、系統回顧是所有主訴共用的。', '');
-  out.push(table(['分段', '按鈕', '玩家怎麼問', '份量'], m.questions.map((q) => [GROUP[q.group], q.label, q.ask, String(q.weight)]), [1, 2, 9, 1]), '');
+  out.push(table(['分段', '按鈕', '玩家怎麼問', '份量'], m.questions.map((q) => [GROUP[q.group], q.label, said(q.ask), String(q.weight)]), [1, 2, 9, 1]), '');
   out.push(table(['部位', '評估項目', '動手之前對病人說的話', '份量'], m.exams.map((e) => [e.part, e.label, e.explain, String(e.weight)]), [1, 2, 9, 1]), '');
   out.push(table(['檢查', '多久有結果'], m.tests.map((t) => [t.label, t.delay ? sec(t.delay) : '這一關等不到'])), '', '---', '');
   cases.forEach((c) => out.push(caseSection(c)));

@@ -259,6 +259,7 @@ button.act.hint, .quest.hint, .opt.hint:not(.done) { animation: hint 1.8s ease-i
 
 /* ── 回顧 ── */
 .steps { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.steps.four { grid-template-columns: repeat(4, 1fr); }
 .steps button { background: none; border: 2px solid var(--on-page-soft); border-radius: var(--r-b); color: var(--on-page-soft); padding: 2px 4px; cursor: pointer; }
 .steps button.on { background: var(--grain), var(--ochre); border-color: var(--ink); color: var(--ink); font-weight: 700; }
 .page { flex: 1; min-height: 0; overflow-y: auto; padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
@@ -353,3 +354,9 @@ html.admin #app { max-width: 1080px; max-height: none; height: auto; margin: 0 a
 .cols > div { min-width: 0; overflow-x: auto; }
 .admin-page, .admin-bar label { min-width: 0; }
 .admin-bar label { display: flex; align-items: center; gap: 6px; }
+
+/* 一行名稱、一行說明：第一次打開的那一頁，和圖鑑的「公會」那一頁 */
+.pairs { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.pairs > div { border-left: 4px solid var(--sage); padding: 1px 0 1px 10px; }
+.pairs dt { font-weight: 700; }
+.pairs dd { margin: 0; color: var(--ink-soft); }
