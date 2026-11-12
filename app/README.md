@@ -1,8 +1,8 @@
 # 霧脈公會：互動原型
 
-繪本畫風的可以玩的版本。三章、五隻症影、十六張委託：第一章是胸痛（鐵翅蛾）的四位病人，第二章是喘（風箱蛙）和腹痛（結繩蟹）各四位，第三章是發燒（餘燼蜥）和頭痛（篤篤鳥）各兩位。前兩章每隻症影的四個真身都有一位病人；第三章還有四個真身沒有病人。第二章走完會升一階、少一層提示。
+繪本畫風的可以玩的版本。三章、五隻症影、二十張委託：第一章是胸痛（鐵翅蛾）的四位病人，第二章是喘（風箱蛙）和腹痛（結繩蟹）各四位，第三章是發燒（餘燼蜥）和頭痛（篤篤鳥）各四位。每隻症影的四個真身，各有一位病人。第二章走完會升一階、少一層提示。
 
-![第三章：升階之後線索的方向要自己選；餘燼蜥（發燒）和涂柏、篤篤鳥（頭痛）和喬芸、魏葵](../docs/art/app-prototype.jpg)
+![第三章後來補上的四位病人：池榆（懷疑肺結核）、尤杉（藥物熱）、賀楓（細菌性腦膜炎，出診到碼頭）、季蘭（腦內佔位病灶）](../docs/art/app-prototype.jpg)
 
 ## 怎麼跑
 
@@ -18,7 +18,7 @@ npm run dev
 
 | 指令 | 做什麼 |
 |---|---|
-| `npm test` | 規則和評分的測試（46 項） |
+| `npm test` | 規則和評分的測試（49 項） |
 | `npm run cases` | 檢查所有病例，印出一張總表 |
 | `npm run review` | 產生給臨床老師的審查清單，寫到 [`docs/review/`](../docs/review/README.md) |
 | `python3 tools/review_docx.py 審查清單.docx` | 把審查清單轉成一份 Word 檔（要先裝 pandoc） |
@@ -94,7 +94,7 @@ tools/
 
 ## 還沒有的
 
-- 只有胸痛、喘、腹痛、發燒、頭痛五個主訴；發燒和頭痛各只有兩位病人，另外兩個真身（發燒：呼吸道、非感染；頭痛：中樞感染、顱內壓升高）還沒有。其他主訴、資格試煉（真實倒數 15 分鐘）都還沒做。
+- 只有胸痛、喘、腹痛、發燒、頭痛五個主訴。其他主訴、資格試煉（真實倒數 15 分鐘）都還沒做。
 - 提示只拿掉了第一層（第二章走完之後：線索的方向自己選、岑禾一張委託回答三次）。更後面的幾層還沒做。
 - 每個真身只有一位病人，所以同一個真身還沒有「不典型的說法」可以練。有些鑑別沒有對應的病人：消化性潰瘍、從喘進來的肺栓塞，以及下腹的泌尿、婦科和疝氣。
 - 腹痛的四個真身照位置分，有可能被只看「痛在哪裡」猜中。現在的做法是：沒有把另外三個排除就下診斷，安全行動會是「需要複核」。夠不夠要再看。
@@ -128,15 +128,19 @@ tools/
 - Hoh, B. L., et al. (2023). 2023 guideline for the management of patients with aneurysmal subarachnoid hemorrhage: A guideline from the American Heart Association/American Stroke Association. *Stroke, 54*(7), e314–e370. https://doi.org/10.1161/STR.0000000000000436
 - Johnson, J. R., & Russo, T. A. (2018). Acute pyelonephritis in adults. *New England Journal of Medicine, 378*(1), 48–59. https://doi.org/10.1056/NEJMcp1702758
 - Konstantinides, S. V., et al. (2020). 2019 ESC guidelines for the diagnosis and management of acute pulmonary embolism developed in collaboration with the European Respiratory Society (ERS). *European Heart Journal, 41*(4), 543–603. https://doi.org/10.1093/eurheartj/ehz405
+- Lewinsohn, D. M., et al. (2017). Official American Thoracic Society/Infectious Diseases Society of America/Centers for Disease Control and Prevention clinical practice guidelines: Diagnosis of tuberculosis in adults and children. *Clinical Infectious Diseases, 64*(2), 111–115. https://doi.org/10.1093/cid/ciw778
 - MacDuff, A., Arnold, A., & Harvey, J. (2010). Management of spontaneous pneumothorax: British Thoracic Society pleural disease guideline 2010. *Thorax, 65*(Suppl. 2), ii18–ii31. https://doi.org/10.1136/thx.2010.136986
 - Metlay, J. P., et al. (2019). Diagnosis and treatment of adults with community-acquired pneumonia: An official clinical practice guideline of the American Thoracic Society and Infectious Diseases Society of America. *American Journal of Respiratory and Critical Care Medicine, 200*(7), e45–e67. https://doi.org/10.1164/rccm.201908-1581ST
+- Patel, R. A., & Gallagher, J. C. (2010). Drug fever. *Pharmacotherapy, 30*(1), 57–69. https://doi.org/10.1592/phco.30.1.57
 - Peery, A. F., Shaukat, A., & Strate, L. L. (2021). AGA clinical practice update on medical management of colonic diverticulitis: Expert review. *Gastroenterology, 160*(3), 906–911.e1. https://doi.org/10.1053/j.gastro.2020.09.059
 - Perry, J. J., et al. (2013). Clinical decision rules to rule out subarachnoid hemorrhage for acute headache. *JAMA, 310*(12), 1248–1255. https://doi.org/10.1001/jama.2013.278018
 - Rao, S. V., et al. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. *Journal of the American College of Cardiology, 85*(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009
 - Stevens, D. L., et al. (2014). Practice guidelines for the diagnosis and management of skin and soft tissue infections: 2014 update by the Infectious Diseases Society of America. *Clinical Infectious Diseases, 59*(2), e10–e52. https://doi.org/10.1093/cid/ciu444
+- van de Beek, D., et al. (2016). ESCMID guideline: Diagnosis and treatment of acute bacterial meningitis. *Clinical Microbiology and Infection, 22*(Suppl. 3), S37–S62. https://doi.org/10.1016/j.cmi.2016.01.007
+- van de Beek, D., de Gans, J., Spanjaard, L., Weisfelt, M., Reitsma, J. B., & Vermeulen, M. (2004). Clinical features and prognostic factors in adults with bacterial meningitis. *New England Journal of Medicine, 351*(18), 1849–1859. https://doi.org/10.1056/NEJMoa040845
 
 - Wells, P. S., et al. (2001). Excluding pulmonary embolism at the bedside without diagnostic imaging: Management of patients with suspected pulmonary embolism presenting to the emergency department by using a simple clinical model and D-dimer. *Annals of Internal Medicine, 135*(2), 98–107. https://doi.org/10.7326/0003-4819-135-2-200107170-00010
 - Wang, C. S., et al. (2005). Does this dyspneic patient in the emergency department have congestive heart failure? *JAMA, 294*(15), 1944–1956. https://doi.org/10.1001/jama.294.15.1944
 - Yokoe, M., et al. (2018). Tokyo Guidelines 2018: Diagnostic criteria and severity grading of acute cholecystitis (with videos). *Journal of Hepato-Biliary-Pancreatic Sciences, 25*(1), 41–54. https://doi.org/10.1002/jhbp.515
 
-二十二篇的書目資料都用 PubMed 核對過。教學重點對過摘要的有：Wang、Austin、Wells、Di Saverio、Peery、Do、Perry，以及 Banks 的嚴重度分級和 Stevens 的概括敘述。只核對了書目、內文沒有逐句對的有：胸痛、急性冠心症、心衰竭、肺栓塞、膽囊炎、肺炎、氣胸、敗血症、蜘蛛膜下腔出血的指引，腎盂腎炎的綜論、頭痛的分類，還有 Banks 的診斷條件（三樣裡有兩樣）。每一篇核對到哪裡、用在哪幾關，列在 [`docs/review/README.md`](../docs/review/README.md)。
+二十六篇的書目資料都用 PubMed 核對過。教學重點對過摘要的有：Wang、Austin、Wells、Di Saverio、Peery、Do、Perry、Patel、van de Beek（2004），以及 Banks 的嚴重度分級和 Stevens 的概括敘述。只核對了書目、內文沒有逐句對的有：胸痛、急性冠心症、心衰竭、肺栓塞、膽囊炎、肺炎、氣胸、敗血症、蜘蛛膜下腔出血、結核病、細菌性腦膜炎的指引，腎盂腎炎的綜論、頭痛的分類，還有 Banks 的診斷條件（三樣裡有兩樣）。每一篇核對到哪裡、用在哪幾關，列在 [`docs/review/README.md`](../docs/review/README.md)。

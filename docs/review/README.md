@@ -1,6 +1,6 @@
 # 給臨床老師的審查清單
 
-《霧脈公會》現在有 16 個病例、5 個主訴。**全部都還沒經過臨床老師審查，不能當教材。**這份清單把每一關裡「有對錯」的地方攤開，請老師逐項看。
+《霧脈公會》現在有 20 個病例、5 個主訴。**全部都還沒經過臨床老師審查，不能當教材。**這份清單把每一關裡「有對錯」的地方攤開，請老師逐項看。
 
 這一頁和各主訴的檔案都是程式從病例檔產生的（在 `app/` 底下跑 `npm run review`）。不要手改；病例改了，重跑一次就會更新。
 
@@ -36,8 +36,12 @@
 | C03D | 腹痛 | 大腸憩室 | 鄔桃，63 歲，麵包坊的老闆娘 | 穩定 | 未審查 | [abdomen.md](abdomen.md) |
 | C04A | 發燒 | 泌尿道 | 溫荷，34 歲，碼頭補網的女工 | 穩定 | 未審查 | [fever.md](fever.md) |
 | C04B | 發燒 | 皮膚與軟組織 | 涂柏，71 歲，退休的老漁夫 | 不穩定 | 未審查 | [fever.md](fever.md) |
+| C04C | 發燒 | 呼吸道 | 池榆，47 歲，遠洋貨船上的廚子 | 穩定 | 未審查 | [fever.md](fever.md) |
+| C04D | 發燒 | 非感染 | 尤杉，45 歲，船塢的修船木匠 | 穩定 | 未審查 | [fever.md](fever.md) |
 | C05A | 頭痛 | 原發性頭痛 | 喬芸，29 歲，公會帳房的書記 | 穩定 | 未審查 | [headache.md](headache.md) |
 | C05B | 頭痛 | 顱內出血 | 魏葵，52 歲，魚市的秤手 | 不穩定 | 未審查 | [headache.md](headache.md) |
+| C05C | 頭痛 | 中樞感染 | 賀楓，24 歲，貨船上的甲板水手 | 不穩定 | 未審查 | [headache.md](headache.md) |
+| C05D | 頭痛 | 顱內壓升高 | 季蘭，58 歲，染坊的老闆娘 | 穩定 | 未審查 | [headache.md](headache.md) |
 
 ## 每一關共用的設計
 
@@ -91,14 +95,21 @@
 - **腹痛（C03D）**：遊戲裡的影像檢查只有腹部超音波，結果寫「醫師通常會再安排電腦斷層」。要不要把電腦斷層加成一項檢查？
 - **沒有病人的鑑別**：消化性潰瘍，以及下腹的泌尿、婦科和疝氣。只在回顧的文字裡提到。
 - **發燒的四個真身**：呼吸道、泌尿道、皮膚與軟組織、非感染。教案分成感染和非感染兩類；這裡把感染照源頭拆成三個。肚子裡的感染和腦膜炎沒有放進這四盞（腦膜炎放在頭痛底下），只在回顧裡提到。這樣分合不合適？
+- **發燒（C04C）**：懷疑肺結核時，寫「請病人戴上口罩、移到單獨而且通風的房間，照顧的人戴 N95」，通報寫成由醫師和院方處理。隔離的做法、誰可以先做、要不要先通報，請照院內感染管制的規定看。咳嗽幾週要想到結核，遊戲裡沒有寫死一個數字。
+- **發燒（C04C）**：這一關「非感染」那一盞故意放不下：發燒、盜汗、體重減輕，腫瘤也會這樣。所以安全行動只要求排除泌尿道和皮膚。這樣設計合不合理？
+- **發燒（C04D）**：藥物熱的線索用了「燒到 38.6 度、心跳只有 84」「人看起來不像在發燒」「軀幹的疹子」「嗜酸性球上升」。這幾項不在引用文獻的摘要裡，是一般的教法，請確認說法有沒有太滿。停藥寫成「請醫師評估」，不是專科護理師自己停。
+- **發燒（C04D）**：要馬上回來的警訊寫了嘴巴破、眼睛紅、臉腫、皮膚起水泡或脫皮、喘。是在防嚴重的藥物反應，沒有另外引用文獻。
 - **發燒（C04B）**：敗血症的處理寫「量乳酸、用抗生素之前留血液培養、盡快給抗生素和輸液」。指引沒有摘要，只核對了書目；「一張委託裡該由誰做哪一步」也請照實際的規定看。
 - **發燒（C04B）**：老人家在家量到 37.8 度、到院 38.4 度，用來教「燒不高不代表不嚴重」。數字合不合理？
 - **頭痛的四個真身**：原發性頭痛、顱內出血、中樞感染、顱內壓升高。顳動脈炎、急性青光眼、一氧化碳中毒、止痛藥過度使用沒有放進四盞，只在問診和評估裡各有一題在篩。
 - **頭痛（C05A）**：沒有紅旗的典型偏頭痛，回報時「請同意馬上做頭部電腦斷層」標成錯的選項。這一點沒有引用文獻，是設計上的判斷，請老師決定要不要保留。
 - **頭痛（C05A）**：偏頭痛的診斷條件（單側、搏動性、活動加重、噁心或畏光怕吵、持續幾小時到三天）只核對了書目。
 - **頭痛（C05B）**：變差之後的生命徵象寫成血壓升高、心跳變慢、一邊瞳孔變大。這是為了讓玩家看得出「在惡化」，數字和時間都是設計出來的，請看會不會誤導。血壓「要不要降、降到多少」一律寫成請醫師指示。
+- **頭痛（C05C）**：懷疑細菌性腦膜炎時，寫「血液培養先留、抗生素不要因為等斷層或腰椎穿刺而延後」，以及「先讓病人戴口罩、照顧的人做飛沫防護」。指引沒有摘要，只核對了書目；時限和隔離的做法請對照原文和院內規定。腿上的出血點用來提示腦膜炎雙球菌，沒有寫出菌名。
+- **頭痛（C05C）**：變差之後寫成血壓掉、意識更差、出血點變多。數字是設計出來的。
+- **頭痛（C05D）**：真身是顱內壓升高（乳癌病史，懷疑腦部轉移）。遊戲把她當成「穩定、今天就要請醫師看和安排影像，但不用敲值班鐘」。有視神經盤水腫的病人這樣算不算太慢，請老師決定。慢性硬腦膜下出血也在這一盞底下，但沒有病人。
 - **頭痛的評估**：加了一組神經學檢查（腦神經、肌力與漂移、感覺與反射、協調與步態）和眼底。專科護理師在考站會不會被要求做眼底鏡，請老師確認。
-- **指引類的文獻**：胸痛、急性冠心症、心衰竭、肺栓塞、膽囊炎、肺炎、氣胸、敗血症、蜘蛛膜下腔出血的指引，以及腎盂腎炎的綜論和頭痛的分類，只核對了書目。引用它們的教學重點請對照原文。
+- **指引類的文獻**：胸痛、急性冠心症、心衰竭、肺栓塞、膽囊炎、肺炎、氣胸、敗血症、蜘蛛膜下腔出血的指引，以及腎盂腎炎的綜論、頭痛的分類、結核病的診斷指引和細菌性腦膜炎的指引，只核對了書目。引用它們的教學重點請對照原文。
 - **甄審的規定**：遊戲的配分照 115 年度的口試。第一批玩家考的是下一年度，公告之後要再核對。
 
 ## 文獻
@@ -108,10 +119,10 @@
 | 文獻 | 核對到哪裡 | 哪幾關用到 |
 |------------------------|------------|------|
 | Austin, M. A., Wills, K. E., Blizzard, L., Walters, E. H., & Wood-Baker, R. (2010). Effect of high flow oxygen on mortality in chronic obstructive pulmonary disease patients in prehospital setting: Randomised controlled trial. BMJ, 341, c5462. https://doi.org/10.1136/bmj.c5462 | 教學重點對過摘要（「血氧目標 88–92%」這個數字不在摘要裡） | C02B |
-| Baile, W. F., Buckman, R., Lenzi, R., Glober, G., Beale, E. A., & Kudelka, A. P. (2000). SPIKES—A six-step protocol for delivering bad news: Application to the patient with cancer. The Oncologist, 5(4), 302–311. https://doi.org/10.1634/theoncologist.5-4-302 | 只核對書目 | C01C |
+| Baile, W. F., Buckman, R., Lenzi, R., Glober, G., Beale, E. A., & Kudelka, A. P. (2000). SPIKES—A six-step protocol for delivering bad news: Application to the patient with cancer. The Oncologist, 5(4), 302–311. https://doi.org/10.1634/theoncologist.5-4-302 | 只核對書目 | C01C、C05D |
 | Banks, P. A., et al. (2013). Classification of acute pancreatitis—2012: Revision of the Atlanta classification and definitions by international consensus. Gut, 62(1), 102–111. https://doi.org/10.1136/gutjnl-2012-302779 | 教學重點對過摘要（只有嚴重度分級對過摘要；診斷條件「三樣裡有兩樣」沒有對到原文） | C03C |
 | Di Saverio, S., et al. (2020). Diagnosis and treatment of acute appendicitis: 2020 update of the WSES Jerusalem guidelines. World Journal of Emergency Surgery, 15, 27. https://doi.org/10.1186/s13017-020-00306-3 | 教學重點對過摘要 | C03B |
-| Do, T. P., et al. (2019). Red and orange flags for secondary headaches in clinical practice: SNNOOP10 list. Neurology, 92(3), 134–144. https://doi.org/10.1212/WNL.0000000000006697 | 教學重點對過摘要 | C05A、C05B |
+| Do, T. P., et al. (2019). Red and orange flags for secondary headaches in clinical practice: SNNOOP10 list. Neurology, 92(3), 134–144. https://doi.org/10.1212/WNL.0000000000006697 | 教學重點對過摘要 | C05A、C05B、C05D |
 | Evans, L., et al. (2021). Surviving Sepsis Campaign: International guidelines for management of sepsis and septic shock 2021. Critical Care Medicine, 49(11), e1063–e1143. https://doi.org/10.1097/CCM.0000000000005337 | 只核對書目 | C04A、C04B |
 | Gulati, M., et al. (2021). 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR guideline for the evaluation and diagnosis of chest pain. Circulation, 144(22), e368–e454. https://doi.org/10.1161/CIR.0000000000001029 | 只核對書目 | C01A、C01B、C01C、C01D、C03A、C03C |
 | Hamilton, W., Peters, T. J., Round, A., & Sharp, D. (2005). What are the clinical features of lung cancer before the diagnosis is made? A population based case-control study. Thorax, 60(12), 1059–1065. https://doi.org/10.1136/thx.2005.045880 | 只核對書目 | C01C |
@@ -120,12 +131,16 @@
 | Hoh, B. L., et al. (2023). 2023 guideline for the management of patients with aneurysmal subarachnoid hemorrhage: A guideline from the American Heart Association/American Stroke Association. Stroke, 54(7), e314–e370. https://doi.org/10.1161/STR.0000000000000436 | 只核對書目 | C05B |
 | Johnson, J. R., & Russo, T. A. (2018). Acute pyelonephritis in adults. New England Journal of Medicine, 378(1), 48–59. https://doi.org/10.1056/NEJMcp1702758 | 只核對書目 | C04A |
 | Konstantinides, S. V., et al. (2020). 2019 ESC guidelines for the diagnosis and management of acute pulmonary embolism developed in collaboration with the European Respiratory Society (ERS). European Heart Journal, 41(4), 543–603. https://doi.org/10.1093/eurheartj/ehz405 | 只核對書目 | C01D |
+| Lewinsohn, D. M., et al. (2017). Official American Thoracic Society/Infectious Diseases Society of America/Centers for Disease Control and Prevention clinical practice guidelines: Diagnosis of tuberculosis in adults and children. Clinical Infectious Diseases, 64(2), 111–115. https://doi.org/10.1093/cid/ciw778 | 只核對書目 | C04C |
 | MacDuff, A., Arnold, A., & Harvey, J. (2010). Management of spontaneous pneumothorax: British Thoracic Society pleural disease guideline 2010. Thorax, 65(Suppl. 2), ii18–ii31. https://doi.org/10.1136/thx.2010.136986 | 只核對書目 | C02D |
 | Metlay, J. P., et al. (2019). Diagnosis and treatment of adults with community-acquired pneumonia: An official clinical practice guideline of the American Thoracic Society and Infectious Diseases Society of America. American Journal of Respiratory and Critical Care Medicine, 200(7), e45–e67. https://doi.org/10.1164/rccm.201908-1581ST | 只核對書目 | C02C |
+| Patel, R. A., & Gallagher, J. C. (2010). Drug fever. Pharmacotherapy, 30(1), 57–69. https://doi.org/10.1592/phco.30.1.57 | 教學重點對過摘要（相對性的心跳慢、疹子和嗜酸性球不在摘要裡，遊戲裡沒有把這幾項掛在這篇文獻上） | C04D |
 | Peery, A. F., Shaukat, A., & Strate, L. L. (2021). AGA clinical practice update on medical management of colonic diverticulitis: Expert review. Gastroenterology, 160(3), 906–911.e1. https://doi.org/10.1053/j.gastro.2020.09.059 | 教學重點對過摘要 | C03D |
 | Perry, J. J., et al. (2013). Clinical decision rules to rule out subarachnoid hemorrhage for acute headache. JAMA, 310(12), 1248–1255. https://doi.org/10.1001/jama.2013.278018 | 教學重點對過摘要 | C05B |
 | Rao, S. V., et al. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. Journal of the American College of Cardiology, 85(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009 | 只核對書目 | C01A |
 | Stevens, D. L., et al. (2014). Practice guidelines for the diagnosis and management of skin and soft tissue infections: 2014 update by the Infectious Diseases Society of America. Clinical Infectious Diseases, 59(2), e10–e52. https://doi.org/10.1093/cid/ciu444 | 教學重點對過摘要（摘要只支持「從輕微到壞死性筋膜炎都有、要靠臨床評估及早認出」；壞死性感染的警訊沒有對到原文） | C04B |
+| van de Beek, D., de Gans, J., Spanjaard, L., Weisfelt, M., Reitsma, J. B., & Vermeulen, M. (2004). Clinical features and prognostic factors in adults with bacterial meningitis. New England Journal of Medicine, 351(18), 1849–1859. https://doi.org/10.1056/NEJMoa040845 | 教學重點對過摘要 | C05C |
+| van de Beek, D., et al. (2016). ESCMID guideline: Diagnosis and treatment of acute bacterial meningitis. Clinical Microbiology and Infection, 22(Suppl. 3), S37–S62. https://doi.org/10.1016/j.cmi.2016.01.007 | 只核對書目 | C05C |
 | Wang, C. S., FitzGerald, J. M., Schulzer, M., Mak, E., & Ayas, N. T. (2005). Does this dyspneic patient in the emergency department have congestive heart failure? JAMA, 294(15), 1944–1956. https://doi.org/10.1001/jama.294.15.1944 | 教學重點對過摘要 | C02A、C02B、C02C |
 | Wells, P. S., et al. (2001). Excluding pulmonary embolism at the bedside without diagnostic imaging: Management of patients with suspected pulmonary embolism presenting to the emergency department by using a simple clinical model and D-dimer. Annals of Internal Medicine, 135(2), 98–107. https://doi.org/10.7326/0003-4819-135-2-200107170-00010 | 教學重點對過摘要 | C01D |
 | Yokoe, M., et al. (2018). Tokyo Guidelines 2018: Diagnostic criteria and severity grading of acute cholecystitis (with videos). Journal of Hepato-Biliary-Pancreatic Sciences, 25(1), 41–54. https://doi.org/10.1002/jhbp.515 | 只核對書目 | C03A |
