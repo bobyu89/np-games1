@@ -23,6 +23,22 @@ export const headOf = (entry) => '【每日一案 ' + String(entry.no).padStart(
 /** 帳號最近的貼文裡有沒有這一則：手動發過、或是排程重跑，都不會再發第二次 */
 export const alreadyPosted = (posts, entry) => posts.some((p) => typeof p?.text === 'string' && p.text.startsWith(headOf(entry)));
 
+/**
+ * 權杖的狀況（Threads 的 debug_token 回來的）：哪一天過期、撐不撐得到日程走完。
+ * 沒有發文的權限就直接停下來，免得每天早上才失敗。回傳要寫進紀錄的幾行字。
+ */
+export function checkToken(info, lastDate, now = Date.now()) {
+  if (!info) return ['查不到權杖的效期（Threads 沒有回答這一項），其他檢查照常。'];
+  if (Array.isArray(info.scopes) && !info.scopes.includes('threads_content_publish')) throw new Error('這組權杖沒有發文的權限（threads_content_publish）。到 Meta 的應用程式把這個權限加上，再重新產生一組權杖。');
+  const exp = Number(info.expires_at), born = Number(info.issued_at);
+  if (!(exp > 0)) return ['權杖沒有寫到期日。'];
+  const until = taipeiDate(new Date(exp * 1000)), days = Math.max(0, Math.floor((exp * 1000 - now) / 86_400_000));
+  const out = ['權杖到 ' + until + ' 過期（還有 ' + days + ' 天）。'];
+  if (born > 0 ? exp - born < 86_400 : exp * 1000 - now < 86_400_000) out.push('注意：這是短期權杖，一個小時左右就失效，明天早上的排程用不了。要換成長期權杖（六十天）。');
+  else if (until <= lastDate) out.push('注意：日程排到 ' + lastDate + '，權杖撐不到那一天。' + until + ' 之前要重新產生一組、換掉 secret。');
+  return out;
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function call(method, path, params, token) {
   const body = new URLSearchParams({ ...params, access_token: token });
@@ -47,6 +63,8 @@ export async function main(env = process.env, log = console.log) {
   if (!got.ok || !(got.headers.get('content-type') || '').startsWith('image/')) throw new Error('網站上抓不到這張圖：' + image + '（' + got.status + '）。圖要先合併、部署上去。');
   if (!token) { log('還沒有設定 THREADS_ACCESS_TOKEN，所以不發。設定的方法在 social/README.md。'); return 'no-token'; }
   const me = await call('GET', '/me', { fields: 'id,username' }, token);
+  const info = await call('GET', '/debug_token', { input_token: token }, token).then((r) => r?.data ?? r, () => null);
+  for (const line of checkToken(info, schedule.at(-1).date)) log(line);
   const recent = await call('GET', '/' + me.id + '/threads', { fields: 'id,text,timestamp', limit: '30' }, token);
   if (alreadyPosted(recent.data ?? [], entry)) { log('@' + me.username + ' 上面已經有這一則，不重複發。'); return 'exists'; }
   if (dry) { log('試跑：檢查都過了，會發到 @' + me.username + '。這一次沒有真的發。'); return 'dry'; }

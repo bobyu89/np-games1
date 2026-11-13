@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { alreadyPosted, headOf, main, pick, taipeiDate } from './post.mjs';
+import { alreadyPosted, checkToken, headOf, main, pick, taipeiDate } from './post.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const schedule = JSON.parse(readFileSync(join(here, 'schedule.json'), 'utf8'));
@@ -41,6 +41,19 @@ test('今天是哪一天照臺灣時間算；發過的不會再發', () => {
   assert.ok(!alreadyPosted([{ text: '【每日一案 10｜口試倒數 13 天】' }], schedule[0]));   // 01 不會被 10 誤認
 });
 
+test('權杖的狀況：寫出哪一天過期；短期的、撐不到日程走完的要提醒；不能發文的直接停', () => {
+  const now = Date.parse('2026-11-13T12:00:00Z'), at = (iso) => Math.floor(Date.parse(iso) / 1000), last = schedule.at(-1).date;
+  const scopes = ['threads_basic', 'threads_content_publish'];
+  const long = checkToken({ issued_at: at('2026-11-13T11:00:00Z'), expires_at: at('2027-01-12T11:00:00Z'), scopes }, last, now);
+  assert.deepEqual(long, ['權杖到 2027-01-12 過期（還有 59 天）。']);
+  const short = checkToken({ issued_at: at('2026-11-13T11:30:00Z'), expires_at: at('2026-11-13T12:30:00Z'), scopes }, last, now);
+  assert.equal(short.length, 2); assert.match(short[1], /短期權杖/);
+  const old = checkToken({ issued_at: at('2026-10-20T00:00:00Z'), expires_at: at('2026-12-19T00:00:00Z'), scopes }, last, now);
+  assert.equal(old.length, 2); assert.match(old[1], /撐不到/); assert.match(old[1], /2026-12-19/);
+  assert.throws(() => checkToken({ expires_at: at('2027-01-12T11:00:00Z'), scopes: ['threads_basic'] }, last, now), /threads_content_publish/);
+  assert.match(checkToken(null, last, now)[0], /查不到/);
+});
+
 test('沒有權杖：檢查完就停，不算錯；沒有排的日子什麼都不做', async () => {
   const lines = [], real = globalThis.fetch;
   globalThis.fetch = async () => new Response('x', { status: 200, headers: { 'content-type': 'image/jpeg' } });
@@ -61,17 +74,20 @@ test('整段流程（假的 Threads）：試跑不發；真的發是兩步；已
     const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json' } });
     if (fail) return json({ error: { message: 'Invalid token ' + params.get('access_token') } }, 400);
     if (u.pathname.endsWith('/me')) return json({ id: '42', username: 'mistguild' });
+    if (u.pathname.endsWith('/debug_token')) { assert.equal(params.get('input_token'), 'secret-token'); return json({ data: { type: 'USER', is_valid: true, issued_at: 1794567600, expires_at: 1799751600, scopes: ['threads_basic', 'threads_content_publish'] } }); }
     if (u.pathname.endsWith('/42/threads') && method === 'GET') return json({ data: posts });
     if (u.pathname.endsWith('/42/threads') && method === 'POST') { assert.equal(params.get('media_type'), 'IMAGE'); assert.match(params.get('image_url'), /\/social\/02\.jpg$/); return json({ id: 'box1' }); }
     if (u.pathname.endsWith('/box1')) return json({ status: 'FINISHED' });
     if (u.pathname.endsWith('/42/threads_publish')) { assert.equal(params.get('creation_id'), 'box1'); return json({ id: 'post1' }); }
     return json({ error: { message: 'unexpected ' + u.pathname } }, 404);
   };
-  const env = { POST_DATE: '2026-11-14', THREADS_ACCESS_TOKEN: 'secret-token' }, quiet = () => {};
+  const env = { POST_DATE: '2026-11-14', THREADS_ACCESS_TOKEN: 'secret-token' }, said = [], quiet = (t) => said.push(t);
   const timers = globalThis.setTimeout; globalThis.setTimeout = (f) => timers(f, 0);   // 測試不用真的等十秒
   try {
     assert.equal(await main({ ...env, DRY_RUN: '1' }, quiet), 'dry');
     assert.ok(!calls.some((c) => c.startsWith('POST')), '試跑不應該發任何東西');
+    assert.ok(said.some((t) => /^權杖到 \d{4}-\d\d-\d\d 過期/.test(t)), '試跑要寫出權杖哪一天過期');
+    assert.ok(!said.join('\n').includes('secret-token'), '紀錄裡不能有權杖');
     assert.equal(await main(env, quiet), 'posted');
     assert.deepEqual(calls.filter((c) => c.startsWith('POST')), ['POST /v1.0/42/threads', 'POST /v1.0/42/threads_publish']);
     posts = [{ text: schedule[1].text }];
