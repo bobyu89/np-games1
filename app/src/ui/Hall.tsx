@@ -61,7 +61,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [drawn, setDrawn] = useState<CaseDef | null>(null); // 抽到的那一位。抽了就不能重抽
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
-  const exam = useSyncExternalStore(examSubscribe, examShown) ? countdownText(daysLeft()) : null;   // 真實的考試日還有幾天
+  const exam = useSyncExternalStore(examSubscribe, examShown) ? countdownText(daysLeft()) : null;   // 真實的口試日還有幾天
   const [later, setLater] = useState(false);   // 按了關閉：這一次先不問，下次打開再問
   const pending = run ? caseById(run.caseId) : null;
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null), speaker = useRef<Who | null>(null), bubble = useRef<HTMLDivElement>(null);

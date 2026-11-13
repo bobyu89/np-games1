@@ -1,4 +1,4 @@
-// 真實的考試日，和「還有幾天」。首頁和委託板會顯示；不想看的人可以在設定關掉。
+// 真實的口試日（專科護理師甄審的口試），和「還有幾天」。首頁和委託板會顯示；不想看的人可以在設定關掉。
 // 日期只寫在這一個地方。換年度、日期改了，改這一行就好。
 // 這個日期是出題的人給的（115 年 12 月 5 日），沒有另外和主辦單位的公告核對。
 
@@ -12,7 +12,7 @@ export function daysLeft(now: Date = new Date(), date: string = EXAM.date): numb
   return n < 0 ? null : n;
 }
 /** 畫面上的那一句。過了就不顯示（回傳 null） */
-export const countdownText = (n: number | null): string | null => (n === null ? null : n === 0 ? '考試就是今天' : '距離考試還有 ' + n + ' 天');
+export const countdownText = (n: number | null): string | null => (n === null ? null : n === 0 ? '口試就是今天' : '距離口試還有 ' + n + ' 天');
 
 // 要不要顯示：存在這台裝置上，不跟著進度走（每一台可以不一樣）
 const KEY = 'mist-guild.exam';

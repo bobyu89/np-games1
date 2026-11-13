@@ -21,7 +21,7 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
   const stage = useRef<StageHandle | null>(null);
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const acct = useSyncExternalStore(accountSubscribe, accountState);
-  const exam = useSyncExternalStore(examSubscribe, examShown) ? countdownText(daysLeft()) : null;   // 真實的考試日還有幾天
+  const exam = useSyncExternalStore(examSubscribe, examShown) ? countdownText(daysLeft()) : null;   // 真實的口試日還有幾天
   // 剛登入完被送回來：直接打開帳號那一頁，讓人看到結果
   const [sheet, setSheet] = useState<null | 'account' | 'settings' | 'about' | 'report'>(() => (cameBack() ? 'account' : null));
   const [soundOn, setSoundOn] = useState(sound.on);

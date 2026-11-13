@@ -130,8 +130,8 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
           : <button type="button" className="pick" onClick={() => { sfx.tap(); setConsent('yes'); }}>改成可以回傳</button>}
       </>}
 
-      <h3>考試倒數</h3>
-      <p>{examLeft === null ? '考試日（' + EXAM.label + '）已經過了，倒數不會再顯示。' : '考試日：' + EXAM.label + '。' + countdownText(examLeft) + '。'}</p>
+      <h3>口試倒數</h3>
+      <p>{examLeft === null ? '口試日（' + EXAM.label + '）已經過了，倒數不會再顯示。' : '口試日：' + EXAM.label + '。' + countdownText(examLeft) + '。'}</p>
       {examLeft !== null && <>
         <p className="dim">{examOn ? '現在：首頁和委託板會顯示還有幾天。' : '現在：不顯示。'}不是要考這一場的人，或是看了會緊張的人，可以關掉。</p>
         <button type="button" className="pick" onClick={() => { sfx.tap(); setExamShown(!examOn); }}>{examOn ? '不要顯示倒數' : '顯示倒數'}</button>
