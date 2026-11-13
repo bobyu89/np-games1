@@ -1,4 +1,4 @@
-// 設定與進度：靜態版沒有帳號，所以「進度怎麼帶走」「怎麼裝到手機」「現在是哪一版」都放在這一頁。
+// 設定與進度：進度怎麼帶走（登入同步，或匯出匯入）、怎麼裝到手機、現在是哪一版，都放在這一頁。
 import { useRef, useState, useSyncExternalStore } from 'react';
 import { CASES, COMPLAINTS } from '../data/index.ts';
 import { Sheet } from './Sheets.tsx';
@@ -8,16 +8,19 @@ import { packSave, readBackup } from './backup.ts';
 import { QUESTS, codexPercent, rankOf } from './progress.ts';
 import { applyUpdate, checkUpdate, install, isIos, isStandalone, pwaState, pwaSubscribe } from './pwa.ts';
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
+import { AccountPanel } from './Account.tsx';
+import { accountState, accountSubscribe } from './account.ts';
 
 const doneOf = (s: Save) => QUESTS.filter((q) => s.cases[q.caseId]).length;
 const brief = (s: Save) => '完成 ' + doneOf(s) + '／' + QUESTS.length + ' 張委託，圖鑑寫回 ' + codexPercent(COMPLAINTS, s) + '%，' + rankOf(s);
 const day = (d: Date) => d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
 
-interface Props { save: Save; onImport(s: Save): void; onReset(): void; onReplayIntro(): void; onClose(): void }
+interface Props { save: Save; onImport(s: Save): void; onReset(): void; onReplayIntro?(): void; onClose(): void }
 
 export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Props) {
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
+  const acct = useSyncExternalStore(accountSubscribe, accountState);
   const [note, setNote] = useState<{ text: string; bad?: boolean } | null>(null);
   const [code, setCode] = useState<string | null>(null);        // 存不了檔案的時候，把內容攤開讓人複製
   const [paste, setPaste] = useState<string | null>(null);      // 貼上進度的那一格。null 是還沒打開
@@ -78,7 +81,7 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
     <Sheet title="設定與進度" onClose={onClose}>
       <h3>進度</h3>
       <p>{brief(save)}。</p>
-      <p className="dim">進度只存在這台裝置的這個瀏覽器裡。沒有帳號，也沒有傳到任何地方。清除瀏覽器資料、換瀏覽器或換裝置，進度不會跟著走；先匯出一份，就可以帶過去。</p>
+      <p className="dim">{acct.account ? '進度存在這台裝置上，雲端也有一份（見下面的「登入與同步」）。' : '進度存在這台裝置的這個瀏覽器裡。清除瀏覽器資料、換瀏覽器或換裝置，進度不會跟著走；可以登入同步，或是先匯出一份帶過去。'}</p>
       <div className="stack">
         <button type="button" className="pick" onClick={exportSave}>匯出進度（存成檔案）</button>
         <button type="button" className="pick" onClick={() => { sfx.tap(); const t = packSave(save, __BUILD__); setCode(code === null ? t : null); setPaste(null); }}>匯出進度（複製文字）</button>
@@ -95,6 +98,9 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
         <button type="button" className="pick" disabled={!paste.trim()} onClick={() => read(paste)}>讀取</button>
       </>}
       {note && <p className={'note' + (note.bad ? ' bad' : '')} role="status">{note.text}</p>}
+
+      <h3>登入與同步</h3>
+      <AccountPanel />
 
       <h3>裝到手機上</h3>
       {standalone ? <p>你現在就是從主畫面的圖示開的。</p>
@@ -120,9 +126,9 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
 
       <h3>其他</h3>
       <div className="stack">
-        <button type="button" className="pick" onClick={() => { sfx.page(); onReplayIntro(); }}>重看開場</button>
+        {onReplayIntro && <button type="button" className="pick" onClick={() => { sfx.page(); onReplayIntro(); }}>重看開場</button>}
         {!sure ? <button type="button" className="pick" onClick={() => { sfx.tap(); setSure(true); }}>從頭來過（清除這台裝置上的進度）</button>
-          : <><p className="note bad">確定要清除嗎？完成的委託、圖鑑、還沒結案的那一張都會不見，沒辦法復原。</p>
+          : <><p className="note bad">確定要清除嗎？完成的委託、圖鑑、還沒結案的那一張都會不見，沒辦法復原。{acct.account ? '你現在有登入：雲端那一份還在，下一次同步會把它帶回來。要真的從頭來過，先到上面「刪除雲端的資料和帳號」，再回來清除。' : ''}</p>
             <button type="button" className="pick" onClick={() => { sfx.miss(); onReset(); onClose(); }}>確定清除</button>
             <button type="button" className="pick on" onClick={() => setSure(false)}>不要，留著</button></>}
       </div>
@@ -135,7 +141,7 @@ export function StatsFacts() {
   return (
     <ul className="dim">
       <li>會回傳：哪一張委託開始了、做到哪一段、有沒有結案、分數、花了多久、問了岑禾幾次、用手機還是電腦、是哪一版。</li>
-      <li>不會回傳：姓名、帳號、你選的句子、任何文字。遊戲本來就沒有帳號。</li>
+      <li>不會回傳：姓名、帳號、你選的句子、任何文字。就算你有登入，統計和帳號也是分開存的，連不起來。</li>
       <li>用一組隨機的代號分辨不同的裝置，沒辦法從它知道你是誰。選「不要」，代號和還沒送出去的都會清掉。</li>
       <li>用途是讓作者知道哪一關有人玩、哪裡容易卡住。選哪一個都不影響遊戲。</li>
     </ul>

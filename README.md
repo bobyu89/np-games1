@@ -11,7 +11,7 @@
 | 1. 設計目標 | [`docs/01-design-goals.md`](docs/01-design-goals.md) | ✅ v1.5 |
 | 1. 遊戲企劃 | [`docs/05-game-design.md`](docs/05-game-design.md) | ✅ v2 已確認。對齊甄審、不猜題的題庫做法、世界觀、主線、玩法、評分 |
 | 2. 架構：遊戲規則 | [`docs/02-architecture.md`](docs/02-architecture.md) | ✅ 設計已確認，可以玩的空殼做好了：[`game/`](game/README.md) |
-| 2. 架構：整體系統 | [`docs/04-system-design.md`](docs/04-system-design.md) | 🟡 靜態版做好了：離線可玩、可以裝到手機、中途離開可以接著做、進度匯出匯入、自動檢查和部署（第 9 節）。匿名的使用統計也做好了，要另外設定才會開。遊戲和後端一起放在 Cloudflare（[`worker/`](worker/README.md)）：要你放 Cloudflare 的金鑰並合併才會有正式網址，之後每次合併都會自動更新 |
+| 2. 架構：整體系統 | [`docs/04-system-design.md`](docs/04-system-design.md) | 🟡 靜態版做好了：離線可玩、可以裝到手機、中途離開可以接著做、進度匯出匯入、自動檢查和部署（第 9 節）。匿名的使用統計也做好了，要另外設定才會開。遊戲和後端一起放在 Cloudflare（[`worker/`](worker/README.md)），已經上線，之後每次合併都會自動更新。可以用 Google 或 LINE 登入同步進度（選用，要另外設定才會開） |
 | 3. 內容：美術方向 | [繪本版](prototypes/style-frame-storybook/README.md) | ✅ 定案：手繪繪本風（2026-11-12）。[3D 像素版](prototypes/style-frame/README.md)留著當紀錄 |
 | 3. 內容：互動原型 | [`app/`](app/README.md) | 🟡 五章、十二隻症影、48 張委託（教案的十二個主訴都有了，每個主訴四個診斷各一位）；六位主角可以選；圖鑑三頁；第二章走完升階、少一層提示，等你試玩 |
 | 3. 內容：長期的推進 | [`docs/06-progression.md`](docs/06-progression.md) | 🟡 故事線、圖鑑、階級的設計。五章都做了；接下來怎麼補完整在第 10 節 |

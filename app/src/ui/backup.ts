@@ -1,4 +1,4 @@
-// 進度帶著走：靜態版沒有帳號，換裝置靠「匯出一份、到另一台匯入」。
+// 進度帶著走：匯出一份、到另一台匯入。登入同步（account.ts）在雲端存的也是同一種格式。
 // 匯出的是一段文字（可以存成檔案，也可以直接複製貼上）。裡面只有代號和分數：
 // 線索的文字不放進去，匯入的時候從病例檔補回來，所以內容短、病例改了字也不會帶到舊的。
 import type { CaseDef, Safety, Session } from '../core/types.ts';
@@ -39,6 +39,25 @@ export function readBackup(text: string, cases: CaseDef[]): Read {
   }
   const save: Save = { v: 3, beats: strings(raw.beats, 200, 60), cases: out, takeaways: strings(raw.takeaways, 5, 300), hero: typeof raw.hero === 'string' && raw.hero.length <= 40 ? raw.hero : null };
   return { ok: true, save, at: typeof raw.at === 'string' && !Number.isNaN(Date.parse(raw.at)) ? raw.at : null, dropped };
+}
+
+/** 兩份進度併成一份（這一台的、雲端的）。進度只會往前：每個病例留比較好的那一次，解讀對的線索、看過的故事兩邊加起來。
+ *  所以不管哪一台先同步、同步幾次，結果都一樣，也不會把另一台的進度蓋掉。 */
+export function mergeSaves(mine: Save, theirs: Save): Save {
+  const cases: Record<string, CaseRecord> = { ...theirs.cases };
+  for (const [id, x] of Object.entries(mine.cases)) {
+    const y = theirs.cases[id];
+    if (!y) { cases[id] = x; continue; }
+    const top = x.best >= y.best ? x : y, reads = [...x.reads];   // 分數一樣的時候用這一台的
+    y.reads.forEach((r) => { if (!reads.some((k) => k.clue === r.clue)) reads.push(r); });
+    cases[id] = { best: top.best, safety: top.safety, seconds: top.seconds, plays: Math.max(x.plays, y.plays), found: x.found || y.found, concern: x.concern || y.concern, reads };
+  }
+  return { v: 3, hero: mine.hero ?? theirs.hero, beats: [...new Set([...mine.beats, ...theirs.beats])], takeaways: [...new Set([...mine.takeaways, ...theirs.takeaways])].slice(0, 5), cases };
+}
+/** 兩份進度的內容是不是一樣（不管裡面的順序） */
+export function sameSave(a: Save, b: Save): boolean {
+  const flat = (s: Save) => JSON.stringify([s.hero, [...s.beats].sort(), s.takeaways, Object.keys(s.cases).sort().map((id) => { const r = s.cases[id]; return [id, r.best, r.safety, r.plays, r.seconds, r.found, r.concern, r.reads.map((k) => k.clue).sort()]; })]);
+  return flat(a) === flat(b);
 }
 
 /** 存下來的那一場還能不能接著做：病例還在，而且裡面提到的題目、評估、檢查、線索這一版都還有 */

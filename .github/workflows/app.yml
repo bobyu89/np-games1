@@ -75,6 +75,11 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       STATS_ADMIN_KEY: ${{ secrets.STATS_ADMIN_KEY }}
+      # 登入（選用）：哪一家的代號和密鑰都有放，那一家才會出現
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      LINE_CHANNEL_ID: ${{ secrets.LINE_CHANNEL_ID }}
+      LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
       WRANGLER_SEND_METRICS: 'false'
     steps:
       - name: 金鑰設定了沒
@@ -106,7 +111,10 @@ jobs:
         run: |
           npm ci
           npx wrangler deploy | tee deploy.log
-          if [ -n "$STATS_ADMIN_KEY" ]; then printf '%s' "$STATS_ADMIN_KEY" | npx wrangler secret put ADMIN_KEY; fi
+          # 把有放的 secret 一次交給 Worker（沒放的不動）。內容不會印出來
+          node -e 'const o = {}; for (const [k, e] of [["ADMIN_KEY", "STATS_ADMIN_KEY"], ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_ID"], ["GOOGLE_CLIENT_SECRET", "GOOGLE_CLIENT_SECRET"], ["LINE_CHANNEL_ID", "LINE_CHANNEL_ID"], ["LINE_CHANNEL_SECRET", "LINE_CHANNEL_SECRET"]]) if (process.env[e]) o[k] = process.env[e]; process.stdout.write(JSON.stringify(o));' > "$RUNNER_TEMP/worker-secrets.json"
+          if [ "$(cat "$RUNNER_TEMP/worker-secrets.json")" != "{}" ]; then npx wrangler secret bulk "$RUNNER_TEMP/worker-secrets.json"; fi
+          rm -f "$RUNNER_TEMP/worker-secrets.json"
           url=$(grep -o 'https://[A-Za-z0-9.-]*workers\.dev' deploy.log | head -n 1)
           {
             echo "### 部署好了"
@@ -114,4 +122,7 @@ jobs:
             echo "網址：${url:-（在上面的紀錄裡找 workers.dev）}"
             echo
             if [ -n "$STATS_ADMIN_KEY" ]; then echo "匿名的使用統計：開著。總表在網址後面加 \`#stats\`。"; else echo "匿名的使用統計：關著（沒有設定 \`STATS_ADMIN_KEY\`）。"; fi
+            echo
+            if [ -n "$GOOGLE_CLIENT_ID" ] && [ -n "$GOOGLE_CLIENT_SECRET" ]; then echo "Google 登入：這一次有設定。回呼網址要在 Google 那邊登記：\`${url}/api/auth/google/callback\`"; else echo "Google 登入：這一次沒有設定（要 \`GOOGLE_CLIENT_ID\` 和 \`GOOGLE_CLIENT_SECRET\`）。"; fi
+            if [ -n "$LINE_CHANNEL_ID" ] && [ -n "$LINE_CHANNEL_SECRET" ]; then echo "LINE 登入：這一次有設定。回呼網址要在 LINE 那邊登記：\`${url}/api/auth/line/callback\`"; else echo "LINE 登入：這一次沒有設定（要 \`LINE_CHANNEL_ID\` 和 \`LINE_CHANNEL_SECRET\`）。"; fi
           } >> "$GITHUB_STEP_SUMMARY"

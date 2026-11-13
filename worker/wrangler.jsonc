@@ -1,5 +1,5 @@
-// 霧脈公會放在 Cloudflare 的設定：一個 Worker，同時給遊戲的靜態檔和後端（現在是匿名的使用統計）。
-// 資料放在一個 Durable Object 裡（裡面是 SQLite），所以部署只要一個指令，不用另外建資料庫。怎麼部署看 README.md。
+// 霧脈公會放在 Cloudflare 的設定：一個 Worker，同時給遊戲的靜態檔和後端（匿名的使用統計、登入和進度同步）。
+// 資料放在 Durable Object 裡（裡面是 SQLite），所以部署只要一個指令，不用另外建資料庫。怎麼部署看 README.md。
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "mist-guild",
@@ -18,6 +18,7 @@
     // 除了遊戲自己的網址以外，還有哪些網址的網頁可以用後端。多個用逗號分開。本機（localhost、127.0.0.1）一律可以
     "ALLOW_ORIGINS": ""
   },
-  "durable_objects": { "bindings": [{ "name": "STATS", "class_name": "Stats" }] },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Stats"] }]
+  // 兩個放資料的地方，各自是一個 SQLite 資料庫：匿名的使用統計、帳號和雲端的進度。兩邊分開，沒有共同的欄位
+  "durable_objects": { "bindings": [{ "name": "STATS", "class_name": "Stats" }, { "name": "ACCOUNTS", "class_name": "Accounts" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Stats"] }, { "tag": "v2", "new_sqlite_classes": ["Accounts"] }]
 }
