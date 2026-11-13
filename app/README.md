@@ -29,13 +29,13 @@ npm run dev
 
 需要 Node 22.18 以上（測試直接跑 TypeScript，不用另外編譯）。
 
-## 放到網路上（靜態版）
+## 放到網路上
 
-整個遊戲是 `dist/` 裡的一包靜態檔，沒有伺服器。為什麼先做靜態版、少了什麼，看 [`docs/04-system-design.md`](../docs/04-system-design.md) 第 9 節。
+整個遊戲是 `dist/` 裡的一包靜態檔，規則都在瀏覽器裡跑。為什麼先做靜態版、少了什麼，看 [`docs/04-system-design.md`](../docs/04-system-design.md) 第 9 節。
 
-**GitHub Pages（已經設好）**：到 repo 的 Settings → Pages，把 Source 選成「GitHub Actions」；之後每次合併到 main，[`.github/workflows/app.yml`](../.github/workflows/app.yml) 會檢查、建置、放上去。同一個流程在每個 PR 上也會跑檢查（不部署）。
+**Cloudflare（已經設好）**：遊戲和後端放在同一個 Worker、同一個網址底下。每次合併到 main，[`.github/workflows/app.yml`](../.github/workflows/app.yml) 會檢查、建置、部署；同一個流程在每個 PR 上也會跑檢查（不部署）。第一次要先在 GitHub 放 Cloudflare 的兩個 secret，步驟和「之後怎麼更新」都寫在 [`worker/README.md`](../worker/README.md)。
 
-**別的靜態主機**（Cloudflare Pages、Netlify、自己的主機）：根目錄 `app`，建置指令 `npm run build`，輸出 `dist`。路徑都是相對的，放在網域底下的哪一層都可以。要用 HTTPS，離線和安裝才會啟用。
+**別的靜態主機**（GitHub Pages、Netlify、自己的主機）：根目錄 `app`，建置指令 `npm run build`，輸出 `dist`。路徑都是相對的，放在網域底下的哪一層都可以。要用 HTTPS，離線和安裝才會啟用。這樣放的話沒有後端，匿名的使用統計要另外給端點的完整網址（`VITE_STATS_URL`）。
 
 靜態版給玩家的東西：
 
@@ -47,7 +47,7 @@ npm run dev
 | 接著做 | 每做一個行動就存一次；頁面被收掉、關掉、按了「回公會」，回來都接得上 |
 | 進度帶著走 | 「設定」裡匯出（檔案或一段文字），到另一台匯入。進度只存在裝置上，沒有帳號 |
 | 字體 | 建置時從完整的字體檔只留遊戲用到的字，跟著遊戲一起放，不連到別的網站 |
-| 匿名的使用統計 | 預設沒有。照 [`stats/README.md`](../stats/README.md) 設定之後，玩家被問過、選「可以回傳」才會送；總表在網址後面加 `#stats` |
+| 匿名的使用統計 | 預設沒有。照 [`worker/README.md`](../worker/README.md) 設定之後，玩家被問過、選「可以回傳」才會送；總表在網址後面加 `#stats` |
 
 字體是 [LXGW WenKai TC](https://github.com/lxgw/LxgwWenkaiTC)（SIL Open Font License 1.1），授權全文跟著字體檔放在 `dist/fonts/OFL.txt`。
 
@@ -133,7 +133,7 @@ tools/
 - 腹痛的四個診斷照位置分，有可能被只看「痛在哪裡」猜中。現在的做法是：沒有把另外三個排除就下診斷，安全行動會是「需要複核」。夠不夠要再看。
 - 場景只有公會大廳、病室（含下雨天）和碼頭的貨棧。圖鑑裡另外兩格（燈塔的值夜房、船塢的工寮）還只是名字。
 - 主角只有外表不同；故事裡的對話還不會因為選了誰而改變。
-- 沒有伺服器（靜態版）。**病例的答案在瀏覽器裡看得到**；進度只存在裝置上、不會自動同步。想知道大家怎麼玩，要另外把匿名的使用統計開起來（[`stats/`](../stats/README.md)）；什麼時候才需要更多的伺服器，看 `docs/04-system-design.md` 第 9.5 節。
+- 規則都在瀏覽器裡跑（靜態版）。**病例的答案在瀏覽器裡看得到**；進度只存在裝置上、不會自動同步。想知道大家怎麼玩，要另外把匿名的使用統計開起來（[`worker/`](../worker/README.md)）；什麼時候才需要更多的後端，看 `docs/04-system-design.md` 第 9.5 節。
 - 離線、安裝、換版只在無頭瀏覽器裡測過，還沒有在真的 iPhone 和 Android 手機上裝過。
 - 診斷、回報和說明都是從清單選，還不能自己寫。
 - 心電圖只有文字結果，沒有波形。

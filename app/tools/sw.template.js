@@ -5,6 +5,7 @@ const BUILD = '__BUILD__';
 const CACHE = 'mist-guild-' + BUILD;
 const CORE = __CORE__;     // 少一個就不算裝好
 const EXTRA = __EXTRA__;   // 字體：抓不到就先用裝置上的字，之後用到再補
+const API = new URL('api/', self.registration.scope).pathname;   // 後端的網址：不存、不攔，每次都直接連出去
 const fresh = (u) => new Request(u, { cache: 'reload' });
 
 self.addEventListener('install', (e) => {
@@ -24,7 +25,7 @@ self.addEventListener('message', (e) => { if (e.data === 'skip-waiting') self.sk
 
 self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
-  if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+  if (req.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith(API)) return;
   e.respondWith(caches.open(CACHE).then(async (c) => {
     const hit = (await c.match(req, { ignoreSearch: true })) || (req.mode === 'navigate' ? await c.match('./') : undefined);
     if (hit) return hit;

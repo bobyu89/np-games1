@@ -58,8 +58,9 @@ export function offline(): Plugin {
       const files = walk(out).map((f) => relative(out, f).replace(/\\/g, '/')).filter((f) => f !== 'sw.js' && !f.endsWith('.txt')).sort();
       const build = sha(...files.flatMap((f) => [f, readFileSync(join(out, f))])).slice(0, 12);
       const isFont = (f: string) => f.startsWith('fonts/');
-      // './' 是首頁本身：從主畫面的圖示打開、或是網址後面沒有檔名的時候用的
-      const core = ['./', ...files.filter((f) => !isFont(f))], extra = files.filter(isFont);
+      // './' 是首頁本身：從主畫面的圖示打開、或是網址後面沒有檔名的時候用的。index.html 不另外存一份：
+      // 有些主機（Cloudflare）會把它轉到 './'，存下來的是轉址過的回應，瀏覽器不肯拿來當頁面；要開它的時候用 './' 那一份
+      const core = ['./', ...files.filter((f) => !isFont(f) && f !== 'index.html')], extra = files.filter(isFont);
       const sw = readFileSync(join(root, 'tools/sw.template.js'), 'utf8').replace('__BUILD__', build).replace('__CORE__', JSON.stringify(core)).replace('__EXTRA__', JSON.stringify(extra));
       writeFileSync(join(out, 'sw.js'), sw);
       console.log('離線快取：' + (core.length + extra.length) + ' 個檔，版本 ' + build);

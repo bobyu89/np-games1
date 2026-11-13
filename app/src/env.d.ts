@@ -3,6 +3,6 @@
 declare const __BUILD__: string;
 
 interface ImportMetaEnv {
-  /** 匿名使用統計的端點（stats/ 那個 Worker 的網址）。沒有給，遊戲就不會回傳任何東西 */
+  /** 匿名使用統計的端點：同一個網址底下的路徑（/api），或是另一個網站的完整網址。沒有給，遊戲就不會回傳任何東西 */
   readonly VITE_STATS_URL?: string;
 }

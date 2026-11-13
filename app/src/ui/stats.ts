@@ -1,7 +1,8 @@
 // 匿名的使用統計。只有建置的時候給了端點（VITE_STATS_URL）才會有；沒有給，這個檔什麼都不做。
+// 端點可以是同一個網址底下的路徑（放在 Cloudflare 的時候是 /api），也可以是另一個網站的完整網址。
 //
 // 回傳的只有：一組隨機的裝置代號、哪一版、手機還是電腦、哪一張委託、做到第幾段、分數、花了多久。
-// 沒有姓名、帳號，也沒有任何選的句子或寫的字。收的那一邊在 stats/，欄位以那邊的檢查為準。
+// 沒有姓名、帳號，也沒有任何選的句子或寫的字。收的那一邊在 worker/，欄位以那邊的檢查為準。
 // 玩家選「可以」之前，一筆都不會送出去；選「不要」，留在裝置上的也一起清掉。
 import type { Safety } from '../core/types.ts';
 import { isIos, isStandalone } from './pwa.ts';
@@ -43,7 +44,7 @@ export async function flush(): Promise<void> {
   sending = true;
   try {
     const res = await fetch(STATS_URL + '/e', { method: 'POST', body: JSON.stringify({ v: 1, d: box.device, b: __BUILD__, pf: platform(), pwa: isStandalone() ? 1 : 0, e: batch }),
-      headers: { 'Content-Type': 'text/plain' }, keepalive: true, credentials: 'omit', referrerPolicy: 'no-referrer' });
+      headers: { 'Content-Type': 'text/plain' }, keepalive: true, credentials: 'omit', referrerPolicy: 'same-origin' });   // 不把從哪一頁來的告訴別的網站
     // 收下了，或是對方說這一包不對（再送也沒有用）：都從裝置上拿掉。其他狀況留著
     if (res.ok || res.status === 400 || res.status === 413) {
       const now = read(), sent = new Set(batch.map((e) => e.t + e.at + (e.c ?? '')));

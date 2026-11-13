@@ -1,5 +1,5 @@
 // 給管理者看的總表：網址後面加 #stats。要管理密碼；密碼只留在這個分頁，關掉就沒有了。
-// 數字來自 stats/ 那個端點。每一關的名字從病例檔補上，端點那邊只認得代號。
+// 數字來自 worker/ 那個端點。每一關的名字從病例檔補上，端點那邊只認得代號。
 import { useEffect, useState } from 'react';
 import { CASES } from '../data/index.ts';
 import { STATS_URL, statsBuilt } from './stats.ts';
