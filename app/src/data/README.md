@@ -34,7 +34,7 @@ python3 tools/convert_script.py 教案.docx --id c02a
 | 欄位 | 寫什麼 |
 |---|---|
 | `patient`、`reading` | 病人是誰、閱題卡上的三行字 |
-| `scene` | 在哪裡：不寫是公會的病室，`ward-rain` 下雨天的病室，`dock` 碼頭的貨棧（出診） |
+| `scene` | 在哪裡：不寫是這個主訴平常的診間（主訴模組的 `place`，見 `places.ts`），`rain` 同一個診間、下雨天，`dock` 碼頭的貨棧（出診） |
 | `vitals` | 生命徵象。會變差的病人另外寫 `worse` |
 | `answers` | 每一題這位病人怎麼回答（25 題）。**每一題都要寫**，少一題會直接報錯 |
 | `findings` | 每一項評估看到、聽到、摸到什麼（10 項） |
@@ -167,3 +167,21 @@ node tools/check_draft.ts ./src/data/back-pain.ts ./src/data/c06a.ts ./src/data/
 - 每個病例都要寫 `review`。還沒經過臨床老師看過的，寫「未審查」，畫面上會顯示。
 - 每一條教學重點都要對到一篇文獻，文獻要有 DOI，而且要查過是真的。
 - 病例是虛構的。不要用真實病人的資料，也不要沿用教案裡的人物和原文。
+
+## 地方
+
+公會在霧港有五個診間，一章換一個（`places.ts`）。一個主訴的委託都在同一間看，所以**地方寫在主訴模組**：
+
+```ts
+export const DYSPNEA: ComplaintDef = { id: 'dyspnea', name: '喘', place: 'market', ... };   // 沒寫 place 就是公會的病室
+```
+
+病例只在兩種時候寫 `scene`：`'rain'`（同一間、下雨天）和 `'dock'`（出診到碼頭的貨棧）。地方只決定畫面和進門的那一句旁白，規則不看。
+要加新的地方：在 `core/types.ts` 的 `Home` 或 `Place` 加一個代號、`places.ts` 加名字、`src/art/rooms.js` 畫它的牆、窗外、掛的東西和前景（床和人站的位置不用管，每個地方都一樣）。
+
+## 終章
+
+終章有兩樣東西，都不在委託板的章節（`QUESTS`）裡，由 `src/ui/progress.ts` 的故事段落帶進來：
+
+- `night.ts`：值班夜的三輪分流。不是病例，沒有分數。每一輪是「門口同時有兩三位」：先看誰（`first`、`notes`），再選一句話（`then.picks`，剛好一句對的）。改了要跑 `npm test` 和 `npm run review`。
+- `c01e.ts`：燈塔的那一位病人。寫法和其他病例一樣，在 `index.ts` 另外登記（`FINALE_ID`）：會存檔、會同步、審查清單裡有她，但不會被資格試煉抽到，沒遇到之前也不占圖鑑的分母。

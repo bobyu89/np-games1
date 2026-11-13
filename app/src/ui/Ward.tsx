@@ -8,6 +8,7 @@ import { Talk, type Line, type TalkHandle, type Who } from './Talk.tsx';
 import { BoardSheet, CluesSheet, ConfirmSheet, ExplainSheet, ReportSheet } from './Sheets.tsx';
 import { buzz, sfx, sound } from './sound.ts';
 import { TRIAL_SECONDS, TRIAL_WARN, toYou } from './progress.ts';
+import { PLACES, placeOf } from '../data/places.ts';
 
 // 一排七個分頁，就是一場的順序：問診（開場、主訴、病史、系統回顧）→ 評估 → 診斷 → 檢查。
 // 前面的隨時可以回去補；後面的要等前一個階段做完才打開。
@@ -80,6 +81,8 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
     if (resumed.current) lines.push({ who: 'sys', text: '你回到' + who + '的床邊。之前問到的、做過的都還在；剛才的對話沒有留下來，拿到的線索在底下的「線索」裡。' });
     else if (trial) lines.push({ who: 'sys', text: '資格試煉開始。站內 15 分鐘，照真的時間倒數；剩 3 分鐘會提醒，時間到自動交卷。沒有提示。' }, { who: 'mentor', text: '請開始。' });
     else {
+      // 不在公會的病室：先說一句這是哪裡
+      if (PLACES[placeOf(c.scene)].enter) lines.push({ who: 'sys', text: PLACES[placeOf(c.scene)].enter! });
       if (takeaway) lines.push({ who: 'sys', text: '你上次說這次要做到：' + takeaway });
       c.lines.opening.forEach((text) => lines.push({ who: 'mentor', text }));
       lines.push(...teach('start'));
@@ -202,7 +205,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
   return (
     <div className="screen ward">
       <div className="left">
-        <Stage kind="ward" patient={c.patient.look} scene={c.scene} shadow={c.shadow.look} hero={hero} stage={stage} onFrame={onFrame} label={(c.scene === 'dock' ? '碼頭的貨棧：' : '霧脈公會的病室：') + who + '坐在床上，你站在床尾，岑禾拿著紀錄板站在旁邊，房間中間飄著被霧裹住的症影，底下掛著四盞燈'}>
+        <Stage kind="ward" patient={c.patient.look} scene={c.scene} shadow={c.shadow.look} hero={hero} stage={stage} onFrame={onFrame} label={PLACES[placeOf(c.scene)].at + '：' + who + '坐在床上，你站在床尾，岑禾拿著紀錄板站在旁邊，房間中間飄著被霧裹住的症影，底下掛著四盞燈'}>
           <button type="button" className="tag tag-back" onClick={() => (closed ? finish() : setSheet('quit'))}>‹ 公會</button>
           {trial ? <span className={'tag tag-clock' + (left <= TRIAL_WARN ? ' low' : '')} role="timer" aria-label={'還剩 ' + mmss(left)}>剩 {mmss(left)}</span>
             : <span className="tag tag-clock" aria-label={'已經過了 ' + mmss(session.time)}>{mmss(session.time)}</span>}

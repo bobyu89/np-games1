@@ -15,7 +15,7 @@ export const C09B: CaseSpec = {
   title: '他說是痔瘡',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '聞檀', age: 56, sex: '男', job: '香料鋪的掌櫃', look: 'c09b', pronoun: '他' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['聞檀，56 歲，香料鋪的掌櫃。', '太太說他這幾個月臉色越來越差，硬要他來。他自己說沒什麼，只是「痔瘡的老毛病」，藥膏擦了半年。', '他坐得很端正，手放在膝蓋上，眼睛看著地板。褲帶上有兩個新打的洞。'],
     prompts: ['最危險的可能是什麼？', '「痔瘡」是誰說的？有哪幾個問題，可以分出血是從哪裡來的？', '如果我摸到了什麼，我現在可以跟他說到哪裡？'],

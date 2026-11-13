@@ -8,6 +8,7 @@ export const WEIGHT_LOSS: ComplaintDef = {
   id: 'weight-loss',
   name: '體重減輕',
   shadow: { name: '消瘦鼠', look: 'mouse', lore: '體重減輕的症影。每天夜裡，把月亮啃掉一小口。一天看不出來；等到看得出來，已經少了一大塊。' },
+  place: 'quiet',
   forms: [
     { id: 'tumor', name: '惡性腫瘤', mark: '瘤', danger: true, blurb: '身體裡長了東西，吃不下，也被它吃掉。' },
     { id: 'endocrine', name: '內分泌與代謝', mark: '代', danger: true, blurb: '身體燒得太快：甲狀腺亢進、糖尿病。吃得多，還是瘦。' },

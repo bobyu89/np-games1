@@ -9,6 +9,7 @@ export const RASH: ComplaintDef = {
   id: 'rash',
   name: '皮膚疹子',
   shadow: { name: '皮疹魷', look: 'squid', lore: '皮膚疹子的症影。游過哪裡，就在哪裡留下墨點。點是什麼顏色、壓了褪不褪、排成什麼樣子，都是它寫的字。要讀的人自己湊近去看。' },
+  place: 'quiet',
   forms: [
     { id: 'infect', name: '感染', mark: '感', danger: true, blurb: '病毒或細菌留下的疹子：帶狀疱疹、蜂窩性組織炎、病毒疹。' },
     { id: 'allergy', name: '過敏與藥物', mark: '敏', danger: true, blurb: '身體對吃的、用的、碰的東西起反應：蕁麻疹、藥物疹，最重的是過敏性休克。' },

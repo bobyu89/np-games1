@@ -6,16 +6,17 @@ import { Hall } from './Hall.tsx';
 import { Title } from './Title.tsx';
 import { Ward } from './Ward.tsx';
 import { Debrief } from './Debrief.tsx';
+import { Night } from './Night.tsx';
 import { load, loadRun, store, storeRun, wipe, type Run, type Save } from './store.ts';
 import { validRun } from './backup.ts';
 import { keepStorage } from './pwa.ts';
-import { TRIAL_SECONDS, newReads, record, recordTrial, tierOf } from './progress.ts';
+import { NIGHT_DONE, TRIAL_SECONDS, newReads, record, recordTrial, tierOf } from './progress.ts';
 import { track, trackOpen } from './stats.ts';
 import { StatsPage } from './StatsPage.tsx';
 import { bindSave, startAccount, syncSoon } from './account.ts';
 import { PrivacyPage } from './PrivacyPage.tsx';
 
-type Screen = { name: 'title' } | { name: 'hall' } | { name: 'ward'; c: CaseDef; n: number; tier: 0 | 1; resume: Run | null; trial: boolean } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number; trial: boolean; timeUp: boolean };
+type Screen = { name: 'title' } | { name: 'hall' } | { name: 'night' } | { name: 'ward'; c: CaseDef; n: number; tier: 0 | 1; resume: Run | null; trial: boolean } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number; trial: boolean; timeUp: boolean };
 
 const caseOf = (id: string) => CASES.find((c) => c.id === id);
 /** 上次沒結案的那一場。病例改過、對不上了就丟掉 */
@@ -75,9 +76,12 @@ export function App() {
       toHall();
     }} />;
   }
+  // 終章的值班夜：走完記一筆（和看過的故事記在一起），回到公會接下一段故事
+  if (screen.name === 'night') return <Night hero={save.hero} onQuit={toHall} onDone={() => { if (!save.beats.includes(NIGHT_DONE)) keep({ ...save, beats: [...save.beats, NIGHT_DONE] }); keepStorage(); toHall(); }} />;
   if (screen.name === 'title') return <Title save={save} run={run} onPlay={toHall} onImport={(s) => { keepRun(null); keep(s); }} onReset={() => { setRun(null); latest.current = wipe(); setSave(latest.current); }} />;
   return <Hall save={save} run={run} onHome={() => setScreen({ name: 'title' })} onHero={(hero) => keep({ ...save, hero })} onBeatSeen={(id) => keep({ ...save, beats: save.beats.includes(id) ? save.beats : [...save.beats, id] })}
     onStart={(c) => { keepRun(null); track({ t: 'start', c: c.id, tier: tierOf(save), n: (save.cases[c.id]?.plays ?? 0) + 1 }); setScreen({ name: 'ward', c, n: Date.now(), tier: tierOf(save), resume: null, trial: false }); }}
+    onNight={() => setScreen({ name: 'night' })}
     onTrial={(c) => { keepRun(null); setScreen({ name: 'ward', c, n: Date.now(), tier: 1, resume: null, trial: true }); }}
     onResume={() => {
       const c = run && caseOf(run.caseId);

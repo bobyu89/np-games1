@@ -9,6 +9,7 @@ export const SWELLING: ComplaintDef = {
   id: 'swelling',
   name: '腫脹',
   shadow: { name: '水腫豚', look: 'puffer', lore: '腫脹的症影。一碰就鼓起來。它只讓你看見水，不告訴你水是從哪裡多出來的，還是從哪裡回不去。' },
+  place: 'yard',
   forms: [
     { id: 'cardiac', name: '心臟', mark: '心', danger: true, blurb: '心臟打不出去，水往回積：心衰竭。兩邊一起腫，常常跟著喘。' },
     { id: 'renal', name: '腎臟', mark: '腎', danger: true, blurb: '腎臟把蛋白漏掉，或是排不出水：腎病症候群、腎衰竭。兩邊一起腫，眼皮也腫。' },

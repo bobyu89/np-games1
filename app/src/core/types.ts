@@ -83,6 +83,11 @@ export type SafetyRule =
   | { type: 'explain'; id: string; points: number; what?: string } // 說明裡一定要有的那一句。what：這一句是在做什麼，沒寫就是「交代什麼情況要馬上回來」
   | { type: 'calm'; points: number };                           // 病人穩定，不需要敲值班鐘
 
+/** 霧港裡看診的地方。前五個是公會的診間，每個主訴平常在哪一間看，寫在主訴模組；dock 是出診，tower 是終章 */
+export type Home = 'ward' | 'market' | 'archive' | 'yard' | 'quiet';
+export type Place = Home | 'dock' | 'tower';
+export type Scene = Place | `${Home}-rain`;
+
 export interface CaseDef {
   format: 3;
   id: string;
@@ -94,8 +99,8 @@ export interface CaseDef {
   title: string;
   review: { state: '未審查' | '已審查'; note: string };
   patient: { name: string; age: number; sex: string; job: string; look: string; pronoun: string };
-  /** 這張委託在哪裡進行。只給畫面用，規則不看。沒寫就是公會的病室 */
-  scene?: 'ward' | 'ward-rain' | 'dock';
+  /** 這張委託在哪裡進行（地方，加上是不是下雨天）。只給畫面用，規則不看 */
+  scene: Scene;
   shadow: { name: string; lore: string; look?: string };
   forms: TrueForm[];
   reading: { lines: string[]; prompts: string[] };

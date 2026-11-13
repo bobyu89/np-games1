@@ -15,7 +15,7 @@ export const C06B: CaseSpec = {
   title: '坐不住',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '甘棗', age: 45, sex: '男', job: '鹽倉的帳房', look: 'c06b', pronoun: '他' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['甘棗，45 歲，鹽倉的帳房。', '今天清晨被痛醒：左邊的腰像被人擰住，一陣一陣地絞，痛到吐。他在屋裡走來走去，坐也不是、躺也不是，撐到天亮才叫了車。', '他是弓著身子走進來的，一手按著左腰，額頭上都是汗。在床邊坐不到三句話，又站了起來。'],
     prompts: ['最危險的可能是什麼？', '「一動就痛」和「怎麼換姿勢都痛」，各自指向哪裡？', '如果是石頭，哪幾樣一出現就不能等？'],

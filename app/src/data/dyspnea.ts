@@ -7,6 +7,7 @@ export const DYSPNEA: ComplaintDef = {
   id: 'dyspnea',
   name: '喘',
   shadow: { name: '氣促蛙', look: 'frog', lore: '喘的症影。肚子像風箱一樣一鼓一縮，卻怎麼也吸不滿。同樣是喘，問題可能在心臟、在氣管、在肺，或是突然出的事。' },
+  place: 'market',
   forms: [
     { id: 'cardiac', name: '心因性', mark: '心', danger: true, blurb: '心臟打不出去，水積回肺裡：心衰竭、肺水腫。' },
     { id: 'airway', name: '氣道阻塞', mark: '氣', danger: true, blurb: '氣管變窄，氣吐不出去：慢性阻塞性肺病或氣喘的急性發作。' },

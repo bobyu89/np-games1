@@ -38,6 +38,16 @@ export const PATEL_2010 = { id: 'patel2010', text: 'Patel, R. A., & Gallagher, J
 export const VANDEBEEK_2004 = { id: 'vandebeek2004', text: 'van de Beek, D., de Gans, J., Spanjaard, L., Weisfelt, M., Reitsma, J. B., & Vermeulen, M. (2004). Clinical features and prognostic factors in adults with bacterial meningitis. New England Journal of Medicine, 351(18), 1849–1859.', doi: '10.1056/NEJMoa040845' };
 export const VANDEBEEK_2016 = { id: 'vandebeek2016', text: 'van de Beek, D., et al. (2016). ESCMID guideline: Diagnosis and treatment of acute bacterial meningitis. Clinical Microbiology and Infection, 22(Suppl. 3), S37–S62.', doi: '10.1016/j.cmi.2016.01.007' };
 
+// 終章：不典型的急性冠心症（C01E），和值班夜的分流（night.ts）
+export const CANTO_2000 = { id: 'canto2000', text: 'Canto, J. G., Shlipak, M. G., Rogers, W. J., Malmgren, J. A., Frederick, P. D., Lambrew, C. T., Ornato, J. P., Barron, H. V., & Kiefe, C. I. (2000). Prevalence, clinical characteristics, and mortality among patients with myocardial infarction presenting without chest pain. JAMA, 283(24), 3223–3229.', doi: '10.1001/jama.283.24.3223' };
+export const CANTO_2012 = { id: 'canto2012', text: 'Canto, J. G., et al. (2012). Association of age and sex with myocardial infarction symptom presentation and in-hospital mortality. JAMA, 307(8), 813–822.', doi: '10.1001/jama.2012.199' };
+export const THIM_2012 = { id: 'thim2012', text: 'Thim, T., Krarup, N. H. V., Grove, E. L., Rohde, C. V., & Løfgren, B. (2012). Initial assessment and treatment with the Airway, Breathing, Circulation, Disability, Exposure (ABCDE) approach. International Journal of General Medicine, 5, 117–121.', doi: '10.2147/IJGM.S28478' };
+export const NG_2011 = { id: 'ng2011', text: 'Ng, C.-J., et al. (2011). Validation of the Taiwan triage and acuity scale: A new computerised five-level triage system. Emergency Medicine Journal, 28(12), 1026–1031.', doi: '10.1136/emj.2010.094185' };
+export const STARMER_2014 = { id: 'starmer2014', text: 'Starmer, A. J., et al. (2014). Changes in medical errors after implementation of a handoff program. New England Journal of Medicine, 371(19), 1803–1812.', doi: '10.1056/NEJMsa1405556' };
+export const MULLER_2018 = { id: 'muller2018', text: 'Müller, M., Jürgens, J., Redaèlli, M., Klingberg, K., Hautz, W. E., & Stock, S. (2018). Impact of the communication and patient hand-off tool SBAR on patient safety: A systematic review. BMJ Open, 8(8), e022202.', doi: '10.1136/bmjopen-2018-022202' };
+export const SMITH_2019 = { id: 'smith2019', text: 'Smith, A. T., & Han, J. H. (2019). Altered mental status in the emergency department. Seminars in Neurology, 39(1), 5–19.', doi: '10.1055/s-0038-1677035' };
+export const BULLARD_2017 = { id: 'bullard2017', text: 'Bullard, M. J., et al. (2017). Revisions to the Canadian Emergency Department Triage and Acuity Scale (CTAS) guidelines 2016. CJEM, 19(S2), S18–S27.', doi: '10.1017/cem.2017.365' };
+
 // ── 給臨床老師的審查清單用（tools/review.ts）──
 
 /** 每一篇文獻核對到哪裡。abstract：引用它的教學重點對過摘要；沒列在這裡的，只核對了書目 */
@@ -53,6 +63,13 @@ export const REF_CHECK: Record<string, { level: 'abstract' | 'biblio'; note?: st
   vandebeek2004: { level: 'abstract' },
   perry2013: { level: 'abstract' },
   stevens2014: { level: 'abstract', note: '摘要只支持「從輕微到壞死性筋膜炎都有、要靠臨床評估及早認出」；壞死性感染的警訊沒有對到原文' },
+  canto2000: { level: 'abstract' },
+  canto2012: { level: 'abstract' },
+  thim2012: { level: 'abstract', note: '摘要只支持「適用於所有緊急狀況、幫助把注意力放在最會危及生命的問題」；每一步怎麼做在原文' },
+  ng2011: { level: 'abstract', note: '摘要只支持「依需要處置的急迫程度排優先順序」；各級的判定條件不在摘要裡，遊戲裡沒有寫級數' },
+  starmer2014: { level: 'abstract', note: '研究對象是兒科住院醫師的交班，不是急診的分流' },
+  muller2018: { level: 'abstract' },
+  smith2019: { level: 'abstract', note: '「先量血糖」不在摘要裡；摘要只說要特別注意馬上危及生命、可以矯正的原因' },
 };
 
 /** 寫的時候就知道沒把握、要請臨床老師特別看的地方。加了新病例，有這種地方就補一條 */
@@ -86,4 +103,9 @@ export const REVIEW_ASKS: string[] = [
   '**頭痛的評估**：加了一組神經學檢查（腦神經、肌力與漂移、感覺與反射、協調與步態）和眼底。專科護理師在考站會不會被要求做眼底鏡，請老師確認。',
   '**指引類的文獻**：胸痛、急性冠心症、心衰竭、肺栓塞、膽囊炎、肺炎、氣胸、敗血症、蜘蛛膜下腔出血的指引，以及腎盂腎炎的綜論、頭痛的分類、結核病的診斷指引和細菌性腦膜炎的指引，只核對了書目。引用它們的教學重點請對照原文。',
   '**甄審的規定**：遊戲的配分照 115 年度的口試。第一批玩家考的是下一年度，公告之後要再核對。',
+  '**終章的胸痛（C01E）**：71 歲女性，說「不算痛、大概是胃」，三天來出力就悶、今天休息也不退，心電圖是側壁導程 ST 段下降、T 波倒置。設計成非 ST 段上升型的急性冠心症。這樣的病史、生命徵象和心電圖配不配？遊戲把她當成不穩定（下診斷後兩分鐘沒有通報就變差），會不會太快？',
+  '**終章的胸痛（C01E）**：回顧寫「第一張心電圖看不出變化、症狀還在，就要再做一次，並等心肌旋蛋白」。依據是胸痛指引，只核對了書目，請對照原文。「女性比較常合併噁心、喘」也是出自同一份指引。',
+  '**終章的分流（值班夜）**：三輪都是原則層級的題目：呼吸費力的安靜病人先於大聲喊痛的扭傷；今天才出現的意識改變先於壓得住的頭皮出血；答應回頭看的病人安靜下來，要先重新評估。情境、數字（血氧 86%、心跳 118、血壓 92/58）都是設計出來的。請看排的順序對不對、有沒有哪一題在實際的急診不會這樣排。',
+  '**終章的分流**：沒有寫檢傷的級數。臺灣的五級檢傷只引用了驗證研究的摘要；「等候中的病人要照分級定時重新評估」引用的是加拿大檢傷指引的修訂，只核對了書目，請對照原文和院內的規定。',
+  '**終章的分流**：交給同事的那一句寫成「現在的狀況、請對方先做什麼、什麼變化要叫我、我什麼時候回來」；回報醫師的那一句先講最急的是誰。這是把交班工具（I-PASS、SBAR）的精神縮成一句話，不是工具的原文。意識改變那一題，後來寫成「血糖很低」，是設計出來的結果。',
 ];

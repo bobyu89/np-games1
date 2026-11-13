@@ -14,7 +14,7 @@ export const C08B: CaseSpec = {
   title: '坐著睡的人',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '穆槐', age: 76, sex: '男', job: '退休的鐘匠', look: 'c08b', pronoun: '他' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['穆槐，76 歲，退休的鐘匠。', '兩隻腳腫了三個禮拜。他說是老了、坐太久，沒有理它。這幾天晚上要坐在椅子上才睡得著；今天早上連走到門口都喘，鄰居把他扶來公會。', '他是坐著進來的，不肯躺下。嘴唇有點發紫，一句話要分兩次講。'],
     prompts: ['最危險的可能是什麼？', '腳腫了三個禮拜，是什麼時候變成「等不了」的？', '哪幾樣東西，是在告訴我水已經淹到肺了？'],

@@ -8,6 +8,7 @@ export const FEVER: ComplaintDef = {
   id: 'fever',
   name: '發燒',
   shadow: { name: '發熱蜥', look: 'newt', lore: '發燒的症影。背上的炭一明一滅。它只告訴你「燒起來了」，不告訴你火是從哪裡燒起來的。' },
+  place: 'archive',
   forms: [
     { id: 'lung', name: '呼吸道', mark: '肺', danger: true, blurb: '火在肺裡：肺炎、支氣管的感染。' },
     { id: 'urinary', name: '泌尿道', mark: '尿', danger: true, blurb: '火在腎臟和膀胱：腎盂腎炎、泌尿道感染。' },

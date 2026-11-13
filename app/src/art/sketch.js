@@ -34,6 +34,10 @@ export const C = {
   plank: '#b08a5c', plank2: '#8f6c45', stone: '#9b957f', stone2: '#7c7663', sea: '#6f9d9a', sea2: '#4f7f80', rainSky: '#9fb0aa', rose: '#b98579', rose2: '#96635a', hairInk: '#33302c', hairBrown: '#7a5a3c',
   // 第二章的症影和主角
   frog: '#a98aa6', frog2: '#7d5f7b', crab: '#cc6a48', crab2: '#9c4a32', slate: '#7384ad', slate2: '#55648c', newt: '#6d6672', newt2: '#4b4652', amber: '#c68c2b', amber2: '#9c6d1d',
+  // 霧港的其他地方：魚市口、舊病室、船塢、靜室、燈塔
+  plaster: '#e3d6b5', plaster2: '#cdbd96', shed: '#a8754c', shed2: '#875a3b', tar: '#54483e', tar2: '#3d332c', sand: '#cfb88c', sand2: '#b29a6e',
+  mist: '#b3bfc0', mist2: '#9aaaad', tatami: '#cfc088', tatami2: '#a8985f', stain: '#bfa86e',
+  night: '#6b7088', night2: '#51566e', nightSky: '#2b3250', nightSea: '#3a4a6c', nightFloor: '#6a5646', nightFloor2: '#4e3f33', silver: '#cfdcd8',
   hallWall: '#d9c692', hallWall2: '#c9b47c', tile: '#7b9a94', tile2: '#63817c', cork: '#b98a5a', sea: '#6f9a98',
 };
 

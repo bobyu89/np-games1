@@ -14,7 +14,7 @@ export const C04C: CaseSpec = {
   title: '還沒好的感冒',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '池榆', age: 47, sex: '男', job: '遠洋貨船上的廚子', look: 'yu', pronoun: '他' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['池榆，47 歲，遠洋貨船上的廚子。', '一個半月前開始咳嗽，藥鋪說是感冒。這三個禮拜，每天下午都有點燒，夜裡流汗流到要換衣服，褲頭也鬆了。前天咳出來的痰裡有血絲。', '他自己走進來，人很瘦，開口之前先咳了一陣。'],
     prompts: ['最危險的可能是什麼？', '感冒會拖一個半月嗎？拖這麼久的咳嗽和發燒，要想到什麼？', '如果我想的是對的，除了他自己，還有誰要被保護？'],

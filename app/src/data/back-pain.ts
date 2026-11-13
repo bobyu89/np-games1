@@ -9,6 +9,7 @@ export const BACK_PAIN: ComplaintDef = {
   id: 'back-pain',
   name: '背痛',
   shadow: { name: '腰背龜', look: 'tortoise', lore: '背痛的症影。背上馱著一疊石頭，走一步、沉一分。石頭多半只是累；有幾塊，底下壓著東西。' },
+  place: 'yard',
   forms: [
     { id: 'msk', name: '肌肉骨骼', mark: '肌', danger: false, blurb: '筋和肌肉的事：拉傷、扭到、勞損。' },
     { id: 'urinary', name: '泌尿', mark: '尿', danger: true, blurb: '痛從腎臟和輸尿管來：結石、腎盂腎炎。' },

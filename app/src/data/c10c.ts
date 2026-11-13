@@ -14,7 +14,7 @@ export const C10C: CaseSpec = {
   title: '粉底下的蝴蝶',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '麥萱', age: 26, sex: '女', job: '繡坊的繡娘', look: 'c10c', pronoun: '她' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['麥萱，26 歲，繡坊的繡娘。', '兩個月前，臉頰開始紅紅的，曬了太陽更明顯。藥鋪說是曬傷，給了涼的藥膏。這一個月，手指的關節早上又僵又痛，針都拿不穩，嘴巴裡也破了幾個洞。', '她自己走進來，戴著寬邊的帽子，臉上蓋了一層厚粉。'],
     prompts: ['最危險的可能是什麼？', '疹子之外，身體還有哪幾個地方在說同一件事？', '她把臉蓋起來了。我要怎麼問、怎麼看？'],

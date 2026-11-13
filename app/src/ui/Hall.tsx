@@ -2,7 +2,8 @@
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { CaseDef } from '../core/types.ts';
 import { SAFETY_LABEL } from '../core/scoring.ts';
-import { COMPLAINTS, caseById } from '../data/index.ts';
+import { COMPLAINTS, FINALE_ID, caseById } from '../data/index.ts';
+import { PLACES, placeOf, sceneName } from '../data/places.ts';
 import { Stage, type StageHandle } from './Stage.tsx';
 import { Talk, type TalkHandle, type Who } from './Talk.tsx';
 import { Sheet } from './Sheets.tsx';
@@ -11,14 +12,14 @@ import type { Run, Save } from './store.ts';
 import { Settings, StatsFacts } from './Settings.tsx';
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
-import { ARCHIVE, BEATS, HEROES, QUESTS, TRIAL_PASS, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
+import { ARCHIVE, BEATS, CHAPTER_PLACE, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
 import { WELCOME, WORLD } from './world.ts';
 import { Portrait } from './Portrait.tsx';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
 /** run：上次沒結案的那一張委託 */
-interface Props { save: Save; run: Run | null; onHome(): void; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onTrial(c: CaseDef): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void }
+interface Props { save: Save; run: Run | null; onHome(): void; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onTrial(c: CaseDef): void; /** 終章的值班夜 */ onNight(): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void }
 
 /** 圖鑑裡的一張卡：遇到了、去過了才看得到 */
 function Card({ e, wide }: { e: Entry; wide?: boolean }) {
@@ -43,7 +44,7 @@ function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(i
   );
 }
 
-export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, onResume, onDropRun, onImport, onReset }: Props) {
+export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, onNight, onResume, onDropRun, onImport, onReset }: Props) {
   const [pendingBeat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
   // 先知道自己是誰，故事才開始：還沒選主角之前，序章先等著
   const beat = save.hero === null ? null : pendingBeat;
@@ -62,7 +63,10 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [later, setLater] = useState(false);   // 按了關閉：這一次先不問，下次打開再問
   const pending = run ? caseById(run.caseId) : null;
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null), speaker = useRef<Who | null>(null), bubble = useRef<HTMLDivElement>(null);
-  const open = QUESTS.filter((q) => unlocked(q, save)), fresh = open.find((q) => !save.cases[q.caseId]);
+  const open = QUESTS.filter((q) => unlocked(q, save));
+  // 終章走到哪裡：值班夜還沒走、燈塔那一張還沒接
+  const ending = caseById(FINALE_ID), nightNew = finaleOpen(save) && !nightDone(save), towerNew = towerOpen(save) && !finaleDone(save);
+  const fresh = open.find((q) => !save.cases[q.caseId]) ?? (nightNew || towerNew ? true : undefined);
 
   useEffect(() => {
     if (save.hero === null) return;
@@ -70,7 +74,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
     const last = save.takeaways[0];
     if (pending && run!.trial) { talk.current?.say([{ who: 'mentor', text: run!.session.closedAt !== null ? '試煉交卷了，成績還沒看。' : '資格試煉考到一半。倒數會從你離開的時候接下去。' }]); return; }
     if (pending) { talk.current?.say([{ who: 'mentor', text: run!.session.closedAt !== null ? pending.patient.name + '那一張結案了，回顧還沒看完。' : pending.patient.name + '還在等你。上次做到一半，可以接著做。' }]); return; }
-    talk.current?.say([{ who: 'mentor', text: last ? '你上次說，下次要做到：' + last : fresh ? '委託板上有一張新的。準備好了就接。' : '板子上的委託都走過了。想再走一次也可以，圖鑑還有空白。' }]);
+    talk.current?.say([{ who: 'mentor', text: last ? '你上次說，下次要做到：' + last : nightNew ? '板子最底下那一張，是今晚的。門口已經有人了。' : towerNew ? '最後一張，地點是燈塔。準備好了，我們就上去。' : fresh ? '委託板上有一張新的。準備好了就接。' : '板子上的委託都走過了。想再走一次也可以，圖鑑還有空白。' }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [beat, step, save.hero]);
 
@@ -128,7 +132,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 const seen = mine.some((q) => unlocked(q, save));
                 return (
                   <Fragment key={m.id}>
-                    <div className="quest-head">{CHAPTERS[mine[0].chapter] ?? ''}　{seen ? m.shadow.name + '｜' + m.name : '還沒送到的委託'}</div>
+                    <div className="quest-head">{CHAPTERS[mine[0].chapter] ?? ''}{seen ? '・' + PLACES[CHAPTER_PLACE[mine[0].chapter as 1 | 2 | 3 | 4 | 5]].name : ''}　{seen ? m.shadow.name + '｜' + m.name : '還沒送到的委託'}</div>
                     {mine.map((q) => {
                       const c = caseById(q.caseId), res = save.cases[c.id];
                       if (!unlocked(q, save)) return <div key={c.id} className="quest paper locked" aria-disabled="true"><b>？？？</b><span>{q.chapter > 1 && !seen ? CHAPTERS[q.chapter - 1] + '走完之後才會送到' : '完成上一張委託之後才會送到'}</span><em>還沒出現</em></div>;
@@ -136,7 +140,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                         <button key={c.id} type="button" className={'quest paper' + (res ? '' : ' hint')} onClick={() => { sfx.page(); setReading(c); }}>
                           <i className="seal" aria-hidden="true" />
                           <b>{c.title}</b>
-                          <span>{c.patient.name}｜{c.complaintName}{c.scene === 'dock' ? '｜出診' : ''}</span>
+                          <span>{c.patient.name}｜{c.complaintName}{placeOf(c.scene) === 'dock' ? '｜出診' : ''}</span>
                           <em>{res ? '最佳 ' + res.best + ' 分・' + SAFETY_LABEL[res.safety] : '新的委託'}</em>
                         </button>
                       );
@@ -144,7 +148,13 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                   </Fragment>
                 );
               })}
-              <div className="quest paper locked" aria-disabled="true"><b>終章</b><span>大霧值班夜</span><em>整理中</em></div>
+              <div className="quest-head">終章　大霧值班夜</div>
+              {!finaleOpen(save) ? <div className="quest paper locked" aria-disabled="true"><b>？？？</b><span>第五章走完之後才會送到</span><em>還沒出現</em></div> : <>
+                <button type="button" className={'quest paper' + (nightNew ? ' hint' : '')} onClick={() => { sfx.page(); onNight(); }}><i className="seal" aria-hidden="true" /><b>值班夜</b><span>門口同時有兩三位：先看誰、怎麼交代、什麼時候回頭</span><em>{nightDone(save) ? '走過了・可以再走' : '今晚'}</em></button>
+                {towerOpen(save)
+                  ? <button type="button" className={'quest paper' + (towerNew ? ' hint' : '')} onClick={() => { sfx.page(); setReading(ending); }}><i className="seal" aria-hidden="true" /><b>{ending.title}</b><span>{ending.patient.name}｜{ending.complaintName}｜燈塔</span><em>{save.cases[FINALE_ID] ? '最佳 ' + save.cases[FINALE_ID].best + ' 分・' + SAFETY_LABEL[save.cases[FINALE_ID].safety] : '最後一張'}</em></button>
+                  : <div className="quest paper locked" aria-disabled="true"><b>？？？</b><span>值班夜走完之後才會送到</span><em>還沒出現</em></div>}
+              </>}
               <div className="quest-head">驗收</div>
               {trialOpen(save)
                 ? <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>資格試煉</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
@@ -160,7 +170,8 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
       </div>
 
       {reading && (
-        <Sheet title={'委託：' + reading.title} onClose={() => setReading(null)} footer={<button type="button" className="act demo" onClick={() => onStart(reading)}>接下委託，進病室</button>}>
+        <Sheet title={'委託：' + reading.title} onClose={() => setReading(null)} footer={<button type="button" className="act demo" onClick={() => onStart(reading)}>{placeOf(reading.scene) === 'tower' ? '接下委託，上燈塔' : '接下委託，進病室'}</button>}>
+          <p className="dim">地點：{sceneName(reading.scene)}</p>
           {reading.reading.lines.map((l, i) => <p key={i}>{l}</p>)}
           <h3>進門之前，先想三件事</h3>
           <ul>{reading.reading.prompts.map((p, i) => <li key={i}>{p}</li>)}</ul>
@@ -257,7 +268,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <p className="dim">{WELCOME.note}</p>
           </>}
           {tab === 'places' && <>
-            <p className="dim">去過的地方會記在這裡。出診的委託，會帶你到公會以外的地方。</p>
+            <p className="dim">去過的地方會記在這裡。公會在霧港有五個診間，一章換一個；出診的委託，會帶你到公會以外的地方。</p>
             <div className="album">{placesOf(save).map((e) => <Card key={e.id} e={e} wide />)}</div>
           </>}
           {tab === 'shadow' && <>

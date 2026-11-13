@@ -6,6 +6,7 @@ import { C01A } from './c01a.ts';
 import { C01B } from './c01b.ts';
 import { C01C } from './c01c.ts';
 import { C01D } from './c01d.ts';
+import { C01E } from './c01e.ts';
 import { DYSPNEA } from './dyspnea.ts';
 import { C02A } from './c02a.ts';
 import { C02B } from './c02b.ts';
@@ -76,4 +77,7 @@ export const CASES: CaseDef[] = [resolveCase(CHEST_PAIN, C01A), resolveCase(CHES
   resolveCase(RASH, C10A), resolveCase(RASH, C10B), resolveCase(RASH, C10C), resolveCase(RASH, C10D),
   resolveCase(WEIGHT_LOSS, C11A), resolveCase(WEIGHT_LOSS, C11B), resolveCase(WEIGHT_LOSS, C11C), resolveCase(WEIGHT_LOSS, C11D),
   resolveCase(PARESTHESIA, C12A), resolveCase(PARESTHESIA, C12B), resolveCase(PARESTHESIA, C12C), resolveCase(PARESTHESIA, C12D)];
+// 終章的病人。算在病例裡（會存檔、會同步、審查清單裡有她），但不在委託板的章節裡，也不會被資格試煉抽到
+export const FINALE_ID = 'c01e';
+CASES.push(resolveCase(CHEST_PAIN, C01E));
 export const caseById = (id: string) => CASES.find((c) => c.id === id)!;

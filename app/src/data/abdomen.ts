@@ -7,6 +7,7 @@ export const ABDOMEN: ComplaintDef = {
   id: 'abdomen',
   name: '腹痛',
   shadow: { name: '腹痛蟹', look: 'crab', lore: '腹痛的症影。把一條繩子在肚子裡打了結，越扯越緊。結打在哪裡、怎麼打的，每一次都不一樣。' },
+  place: 'market',
   forms: [
     { id: 'biliary', name: '膽囊與膽道', mark: '膽', danger: true, blurb: '右上腹：膽結石卡住、膽囊發炎。' },
     { id: 'pancreas', name: '胰臟與胃', mark: '胰', danger: true, blurb: '上腹到左上腹：胰臟炎、消化性潰瘍。' },

@@ -7,8 +7,10 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CASES, COMPLAINTS } from '../src/data/index.ts';
+import { CASES, COMPLAINTS, FINALE_ID } from '../src/data/index.ts';
+import { NIGHT, NIGHT_REFS } from '../src/data/night.ts';
 import { ALL_REF_CHECK as REF_CHECK, ALL_REVIEW_ASKS as REVIEW_ASKS } from '../src/data/extras.ts';
+import { sceneName } from '../src/data/places.ts';
 import { COST, formOf } from '../src/core/engine.ts';
 import { idealActions, run } from '../src/core/autoplay.ts';
 import { scoreSession, SAFETY_LABEL } from '../src/core/scoring.ts';
@@ -33,7 +35,6 @@ function table(head: string[], rows: string[][], widths?: number[]): string {
 }
 const BOX = '☐同意 ☐要改';
 const GROUP = { open: '開場', cc: '主訴', hx: '病史', ros: '系統回顧' } as const;
-const SCENE = { ward: '公會的病室', 'ward-rain': '公會的病室（下雨天）', dock: '碼頭的貨棧（出診）' } as const;
 const sec = (n: number) => (n < 60 ? n + ' 秒' : n % 60 ? Math.floor(n / 60) + ' 分 ' + (n % 60) + ' 秒' : n / 60 + ' 分鐘');
 const checkOf = (id: string) => { const k = REF_CHECK[id]; return (k?.level === 'abstract' ? '教學重點對過摘要' : '只核對書目') + (k?.note ? '（' + k.note + '）' : ''); };
 
@@ -71,7 +72,7 @@ function caseSection(c: CaseDef): string {
     ['診斷（這一關的答案）', truth.name + '。' + truth.blurb],
     ['病人', c.patient.name + '，' + c.patient.age + ' 歲，' + c.patient.sex + '，' + c.patient.job],
     ['類型', c.kind],
-    ['地點', SCENE[c.scene ?? 'ward']],
+    ['地點', sceneName(c.scene)],
     ['穩不穩定', urgent ? '不穩定：下診斷之後 ' + sec(c.timeline.worsenAfter!) + '沒有人知道，病況會變差' : '穩定：這位病人不會變差，敲值班鐘算過度通報'],
     ['審查狀態', c.review.state],
     ['照理想的打法', sc.total + ' 分、' + SAFETY_LABEL[sc.safety] + '、模擬時間約 ' + Math.round(s.time / 60) + ' 分鐘'],
@@ -142,9 +143,31 @@ function complaintDoc(id: string): string {
   return out.join('\n');
 }
 
+/** 終章的值班夜：三輪分流。不是病例，沒有分數；每一輪兩個決定 */
+function nightDoc(): string {
+  const out: string[] = ['# 審查清單：終章的值班夜（分流）', '', '這份檔案是程式從 `app/src/data/night.ts` 產生的（`npm run review`），不要手改。怎麼審、文獻核對到哪裡在 [README.md](README.md)。', ''];
+  const p = (...lines: string[]) => out.push(...lines, '');
+  p('終章的前半不是一位病人，是三輪「同時有兩三位到門口」的題目。玩家只看得到站在門口十秒鐘看得到的東西，每一輪做兩個決定：**先看誰**；**另一位怎麼交代**（或是回頭之後先做什麼）。沒有分數，每個決定當下就有回饋，走完有一頁整理。');
+  p('練的是考站以外的三件事：排優先順序、交班、回頭重新評估。**情境和數字都是設計出來的，還沒經過臨床老師審查。**請老師看：每一輪排的順序對不對、對的那一句夠不夠好、錯的那兩句錯得合不合理、回饋有沒有說得太滿。');
+  NIGHT.forEach((n) => {
+    p('## ' + n.title);
+    p('**開場的旁白**：' + n.intro.map((l) => l.text).join(' '));
+    p(table(['誰', '他說的', '玩家看到的', '該不該先看', '選了這一位，岑禾說', '審查'], n.arrivals.map((a) => [a.name + '，' + a.tag, a.says, a.see, a.id === n.first ? '**先看**' : '可以等', n.notes[a.id], BOX]), [2, 4, 5, 1, 6, 2]));
+    p('**第二個決定**：' + n.then.ask);
+    p(table(['選項', '對不對', '回饋', '審查'], n.then.picks.map((k) => [k.text, k.ok ? '**對**' : '不對', k.note, BOX]), [7, 1, 6, 2]));
+    p('**這一輪的結果**：' + n.after.map((l) => (l.who === 'sys' ? '' : (l.who === 'doctor' ? '沈渡' : '岑禾') + '：') + l.text).join(' '));
+    p('**走完之後整理頁上的重點**');
+    p(table(['重點', '文獻', '核對到哪裡', '審查'], n.teach.map((t) => { const r = NIGHT_REFS.find((x) => x.id === t.ref)!; return [t.text, r.text.split('(')[0].trim() + '（' + (r.text.match(/\((\d{4})\)/)?.[1] ?? '') + '）', checkOf(t.ref), BOX]; }), [7, 3, 4, 2]));
+    if (boxes) p('### 這一輪的整體意見', '☐ 4 可以用　☐ 3 小修　☐ 2 大修　☐ 1 不適合', '意見：', '', '審查人：　　　　　　日期：');
+    p('---');
+  });
+  return out.join('\n');
+}
+
 function readme(): string {
   const refs = new Map<string, { text: string; doi: string; used: string[] }>();
   CASES.forEach((c) => c.debrief.references.forEach((r) => { const k = refs.get(r.id) ?? { text: r.text, doi: r.doi, used: [] }; k.used.push(c.id.toUpperCase()); refs.set(r.id, k); }));
+  NIGHT_REFS.forEach((r) => { const k = refs.get(r.id) ?? { text: r.text, doi: r.doi, used: [] }; k.used.push('值班夜'); refs.set(r.id, k); });
   const out: string[] = [];
   const p = (...lines: string[]) => out.push(...lines, '');
   p('# 給臨床老師的審查清單');
@@ -155,7 +178,8 @@ function readme(): string {
   p('1. **故事**：年齡、職業、病程、生命徵象，合不合理？', '2. **診斷和線索**：這個診斷，和病人說的、評估到的，對不對得上？', '3. **要解讀的線索**：每一條的「指向」對不對？「理由」那句話有沒有說錯、說得太滿？', '4. **安全行動**：該不該敲值班鐘、時間限制合不合理、最關鍵的檢查是不是那一項？', '5. **回報和說明的選項**：標「對」的是不是真的對，標「錯」的是不是真的錯？有沒有超出專科護理師可以做的範圍？', '6. **教學重點**：敘述有沒有超出引用的文獻？', '7. **用語**：病人的話像不像病人會說的？有沒有不合臨床習慣的講法？');
   if (boxes) p('每一列後面有「☐同意 ☐要改」。每一位病人最後有一個整體的四點評分（4 可以用、3 小修、2 大修、1 不適合），和專家效度常用的四點量表同一個刻度；這只是方便彙整，不是正式的效度工具。');
   p('## 索引');
-  p(table(['代號', '主訴', '診斷', '病人', '穩不穩定', '狀態', '在哪一份'], CASES.map((c) => [c.id.toUpperCase(), c.complaintName, formOf(c, c.answer.truth)!.name, c.patient.name + '，' + c.patient.age + ' 歲，' + c.patient.job, c.timeline.worsenAfter !== undefined ? '不穩定' : '穩定', c.review.state, '[' + c.complaint + '.md](' + c.complaint + '.md)'])));
+  p(table(['代號', '主訴', '診斷', '病人', '穩不穩定', '狀態', '在哪一份'], CASES.map((c) => [c.id.toUpperCase(), c.complaintName, formOf(c, c.answer.truth)!.name, c.patient.name + '，' + c.patient.age + ' 歲，' + c.patient.job + (c.id === FINALE_ID ? '（終章）' : ''), c.timeline.worsenAfter !== undefined ? '不穩定' : '穩定', c.review.state, '[' + c.complaint + '.md](' + c.complaint + '.md)'])));
+  p('最後一位（' + FINALE_ID.toUpperCase() + '）是終章的病人，不在委託板的章節裡，也不會被資格試煉抽到。終章的前半另外有三輪分流的題目，不是病例，在 [night.md](night.md)。');
   p('## 每一關共用的設計');
   p('這幾項是所有病例共用的規則。請老師看它們本身合不合理。');
   p('**流程**：問診 → 身體評估 → 下診斷 → 檢查與處置。照考站的順序，整套做完才說計畫。真實的情境不會等：血氧低就先處理、先叫人。這一點寫在每一關的回顧裡。生命徵象和值班鐘任何時候都可以用，提早通報不扣分。');
@@ -182,7 +206,7 @@ function readme(): string {
   return out.join('\n');
 }
 
-const files: [string, string][] = [['README.md', readme()], ...COMPLAINTS.map((m) => [m.id + '.md', complaintDoc(m.id)] as [string, string])];
+const files: [string, string][] = [['README.md', readme()], ...COMPLAINTS.map((m) => [m.id + '.md', complaintDoc(m.id)] as [string, string]), ['night.md', nightDoc()]];
 const dir = bundlePath ? resolve(bundlePath) : outDir;
 mkdirSync(dir, { recursive: true });
 files.forEach(([name, text]) => writeFileSync(resolve(dir, name), text.replace(/\n{3,}/g, '\n\n').trimEnd() + '\n'));

@@ -3,7 +3,8 @@
 import type { CaseDef, Score, Session } from '../core/types.ts';
 import type { ComplaintDef } from '../core/module.ts';
 import { harvest } from '../core/scoring.ts';
-import { CASES } from '../data/index.ts';
+import { CASES, FINALE_ID } from '../data/index.ts';
+import { PLACES } from '../data/places.ts';
 import { AFTER_MORE } from '../data/extras.ts';
 import type { Line } from './Talk.tsx';
 import type { CaseRecord, Save, TrialRecord } from './store.ts';
@@ -26,6 +27,8 @@ export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b'
   { caseId: 'c10a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c10b', chapter: 5, needs: 'c10a' }, { caseId: 'c10c', chapter: 5, needs: 'c10b' }, { caseId: 'c10d', chapter: 5, needs: 'c10c' },
   { caseId: 'c11a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c11b', chapter: 5, needs: 'c11a' }, { caseId: 'c11c', chapter: 5, needs: 'c11b' }, { caseId: 'c11d', chapter: 5, needs: 'c11c' },
   { caseId: 'c12a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c12b', chapter: 5, needs: 'c12a' }, { caseId: 'c12c', chapter: 5, needs: 'c12b' }, { caseId: 'c12d', chapter: 5, needs: 'c12c' }];
+/** 每一章的委託平常在哪裡看。公會在霧港有五個診間；出診和下雨天是個別的委託自己寫的 */
+export const CHAPTER_PLACE = { 1: 'ward', 2: 'market', 3: 'archive', 4: 'yard', 5: 'quiet' } as const;
 export const unlocked = (q: Quest, s: Save) => [q.needs ?? []].flat().every((id) => !!s.cases[id]);
 
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
@@ -83,7 +86,8 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '下一頁有兩隻。一隻肚子像風箱，一鼓一縮；一隻把繩子打成結，抱在懷裡不放。' },
     { who: 'mentor', text: '氣促蛙是喘，腹痛蟹是腹痛。這兩隻最會騙人：來的人講的話都差不多，底下卻完全不一樣。' },
     { who: 'mentor', text: '流程你已經熟了。這一章要練的是聽：同樣一句「我很喘」「我肚子痛」，要問到它們不一樣的地方。' },
-    { who: 'sys', text: '委託板上多了兩張新的。' },
+    { who: 'mentor', text: '這一章不在這間病室看。魚市口的人天沒亮就上工，喘了、痛了，也不肯爬坡上來。公會在魚市口有一間診間，我們過去。' },
+    { who: 'sys', text: '委託板上多了兩張新的。地點寫的是：魚市口。' },
   ] },
   { id: 'ch2-half', title: '第二章　三行', when: (s) => has(s, ['c02a', 'c02b', 'c03a', 'c03b']), lines: [
     { who: 'mo', text: '兩頁各寫回了一半。氣促蛙還有「肺部感染」和「突發急症」，腹痛蟹還有「胰臟與胃」和「大腸憩室」，底下都還沒有人名。' },
@@ -113,7 +117,8 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '……那一張先收著。', fx: 'page' },
     { who: 'mentor', text: '太早寫下的結論，會把後面的線索都蓋掉。這一章，你把這幾張重新打開。' },
     { who: 'mentor', text: '不過記住：舊索引不一定都寫錯。對的，你要替它找到憑據；錯的，你要說得出錯在哪裡。' },
-    { who: 'sys', text: '委託板上多了兩張新的。' },
+    { who: 'mo', text: '這一疊要一張一張對，離不開檔案室。隔壁那間舊病室，我清出來了。繩子上晾的是還沒乾的索引，別碰掉。' },
+    { who: 'sys', text: '委託板上多了兩張新的。地點寫的是：檔案室旁的舊病室。' },
   ] },
   { id: 'ch3-half', title: '第三章　落款', when: (s) => has(s, CH3_HALF), lines: [
     { who: 'mo', text: '四張舊索引，三張劃掉重寫，一張底下補了憑據。' },
@@ -135,7 +140,8 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '這一頁開始，圖鑑上多了三隻：背上馱著石頭的龜、只用一隻腳站的鷺、一碰就鼓起來的豚。背痛、腳痛、腫。' },
     { who: 'mentor', text: '這一章來的人，都是撐著、拖著才來的。能撐，不代表不要緊。' },
     { who: 'mentor', text: '一樣是痛、一樣是腫，你要分出哪一個不能等。方法很土：把兩邊比一比，把該脫的鞋襪脫掉看。' },
-    { who: 'sys', text: '委託板上多了三張新的。' },
+    { who: 'mentor', text: '船塢在趕一艘船，沒有人肯放下手上的活走過來。公會跟船塢借了一間工寮，這一章我們過去看。' },
+    { who: 'sys', text: '委託板上多了三張新的。地點寫的是：船塢。' },
   ] },
   { id: 'ch4-half', title: '第四章　四十天', when: (s) => has(s, CH4_HALF), lines: [
     { who: 'sys', text: '值班鐘沒有響，沈渡卻自己走進了大廳。他看了一眼櫃台上那張名單。', fx: 'shen' },
@@ -160,8 +166,9 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '最後這四頁，我一直壓在最底下：排泄物、疹子、瘦了、麻了。來的人自己都講不清楚。' },
     { who: 'mentor', text: '有些是不好意思說，有些是不知道怎麼說。要問，他才會說；怎麼問，決定他說不說。' },
     { who: 'mentor', text: '簾子拉好，話說慢一點。該看的地方要看；看之前，先讓他知道為什麼。' },
+    { who: 'mentor', text: '這一章的話，在人來人往的地方問不出來。坡上有一間靜室，門關得起來，屏風拉得上。我們到那裡看。' },
     { who: 'mentor', text: '說不出口的，不只是病人。那張勘誤，我們三個人十五年沒有提過一個字。' },
-    { who: 'sys', text: '委託板上多了四張新的。' },
+    { who: 'sys', text: '委託板上多了四張新的。地點寫的是：坡上的靜室。' },
   ] },
   { id: 'ch5-half', title: '第五章　第十二行', when: (s) => has(s, CH5_HALF), lines: [
     { who: 'mo', text: '勘誤我重新抄了一份。原來那張有十二行：十一個名字，第十二行是空的。', fx: 'page page12' },
@@ -178,10 +185,61 @@ export const BEATS: Beat[] = [
     { who: 'sys', text: '眠墨抄了一份新圖鑑的目錄，託送燈油的人帶上燈塔。三天後，回信只有一行。' },
     { who: 'sys', text: '「第三行，還寫嗎？」', fx: 'window' },
     { who: 'sys', text: '岑禾看了很久。然後她拿起紀錄板，寫下今天的第三行。', fx: 'window' },
-    { who: 'mentor', text: '圖鑑寫完了，可是來的人不會照著圖鑑生病。接下來是值班夜：兩張委託同時送到的時候，你先看哪一張？' },
-    { who: 'sys', text: '（後面的章節還在整理。）' },
+    { who: 'mentor', text: '圖鑑寫完了，可是來的人不會照著圖鑑生病，也不會一個一個來。' },
+  ] },
+  // 終章分三段：燈熄了（開場）→ 值班夜的三輪分流（Night.tsx）→ 上燈塔看忍冬（病例 C01E）→ 結尾
+  { id: 'finale-open', title: '終章　大霧值班夜', when: (s) => finaleOpen(s), lines: [
+    { who: 'sys', text: '回信送到的第三天。傍晚，霧比平常來得早。', fx: 'dusk' },
+    { who: 'sys', text: '眠墨去關窗。他的手停在窗框上。', fx: 'dusk' },
+    { who: 'mo', text: '……燈塔的燈，沒有亮。', fx: 'dusk dark' },
+    { who: 'sys', text: '十五年沒有熄過的那一盞燈，熄了。', fx: 'dusk dark' },
+    { who: 'sys', text: '岑禾走到窗邊。她的手按在窗台上，很久沒有說話。', fx: 'dusk dark window' },
+    { who: 'mentor', text: '……先顧眼前的。燈不亮，船看不到礁石。今晚進來的人，不會一個一個來。', fx: 'dusk dark window' },
+    { who: 'sys', text: '值班鐘沒有響，沈渡已經走進了大廳。', fx: 'dusk dark shen' },
+    { who: 'doctor', text: '今晚我就在這裡。敲鐘不是找我；敲鐘，是告訴我先看誰。', fx: 'dusk dark fog shen' },
+    { who: 'mentor', text: '{you}，今晚你站門口。門口同時有兩個人的時候，先看誰、另一個交給誰、什麼時候回頭，你決定。', fx: 'dusk dark fog shen' },
+    { who: 'mentor', text: '塔上的事，等這裡的人都安頓了再說。這是她教我的。', fx: 'dusk dark fog' },
+    { who: 'sys', text: '委託板的最底下，多了一張沒有封蠟的：值班夜。', fx: 'dark fog' },
+  ] },
+  { id: 'finale-tower', title: '終章　還撐得住', when: (s) => nightDone(s), lines: [
+    { who: 'sys', text: '後半夜，門口終於空了。滿姨睡著了，秦伯醒了，賴叔被抬上了後送的車。', fx: 'dusk dark fog' },
+    { who: 'sys', text: '門又響了一聲。是送燈油的人，剛從塔上下來。', fx: 'dusk dark fog' },
+    { who: 'sys', text: '「燈是傍晚熄的。忍冬婆婆坐在值夜房裡，不讓我扶。她要我帶一句話下來。」', fx: 'dusk dark fog' },
+    { who: 'sys', text: '「胃不太舒服，還撐得住。塔上不用上來人。」', fx: 'dusk dark fog' },
+    { who: 'sys', text: '岑禾手上的紀錄板掉在地上。', fx: 'dusk dark fog' },
+    { who: 'mentor', text: '……十五年前，檜伯說的也是這一句。', fx: 'dusk dark fog' },
+    { who: 'mentor', text: '那一次，我看了索引，寫了一行字。這一次我不寫。', fx: 'dusk dark fog' },
+    { who: 'mentor', text: '{you}，你去看她。我跟著，鐘我來拿。我只寫我的三行。', fx: 'dusk dark fog' },
+    { who: 'doctor', text: '這幾床我顧。鐘一響，我就上去。那一百多階，這一次我會爬完。', fx: 'dusk dark fog shen' },
+    { who: 'sys', text: '委託板上貼了最後一張。地點寫的是：燈塔。', fx: 'dark fog' },
+  ] },
+  { id: 'finale-complete', title: '終章　完', when: (s) => finaleDone(s), lines: [
+    { who: 'sys', text: '天快亮的時候，忍冬被抬下了塔。沈渡走在擔架旁邊，手一直沒有離開她的脈搏。', fx: 'dusk dark' },
+    { who: 'sys', text: '塔上只剩岑禾。她提起油壺，爬完剩下的那一段樓梯，把燈點上了。', fx: 'dusk' },
+    { who: 'sys', text: '光掃過港口。停在外海的船，一艘一艘開始動。', fx: 'window' },
+    { who: 'mo', text: '她在後送的車上要了紙筆，寫了三行，要我交給你。' },
+    { who: 'sys', text: '第一行：「我說的是胃。」' },
+    { who: 'sys', text: '第二行：「她看到的是：出力就悶，歇了不退，一身冷汗。」' },
+    { who: 'sys', text: '第三行：「還不知道的，她沒有替我填滿。她敲了鐘。」' },
+    { who: 'mentor', text: '舊索引上，胸悶蛾那一行寫的是「心」。昨晚的答案，也是心。', fx: 'window' },
+    { who: 'mentor', text: '那一行字從來沒有寫錯。錯的是看到它，就不再問了。昨晚，你是一題一題問出來的。', fx: 'window' },
+    { who: 'mo', text: '勘誤的第十二行，還是空的。', fx: 'page page12' },
+    { who: 'mentor', text: '讓它空著。它在第一頁，是告訴下一個人：這本圖鑑會錯，寫它的人也會。', fx: 'page page12' },
+    { who: 'mentor', text: '{you}。以後新來的人，由你帶。第一件事，教他們寫三行。' },
+    { who: 'sys', text: '霧港又起霧了。燈塔的光，一圈一圈掃過去。', fx: 'window' },
+    { who: 'sys', text: '所有的委託都走完了。圖鑑還可以繼續寫；想知道自己準備好了沒有，委託板上有資格試煉。' },
   ] },
 ];
+
+// ── 終章 ──
+/** 值班夜（三輪分流）走完了：和看過的故事記在同一個地方，所以會跟著存檔、匯出和同步 */
+export const NIGHT_DONE = 'night-done';
+/** 第五章走完，終章才開始 */
+export const finaleOpen = (s: Save) => chapterDone(5, s);
+export const nightDone = (s: Save) => finaleOpen(s) && s.beats.includes(NIGHT_DONE);
+/** 燈塔那一張委託：值班夜走完、而且聽完送燈油的人帶來的話，才會貼上板子 */
+export const towerOpen = (s: Save) => nightDone(s) && s.beats.includes('finale-tower');
+export const finaleDone = (s: Save) => !!s.cases[FINALE_ID];
 
 /** 舊檔案：忍冬在四十天霧那個冬天寫的值班日誌。想知道更多的人可以在圖鑑裡慢慢讀；不讀也不影響玩 */
 export interface Leaf { id: string; day: string; hint: string; when(s: Save): boolean; lines: string[] }
@@ -218,9 +276,9 @@ export function record(save: Save, c: CaseDef, session: Session, score: Score, s
 export const TRIAL_SECONDS = 15 * 60, TRIAL_WARN = 3 * 60, TRIAL_PASS = 60;
 /** 第一章走完才開放：先在有人帶的情況下把流程走熟 */
 export const trialOpen = (s: Save) => chapterDone(1, s);
-/** 抽一位病人。四十八位都可能出，沒遇過的比較容易抽到；不會連續兩次抽到同一位。r 是 0 到 1 的亂數 */
+/** 抽一位病人。委託板上的四十八位都可能出（終章的那一位不抽），沒遇過的比較容易抽到；不會連續兩次抽到同一位。r 是 0 到 1 的亂數 */
 export function pickTrial(s: Save, r: number): CaseDef {
-  const last = s.trials[0]?.caseId, pool = CASES.filter((c) => c.id !== last || CASES.length === 1);
+  const last = s.trials[0]?.caseId, pool = CASES.filter((c) => c.id !== FINALE_ID && (c.id !== last || CASES.length === 1));
   const weight = (c: CaseDef) => (s.cases[c.id] || s.trials.some((t) => t.caseId === c.id) ? 1 : 3);
   let at = Math.min(0.999999, Math.max(0, r)) * pool.reduce((n, c) => n + weight(c), 0);
   for (const c of pool) { at -= weight(c); if (at < 0) return c; }
@@ -240,7 +298,8 @@ export function newReads(save: Save, c: CaseDef, session: Session) {
 
 /** 圖鑑的一頁：一隻症影、四個診斷、你在不同病人身上解讀對的線索 */
 export function codexOf(m: ComplaintDef, save: Save) {
-  const cases = CASES.filter((c) => c.complaint === m.id);
+  // 終章的那一位：遇到了才算進這一頁，之前不占分母（不然第五章走完，這一頁永遠寫不滿）
+  const cases = CASES.filter((c) => c.complaint === m.id && (c.id !== FINALE_ID || save.cases[c.id]));
   const forms = m.forms.map((f) => {
     const seenIn = cases.filter((c) => c.answer.truth === f.id && save.cases[c.id]?.found).map((c) => c.patient.name);
     const reads = cases.flatMap((c) => (save.cases[c.id]?.reads ?? []).filter((r) => r.form === f.id).map((r) => ({ ...r, who: c.patient.name })));
@@ -290,8 +349,9 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
       ...(has(save, CH3) ? ['最前面被拆走的那一頁，是他拆的。他沒有燒，藏了十五年。'] : []), ...(ch(5) ? ['新的圖鑑，他把那一頁訂回了最前面。'] : [])], shot: { kind: 'hall', view: face(74, 152) }, open: true, hint: '' },
     { id: 'shen', name: '沈渡', tag: '值班醫師', lines: ['值班鐘一響就會出現。', '他只說一句：「告訴我重點。」',
       ...(has(save, CH4_HALF) ? ['這一句，是四十天霧之後才開始問的。問了，他就會聽完。'] : [])], shot: { kind: 'ward', doctor: true, view: face(326, 170) }, open: any, hint: '完成第一張委託之後' },
-    { id: 'dong', name: '忍冬', tag: '寫舊索引的人', lines: ['岑禾的老師。十五年前的冬天，她寫出了那本「一隻症影一行字」的索引。', ...(has(save, CH5_HALF) ? ['現在守著燈塔。那盞燈十五年沒有熄過，她也沒有下來過。'] : ['沒有人說她後來去了哪裡。'])],
-      shot: { kind: 'hall', view: face(87, 84, 62) }, open: has(save, CH3_HALF), hint: '第三章走到一半之後' },
+    { id: 'dong', name: '忍冬', tag: finaleDone(save) ? '71 歲，燈塔的守燈人' : '寫舊索引的人', lines: ['岑禾的老師。十五年前的冬天，她寫出了那本「一隻症影一行字」的索引。', ...(has(save, CH5_HALF) ? ['後來守著燈塔。那盞燈十五年沒有熄過，她也沒有下來過。'] : ['沒有人說她後來去了哪裡。']),
+      ...(finaleDone(save) ? ['大霧的那一夜，她說「還撐得住」。' + (save.cases[FINALE_ID].found ? '你沒有照她的話看，也沒有照索引看。' : '那一夜的診斷，你還沒有對過。'), '她留了三行字給你。'] : [])],
+      shot: finaleDone(save) ? { kind: 'ward', patient: 'dong', scene: 'tower', view: face(92, 170) } : { kind: 'hall', view: face(87, 84, 62) }, open: has(save, CH3_HALF), hint: '第三章走到一半之後' },
   ];
   const after: Record<string, string> = {
     c01a: '後來他把菸戒了。那一晚，女兒自己守完了燈。',
@@ -316,7 +376,7 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
     c05d: '結果是醫師、她和女兒三個人一起聽的。之後的每一次回診，女兒都陪著。',
     ...AFTER_MORE,   // 第四章以後的，寫在每個主訴自己的文獻檔裡
   };
-  const patients: Entry[] = CASES.map((c) => {
+  const patients: Entry[] = CASES.filter((c) => c.id !== FINALE_ID).map((c) => {
     const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;
     return {
       id: c.id, name: c.patient.name, tag: c.patient.age + ' 歲，' + c.patient.job,
@@ -327,17 +387,25 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
   return { guild, patients };
 }
 
-/** 場景：去過的地方。最後兩個是之後的章節才會去的 */
+/** 場景：去過的地方。公會在霧港有五個診間，一章換一個；出診到碼頭；終章上燈塔 */
 export function placesOf(save: Save): Entry[] {
   const any = Object.keys(save.cases).length > 0;
+  const been = (ch: number) => QUESTS.some((q) => q.chapter === ch && save.cases[q.caseId]);
+  const room = (id: 'market' | 'archive' | 'yard' | 'quiet', ch: number, patient: string, lines: string[]): Entry => (
+    { id, name: PLACES[id].name, tag: CHAPTERS_ZH[ch], lines, shot: { kind: 'ward', patient, scene: id }, open: been(ch), hint: '完成' + CHAPTERS_ZH[ch] + '的第一張委託之後' });
   return [
     { id: 'hall', name: '公會大廳', tag: '霧港', lines: ['委託板、眠墨的櫃台、看得到燈塔的拱窗。每一張委託從這裡開始，也回到這裡。'], shot: { kind: 'hall' }, open: true, hint: '' },
-    { id: 'ward', name: '公會的病室', tag: '大廳旁邊那扇門', lines: ['一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。'], shot: { kind: 'ward', patient: 'lin' }, open: any, hint: '完成第一張委託之後' },
-    { id: 'dock', name: '碼頭的貨棧', tag: '出診', lines: ['船一靠岸，走不到公會的人就先扶進這裡。', '出診的時候，岑禾會把值班鐘一起帶來，掛在樑上。'], shot: { kind: 'ward', patient: 'zhou', scene: 'dock' }, open: !!save.cases.c01d, hint: '完成「靠岸的那天早上」之後' },
-    { id: 'tower', name: '燈塔的值夜房', tag: '還沒去過', lines: [], shot: { kind: 'hall' }, open: false, hint: chapterDone(5, save) ? '終章：大霧值班夜' : '之後的章節' },
-    { id: 'yard', name: '船塢的工寮', tag: '還沒去過', lines: [], shot: { kind: 'hall' }, open: false, hint: '之後的章節' },
+    { id: 'ward', name: PLACES.ward.name, tag: '第一章・大廳旁邊那扇門', lines: ['一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。'], shot: { kind: 'ward', patient: 'lin' }, open: any, hint: '完成第一張委託之後' },
+    { id: 'dock', name: PLACES.dock.name, tag: '出診', lines: ['船一靠岸，走不到公會的人就先扶進這裡。', '出診的時候，岑禾會把值班鐘一起帶來，掛在樑上。'], shot: { kind: 'ward', patient: 'zhou', scene: 'dock' }, open: !!save.cases.c01d, hint: '完成「靠岸的那天早上」之後' },
+    room('market', 2, 'song', ['魚市口的人天沒亮就上工，不舒服也不肯爬坡。公會在這裡留了一間診間。', '窗外就是魚市的棚子。那隻貓，在這裡待得最久。']),
+    room('archive', 3, 'he', ['檔案室隔壁，很久沒有人用的一間。牆上那一道線，是淹水那一夜的水痕。', '繩子上晾著一張一張舊索引。墨暈開的那幾張，眠墨說還認得出來。']),
+    room('yard', 4, 'c06a', ['公會跟船塢借的工寮。門外的船台上，有一艘造到一半的船。', '來這裡的人，多半是放下手上的活、撐著走過來的。']),
+    room('quiet', 5, 'c09d', ['坡上的一間。門關得起來，屏風拉得上。圓窗看下去是整個霧港，遠遠的是燈塔。', '有些話，要在這樣的地方才問得出來。']),
+    { id: 'tower', name: PLACES.tower.name, tag: finaleDone(save) ? '終章' : '還沒去過', lines: finaleDone(save) ? ['燈室底下的一間圓房間。架上一排值夜日誌，一年一本，十五本。', '大霧的那一夜，燈熄過一次。天亮之前，有人把它點回來了。'] : [],
+      shot: { kind: 'ward', patient: 'dong', scene: 'tower', lit: true }, open: finaleDone(save), hint: finaleOpen(save) ? '終章：大霧值班夜' : '第五章走完之後' },
   ];
 }
+const CHAPTERS_ZH: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
 /** 症影那一頁整體寫回了多少：每隻症影的百分比平均 */
 export const codexPercent = (list: ComplaintDef[], save: Save) => (list.length ? Math.round(list.reduce((n, m) => n + codexOf(m, save).percent, 0) / list.length) : 0);

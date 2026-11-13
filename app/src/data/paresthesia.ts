@@ -8,6 +8,7 @@ export const PARESTHESIA: ComplaintDef = {
   id: 'paresthesia',
   name: '感覺異常',
   shadow: { name: '麻木鰻', look: 'eel', lore: '感覺異常的症影。游過的地方又麻又刺，像有細細的電。它從哪一段神經游過去，麻的地方就畫出那一段的形狀。' },
+  place: 'quiet',
   forms: [
     { id: 'brain', name: '腦', mark: '腦', danger: true, blurb: '腦的血管堵住或破掉：中風、暫時性腦缺血。' },
     { id: 'cord', name: '脊髓與神經根', mark: '髓', danger: true, blurb: '脊髓或神經根出了問題：脊髓的病變、頸椎或腰椎的壓迫。' },
