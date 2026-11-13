@@ -55,7 +55,8 @@ export function offline(): Plugin {
     apply: 'build',
     configResolved(c) { root = c.root; out = resolve(c.root, c.build.outDir); },
     closeBundle() {
-      const files = walk(out).map((f) => relative(out, f).replace(/\\/g, '/')).filter((f) => f !== 'sw.js' && !f.endsWith('.txt')).sort();
+      // social/ 是發到 Threads 用的圖（每日一案）：放在同一個網站上讓 Threads 來抓，但不是遊戲的一部分，不存進玩家的裝置
+      const files = walk(out).map((f) => relative(out, f).replace(/\\/g, '/')).filter((f) => f !== 'sw.js' && !f.endsWith('.txt') && !f.startsWith('social/')).sort();
       const build = sha(...files.flatMap((f) => [f, readFileSync(join(out, f))])).slice(0, 12);
       const isFont = (f: string) => f.startsWith('fonts/');
       // './' 是首頁本身：從主畫面的圖示打開、或是網址後面沒有檔名的時候用的。index.html 不另外存一份：

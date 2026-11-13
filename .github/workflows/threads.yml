@@ -1,0 +1,57 @@
+# 每天把當天的「每日一案」發到 Threads（social/）。
+# 要先在 GitHub 放一個 secret：THREADS_ACCESS_TOKEN。沒有放的時候，這個排程每天跑完檢查就停，什麼都不發。
+# 想暫停：把那個 secret 刪掉，或是在 Actions 頁面把這個 workflow 停用。說明在 social/README.md。
+name: Threads 每日一案
+
+on:
+  schedule:
+    - cron: '37 23 * * *'   # 臺灣時間每天早上 7:37（這裡寫的是 UTC，前一天的 23:37）。GitHub 的排程有時候會晚幾十分鐘
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 試跑：只檢查，不真的發
+        type: boolean
+        default: true
+      date:
+        description: 要發哪一天的（YYYY-MM-DD）。空白是臺灣時間的今天
+        required: false
+  pull_request:
+    paths: ['social/**', 'app/public/social/**', '.github/workflows/threads.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: threads-post
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: 日程和發文程式的測試
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test social/post.test.mjs
+
+  post:
+    name: 發今天的那一則
+    # 只在 main 上、而且不是 PR 的時候才會動到真的帳號
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 發文（沒有設定權杖就只檢查）
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
+          POST_DATE: ${{ github.event_name == 'workflow_dispatch' && inputs.date || '' }}
+        run: node social/post.mjs
