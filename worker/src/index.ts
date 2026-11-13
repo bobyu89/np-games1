@@ -4,6 +4,9 @@
 //     POST /api/e                   遊戲回傳事件（不用密碼；只收認得的欄位）
 //     GET  /api/stats               總表（要管理密碼）
 //     GET  /api/export.csv          每一筆事件一列（要管理密碼）
+//   玩家的回報
+//     POST /api/report              哪裡有錯、哪裡卡住、有什麼建議（匿名）
+//     GET  /api/reports             最近的回報（要管理密碼）
 //   登入和進度同步（選用；不登入照樣能玩）
 //     GET  /api/me                  開了哪幾種登入、現在有沒有登入
 //     GET  /api/auth/<哪一家>/start     把人送去 Google 或 LINE 登入
@@ -14,7 +17,7 @@
 // 管理密碼是 Worker 的 secret：ADMIN_KEY。沒有設定的時候，總表一律不給看。
 // 登入要另外設定 GOOGLE_CLIENT_ID／GOOGLE_CLIENT_SECRET、LINE_CHANNEL_ID／LINE_CHANNEL_SECRET；哪一家沒設定，那一家就不會出現。
 import { DurableObject } from 'cloudflare:workers';
-import { SCHEMA, add, csv, parse, summary, type Exec, type Row, type Value } from './core.ts';
+import { SCHEMA, add, addReport, csv, listReports, parse, parseReport, summary, type Exec, type Report, type Row, type Value } from './core.ts';
 import { ACCOUNT_SCHEMA, LIMIT, PROVIDERS, accountId, begin, checkClaims, checkSave, counts, finish, isProvider, pepperOf, random, readSave, remove, sha256, signIn, signOut, who, writeSave, type Provider } from './accounts.ts';
 
 interface Env {
@@ -38,6 +41,8 @@ export class Stats extends DurableObject<Env> {
   add(rows: Row[]) { return add(this.exec, rows, now()); }
   summary(days: number | null) { return summary(this.exec, days, now()); }
   csv(days: number | null) { return csv(this.exec, days, now()); }
+  addReport(r: Report) { return addReport(this.exec, r); }
+  reports(days: number | null) { return listReports(this.exec, days, now()); }
 }
 
 /** 放帳號和雲端進度的地方。和統計是分開的兩個資料庫，沒有共同的欄位 */
@@ -118,13 +123,24 @@ export default {
       await env.STATS.get(env.STATS.idFromName('main')).add(rows);
       return reply(null, 204);
     }
-    if (req.method === 'GET' && (path === '/stats' || path === '/export.csv')) {
+    if (req.method === 'POST' && path === '/report') {
+      if (!ok) return text('這個網址不在允許的名單裡。', 403);   // 一定要是遊戲自己的網頁送的
+      const raw = await req.text();
+      if (raw.length > 8_000) return text('太長了。', 413);
+      let body: unknown;
+      try { body = JSON.parse(raw); } catch { return text('看不懂。', 400); }
+      const r = parseReport(body, now());
+      if (!r) return text('格式不對。', 400);
+      return (await env.STATS.get(env.STATS.idFromName('main')).addReport(r)) ? reply(null, 204) : text('今天收到的回報太多了，請明天再試。', 429);
+    }
+    if (req.method === 'GET' && (path === '/stats' || path === '/export.csv' || path === '/reports')) {
       if (!env.ADMIN_KEY) return text('還沒有設定管理密碼（ADMIN_KEY）。', 503);
       const given = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
       if (!given || !(await sameKey(given, env.ADMIN_KEY))) return text('密碼不對。', 401);
       const d = Number(url.searchParams.get('days')), days = Number.isInteger(d) && d >= 1 && d <= 3650 ? d : null;
       const store = env.STATS.get(env.STATS.idFromName('main'));
       // 帳號那一邊只給數字：有幾個帳號、幾份雲端的進度
+      if (path === '/reports') return json({ reports: await store.reports(days) });
       if (path === '/stats') return json({ ...(await store.summary(days)), accounts: await env.ACCOUNTS.get(env.ACCOUNTS.idFromName('main')).counts() });
       return reply(await store.csv(days), 200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="mist-guild-events.csv"' });
     }

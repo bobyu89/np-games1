@@ -11,14 +11,14 @@ import type { Run, Save } from './store.ts';
 import { Settings, StatsFacts } from './Settings.tsx';
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
-import { ARCHIVE, BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
+import { ARCHIVE, BEATS, HEROES, QUESTS, TRIAL_PASS, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
 import { WELCOME, WORLD } from './world.ts';
 import { Portrait } from './Portrait.tsx';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
 /** run：上次沒結案的那一張委託 */
-interface Props { save: Save; run: Run | null; onHome(): void; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void }
+interface Props { save: Save; run: Run | null; onHome(): void; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onTrial(c: CaseDef): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void }
 
 /** 圖鑑裡的一張卡：遇到了、去過了才看得到 */
 function Card({ e, wide }: { e: Entry; wide?: boolean }) {
@@ -43,7 +43,7 @@ function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(i
   );
 }
 
-export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onResume, onDropRun, onImport, onReset }: Props) {
+export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, onResume, onDropRun, onImport, onReset }: Props) {
   const [pendingBeat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
   // 先知道自己是誰，故事才開始：還沒選主角之前，序章先等著
   const beat = save.hero === null ? null : pendingBeat;
@@ -55,6 +55,8 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onResume,
   const [soundOn, setSoundOn] = useState(sound.on);
   const [settings, setSettings] = useState(false);
   const [story, setStory] = useState<Beat | null>(null);   // 從圖鑑重看的那一段故事
+  const [trialSheet, setTrialSheet] = useState(false);     // 資格試煉：先看規則，再抽題、閱題
+  const [drawn, setDrawn] = useState<CaseDef | null>(null); // 抽到的那一位。抽了就不能重抽
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
   const [later, setLater] = useState(false);   // 按了關閉：這一次先不問，下次打開再問
@@ -66,6 +68,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onResume,
     if (save.hero === null) return;
     if (beat) { talk.current?.say([{ ...beat.lines[step], text: toYou(beat.lines[step].text, save.hero) }]); return; }
     const last = save.takeaways[0];
+    if (pending && run!.trial) { talk.current?.say([{ who: 'mentor', text: run!.session.closedAt !== null ? '試煉交卷了，成績還沒看。' : '資格試煉考到一半。倒數會從你離開的時候接下去。' }]); return; }
     if (pending) { talk.current?.say([{ who: 'mentor', text: run!.session.closedAt !== null ? pending.patient.name + '那一張結案了，回顧還沒看完。' : pending.patient.name + '還在等你。上次做到一半，可以接著做。' }]); return; }
     talk.current?.say([{ who: 'mentor', text: last ? '你上次說，下次要做到：' + last : fresh ? '委託板上有一張新的。準備好了就接。' : '板子上的委託都走過了。想再走一次也可以，圖鑑還有空白。' }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,8 +86,9 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onResume,
     if (step + 1 >= beat.lines.length) endBeat(); else setStep(step + 1);
   };
   const onFrame = (s: StageHandle) => {
-    const who = speaker.current, key = who === 'mentor' ? 'cen' : who === 'mo' ? 'mo' : null;
+    const who = speaker.current, key = who === 'mentor' ? 'cen' : who === 'mo' ? 'mo' : who === 'doctor' ? 'shen' : null;
     s.state.talker = key; s.state.glow = !beat && fresh ? 1 : 0;
+    s.state.fx = beat ? beat.lines[step]?.fx ?? '' : '';
     const at = key ? s.anchor(key) : null, b = bubble.current;
     if (b) { b.hidden = !at; if (at) { b.style.left = Math.round(at.x) + 'px'; b.style.top = Math.round(at.y) + 'px'; } }
   };
@@ -109,11 +113,15 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onResume,
           ) : (
             <div className="quests">
               {pwa.update && <button type="button" className="quest paper hint" onClick={() => { sfx.done(); applyUpdate(); }}><i className="seal" aria-hidden="true" /><b>有新的版本</b><span>換上只要幾秒，進度不會動</span><em>現在更新</em></button>}
-              {pending && run && <>
+              {pending && run && (run.trial ? <>
+                <div className="quest-head">還沒交卷</div>
+                <button type="button" className="quest paper hint" onClick={() => { sfx.page(); onResume(); }}><i className="seal" aria-hidden="true" /><b>資格試煉</b><span>{pending.patient.name}｜{run.session.closedAt !== null ? '交卷了，成績還沒看' : '考到一半'}</span><em>{run.session.closedAt !== null ? '看成績' : '接著考'}</em></button>
+                {run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>不考了，放掉這一場</button>}
+              </> : <>
                 <div className="quest-head">還沒結案</div>
                 <button type="button" className="quest paper hint" onClick={() => { sfx.page(); onResume(); }}><i className="seal" aria-hidden="true" /><b>{pending.title}</b><span>{pending.patient.name}｜{run.session.closedAt !== null ? '結案了，回顧還沒看完' : '做到一半'}</span><em>{run.session.closedAt !== null ? '看回顧' : '接著做'}</em></button>
                 {run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>不接了，放掉這一張</button>}
-              </>}
+              </>)}
               {COMPLAINTS.map((m) => {
                 const mine = QUESTS.filter((q) => caseById(q.caseId).complaint === m.id);
                 if (!mine.length) return null;
@@ -137,7 +145,10 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onResume,
                 );
               })}
               <div className="quest paper locked" aria-disabled="true"><b>終章</b><span>大霧值班夜</span><em>整理中</em></div>
-              <div className="quest paper locked" aria-disabled="true"><b>資格試煉</b><span>抽一個沒練過的主訴，15 分鐘</span><em>還沒開放</em></div>
+              <div className="quest-head">驗收</div>
+              {trialOpen(save)
+                ? <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>資格試煉</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
+                : <div className="quest paper locked" aria-disabled="true"><b>資格試煉</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>第一章走完之後開放</em></div>}
             </div>
           )}
         </div>
@@ -162,6 +173,33 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onResume,
             <li>一張委託大約 10 到 12 分鐘。</li>
           </ul>
           <p className="dim">{reading.review.note}</p>
+        </Sheet>
+      )}
+      {trialSheet && !drawn && (
+        <Sheet title="資格試煉" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setDrawn(pickTrial(save, Math.random())); }}>抽題</button>}>
+          <p>照甄審口試的條件，完整走一次。</p>
+          <ul>
+            <li><b>用抽的。</b>四十八位病人都可能出，包括你還沒遇過的。抽了就不能重抽。</li>
+            <li><b>站內 15 分鐘，照真的時間倒數。</b>看字、想事情的時間也算。剩 3 分鐘會提醒；時間到，手上有什麼就交什麼。</li>
+            <li><b>沒有提示。</b>岑禾不在；線索判讀得對不對，當下不會告訴你；症影和四盞燈都收起來。</li>
+            <li><b>交卷之後才有成績和回顧。</b>{TRIAL_PASS} 分及格（115 年度甄審的規定）。</li>
+            <li>不會寫進圖鑑，也不算完成委託。之後在委託板遇到同一位病人，會覺得眼熟，這沒有關係。</li>
+          </ul>
+          <p className="dim">遊戲的分數是訓練用的，不代表正式甄審的成績。病例都還是草稿，還沒有經過臨床老師審查。</p>
+          {save.trials.length > 0 && <>
+            <h3>考過的</h3>
+            <ul className="path">{save.trials.slice(0, 6).map((t) => <li key={t.at} className={t.score >= TRIAL_PASS ? 'up' : 'down'}><b>{new Date(t.at).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' })}</b>　{caseById(t.caseId).patient.name}（{caseById(t.caseId).complaintName}）：{t.score} 分，{t.timeUp ? '時間到' : '用了 ' + Math.floor(t.seconds / 60) + ' 分'}</li>)}</ul>
+          </>}
+        </Sheet>
+      )}
+      {trialSheet && drawn && (
+        <Sheet title="資格試煉：閱題" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { const c = drawn; setDrawn(null); setTrialSheet(false); onTrial(c); }}>進場，開始倒數</button>}>
+          <p className="dim">正式考試在門口有 2 分鐘讀這一頁。這裡不計時：準備好了再進場，進場才開始倒數。</p>
+          {drawn.reading.lines.map((l, i) => <p key={i}>{l}</p>)}
+          <h3>進門之前，先想三件事</h3>
+          <ul>{drawn.reading.prompts.map((p, i) => <li key={i}>{p}</li>)}</ul>
+          <h3>順序</h3>
+          <p>開場 → 主訴 → 病史 → 系統回顧 → 身體評估 → 下診斷 → 檢查、回報、說明 → 交卷。動手檢查之前，記得先向病人說明。</p>
         </Sheet>
       )}
       {settings && <Settings save={save} onImport={onImport} onReset={onReset} onReplayIntro={() => { setSettings(false); setBeat(BEATS[0]); setStep(0); }} onClose={() => setSettings(false)} />}

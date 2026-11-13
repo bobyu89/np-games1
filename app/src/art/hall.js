@@ -1,10 +1,12 @@
 // 公會大廳：委託板、眠墨的櫃台、看得到霧港和燈塔的窗。
 import { C, K, TAU, rect, rrect, prep, trace, shape, oval, wline, dot, leaf, fillRect, createBase } from './sketch.js';
-import { drawCat, drawCen, drawMo, drawHero } from './cast.js';
+import { drawCat, drawCen, drawMo, drawHero, drawShen } from './cast.js';
 
 const X0 = -220, X1 = 580, Y0 = -120, Y1 = 420;
 const FLOOR_Y = 196;
 const CEN = { x: 266, y: 270 }, MO = { x: 74, y: 191 }, PAPER = { x: 250, y: 82 }, HERO = { x: 190, y: 284 };
+// 故事演出用的位置：岑禾走到窗邊站的地方、沈渡進門站的地方、浮在半空的那一頁勘誤
+const CEN_WINDOW = { x: 172, y: 264 }, SHEN = { x: 330, y: 268 }, PAGE = { x: 214, y: 104 };
 const WINDOW = [[31, 144], [31, 64], [38, 45], [55, 33], [72, 30], [89, 33], [106, 45], [113, 64], [113, 144]];
 
 function paper(g, x, y, w, h, rot, lines, fill = C.paper) {
@@ -91,15 +93,19 @@ export function createHall(canvas, opts = {}) {
   const base = createBase(canvas, { back: drawBack, mid: drawMid }, opts.view), ctx = base.ctx;
   // glow：委託板上那張可以接的委託有沒有在發亮
   // hero：主角是哪一位（沒有就不畫）
-  const state = { talker: null, still: false, glow: 1, hero: opts.hero || null };
+  // fx：故事演到這一句的時候，場景要跟著做什麼（空白分開，可以好幾個）：
+  //   window 岑禾走到窗邊　shen 沈渡走進大廳　dusk 天色暗下來（在講以前的事）　dark 燈塔的燈熄了　page 那一頁勘誤浮出來　page12 第十二行亮起來
+  const state = { talker: null, still: false, glow: 1, hero: opts.hero || null, fx: '' };
+  const shown = { window: 0, shen: 0, dusk: 0, dark: 0, page: 0, page12: 0 };
   let T = 0;
 
   function drawWindowLife(g, t) {
     g.save(); trace(g, prep(WINDOW, true, 7, 0, 1), true); g.clip();
     // 燈塔的光掃過來
-    const dir = Math.sin(t * 0.7), a = 0.1 + 0.16 * (1 - Math.abs(dir));
+    const lit = 1 - shown.dark, dir = Math.sin(t * 0.7), a = (0.1 + 0.16 * (1 - Math.abs(dir))) * lit;
     g.globalAlpha = a; g.beginPath(); g.moveTo(87, 58); g.lineTo(87 + dir * 80 - 10, 58 + 26); g.lineTo(87 + dir * 80 + 10, 58 - 12); g.closePath(); g.fillStyle = C.glow; g.fill(); g.globalAlpha = 1;
-    g.globalAlpha = 0.5 + 0.3 * Math.sin(t * 3.1); dot(g, 87, 58, 4.2, C.glow); g.globalAlpha = 1;
+    g.globalAlpha = (0.5 + 0.3 * Math.sin(t * 3.1)) * lit; dot(g, 87, 58, 4.2, C.glow); g.globalAlpha = 1;
+    if (shown.dark > 0.02) { g.globalAlpha = shown.dark; fillRect(g, 82.5, 54, 9, 8, C.coat2); g.globalAlpha = 1; }
     // 霧一團一團飄過港口
     [[0, 100, 20, 8, 2.6], [46, 122, 24, 9, 1.9], [90, 84, 15, 6, 3.4], [20, 138, 22, 8, 2.2]].forEach(([x0, y, rx, ry, sp], i) => {
       const x = 130 - ((x0 + t * sp) % 150);
@@ -169,7 +175,11 @@ export function createHall(canvas, opts = {}) {
 
   return {
     state, resize: base.resize,
-    update(t) { T = t; K.boil = state.still ? 0 : Math.floor(t * 5) % 3; },
+    update(t, dt = 0.016) {
+      T = t; K.boil = state.still ? 0 : Math.floor(t * 5) % 3;
+      const on = String(state.fx || '').split(' '), k = state.still ? 1 : Math.min(1, dt * 2.6);
+      for (const name of Object.keys(shown)) shown[name] += ((on.includes(name) ? 1 : 0) - shown[name]) * k;
+    },
     render() {
       if (!base.img) return;
       const t = state.still ? 0 : T, g = ctx;
@@ -179,13 +189,32 @@ export function createHall(canvas, opts = {}) {
       drawMo(g, t, { x: MO.x, y: MO.y, talking: state.talker === 'mo' });
       base.paste('mid'); base.world();
       drawDeskLife(g, t);
-      drawCen(g, t, { x: CEN.x, y: CEN.y, talking: state.talker === 'cen', nod: 0 });
+      const w = shown.window, cx = CEN.x + (CEN_WINDOW.x - CEN.x) * w, cy = CEN.y + (CEN_WINDOW.y - CEN.y) * w;
+      if (shown.shen > 0.02) { g.globalAlpha = Math.min(1, shown.shen * 1.4); drawShen(g, t, { x: SHEN.x + (1 - shown.shen) * 46, y: SHEN.y, talking: state.talker === 'shen', walk: shown.shen < 0.96 && !state.still ? 1 : 0, scale: 1.1 }); g.globalAlpha = 1; }
+      drawCen(g, t, { x: cx, y: cy, talking: state.talker === 'cen', nod: 0 });
       if (state.hero) drawHero(g, t, { x: HERO.x, y: HERO.y, look: state.hero, talking: state.talker === 'you', scale: 1.1 });
       drawFront(g, t);
-      g.globalAlpha = 1; base.grain();
+      g.globalAlpha = 1;
+      // 講以前的事：整個大廳暗下來
+      if (shown.dusk > 0.02) { base.tint('rgba(26, 36, 54, ' + (0.46 * shown.dusk).toFixed(3) + ')'); base.world(); }
+      // 那一頁勘誤：十一個名字，第十二行是空的
+      if (shown.page > 0.02) {
+        const p = shown.page, bob = state.still ? 0 : Math.sin(t * 1.3) * 1.6;
+        g.save(); g.globalAlpha = Math.min(1, p * 1.3); g.translate(PAGE.x, PAGE.y + (1 - p) * 26 + bob); g.rotate(-0.04 + (1 - p) * 0.18);
+        g.globalAlpha *= 0.3; dot(g, 0, 0, 62, C.glow); g.globalAlpha = Math.min(1, p * 1.3);
+        K.seed = 8800;
+        shape(g, rect(-36, -48, 72, 96), { fill: C.paper, lw: 1.5, amp: 0.5 });
+        shape(g, [[-36, 30], [-30, 34], [-22, 29], [-36, 40]], { fill: C.paperLine, stroke: null });   // 泡過水的一角
+        wline(g, [[-12, -39], [12, -39]], C.rust, 2.2, { amp: 0.3 }); wline(g, [[-9, -35.5], [9, -35.5]], C.rust, 1, { amp: 0.2 });
+        for (let i = 0; i < 11; i++) wline(g, [[-27, -27 + i * 5.6], [-27 + 22 + ((i * 7) % 5) * 5, -27 + i * 5.6]], C.ink, 1, { amp: 0.25, seed: 8810 + i });
+        const y12 = -27 + 11 * 5.6;
+        if (shown.page12 > 0.02) { g.globalAlpha = Math.min(1, p) * shown.page12 * (0.55 + 0.25 * Math.sin(t * 2.4)); shape(g, rrect(-30, y12 - 3.4, 60, 7, 2.5), { fill: C.glow, stroke: C.ochre, lw: 1.2, amp: 0.2, double: false }); }
+        g.restore(); g.globalAlpha = 1;
+      }
+      base.grain();
     },
     anchor(who) {
-      const p = who === 'cen' ? [CEN.x - 1, CEN.y - 146] : who === 'mo' ? [MO.x, MO.y - 84] : who === 'board' ? [PAPER.x, PAPER.y - 30] : null;
+      const p = who === 'cen' ? [CEN.x + (CEN_WINDOW.x - CEN.x) * shown.window - 1, CEN.y - 146] : who === 'shen' ? [SHEN.x, SHEN.y - 150] : who === 'mo' ? [MO.x, MO.y - 84] : who === 'board' ? [PAPER.x, PAPER.y - 30] : null;
       return p && base.css(p[0], p[1]);
     },
     clue() {}, ring() {}, jolt() {}, setLights() {},

@@ -11,6 +11,8 @@ import { QUESTS, heroOf, rankOf } from './progress.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
 import { PROVIDER_NAME, accountState, accountSubscribe, cameBack } from './account.ts';
 import { WELCOME } from './world.ts';
+import { ReportSheet } from './Report.tsx';
+import { openPrivacy } from './PrivacyPage.tsx';
 
 interface Props { save: Save; run: Run | null; onPlay(): void; onImport(s: Save): void; onReset(): void }
 
@@ -19,12 +21,12 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const acct = useSyncExternalStore(accountSubscribe, accountState);
   // 剛登入完被送回來：直接打開帳號那一頁，讓人看到結果
-  const [sheet, setSheet] = useState<null | 'account' | 'settings' | 'about'>(() => (cameBack() ? 'account' : null));
+  const [sheet, setSheet] = useState<null | 'account' | 'settings' | 'about' | 'report'>(() => (cameBack() ? 'account' : null));
   const [soundOn, setSoundOn] = useState(sound.on);
   const started = save.hero !== null || save.beats.length > 0 || Object.keys(save.cases).length > 0;
   const done = QUESTS.filter((q) => save.cases[q.caseId]).length, pending = run ? caseById(run.caseId) : null;
   const canSignIn = acct.providers.length > 0 || !!acct.account;
-  const open = (s: 'account' | 'settings' | 'about') => { sfx.page(); setSheet(s); };
+  const open = (s: 'account' | 'settings' | 'about' | 'report') => { sfx.page(); setSheet(s); };
 
   return (
     <div className="screen title">
@@ -57,6 +59,7 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
 
       {sheet === 'account' && <Sheet title="登入與同步" onClose={() => setSheet(null)}><AccountPanel /></Sheet>}
       {sheet === 'settings' && <Settings save={save} onImport={onImport} onReset={onReset} onClose={() => setSheet(null)} />}
+      {sheet === 'report' && <ReportSheet place="title" onClose={() => setSheet(null)} />}
       {sheet === 'about' && (
         <Sheet title="關於這個遊戲" onClose={() => setSheet(null)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setSheet(null); onPlay(); }}>{started ? '繼續遊戲' : '開始遊戲'}</button>}>
           <p>{WELCOME.what}</p>
@@ -70,6 +73,10 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
           </ul>
           <h3>這個遊戲用到的</h3>
           <p className="dim">圖是用程式一筆一筆畫的。字體是 LXGW WenKai TC（SIL Open Font License 1.1）。</p>
+          <div className="stack">
+            {acct.backend && <button type="button" className="pick" onClick={() => open('report')}>回報問題或建議</button>}
+            <button type="button" className="pick" onClick={() => { sfx.page(); openPrivacy(); }}>隱私說明</button>
+          </div>
         </Sheet>
       )}
     </div>

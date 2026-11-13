@@ -5,9 +5,11 @@ import { CASES } from '../data/index.ts';
 import { STATS_URL, statsBuilt } from './stats.ts';
 
 interface CaseRow { case_id: string; starts: number; dones: number; starters: number; finishers: number; firstScore: number | null; score: number | null; met: number; late: number; review: number; found: number; secs: number | null; hints: number | null; stuck: [number, number, number, number] }
+const REPORT_KIND: Record<string, string> = { content: '內容有錯', stuck: '操作卡住', idea: '建議', other: '其他' };
+const REPORT_PLACE: Record<string, string> = { title: '首頁', hall: '大廳', ward: '病室', debrief: '回顧', settings: '設定' };
 interface Summary {
   since: string | null; until: string;
-  totals: { devices: number; finishers: number; returning: number; installed: number; opens: number; starts: number; dones: number; leaves: number; drops: number };
+  totals: { devices: number; finishers: number; returning: number; installed: number; opens: number; starts: number; dones: number; leaves: number; drops: number; trials?: number; trialPass?: number };
   days: { day: string; devices: number; starts: number; dones: number }[]; cases: CaseRow[];
   accounts?: { accounts: number; saves: number; google: number; line: number };
   platforms: { pf: string; devices: number }[]; builds: { build: string; devices: number; last: string }[]; depth: { label: string; devices: number }[];
@@ -24,6 +26,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
   const [key, setKey] = useState(() => { try { return sessionStorage.getItem('mist-guild.admin') ?? ''; } catch { return ''; } });
   const [days, setDays] = useState('30');
   const [data, setData] = useState<Summary | null>(null);
+  const [reports, setReports] = useState<{ at: number; build: string; pf: string; kind: string; place: string; case_id: string; text: string }[] | null>(null);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -39,7 +42,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
   const load = async () => {
     if (!key) { setNote('先輸入管理密碼。'); return; }
     setBusy(true); setNote('');
-    try { setData(await (await ask('/stats')).json() as Summary); try { sessionStorage.setItem('mist-guild.admin', key); } catch { /* 記不住就每次輸入 */ } }
+    try { setData(await (await ask('/stats')).json() as Summary); try { setReports(((await (await ask('/reports')).json()) as { reports: NonNullable<typeof reports> }).reports); } catch { setReports(null); } try { sessionStorage.setItem('mist-guild.admin', key); } catch { /* 記不住就每次輸入 */ } }
     catch (e) { setData(null); setNote(e instanceof TypeError ? '連不到端點。可能是沒有網路，或是這個網址不在端點允許的名單裡。' : (e as Error).message); }
     setBusy(false);
   };
@@ -70,9 +73,20 @@ export function StatsPage({ onClose }: { onClose(): void }) {
       {data && t && <>
         <h2>總覽（{data.since ?? '一開始'} 到 {data.until}）</h2>
         <div className="tiles">
-          {([['出現過的裝置', t.devices], ['至少結案一張', t.finishers], ['在兩天以上出現', t.returning], ['從主畫面圖示開過', t.installed], ['接了幾張', t.starts], ['結案幾張', t.dones], ['做到一半回公會', t.leaves], ['放掉', t.drops]] as [string, number][])
+          {([['出現過的裝置', t.devices], ['至少結案一張', t.finishers], ['在兩天以上出現', t.returning], ['從主畫面圖示開過', t.installed], ['接了幾張', t.starts], ['結案幾張', t.dones], ['做到一半回公會', t.leaves], ['放掉', t.drops], ['資格試煉幾場', t.trials ?? 0], ['試煉及格幾場', t.trialPass ?? 0]] as [string, number][])
             .map(([name, n]) => <div key={name} className="tile"><b>{n}</b><span>{name}</span></div>)}
         </div>
+
+        <h2>玩家的回報</h2>
+        {!reports ? <p className="dim">讀不到回報。</p> : !reports.length ? <p className="dim">這個範圍裡沒有回報。</p> : (
+          <div className="tw"><table>
+            <thead><tr><th>什麼時候</th><th>種類</th><th>哪一張委託</th><th>在哪個畫面</th><th>版本</th><th>寫了什麼</th></tr></thead>
+            <tbody>{reports.map((r, i) => (
+              <tr key={r.at + ':' + i}><td>{new Date(r.at * 1000).toLocaleString('zh-TW', { hour12: false, month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td><td>{REPORT_KIND[r.kind] ?? r.kind}</td><td>{r.case_id ? nameOf(r.case_id) : '—'}</td><td>{REPORT_PLACE[r.place] ?? '—'}・{PF[r.pf] ?? r.pf}</td><td>{r.build || '—'}</td><td className="wide said">{r.text}</td></tr>
+            ))}</tbody>
+          </table></div>
+        )}
+        <p className="dim">回報是匿名的，最多列出最近 300 則。裡面的字是玩家自己寫的。</p>
 
         <h2>每一關</h2>
         <div className="tw"><table>

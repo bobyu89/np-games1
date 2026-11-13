@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { CAP, SCHEMA, add, csv, dayOf, parse, summary, type Exec, type Value } from './core.ts';
+import { CAP, REPORT_CAP, SCHEMA, add, addReport, csv, dayOf, listReports, parse, parseReport, summary, type Exec, type Value } from './core.ts';
 
 const NOW = Date.UTC(2026, 10, 12, 4, 0, 0) / 1000;   // 台北時間 2026-11-12 中午
 function fresh(): Exec {
@@ -67,7 +67,7 @@ test('總表：人數、每一關、卡在哪一段、玩得多深', () => {
   send(exec, pack(3, [{ t: 'open', at: NOW - 40 * D }], { pf: 'desktop', b: '2026-10-01.old0000' }));
 
   const all = summary(exec, null, NOW);
-  assert.deepEqual(all.totals, { devices: 3, finishers: 1, returning: 1, installed: 1, opens: 4, starts: 4, dones: 3, leaves: 1, drops: 1 });
+  assert.deepEqual(all.totals, { devices: 3, finishers: 1, returning: 1, installed: 1, opens: 4, starts: 4, dones: 3, leaves: 1, drops: 1, trials: 0, trialPass: 0 });
   const a = all.cases.find((c) => c.case_id === 'c01a')!;
   assert.deepEqual([a.starts, a.dones, a.starters, a.finishers, a.firstScore, a.score, a.met, a.late, a.review, a.found, a.secs, a.hints], [3, 2, 2, 1, 60, 75, 1, 1, 0, 1, 590, 1]);
   assert.deepEqual(a.stuck, [0, 2, 0, 0]);
@@ -81,4 +81,33 @@ test('總表：人數、每一關、卡在哪一段、玩得多深', () => {
   assert.equal(week.totals.devices, 2, '四十天前的那一台不算在最近七天');
   assert.equal(summary(exec, 1, NOW).totals.dones, 2, '只看今天');
   assert.equal(csv(exec, 7, NOW).trim().split('\n').length, 1 + 12);
+});
+
+test('資格試煉另外算：不混進每一關的表，也不算「結案」', () => {
+  const exec = fresh();
+  send(exec, pack(1, [{ t: 'start', c: 'c01a', at: NOW }, { t: 'done', c: 'c01a', at: NOW + 600, sc: 80, sf: 'met', sec: 600, n: 1, f: 1 }, { t: 'trial', c: 'c07b', at: NOW + 900, sc: 72, sf: 'met', sec: 850, f: 1 }]));
+  send(exec, pack(2, [{ t: 'trial', c: 'c01a', at: NOW + 50, sc: 41, sf: 'review', sec: 900, f: 0 }]));
+  const s = summary(exec, null, NOW + 1000);
+  assert.equal(s.totals.trials, 2);
+  assert.equal(s.totals.trialPass, 1);
+  assert.equal(s.totals.dones, 1);
+  assert.equal(s.totals.finishers, 1, '只考試煉、沒有結案過委託的裝置不算');
+  assert.deepEqual(s.cases.map((c) => c.case_id), ['c01a'], '只被試煉抽到的 c07b 不會出現在每一關的表裡');
+  assert.equal(s.cases[0].score, 80, '試煉的分數沒有混進委託的平均');
+});
+
+test('玩家的回報：只留認得的欄位、有長度和每天的上限、新的在前面', () => {
+  const exec = fresh();
+  for (const junk of [null, {}, { v: 1, kind: 'content' }, { v: 1, kind: 'nope', text: '有問題' }, { v: 2, kind: 'content', text: '有問題' }, { v: 1, kind: 'content', text: ' ' }, { v: 1, kind: 'content', text: 'x'.repeat(REPORT_CAP.text + 1) }]) assert.equal(parseReport(junk, NOW), null);
+  const r = parseReport({ v: 1, kind: 'content', text: '  林秋的心電圖\u0007寫反了\n第二行  ', c: 'c01a', place: 'debrief', b: '2026-11-13.abc1234', pf: 'ios', name: '某某', email: 'a@b.c', device: 'abc' }, NOW)!;
+  assert.deepEqual(r, { at: NOW, day: dayOf(NOW), build: '2026-11-13.abc1234', pf: 'ios', kind: 'content', place: 'debrief', case_id: 'c01a', text: '林秋的心電圖寫反了\n第二行' });
+  assert.equal(parseReport({ v: 1, kind: 'idea', text: '想要夜間模式', c: '../x', place: 'nowhere', b: '<script>', pf: 'toaster' }, NOW)!.case_id, '');
+  assert.equal(addReport(exec, r), true);
+  assert.equal(addReport(exec, { ...parseReport({ v: 1, kind: 'idea', text: '想要夜間模式' }, NOW + 60)! }), true);
+  const list = listReports(exec, null, NOW + 100);
+  assert.deepEqual(list.map((x) => x.text), ['想要夜間模式', '林秋的心電圖寫反了\n第二行']);
+  assert.deepEqual(Object.keys(list[0]).sort(), ['at', 'build', 'case_id', 'day', 'kind', 'pf', 'place', 'text']);
+  for (let i = 0; i < REPORT_CAP.perDay; i++) addReport(exec, { ...r, text: '灌水 ' + i });
+  assert.equal(addReport(exec, r), false, '今天滿了');
+  assert.equal(addReport(exec, { ...r, at: NOW + 86_400, day: dayOf(NOW + 86_400) }), true, '隔天又可以');
 });

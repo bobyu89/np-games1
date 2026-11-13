@@ -15,10 +15,13 @@ export const SCHEMA = [
   // 同一件事重送（網路斷掉、沒收到回覆）不會算兩次
   'CREATE UNIQUE INDEX IF NOT EXISTS events_once ON events (device, at, type, case_id)',
   'CREATE INDEX IF NOT EXISTS events_day ON events (day)',
+  // 玩家的回報：哪裡有錯、哪裡卡住、有什麼建議。匿名的；除了他自己寫的那一段字，只有哪一版、哪一個畫面、哪一張委託
+  'CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY, at INTEGER NOT NULL, day TEXT NOT NULL, build TEXT NOT NULL, pf TEXT NOT NULL, kind TEXT NOT NULL, place TEXT NOT NULL, case_id TEXT NOT NULL DEFAULT \'\', text TEXT NOT NULL)',
+  'CREATE INDEX IF NOT EXISTS reports_day ON reports (day)',
 ];
 
-/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉那一張。done：結案並看完回顧 */
-export const TYPES = ['open', 'start', 'leave', 'drop', 'done'] as const;
+/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉那一張。done：結案並看完回顧。trial：考完一場資格試煉 */
+export const TYPES = ['open', 'start', 'leave', 'drop', 'done', 'trial'] as const;
 const PLATFORMS = ['ios', 'android', 'desktop', 'other'];
 const SAFETY = ['met', 'late', 'review'];
 
@@ -77,7 +80,7 @@ export function add(exec: Exec, rows: Row[], now: number): number {
 export interface Summary {
   since: string | null; until: string;
   /** devices：出現過的裝置。finishers：至少結案一張的裝置。returning：在兩天以上出現過的裝置。installed：從主畫面圖示開過的裝置 */
-  totals: { devices: number; finishers: number; returning: number; installed: number; opens: number; starts: number; dones: number; leaves: number; drops: number };
+  totals: { devices: number; finishers: number; returning: number; installed: number; opens: number; starts: number; dones: number; leaves: number; drops: number; trials: number; trialPass: number };
   days: { day: string; devices: number; starts: number; dones: number }[];
   /** starters、finishers 是裝置數。firstScore：第一次結案的平均分數。stuck：做到一半離開或放掉的時候，停在第幾段 */
   cases: { case_id: string; starts: number; dones: number; starters: number; finishers: number; firstScore: number | null; score: number | null; met: number; late: number; review: number; found: number; secs: number | null; hints: number | null; stuck: [number, number, number, number] }[];
@@ -95,7 +98,8 @@ export function summary(exec: Exec, days: number | null, now: number): Summary {
   const until = dayOf(now), since = days ? dayOf(now - (days - 1) * 86400) : null, from = since ?? '0000-00-00';
   const one = (sql: string, ...p: Value[]) => exec(sql, ...p)[0] ?? {};
   const t = one(`SELECT COUNT(DISTINCT device) AS devices, COUNT(DISTINCT CASE WHEN type = 'done' THEN device END) AS finishers, COUNT(DISTINCT CASE WHEN pwa = 1 THEN device END) AS installed,
-    SUM(type = 'open') AS opens, SUM(type = 'start') AS starts, SUM(type = 'done') AS dones, SUM(type = 'leave') AS leaves, SUM(type = 'drop') AS drops FROM events WHERE day >= ?`, from);
+    SUM(type = 'open') AS opens, SUM(type = 'start') AS starts, SUM(type = 'done') AS dones, SUM(type = 'leave') AS leaves, SUM(type = 'drop') AS drops,
+    SUM(type = 'trial') AS trials, SUM(type = 'trial' AND score >= 60) AS trialPass FROM events WHERE day >= ?`, from);
   const returning = num(one('SELECT COUNT(*) AS n FROM (SELECT device FROM events WHERE day >= ? GROUP BY device HAVING COUNT(DISTINCT day) >= 2)', from).n);
   const cases = exec(`SELECT case_id, SUM(type = 'start') AS starts, SUM(type = 'done') AS dones,
       COUNT(DISTINCT CASE WHEN type = 'start' THEN device END) AS starters, COUNT(DISTINCT CASE WHEN type = 'done' THEN device END) AS finishers,
@@ -103,12 +107,12 @@ export function summary(exec: Exec, days: number | null, now: number): Summary {
       SUM(type = 'done' AND safety = 'met') AS met, SUM(type = 'done' AND safety = 'late') AS late, SUM(type = 'done' AND safety = 'review') AS review, SUM(type = 'done' AND found = 1) AS found,
       AVG(CASE WHEN type = 'done' THEN secs END) AS secs, AVG(CASE WHEN type = 'done' THEN hints END) AS hints,
       SUM(type IN ('leave', 'drop') AND phase = 1) AS s1, SUM(type IN ('leave', 'drop') AND phase = 2) AS s2, SUM(type IN ('leave', 'drop') AND phase = 3) AS s3, SUM(type IN ('leave', 'drop') AND phase = 4) AS s4
-    FROM events WHERE day >= ? AND case_id <> '' GROUP BY case_id ORDER BY case_id`, from);
+    FROM events WHERE day >= ? AND case_id <> '' AND type <> 'trial' GROUP BY case_id ORDER BY case_id`, from);
   const depth = one(`SELECT SUM(n = 0) AS d0, SUM(n BETWEEN 1 AND 3) AS d1, SUM(n BETWEEN 4 AND 11) AS d4, SUM(n BETWEEN 12 AND 19) AS d12, SUM(n BETWEEN 20 AND 47) AS d20, SUM(n >= 48) AS d48
     FROM (SELECT COUNT(DISTINCT CASE WHEN type = 'done' THEN case_id END) AS n FROM events WHERE day >= ? GROUP BY device)`, from);
   return {
     since, until,
-    totals: { devices: num(t.devices), finishers: num(t.finishers), returning, installed: num(t.installed), opens: num(t.opens), starts: num(t.starts), dones: num(t.dones), leaves: num(t.leaves), drops: num(t.drops) },
+    totals: { devices: num(t.devices), finishers: num(t.finishers), returning, installed: num(t.installed), opens: num(t.opens), starts: num(t.starts), dones: num(t.dones), leaves: num(t.leaves), drops: num(t.drops), trials: num(t.trials), trialPass: num(t.trialPass) },
     days: exec("SELECT day, COUNT(DISTINCT device) AS devices, SUM(type = 'start') AS starts, SUM(type = 'done') AS dones FROM events WHERE day >= ? GROUP BY day ORDER BY day DESC LIMIT 120", from)
       .map((r) => ({ day: String(r.day), devices: num(r.devices), starts: num(r.starts), dones: num(r.dones) })),
     cases: cases.map((r) => ({ case_id: String(r.case_id), starts: num(r.starts), dones: num(r.dones), starters: num(r.starters), finishers: num(r.finishers), firstScore: avg(r.firstScore), score: avg(r.score),
@@ -125,4 +129,37 @@ export function csv(exec: Exec, days: number | null, now: number): string {
   const from = days ? dayOf(now - (days - 1) * 86400) : '0000-00-00';
   const rows = exec(`SELECT ${COLUMNS.join(', ')} FROM events WHERE day >= ? ORDER BY id LIMIT 200000`, from);
   return [COLUMNS.join(','), ...rows.map((r) => COLUMNS.map((k) => (r[k] === null || r[k] === undefined ? '' : String(r[k]))).join(','))].join('\n') + '\n';
+}
+
+// ── 玩家的回報 ──
+export const REPORT_KINDS = ['content', 'stuck', 'idea', 'other'];
+export const REPORT_PLACES = ['title', 'hall', 'ward', 'debrief', 'settings'];
+/** 一天最多收幾則、一則最多幾個字。超過的不收：擋灌水 */
+export const REPORT_CAP = { perDay: 200, text: 1000 };
+export interface Report { at: number; day: string; build: string; pf: string; kind: string; place: string; case_id: string; text: string }
+
+/** 檢查一則回報。不對的回傳 null。只留認得的欄位；文字裡的控制字元拿掉 */
+export function parseReport(body: unknown, now: number): Report | null {
+  if (!body || typeof body !== 'object') return null;
+  const b = body as Record<string, unknown>;
+  if (b.v !== 1 || typeof b.text !== 'string' || typeof b.kind !== 'string' || !REPORT_KINDS.includes(b.kind)) return null;
+  // eslint-disable-next-line no-control-regex
+  const text = b.text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim();
+  if (text.length < 2 || text.length > REPORT_CAP.text) return null;
+  return {
+    at: now, day: dayOf(now), build: typeof b.b === 'string' && /^[\w.-]{1,40}$/.test(b.b) ? b.b : '', pf: typeof b.pf === 'string' && PLATFORMS.includes(b.pf) ? b.pf : 'other',
+    kind: b.kind, place: typeof b.place === 'string' && REPORT_PLACES.includes(b.place) ? b.place : '', case_id: typeof b.c === 'string' && /^c\d{2}[a-z]$/.test(b.c) ? b.c : '', text,
+  };
+}
+/** 存一則回報。今天收滿了回傳 false */
+export function addReport(exec: Exec, r: Report): boolean {
+  if (num(exec('SELECT COUNT(*) AS n FROM reports WHERE day = ?', r.day)[0]?.n) >= REPORT_CAP.perDay) return false;
+  exec('INSERT INTO reports (at, day, build, pf, kind, place, case_id, text) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', r.at, r.day, r.build, r.pf, r.kind, r.place, r.case_id, r.text);
+  return true;
+}
+/** 最近的回報，新的在前面 */
+export function listReports(exec: Exec, days: number | null, now: number): Report[] {
+  const from = days ? dayOf(now - (days - 1) * 86400) : '0000-00-00';
+  return exec('SELECT at, day, build, pf, kind, place, case_id, text FROM reports WHERE day >= ? ORDER BY at DESC, id DESC LIMIT 300', from)
+    .map((r) => ({ at: num(r.at), day: String(r.day), build: String(r.build), pf: String(r.pf), kind: String(r.kind), place: String(r.place), case_id: String(r.case_id), text: String(r.text) }));
 }
