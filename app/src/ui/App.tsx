@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CaseDef, Session } from '../core/types.ts';
 import { harvest, scoreSession } from '../core/scoring.ts';
 import { CASES } from '../data/index.ts';
 import { Hall } from './Hall.tsx';
+import { Title } from './Title.tsx';
 import { Ward } from './Ward.tsx';
 import { Debrief } from './Debrief.tsx';
 import { load, loadRun, store, storeRun, wipe, type Run, type Save } from './store.ts';
@@ -11,8 +12,9 @@ import { keepStorage } from './pwa.ts';
 import { newReads, record, tierOf } from './progress.ts';
 import { track, trackOpen } from './stats.ts';
 import { StatsPage } from './StatsPage.tsx';
+import { bindSave, startAccount, syncSoon } from './account.ts';
 
-type Screen = { name: 'hall' } | { name: 'ward'; c: CaseDef; n: number; tier: 0 | 1; resume: Run | null } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number };
+type Screen = { name: 'title' } | { name: 'hall' } | { name: 'ward'; c: CaseDef; n: number; tier: 0 | 1; resume: Run | null } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number };
 
 const caseOf = (id: string) => CASES.find((c) => c.id === id);
 /** 上次沒結案的那一場。病例改過、對不上了就丟掉 */
@@ -26,13 +28,18 @@ function pendingRun(): Run | null {
 export function App() {
   const [save, setSave] = useState<Save>(load);
   const [run, setRun] = useState<Run | null>(pendingRun);
-  const [screen, setScreen] = useState<Screen>({ name: 'hall' });
-  const keep = (s: Save) => { setSave(s); store(s); };
+  const [screen, setScreen] = useState<Screen>({ name: 'title' });
+  // 進度每變一次：存在這台裝置上；有登入的話，過幾秒同步到雲端
+  const latest = useRef(save);
+  const keep = (s: Save) => { latest.current = s; setSave(s); store(s); syncSoon(); };
   const keepRun = (r: Run | null) => { setRun(r); storeRun(r); };
   const toHall = () => setScreen({ name: 'hall' });
   // 網址後面加 #stats 是給管理者看的總表
   const [admin, setAdmin] = useState(() => location.hash === '#stats');
   useEffect(() => {
+    // 同步併回來的進度：換上、存好，但不用再觸發一次同步
+    bindSave(() => latest.current, (s) => { latest.current = s; setSave(s); store(s); });
+    void startAccount();
     trackOpen();
     const onHash = () => setAdmin(location.hash === '#stats');
     window.addEventListener('hashchange', onHash);
@@ -57,7 +64,8 @@ export function App() {
       toHall();
     }} />;
   }
-  return <Hall save={save} run={run} onHero={(hero) => keep({ ...save, hero })} onBeatSeen={(id) => keep({ ...save, beats: save.beats.includes(id) ? save.beats : [...save.beats, id] })}
+  if (screen.name === 'title') return <Title save={save} run={run} onPlay={toHall} onImport={(s) => { keepRun(null); keep(s); }} onReset={() => { setRun(null); latest.current = wipe(); setSave(latest.current); }} />;
+  return <Hall save={save} run={run} onHome={() => setScreen({ name: 'title' })} onHero={(hero) => keep({ ...save, hero })} onBeatSeen={(id) => keep({ ...save, beats: save.beats.includes(id) ? save.beats : [...save.beats, id] })}
     onStart={(c) => { keepRun(null); track({ t: 'start', c: c.id, tier: tierOf(save), n: (save.cases[c.id]?.plays ?? 0) + 1 }); setScreen({ name: 'ward', c, n: Date.now(), tier: tierOf(save), resume: null }); }}
     onResume={() => {
       const c = run && caseOf(run.caseId);
@@ -67,5 +75,5 @@ export function App() {
     }}
     onDropRun={() => { if (run) track({ t: 'drop', c: run.caseId, tier: run.session.tier, ph: run.session.phase, gt: run.session.time, h: run.session.hints }); keepRun(null); }}
     onImport={(s) => { keepRun(null); keep(s); }}
-    onReset={() => { setRun(null); setSave(wipe()); }} />;
+    onReset={() => { setRun(null); latest.current = wipe(); setSave(latest.current); }} />;
 }

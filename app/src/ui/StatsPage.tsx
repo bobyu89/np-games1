@@ -9,6 +9,7 @@ interface Summary {
   since: string | null; until: string;
   totals: { devices: number; finishers: number; returning: number; installed: number; opens: number; starts: number; dones: number; leaves: number; drops: number };
   days: { day: string; devices: number; starts: number; dones: number }[]; cases: CaseRow[];
+  accounts?: { accounts: number; saves: number; google: number; line: number };
   platforms: { pf: string; devices: number }[]; builds: { build: string; devices: number; last: string }[]; depth: { label: string; devices: number }[];
 }
 const PF: Record<string, string> = { ios: 'iPhone、iPad', android: 'Android', desktop: '電腦', other: '其他' };
@@ -93,6 +94,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
           <div><h2>玩得多深</h2><table><tbody>{data.depth.map((d) => <tr key={d.label}><td>{d.label}</td><td>{d.devices} 台</td></tr>)}</tbody></table></div>
           <div><h2>用什麼玩</h2><table><tbody>{data.platforms.map((p) => <tr key={p.pf}><td>{PF[p.pf] ?? p.pf}</td><td>{p.devices} 台</td></tr>)}</tbody></table></div>
           <div><h2>哪一版</h2><table><tbody>{data.builds.map((b) => <tr key={b.build}><td>{b.build}</td><td>{b.devices} 台</td><td>到 {b.last}</td></tr>)}</tbody></table></div>
+          {data.accounts && <div><h2>登入同步</h2><table><tbody><tr><td>帳號</td><td>{data.accounts.accounts} 個</td></tr><tr><td>用 Google</td><td>{data.accounts.google} 個</td></tr><tr><td>用 LINE</td><td>{data.accounts.line} 個</td></tr><tr><td>雲端有進度的</td><td>{data.accounts.saves} 個</td></tr></tbody></table><p className="dim">帳號和上面的匿名統計是分開存的，沒有辦法對起來。這裡只有全部的範圍，不跟著上面選的天數變。</p></div>}
         </div>
       </>}
     </div>

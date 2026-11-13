@@ -2,6 +2,7 @@
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { createWard } from '../art/ward.js';
 import { createHall } from '../art/hall.js';
+import { createTitle } from '../art/title.js';
 import { still } from './sound.ts';
 
 export interface StageHandle {
@@ -16,14 +17,14 @@ export interface StageHandle {
   setLights(list: { mark: string; level: number }[]): void;
 }
 
-interface Props { kind: 'ward' | 'hall'; patient?: string; scene?: string; shadow?: string; hero?: string | null; label: string; stage: RefObject<StageHandle | null>; onFrame?: (s: StageHandle) => void; children?: ReactNode }
+interface Props { kind: 'ward' | 'hall' | 'title'; patient?: string; scene?: string; shadow?: string; hero?: string | null; label: string; stage: RefObject<StageHandle | null>; onFrame?: (s: StageHandle) => void; children?: ReactNode }
 
 export function Stage({ kind, patient, scene, shadow, hero, label, stage, onFrame, children }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null), frame = useRef<HTMLDivElement>(null), cb = useRef(onFrame);
   cb.current = onFrame;
   useEffect(() => {
     const el = canvas.current!, box = frame.current!;
-    const s = (kind === 'ward' ? createWard(el, { patient, scene, shadow, hero }) : createHall(el, { hero })) as unknown as StageHandle;
+    const s = (kind === 'ward' ? createWard(el, { patient, scene, shadow, hero }) : kind === 'title' ? createTitle(el, { hero }) : createHall(el, { hero })) as unknown as StageHandle;
     s.state.still = still();
     stage.current = s;
     const fit = () => s.resize(box.clientWidth, box.clientHeight);

@@ -4,7 +4,7 @@ import { CASES, caseById } from '../data/index.ts';
 import { idealActions, run } from '../core/autoplay.ts';
 import { scoreSession } from '../core/scoring.ts';
 import { record } from './progress.ts';
-import { packSave, readBackup, validRun } from './backup.ts';
+import { mergeSaves, packSave, readBackup, sameSave, validRun } from './backup.ts';
 import type { Run, Save } from './store.ts';
 
 const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [], hero: null });
@@ -60,4 +60,40 @@ test('還沒結案的那一場：內容對得上才接著做', () => {
   assert.equal(validRun(c, { ...mine, session: { ...half, asked: [...half.asked, 'q-removed'] } }), false, '提到這一版沒有的題目');
   assert.equal(validRun(c, { ...mine, session: { ...half, board: { ...half.board, likely: 'no-such-form' } } }), false);
   assert.equal(validRun(c, { ...mine, session: { caseId: c.id } as never }), false, '壞掉的資料');
+});
+
+test('兩台的進度併起來：每個病例留比較好的那一次，線索和故事兩邊加起來', () => {
+  const phone = played(['c01a', 'c01b']), laptop = played(['c01a', 'c02a']);
+  // 手機上的 c01a 分數比較低、少解讀一條線索；筆電上的沒有回應病人在意的事
+  phone.cases.c01a = { ...phone.cases.c01a, best: 61, safety: 'late', plays: 3, reads: phone.cases.c01a.reads.slice(1) };
+  laptop.cases.c01a = { ...laptop.cases.c01a, concern: false, plays: 1 };
+  phone.beats = ['prologue', 'ch1-second']; laptop.beats = ['prologue', 'ch2-open'];
+  phone.takeaways = ['先量生命徵象']; laptop.takeaways = ['先量生命徵象', '問完再下診斷'];
+  const merged = mergeSaves(phone, laptop);
+  assert.deepEqual(Object.keys(merged.cases).sort(), ['c01a', 'c01b', 'c02a']);
+  assert.equal(merged.cases.c01a.best, laptop.cases.c01a.best);
+  assert.equal(merged.cases.c01a.safety, laptop.cases.c01a.safety);
+  assert.equal(merged.cases.c01a.plays, 3);
+  assert.equal(merged.cases.c01a.concern, true, '有一台回應過，就算回應過');
+  assert.equal(merged.cases.c01a.reads.length, laptop.cases.c01a.reads.length, '少的那一條從另一台補回來');
+  assert.deepEqual([...merged.beats].sort(), ['ch1-second', 'ch2-open', 'prologue']);
+  assert.deepEqual(merged.takeaways, ['先量生命徵象', '問完再下診斷']);
+  assert.equal(merged.hero, phone.hero);
+});
+
+test('併的順序不影響結果；併過的再併一次不會變', () => {
+  const a = played(['c01a', 'c03b', 'c09c']), b = played(['c01a', 'c05d']);
+  a.cases.c01a = { ...a.cases.c01a, best: 40, plays: 2 };
+  const ab = mergeSaves(a, b), ba = mergeSaves(b, a);
+  assert.ok(sameSave(ab, ba));
+  assert.ok(sameSave(mergeSaves(ab, b), ab));
+  assert.ok(sameSave(mergeSaves(a, ab), ab));
+  assert.ok(!sameSave(a, ab));
+  // 新的裝置（什麼都沒有）登入之後，拿到的就是雲端那一份，主角也跟著過來
+  const fresh = mergeSaves(blank(), ab);
+  assert.ok(sameSave(fresh, ab));
+  assert.equal(fresh.hero, ab.hero);
+  // 經過匯出、匯入（雲端存的就是匯出的格式）還是同一份
+  const back = readBackup(packSave(ab, 'test'), CASES);
+  assert.ok(back.ok && sameSave(back.save, ab));
 });

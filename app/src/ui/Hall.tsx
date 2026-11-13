@@ -11,14 +11,14 @@ import type { Run, Save } from './store.ts';
 import { Settings, StatsFacts } from './Settings.tsx';
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
-import { BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
+import { ARCHIVE, BEATS, HEROES, QUESTS, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
 import { WELCOME, WORLD } from './world.ts';
 import { Portrait } from './Portrait.tsx';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
 /** run：上次沒結案的那一張委託 */
-interface Props { save: Save; run: Run | null; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void }
+interface Props { save: Save; run: Run | null; onHome(): void; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void }
 
 /** 圖鑑裡的一張卡：遇到了、去過了才看得到 */
 function Card({ e, wide }: { e: Entry; wide?: boolean }) {
@@ -43,7 +43,7 @@ function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(i
   );
 }
 
-export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropRun, onImport, onReset }: Props) {
+export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onResume, onDropRun, onImport, onReset }: Props) {
   const [pendingBeat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
   // 先知道自己是誰，故事才開始：還沒選主角之前，序章先等著
   const beat = save.hero === null ? null : pendingBeat;
@@ -54,6 +54,7 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
   const [tab, setTab] = useState<'shadow' | 'people' | 'places' | 'world'>('shadow');
   const [soundOn, setSoundOn] = useState(sound.on);
   const [settings, setSettings] = useState(false);
+  const [story, setStory] = useState<Beat | null>(null);   // 從圖鑑重看的那一段故事
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
   const [later, setLater] = useState(false);   // 按了關閉：這一次先不問，下次打開再問
@@ -91,7 +92,7 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
   return (
     <div className="screen hall">
       <div className="left">
-        <div className="top"><span className="who">霧脈公會</span><span className="clock">{save.hero ? heroOf(save.hero).name + '・' : ''}{rankOf(save)}</span></div>
+        <div className="top"><span className="who"><button type="button" className="home" onClick={() => { sfx.page(); onHome(); }}>‹ 首頁</button>霧脈公會</span><span className="clock">{save.hero ? heroOf(save.hero).name + '・' : ''}{rankOf(save)}</span></div>
         <Stage kind="hall" hero={save.hero} stage={stage} onFrame={onFrame} label="霧脈公會的大廳：牆上是委託板，眠墨坐在櫃台後面寫字，岑禾站在委託板旁邊，窗外是霧港和燈塔">
           <div className="bubble" ref={bubble} hidden>…</div>
           {beat && <div className="chapter">{beat.title}</div>}
@@ -204,6 +205,13 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
           })()}
           {tab === 'world' && <>
             {WORLD.paragraphs.map((t) => <p key={t}>{t}</p>)}
+            <h3>看過的故事</h3>
+            {save.beats.length ? <div className="stack">{BEATS.filter((b) => save.beats.includes(b.id)).map((b) => <button key={b.id} type="button" className="pick" onClick={() => { sfx.page(); setStory(b); }}>{b.title}</button>)}</div> : <p className="dim">還沒有。</p>}
+            <h3>舊檔案</h3>
+            <p className="dim">眠墨從淹過水的櫃子裡，一頁一頁晾乾的值班日誌。是誰寫的、寫的是哪一年，故事走到了才知道。不讀也不影響委託。</p>
+            {ARCHIVE.map((l) => (l.when(save)
+              ? <div key={l.id} className="leaf"><b>{l.day}</b>{l.lines.map((t) => <p key={t}>{t}</p>)}</div>
+              : <div key={l.id} className="leaf locked"><b>？？？</b><p className="dim">{l.hint}</p></div>))}
             <h3>這裡的東西，對到現實的什麼</h3>
             <dl className="pairs">{WORLD.map.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
             <h3>這是什麼</h3>
@@ -239,6 +247,12 @@ export function Hall({ save, run, onHero, onBeatSeen, onStart, onResume, onDropR
           })}
           {save.takeaways.length > 0 && <><h3>你寫下的話</h3><ul>{save.takeaways.map((t) => <li key={t}>{t}</li>)}</ul></>}
           </>}
+        </Sheet>
+      )}
+      {story && (
+        <Sheet title={story.title} onClose={() => setStory(null)}>
+          {story.lines.map((l, i) => (l.who === 'sys' ? <p key={i} className="dim">{toYou(l.text, save.hero)}</p>
+            : <p key={i}><b className="name">{l.who === 'you' ? '你' : l.who === 'mo' ? '眠墨' : l.who === 'doctor' ? '沈渡' : '岑禾'}</b>「{toYou(l.text, save.hero)}」</p>))}
         </Sheet>
       )}
     </div>
