@@ -13,6 +13,7 @@ import { PROVIDER_NAME, accountState, accountSubscribe, cameBack } from './accou
 import { WELCOME } from './world.ts';
 import { ReportSheet } from './Report.tsx';
 import { openPrivacy } from './PrivacyPage.tsx';
+import { EXAM, countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 
 interface Props { save: Save; run: Run | null; onPlay(): void; onImport(s: Save): void; onReset(): void }
 
@@ -20,6 +21,7 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
   const stage = useRef<StageHandle | null>(null);
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const acct = useSyncExternalStore(accountSubscribe, accountState);
+  const exam = useSyncExternalStore(examSubscribe, examShown) ? countdownText(daysLeft()) : null;   // 真實的考試日還有幾天
   // 剛登入完被送回來：直接打開帳號那一頁，讓人看到結果
   const [sheet, setSheet] = useState<null | 'account' | 'settings' | 'about' | 'report'>(() => (cameBack() ? 'account' : null));
   const [soundOn, setSoundOn] = useState(sound.on);
@@ -34,6 +36,7 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
         <header className="title-head">
           <h1>霧脈公會</h1>
           <p>專科護理師口試的練習</p>
+          {exam && <p className="exam" role="note"><b>{exam}</b><span>{EXAM.label}</span></p>}
         </header>
         <Stage kind="title" hero={save.hero} stage={stage} label="入夜的霧港：燈塔的光掃過海面，霧一團一團飄過去，其中一團長出了眼睛；碼頭上掛著四盞燈" />
       </div>

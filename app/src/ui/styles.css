@@ -365,6 +365,9 @@ html.admin #app { max-width: 1080px; max-height: none; height: auto; margin: 0 a
 .title-head { flex: none; text-align: center; color: var(--on-page); padding: 4px 0 0; }
 #app .title-head h1 { margin: 0; font-size: clamp(2.2em, 12vw, 3.1em); font-weight: 700; letter-spacing: 0.16em; text-indent: 0.16em; line-height: 1.12; }
 .title-head p { color: var(--on-page-soft); letter-spacing: 0.22em; text-indent: 0.22em; font-size: 0.92em; }
+/* 真實的考試日還有幾天 */
+#app .title-head .exam { display: inline-flex; align-items: baseline; gap: 8px; margin-top: 6px; padding: 1px 13px; letter-spacing: 0.04em; text-indent: 0; font-size: 0.92em; color: var(--ink); background: var(--grain), var(--ochre); border: 2px solid var(--ink); border-radius: var(--r-b); box-shadow: 2px 3px 0 var(--ink); transform: rotate(-1deg); }
+.title-head .exam span { font-size: 0.82em; color: var(--ink-soft); }
 .title .scene { max-height: none; min-height: 150px; }
 .title .scene .frame { background: #35525a; }
 .menu { flex: none; display: flex; flex-direction: column; gap: 9px; padding: 3px 2px 2px; }
