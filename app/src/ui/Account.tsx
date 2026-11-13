@@ -1,6 +1,7 @@
 // 登入和同步的那一塊：放在「設定」裡，首頁也可以直接打開。
 import { useState, useSyncExternalStore } from 'react';
 import { sfx } from './sound.ts';
+import { openPrivacy } from './PrivacyPage.tsx';
 import { PROVIDER_NAME, accountState, accountSubscribe, clearFlash, deleteAccount, inLine, inOtherApp, signInWith, signOut, syncNow } from './account.ts';
 
 const when = (ms: number) => new Date(ms).toLocaleString('zh-TW', { hour12: false, month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -14,6 +15,7 @@ export function AccountFacts() {
       <li>做到一半的那一張委託不會同步，只留在這一台。</li>
       <li>Google 和 LINE 是兩個各自的帳號，進度不互通。選一個，固定用它。</li>
       <li>隨時可以登出，或是把雲端的資料連同帳號一起刪掉；裝置上的進度不受影響。</li>
+      <li><button type="button" className="link" onClick={openPrivacy}>完整的隱私說明</button></li>
     </ul>
   );
 }

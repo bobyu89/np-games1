@@ -10,6 +10,8 @@ import { applyUpdate, checkUpdate, install, isIos, isStandalone, pwaState, pwaSu
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { AccountPanel } from './Account.tsx';
 import { accountState, accountSubscribe } from './account.ts';
+import { ReportSheet } from './Report.tsx';
+import { openPrivacy } from './PrivacyPage.tsx';
 
 const doneOf = (s: Save) => QUESTS.filter((q) => s.cases[q.caseId]).length;
 const brief = (s: Save) => '完成 ' + doneOf(s) + '／' + QUESTS.length + ' 張委託，圖鑑寫回 ' + codexPercent(COMPLAINTS, s) + '%，' + rankOf(s);
@@ -26,6 +28,7 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
   const [paste, setPaste] = useState<string | null>(null);      // 貼上進度的那一格。null 是還沒打開
   const [incoming, setIncoming] = useState<{ save: Save; at: string | null; dropped: number } | null>(null);
   const [sure, setSure] = useState(false);
+  const [report, setReport] = useState(false);
   const [checking, setChecking] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   const say = (text: string, bad = false) => setNote({ text, bad });
@@ -76,6 +79,7 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
       </Sheet>
     );
   }
+  if (report) return <ReportSheet place="settings" onClose={() => setReport(false)} />;
   const standalone = isStandalone();
   return (
     <Sheet title="設定與進度" onClose={onClose}>
@@ -126,6 +130,8 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
 
       <h3>其他</h3>
       <div className="stack">
+        {acct.backend && <button type="button" className="pick" onClick={() => { sfx.page(); setReport(true); }}>回報問題或建議</button>}
+        <button type="button" className="pick" onClick={() => { sfx.page(); openPrivacy(); }}>隱私說明</button>
         {onReplayIntro && <button type="button" className="pick" onClick={() => { sfx.page(); onReplayIntro(); }}>重看開場</button>}
         {!sure ? <button type="button" className="pick" onClick={() => { sfx.tap(); setSure(true); }}>從頭來過（清除這台裝置上的進度）</button>
           : <><p className="note bad">確定要清除嗎？完成的委託、圖鑑、還沒結案的那一張都會不見，沒辦法復原。{acct.account ? '你現在有登入：雲端那一份還在，下一次同步會把它帶回來。要真的從頭來過，先到上面「刪除雲端的資料和帳號」，再回來清除。' : ''}</p>

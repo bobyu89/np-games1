@@ -11,7 +11,7 @@ export type Provider = 'google' | 'line';
 export const PROVIDER_NAME: Record<Provider, string> = { google: 'Google', line: 'LINE' };
 /** sync：idle 還沒同步過。busy 同步中。ok 同步好了。fail 這一次沒成功。old 這一台的遊戲比雲端那一份舊，只下載、不上傳 */
 export interface AccountState {
-  ready: boolean; providers: Provider[]; account: { provider: Provider; since: number } | null;
+  ready: boolean; /** 這個地方有沒有後端（登入、回報問題都要靠它） */ backend: boolean; providers: Provider[]; account: { provider: Provider; since: number } | null;
   sync: 'idle' | 'busy' | 'ok' | 'fail' | 'old'; syncedAt: number | null; flash: { text: string; bad?: boolean } | null;
 }
 
@@ -27,7 +27,7 @@ const RESULT: Record<string, { text: string; bad?: boolean }> = {
 
 // 這一段在畫面第一次畫之前就要知道：剛登入完回來的話，首頁要直接打開帳號那一頁
 const arrived = typeof location === 'undefined' ? undefined : RESULT[location.hash.slice(1)];
-let state: AccountState = { ready: false, providers: [], account: null, sync: 'idle', syncedAt: null, flash: arrived ?? null };
+let state: AccountState = { ready: false, backend: false, providers: [], account: null, sync: 'idle', syncedAt: null, flash: arrived ?? null };
 const subs = new Set<() => void>();
 const set = (patch: Partial<AccountState>) => { state = { ...state, ...patch }; subs.forEach((f) => f()); };
 export const accountSubscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f); }; };
@@ -47,7 +47,7 @@ async function refresh(): Promise<void> {
   try {
     const res = await call('me');
     const data = res.ok && (res.headers.get('Content-Type') ?? '').includes('json') ? ((await res.json()) as { v?: number; providers?: Provider[]; account?: AccountState['account'] }) : null;
-    if (data?.v === 1 && Array.isArray(data.providers)) set({ ready: true, providers: data.providers.filter((p) => p === 'google' || p === 'line'), account: data.account ?? null });
+    if (data?.v === 1 && Array.isArray(data.providers)) set({ ready: true, backend: true, providers: data.providers.filter((p) => p === 'google' || p === 'line'), account: data.account ?? null });
     else set({ ready: true, providers: [], account: null });   // 這個地方沒有後端
   } catch { set({ ready: true }); }
 }

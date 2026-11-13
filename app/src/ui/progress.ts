@@ -6,7 +6,7 @@ import { harvest } from '../core/scoring.ts';
 import { CASES } from '../data/index.ts';
 import { AFTER_MORE } from '../data/extras.ts';
 import type { Line } from './Talk.tsx';
-import type { CaseRecord, Save } from './store.ts';
+import type { CaseRecord, Save, TrialRecord } from './store.ts';
 import type { Shot } from './Portrait.tsx';
 
 /** 委託板上的一張委託。needs：要先完成哪一張才會出現 */
@@ -75,8 +75,8 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '四盞燈，四個人。胸悶蛾這一頁寫回來了。' },
     { who: 'mentor', text: '同一句「胸口痛」，一個要馬上叫人，一個可以回家，一個不能放走，一個差點被當成緊張。' },
     { who: 'mo', text: '劃掉舊的那一行的時候，我才看清楚：這本索引有兩種筆跡。一種很穩，一種很年輕。' },
-    { who: 'sys', text: '岑禾沒有接話。她走到窗邊，看了一會兒燈塔。' },
-    { who: 'mentor', text: '第一章到這裡。下一頁是別的症影，還在整理，好了會貼到委託板上。' },
+    { who: 'sys', text: '岑禾沒有接話。她走到窗邊，看了一會兒燈塔。', fx: 'window' },
+    { who: 'mentor', text: '第一章到這裡。下一頁是別的症影，還在整理，好了會貼到委託板上。', fx: 'window' },
     { who: 'sys', text: '你升為「巡診專科護理師」。' },
   ] },
   { id: 'ch2-open', title: '第二章　同一張面孔', when: (s) => chapterDone(1, s), lines: [
@@ -109,8 +109,8 @@ export const BEATS: Beat[] = [
   { id: 'ch3-open', title: '第三章　被蓋掉的紀錄', when: (s) => tierOf(s) === 1, lines: [
     { who: 'mo', text: '我在淹過水的櫃子底下，找到一疊舊索引。每一張上面只有一行字：「著涼」「年紀大了」「老毛病」。然後就歸檔了。' },
     { who: 'mo', text: '這一疊對到兩隻症影。一隻背上的炭一明一滅，是發燒；一隻停在人頭上一下一下地啄，是頭痛。' },
-    { who: 'mo', text: '最底下還壓著一張，不是索引。是一張名單：十一個名字。抬頭被水泡掉了，只剩半個字。' },
-    { who: 'mentor', text: '……那一張先收著。' },
+    { who: 'mo', text: '最底下還壓著一張，不是索引。是一張名單：十一個名字。抬頭被水泡掉了，只剩半個字。', fx: 'page' },
+    { who: 'mentor', text: '……那一張先收著。', fx: 'page' },
     { who: 'mentor', text: '太早寫下的結論，會把後面的線索都蓋掉。這一章，你把這幾張重新打開。' },
     { who: 'mentor', text: '不過記住：舊索引不一定都寫錯。對的，你要替它找到憑據；錯的，你要說得出錯在哪裡。' },
     { who: 'sys', text: '委託板上多了兩張新的。' },
@@ -127,8 +127,8 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '八張舊索引都重新打開了。七張劃掉重寫，一張底下補了憑據。' },
     { who: 'mentor', text: '這些字不是亂寫的。「感冒」「宿醉」「更年期」，十次裡有九次是對的。危險的是第十次，還有寫完就不再看的那個習慣。' },
     { who: 'mentor', text: '有一張的答案是「不是感染」，有一張是「真的只是老毛病」。把東西排除掉，跟把東西找出來，一樣是本事。' },
-    { who: 'mo', text: '……那張名單，我把抬頭拼回來了。兩個字：「勘誤」。' },
-    { who: 'mo', text: '你報到那天，我說最前面那一頁「被人拆走了」。那個人是我。十五年前，公會說圖鑑不能有勘誤，要我拆下來燒掉。我拆了，沒有燒。' },
+    { who: 'mo', text: '……那張名單，我把抬頭拼回來了。兩個字：「勘誤」。', fx: 'page' },
+    { who: 'mo', text: '你報到那天，我說最前面那一頁「被人拆走了」。那個人是我。十五年前，公會說圖鑑不能有勘誤，要我拆下來燒掉。我拆了，沒有燒。', fx: 'page dusk' },
     { who: 'mentor', text: '第三章到這裡。' },
   ] },
   { id: 'ch4-open', title: '第四章　撐著走來的人', when: (s) => chapterDone(3, s), lines: [
@@ -138,21 +138,21 @@ export const BEATS: Beat[] = [
     { who: 'sys', text: '委託板上多了三張新的。' },
   ] },
   { id: 'ch4-half', title: '第四章　四十天', when: (s) => has(s, CH4_HALF), lines: [
-    { who: 'sys', text: '值班鐘沒有響，沈渡卻自己走進了大廳。他看了一眼櫃台上那張名單。' },
-    { who: 'doctor', text: '十五年前的冬天，霧四十天沒有散。船出不去，人一直進來。值班的只有三個：忍冬、我，還有一個見習。' },
-    { who: 'doctor', text: '忍冬寫了那本索引。一隻症影一行字，讓誰來都能先分出輕重。那個冬天，它救了很多人。' },
-    { who: 'doctor', text: '我負責簽名。四十天，我簽了幾百張，沒有一張是看過才簽的。' },
-    { who: 'doctor', text: '所以我現在只問一句：「告訴我重點。」問了，我就得聽完。' },
-    { who: 'sys', text: '他沒有說那個見習是誰。' },
+    { who: 'sys', text: '值班鐘沒有響，沈渡卻自己走進了大廳。他看了一眼櫃台上那張名單。', fx: 'shen' },
+    { who: 'doctor', text: '十五年前的冬天，霧四十天沒有散。船出不去，人一直進來。值班的只有三個：忍冬、我，還有一個見習。', fx: 'shen dusk' },
+    { who: 'doctor', text: '忍冬寫了那本索引。一隻症影一行字，讓誰來都能先分出輕重。那個冬天，它救了很多人。', fx: 'shen dusk' },
+    { who: 'doctor', text: '我負責簽名。四十天，我簽了幾百張，沒有一張是看過才簽的。', fx: 'shen dusk' },
+    { who: 'doctor', text: '所以我現在只問一句：「告訴我重點。」問了，我就得聽完。', fx: 'shen' },
+    { who: 'sys', text: '他沒有說那個見習是誰。', fx: 'shen' },
   ] },
   { id: 'ch4-complete', title: '第四章　完', when: (s) => chapterDone(4, s), lines: [
     { who: 'mo', text: '三隻症影，十二盞燈，都有人名了。' },
     { who: 'mentor', text: '他們進門的時候，幾乎都說「還撐得住」。裡面有幾位，是用鐘頭在算的。' },
-    { who: 'mentor', text: '十五年前，也有一個人這樣說。守燈塔的檜伯。第三十一天，他自己從塔上走下來的。' },
-    { who: 'mentor', text: '我那時候是見習。我看了索引，寫了一行字，讓他回去。' },
-    { who: 'mentor', text: '那天晚上，燈塔沒有亮。' },
-    { who: 'mentor', text: '勘誤上的第十一個名字是他。那一行字，是我的筆跡。' },
-    { who: 'you', text: '{own}' },
+    { who: 'mentor', text: '十五年前，也有一個人這樣說。守燈塔的檜伯。第三十一天，他自己從塔上走下來的。', fx: 'dusk' },
+    { who: 'mentor', text: '我那時候是見習。我看了索引，寫了一行字，讓他回去。', fx: 'dusk' },
+    { who: 'mentor', text: '那天晚上，燈塔沒有亮。', fx: 'dusk dark' },
+    { who: 'mentor', text: '勘誤上的第十一個名字是他。那一行字，是我的筆跡。', fx: 'dusk dark page' },
+    { who: 'you', text: '{own}', fx: 'dusk' },
     { who: 'mentor', text: '這一句「還撐得住」，你以後聽到，要多看一眼：看另一邊、看襪子底下、看他是怎麼走進來的。' },
     { who: 'mentor', text: '第四章到這裡。' },
   ] },
@@ -164,20 +164,20 @@ export const BEATS: Beat[] = [
     { who: 'sys', text: '委託板上多了四張新的。' },
   ] },
   { id: 'ch5-half', title: '第五章　第十二行', when: (s) => has(s, CH5_HALF), lines: [
-    { who: 'mo', text: '勘誤我重新抄了一份。原來那張有十二行：十一個名字，第十二行是空的。' },
-    { who: 'mo', text: '空行旁邊有一行小字，是忍冬的筆跡：「留給下一個寫這本圖鑑的人。」' },
-    { who: 'mentor', text: '冬天過完，她要把這一頁訂在索引的最前面。公會不肯。她把值班鐘交回來，上了燈塔。檜伯走了，燈總要有人顧。' },
-    { who: 'mentor', text: '十五年，那盞燈沒有熄過。她也沒有下來過。' },
+    { who: 'mo', text: '勘誤我重新抄了一份。原來那張有十二行：十一個名字，第十二行是空的。', fx: 'page page12' },
+    { who: 'mo', text: '空行旁邊有一行小字，是忍冬的筆跡：「留給下一個寫這本圖鑑的人。」', fx: 'page page12' },
+    { who: 'mentor', text: '冬天過完，她要把這一頁訂在索引的最前面。公會不肯。她把值班鐘交回來，上了燈塔。檜伯走了，燈總要有人顧。', fx: 'dusk' },
+    { who: 'mentor', text: '十五年，那盞燈沒有熄過。她也沒有下來過。', fx: 'window' },
     { who: 'mentor', text: '她留的不是一個位置，是一條規矩：錯了，寫上去，放在第一頁。' },
   ] },
   { id: 'ch5-complete', title: '第五章　完', when: (s) => chapterDone(5, s), lines: [
     { who: 'mo', text: '十二隻症影，四十八盞燈。舊索引上的一行字，一行一行都改寫完了。' },
     { who: 'mentor', text: '你現在看到一隻症影，想到的不是一個答案，是四個方向，還有哪一個不能漏。' },
-    { who: 'mo', text: '新的圖鑑，我把勘誤訂回第一頁了。十一個名字都在。第十二行，還是空的。' },
-    { who: 'mentor', text: '希望你永遠用不到那一行。可是如果有那一天：寫上去，不要拆。' },
+    { who: 'mo', text: '新的圖鑑，我把勘誤訂回第一頁了。十一個名字都在。第十二行，還是空的。', fx: 'page page12' },
+    { who: 'mentor', text: '希望你永遠用不到那一行。可是如果有那一天：寫上去，不要拆。', fx: 'page page12' },
     { who: 'sys', text: '眠墨抄了一份新圖鑑的目錄，託送燈油的人帶上燈塔。三天後，回信只有一行。' },
-    { who: 'sys', text: '「第三行，還寫嗎？」' },
-    { who: 'sys', text: '岑禾看了很久。然後她拿起紀錄板，寫下今天的第三行。' },
+    { who: 'sys', text: '「第三行，還寫嗎？」', fx: 'window' },
+    { who: 'sys', text: '岑禾看了很久。然後她拿起紀錄板，寫下今天的第三行。', fx: 'window' },
     { who: 'mentor', text: '圖鑑寫完了，可是來的人不會照著圖鑑生病。接下來是值班夜：兩張委託同時送到的時候，你先看哪一張？' },
     { who: 'sys', text: '（後面的章節還在整理。）' },
   ] },
@@ -210,6 +210,26 @@ export function record(save: Save, c: CaseDef, session: Session, score: Score, s
   const rec: CaseRecord = { best: better ? total : old.best, safety: better ? score.safety : old.safety, plays: (old?.plays ?? 0) + 1, seconds, found: !!old?.found || h.found, concern: !!old?.concern || h.concern, reads };
   const takeaways = takeaway ? [takeaway, ...save.takeaways.filter((t) => t !== takeaway)].slice(0, 5) : save.takeaways;
   return { ...save, cases: { ...save.cases, [c.id]: rec }, takeaways };
+}
+
+// ── 資格試煉 ──
+// 照甄審口試的條件走一次：用抽的、站內 15 分鐘照真的時間倒數、沒有提示、交卷之後才有回顧。
+// 不寫圖鑑，也不算完成委託；只留一筆成績。
+export const TRIAL_SECONDS = 15 * 60, TRIAL_WARN = 3 * 60, TRIAL_PASS = 60;
+/** 第一章走完才開放：先在有人帶的情況下把流程走熟 */
+export const trialOpen = (s: Save) => chapterDone(1, s);
+/** 抽一位病人。四十八位都可能出，沒遇過的比較容易抽到；不會連續兩次抽到同一位。r 是 0 到 1 的亂數 */
+export function pickTrial(s: Save, r: number): CaseDef {
+  const last = s.trials[0]?.caseId, pool = CASES.filter((c) => c.id !== last || CASES.length === 1);
+  const weight = (c: CaseDef) => (s.cases[c.id] || s.trials.some((t) => t.caseId === c.id) ? 1 : 3);
+  let at = Math.min(0.999999, Math.max(0, r)) * pool.reduce((n, c) => n + weight(c), 0);
+  for (const c of pool) { at -= weight(c); if (at < 0) return c; }
+  return pool[pool.length - 1];
+}
+/** 把一場試煉的結果記進存檔（新的在前面，最多留 30 筆） */
+export function recordTrial(save: Save, c: CaseDef, session: Session, score: Score, seconds: number, timeUp: boolean, at: number): Save {
+  const rec: TrialRecord = { at, caseId: c.id, score: Math.round(score.total), safety: score.safety, seconds, timeUp, found: harvest(c, session).found };
+  return { ...save, trials: [rec, ...save.trials].slice(0, 30) };
 }
 
 /** 這一場新寫進圖鑑的線索（之前沒有解讀對過的） */

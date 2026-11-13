@@ -13,8 +13,8 @@ export const statsBuilt = STATS_URL !== '';
 
 /** ask：還沒問過。yes：可以回傳。no：不要 */
 export type Consent = 'ask' | 'yes' | 'no';
-/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉。done：結案並看完回顧 */
-export interface StatEvent { t: 'open' | 'start' | 'leave' | 'drop' | 'done'; at: number; c?: string; tier?: number; ph?: number; sc?: number; sf?: Safety; sec?: number; gt?: number; h?: number; f?: 0 | 1; n?: number }
+/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉。done：結案並看完回顧。trial：考完一場資格試煉 */
+export interface StatEvent { t: 'open' | 'start' | 'leave' | 'drop' | 'done' | 'trial'; at: number; c?: string; tier?: number; ph?: number; sc?: number; sf?: Safety; sec?: number; gt?: number; h?: number; f?: 0 | 1; n?: number }
 interface Box { consent: Consent; device: string; queue: StatEvent[]; opened: string }
 
 const KEY = 'mist-guild.stats';

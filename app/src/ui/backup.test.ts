@@ -7,7 +7,7 @@ import { record } from './progress.ts';
 import { mergeSaves, packSave, readBackup, sameSave, validRun } from './backup.ts';
 import type { Run, Save } from './store.ts';
 
-const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [], hero: null });
+const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [], hero: null, trials: [] });
 /** 照最好的打法玩過幾關之後的存檔 */
 const played = (ids: string[]): Save => ids.reduce<Save>((save, id) => { const c = caseById(id), s = run(c, idealActions(c)); return record(save, c, s, scoreSession(c, s), 600, '下次先量生命徵象'); }, { ...blank(), beats: ['prologue'], hero: 'du' });
 
@@ -31,7 +31,7 @@ test('不是進度的東西讀不進來，而且說得出原因', () => {
     assert.equal(r.ok, false, junk);
     assert.ok(!r.ok && r.why.length > 0);
   }
-  const newer = readBackup(JSON.stringify({ app: 'mist-guild', kind: 'save', v: 4, cases: {} }), CASES);
+  const newer = readBackup(JSON.stringify({ app: 'mist-guild', kind: 'save', v: 5, cases: {} }), CASES);   // 現在的格式是第 4 版
   assert.ok(!newer.ok && newer.why.includes('更新'));
 });
 
@@ -96,4 +96,28 @@ test('併的順序不影響結果；併過的再併一次不會變', () => {
   // 經過匯出、匯入（雲端存的就是匯出的格式）還是同一份
   const back = readBackup(packSave(ab, 'test'), CASES);
   assert.ok(back.ok && sameSave(back.save, ab));
+});
+
+test('資格試煉的紀錄：匯出匯入帶得走，兩台併起來不會重複；舊格式（第 3 版）照樣讀得進來，更新的版本不讀', () => {
+  const t1 = { at: 1_800_000_000_000, caseId: 'c01a', score: 72, safety: 'met' as const, seconds: 840, timeUp: false, found: true };
+  const t2 = { at: 1_800_000_500_000, caseId: 'c07b', score: 41, safety: 'review' as const, seconds: 900, timeUp: true, found: false };
+  const a: Save = { ...played(['c01a']), trials: [t1] }, b: Save = { ...played(['c01a']), trials: [t2, t1] };
+  const back = readBackup(packSave(b, 'test'), CASES);
+  assert.ok(back.ok);
+  assert.deepEqual(back.save.trials, [t2, t1]);
+  const merged = mergeSaves(a, b);
+  assert.deepEqual(merged.trials, [t2, t1], '同一場只留一筆，新的在前面');
+  assert.ok(sameSave(mergeSaves(b, a), merged));
+  assert.ok(!sameSave(a, merged));
+  // 第 3 版：沒有 trials 這一欄
+  const old = JSON.parse(packSave(a, 'test')); old.v = 3; delete old.trials;
+  const v3 = readBackup(JSON.stringify(old), CASES);
+  assert.ok(v3.ok && v3.save.trials.length === 0 && !!v3.save.cases.c01a);
+  // 比這一版新的：不讀，免得把看不懂的東西丟掉
+  const newer = JSON.parse(packSave(a, 'test')); newer.v = 5;
+  assert.equal(readBackup(JSON.stringify(newer), CASES).ok, false);
+  // 這一版沒有的病例的試煉紀錄會略過
+  const odd = JSON.parse(packSave(a, 'test')); odd.trials.push([1_800_000_900_000, 'c99z', 50, 0, 600, 0, 1], 'junk', [0, 'c01a', 50, 0, 600, 0, 1]);
+  const r = readBackup(JSON.stringify(odd), CASES);
+  assert.ok(r.ok && r.save.trials.length === 1);
 });

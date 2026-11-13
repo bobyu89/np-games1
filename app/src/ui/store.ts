@@ -11,16 +11,18 @@ export interface CaseRecord {
   concern: boolean;
   reads: { clue: string; text: string; form: string; dir: 1 | -1 }[];
 }
-/** hero：選了哪一位主角。還沒選是 null */
-export interface Save { v: 3; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[]; hero: string | null }
+/** 一場資格試煉的結果。試煉不寫圖鑑、不算完成委託，只留這一筆 */
+export interface TrialRecord { at: number; caseId: string; score: number; safety: Safety; seconds: number; timeUp: boolean; found: boolean }
+/** hero：選了哪一位主角。還沒選是 null。trials：資格試煉的紀錄，新的在前面 */
+export interface Save { v: 3; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[]; hero: string | null; trials: TrialRecord[] }
 
 const KEY = 'mist-guild.v1';
-const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [], hero: null });
+const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [], hero: null, trials: [] });
 
 export function load(): Save {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || '{}') as Record<string, unknown>;
-    if (raw.v === 3) return { ...blank(), ...(raw as Partial<Save>) };
+    if (raw.v === 3) { const s = { ...blank(), ...(raw as Partial<Save>) }; return { ...s, trials: Array.isArray(s.trials) ? s.trials : [] }; }
     // 舊版的存檔：只留「看過開場」，其他從頭來。流程、題目和診斷都改過了，舊的分數和圖鑑對不上
     const sawIntro = !!raw.introSeen || (Array.isArray(raw.beats) && raw.beats.includes('prologue'));
     return { ...blank(), beats: sawIntro ? ['prologue'] : [] };
@@ -31,7 +33,7 @@ export function store(s: Save) {
 }
 
 /** 還沒結案的那一張委託。手機把頁面收掉、不小心關掉分頁，回來可以接著做 */
-export interface Run { v: 1; caseId: string; session: Session; seconds: number; at: number }
+export interface Run { v: 1; caseId: string; session: Session; seconds: number; at: number; /** 是資格試煉，不是委託 */ trial?: boolean }
 
 const RUN = 'mist-guild.run';
 export function loadRun(): Run | null {
