@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 試跑：只檢查，不真的發
+        description: 試跑：做到發布的前一步，不真的發
         type: boolean
         default: true
       date:

@@ -2,7 +2,7 @@
 //
 // 環境變數：
 //   THREADS_ACCESS_TOKEN  Threads 的長期權杖（帳號主人授權來的）。沒有設定就什麼都不發，這不算錯
-//   DRY_RUN=1             試跑：檢查到「要發了」為止，不真的發
+//   DRY_RUN=1             試跑：做到發布的前一步（圖和文字交給 Threads 收下），不真的發。沒發布的那一份二十四小時後自己過期
 //   POST_DATE=YYYY-MM-DD  要發哪一天的（預設是臺灣時間的今天）
 //   SITE_URL、THREADS_API 圖放在哪個網站、API 的網址（有預設值，一般不用改）
 // 權杖只放在環境變數裡，這支程式不會把它印出來。
@@ -67,15 +67,21 @@ export async function main(env = process.env, log = console.log) {
   for (const line of checkToken(info, schedule.at(-1).date)) log(line);
   const recent = await call('GET', '/' + me.id + '/threads', { fields: 'id,text,timestamp', limit: '30' }, token);
   if (alreadyPosted(recent.data ?? [], entry)) { log('@' + me.username + ' 上面已經有這一則，不重複發。'); return 'exists'; }
-  if (dry) { log('試跑：檢查都過了，會發到 @' + me.username + '。這一次沒有真的發。'); return 'dry'; }
-  // 兩步：先交出圖和文字，等 Threads 處理好，再發布
+  // 兩步：先交出圖和文字，等 Threads 處理好，再發布。試跑做完第一步就停：
+  // 發文的權限對不對、Threads 抓不抓得到圖，都是第一步才知道的
   const box = await call('POST', '/' + me.id + '/threads', { media_type: 'IMAGE', image_url: image, text: entry.text }, token);
-  for (let i = 0; i < 12; i++) {
+  let ready = false;
+  for (let i = 0; i < 12 && !ready; i++) {
     await sleep(10_000);
     const st = await call('GET', '/' + box.id, { fields: 'status,error_message' }, token).catch(() => null);
-    if (st?.status === 'FINISHED') break;
+    ready = st?.status === 'FINISHED';
     if (st?.status === 'ERROR' || st?.status === 'EXPIRED') throw new Error('Threads 沒有處理好這張圖：' + (st.error_message || st.status));
     if (!st && i >= 2) break;   // 查不到狀態：等滿三十秒就照文件說的直接發布
+  }
+  if (dry) {
+    log('試跑：' + (ready ? 'Threads 收下了這一則的圖和文字，處理好了' : 'Threads 收了這一則，但是還查不到處理好了沒') + '，只差發布。會發到 @' + me.username + '。');
+    log('這一次沒有真的發；交出去的那一份沒有發布，二十四小時後自己過期。');
+    return 'dry';
   }
   const out = await call('POST', '/' + me.id + '/threads_publish', { creation_id: box.id }, token);
   log('發出去了：@' + me.username + '，貼文代號 ' + out.id);

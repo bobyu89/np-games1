@@ -64,9 +64,9 @@ test('沒有權杖：檢查完就停，不算錯；沒有排的日子什麼都�
   assert.ok(lines.some((t) => t.includes('每日一案 02')));
 });
 
-test('整段流程（假的 Threads）：試跑不發；真的發是兩步；已經有就跳過；權杖不會出現在錯誤訊息裡', async () => {
+test('整段流程（假的 Threads）：試跑做到發布的前一步；真的發是兩步；已經有就跳過；權杖不會出現在錯誤訊息裡', async () => {
   const real = globalThis.fetch, calls = [];
-  let posts = [], fail = false;
+  let posts = [], fail = false, boxStatus = 'FINISHED';
   globalThis.fetch = async (url, init) => {
     const u = new URL(String(url)), method = init?.method ?? 'GET', params = method === 'GET' ? u.searchParams : init.body;
     if (u.hostname.endsWith('workers.dev')) return new Response('x', { status: 200, headers: { 'content-type': 'image/jpeg' } });
@@ -77,7 +77,7 @@ test('整段流程（假的 Threads）：試跑不發；真的發是兩步；已
     if (u.pathname.endsWith('/debug_token')) { assert.equal(params.get('input_token'), 'secret-token'); return json({ data: { type: 'USER', is_valid: true, issued_at: 1794567600, expires_at: 1799751600, scopes: ['threads_basic', 'threads_content_publish'] } }); }
     if (u.pathname.endsWith('/42/threads') && method === 'GET') return json({ data: posts });
     if (u.pathname.endsWith('/42/threads') && method === 'POST') { assert.equal(params.get('media_type'), 'IMAGE'); assert.match(params.get('image_url'), /\/social\/02\.jpg$/); return json({ id: 'box1' }); }
-    if (u.pathname.endsWith('/box1')) return json({ status: 'FINISHED' });
+    if (u.pathname.endsWith('/box1')) return json({ status: boxStatus, error_message: boxStatus === 'ERROR' ? 'FAILED_DOWNLOADING_IMAGE' : undefined });
     if (u.pathname.endsWith('/42/threads_publish')) { assert.equal(params.get('creation_id'), 'box1'); return json({ id: 'post1' }); }
     return json({ error: { message: 'unexpected ' + u.pathname } }, 404);
   };
@@ -85,11 +85,16 @@ test('整段流程（假的 Threads）：試跑不發；真的發是兩步；已
   const timers = globalThis.setTimeout; globalThis.setTimeout = (f) => timers(f, 0);   // 測試不用真的等十秒
   try {
     assert.equal(await main({ ...env, DRY_RUN: '1' }, quiet), 'dry');
-    assert.ok(!calls.some((c) => c.startsWith('POST')), '試跑不應該發任何東西');
+    assert.deepEqual(calls.filter((c) => c.startsWith('POST')), ['POST /v1.0/42/threads'], '試跑只交出圖和文字，不發布');
+    assert.ok(said.some((t) => t.includes('處理好了，只差發布')), '試跑要說 Threads 收下了');
     assert.ok(said.some((t) => /^權杖到 \d{4}-\d\d-\d\d 過期/.test(t)), '試跑要寫出權杖哪一天過期');
     assert.ok(!said.join('\n').includes('secret-token'), '紀錄裡不能有權杖');
+    calls.length = 0;
     assert.equal(await main(env, quiet), 'posted');
     assert.deepEqual(calls.filter((c) => c.startsWith('POST')), ['POST /v1.0/42/threads', 'POST /v1.0/42/threads_publish']);
+    boxStatus = 'ERROR';
+    await assert.rejects(main({ ...env, DRY_RUN: '1' }, quiet), /沒有處理好這張圖/, 'Threads 收不下圖，試跑就要失敗');
+    boxStatus = 'FINISHED';
     posts = [{ text: schedule[1].text }];
     assert.equal(await main(env, quiet), 'exists');
     fail = true;
