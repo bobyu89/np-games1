@@ -12,6 +12,7 @@ import { AccountPanel } from './Account.tsx';
 import { accountState, accountSubscribe } from './account.ts';
 import { ReportSheet } from './Report.tsx';
 import { openPrivacy } from './PrivacyPage.tsx';
+import { EXAM, countdownText, daysLeft, examShown, examSubscribe, setExamShown } from './exam.ts';
 
 const doneOf = (s: Save) => QUESTS.filter((q) => s.cases[q.caseId]).length;
 const brief = (s: Save) => '完成 ' + doneOf(s) + '／' + QUESTS.length + ' 張委託，圖鑑寫回 ' + codexPercent(COMPLAINTS, s) + '%，' + rankOf(s);
@@ -23,6 +24,7 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
   const acct = useSyncExternalStore(accountSubscribe, accountState);
+  const examOn = useSyncExternalStore(examSubscribe, examShown), examLeft = daysLeft();
   const [note, setNote] = useState<{ text: string; bad?: boolean } | null>(null);
   const [code, setCode] = useState<string | null>(null);        // 存不了檔案的時候，把內容攤開讓人複製
   const [paste, setPaste] = useState<string | null>(null);      // 貼上進度的那一格。null 是還沒打開
@@ -126,6 +128,13 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
         <StatsFacts />
         {consent === 'yes' ? <button type="button" className="pick" onClick={() => { sfx.tap(); setConsent('no'); }}>改成不要回傳</button>
           : <button type="button" className="pick" onClick={() => { sfx.tap(); setConsent('yes'); }}>改成可以回傳</button>}
+      </>}
+
+      <h3>口試倒數</h3>
+      <p>{examLeft === null ? '口試日（' + EXAM.label + '）已經過了，倒數不會再顯示。' : '口試日：' + EXAM.label + '。' + countdownText(examLeft) + '。'}</p>
+      {examLeft !== null && <>
+        <p className="dim">{examOn ? '現在：首頁和委託板會顯示還有幾天。' : '現在：不顯示。'}不是要考這一場的人，或是看了會緊張的人，可以關掉。</p>
+        <button type="button" className="pick" onClick={() => { sfx.tap(); setExamShown(!examOn); }}>{examOn ? '不要顯示倒數' : '顯示倒數'}</button>
       </>}
 
       <h3>其他</h3>

@@ -15,6 +15,7 @@ import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
 import { ARCHIVE, BEATS, CHAPTER_PLACE, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
 import { WELCOME, WORLD } from './world.ts';
 import { Portrait } from './Portrait.tsx';
+import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
@@ -60,6 +61,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [drawn, setDrawn] = useState<CaseDef | null>(null); // 抽到的那一位。抽了就不能重抽
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
+  const exam = useSyncExternalStore(examSubscribe, examShown) ? countdownText(daysLeft()) : null;   // 真實的口試日還有幾天
   const [later, setLater] = useState(false);   // 按了關閉：這一次先不問，下次打開再問
   const pending = run ? caseById(run.caseId) : null;
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null), speaker = useRef<Who | null>(null), bubble = useRef<HTMLDivElement>(null);
@@ -155,7 +157,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                   ? <button type="button" className={'quest paper' + (towerNew ? ' hint' : '')} onClick={() => { sfx.page(); setReading(ending); }}><i className="seal" aria-hidden="true" /><b>{ending.title}</b><span>{ending.patient.name}｜{ending.complaintName}｜燈塔</span><em>{save.cases[FINALE_ID] ? '最佳 ' + save.cases[FINALE_ID].best + ' 分・' + SAFETY_LABEL[save.cases[FINALE_ID].safety] : '最後一張'}</em></button>
                   : <div className="quest paper locked" aria-disabled="true"><b>？？？</b><span>值班夜走完之後才會送到</span><em>還沒出現</em></div>}
               </>}
-              <div className="quest-head">驗收</div>
+              <div className="quest-head">驗收{exam ? '・' + exam : ''}</div>
               {trialOpen(save)
                 ? <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>資格試煉</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
                 : <div className="quest paper locked" aria-disabled="true"><b>資格試煉</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>第一章走完之後開放</em></div>}
