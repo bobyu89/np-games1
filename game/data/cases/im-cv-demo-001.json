@@ -1,0 +1,259 @@
+{
+  "format": 1,
+  "id": "im-cv-demo-001",
+  "review": {
+    "state": "未審查",
+    "note": "示範關卡，用來測試遊戲架構。內容依文末的指引撰寫，還沒經過臨床專家審查，不能當教材。"
+  },
+  "specialty": "im",
+  "systems": ["cv"],
+  "difficulty": "初",
+  "type": "典型",
+  "chief_complaint": "胸痛",
+  "acuity": "急",
+  "patient": {
+    "age": 58,
+    "sex": "男",
+    "setting": "急診",
+    "opening": "我胸口很不舒服……"
+  },
+  "monster": { "sprite": "angry-heart", "name": "怒心怪" },
+
+  "system_selection": {
+    "core": ["cv", "resp"],
+    "important": ["gi", "msk"],
+    "optional": ["skin", "neuro"]
+  },
+
+  "interview": {
+    "location": {
+      "answer": "胸口正中間，一整片悶悶的。",
+      "weight": 2,
+      "follow_ups": [
+        { "ask": "會痛到別的地方嗎？", "answer": "會傳到左邊肩膀和下巴。", "key": true, "weight": 3 },
+        { "ask": "用一根手指指得出來嗎？", "answer": "指不出來，是一整片。", "key": false, "weight": 1 }
+      ]
+    },
+    "quality": {
+      "answer": "像一塊大石頭壓著，很悶、很緊。",
+      "weight": 3,
+      "follow_ups": [
+        { "ask": "有撕裂的感覺嗎？", "answer": "沒有，就是壓著的感覺。", "key": false, "weight": 2 },
+        { "ask": "會灼熱或火燒心嗎？", "answer": "不會。", "key": false, "weight": 1 }
+      ]
+    },
+    "quantity": {
+      "answer": "滿分十分大概有八分，已經一個多小時了。",
+      "weight": 2,
+      "follow_ups": [
+        { "ask": "是一直痛，還是一陣一陣？", "answer": "一直都在，沒有停過。", "key": false, "weight": 1 }
+      ]
+    },
+    "onset": {
+      "answer": "早上爬樓梯到三樓的時候突然開始的。",
+      "weight": 2,
+      "follow_ups": [
+        { "ask": "以前有過類似的情形嗎？", "answer": "這兩個禮拜走快一點就會悶，休息幾分鐘會好。這次不一樣，一直沒好。", "key": true, "weight": 3 }
+      ]
+    },
+    "provoking": {
+      "answer": "爬樓梯、出力的時候發作的。",
+      "weight": 2,
+      "follow_ups": [
+        { "ask": "跟吃東西有關係嗎？", "answer": "沒有，跟吃飯沒關係。", "key": false, "weight": 1 }
+      ]
+    },
+    "exacerbating": {
+      "answer": "動一動就更悶。",
+      "weight": 1,
+      "follow_ups": [
+        { "ask": "深呼吸或咳嗽會更痛嗎？", "answer": "不會。", "key": false, "weight": 2 },
+        { "ask": "按胸口會更痛嗎？", "answer": "不會，按了沒差。", "key": false, "weight": 1 },
+        { "ask": "躺下或往前傾有差嗎？", "answer": "都沒有差別。", "key": false, "weight": 1 }
+      ]
+    },
+    "relieving": {
+      "answer": "坐下來休息好一點點，可是沒有完全好。",
+      "weight": 2,
+      "follow_ups": [
+        { "ask": "有吃什麼藥嗎？", "answer": "沒有，家裡沒有這種藥。", "key": false, "weight": 0 }
+      ]
+    },
+    "associated": {
+      "answer": "一直冒冷汗，還有點想吐。",
+      "weight": 3,
+      "follow_ups": [
+        { "ask": "會喘嗎？", "answer": "有一點喘。", "key": false, "weight": 2 },
+        { "ask": "有頭暈或快昏倒嗎？", "answer": "沒有昏倒，只是很虛。", "key": false, "weight": 1 },
+        { "ask": "有發燒或咳嗽嗎？", "answer": "都沒有。", "key": false, "weight": 1 }
+      ]
+    },
+    "pmh": {
+      "answer": "高血壓五年、糖尿病三年，都在診所拿藥。",
+      "weight": 2,
+      "follow_ups": [
+        { "ask": "膽固醇高嗎？", "answer": "醫生說偏高，沒有吃藥。", "key": false, "weight": 2 },
+        { "ask": "開過刀或住過院嗎？", "answer": "都沒有。", "key": false, "weight": 0 }
+      ]
+    },
+    "meds": {
+      "answer": "吃血壓藥和糖尿病的藥，名字記不得。沒有藥物過敏。",
+      "weight": 1,
+      "follow_ups": [
+        { "ask": "有按時吃藥嗎？", "answer": "有時候會忘記。", "key": false, "weight": 1 }
+      ]
+    },
+    "family": {
+      "answer": "爸爸五十二歲的時候心肌梗塞。",
+      "weight": 2,
+      "follow_ups": [
+        { "ask": "家人有人突然過世嗎？", "answer": "沒有聽說。", "key": false, "weight": 0 }
+      ]
+    },
+    "social": {
+      "answer": "抽菸三十年，一天一包。很少運動。",
+      "weight": 2,
+      "follow_ups": [
+        { "ask": "最近有久坐、久躺或搭長途車嗎？", "answer": "沒有，都正常上班。", "key": false, "weight": 2 },
+        { "ask": "喝酒嗎？", "answer": "應酬的時候才喝。", "key": false, "weight": 0 }
+      ]
+    },
+    "ros": {
+      "by_system": {
+        "cv": "沒有心悸，腳不會腫，晚上不會喘到要坐起來。",
+        "resp": "沒有咳嗽，沒有咳血。",
+        "gi": "有點想吐但沒有吐，沒有火燒心，沒有解黑便。",
+        "gu": "小便正常。",
+        "neuro": "沒有頭暈、手腳無力或講話不清楚。",
+        "msk": "最近沒有撞到或拉傷胸口。",
+        "skin": "沒有起疹子。",
+        "heent": "沒有喉嚨痛，吞東西不會卡。"
+      },
+      "weight": 2,
+      "follow_ups": [
+        { "ask": "小腿有腫或痛嗎？", "answer": "沒有。", "key": false, "weight": 1 }
+      ]
+    }
+  },
+
+  "physical_exam": [
+    { "item": "gen-appearance", "finding": "表情痛苦，臉色蒼白，冒冷汗，一手按著胸口。", "key": true, "weight": 2 },
+    { "item": "gen-vitals", "finding": "BP 148/90 mmHg、HR 88 次/分、RR 22 次/分、SpO₂ 95%（room air）、BT 36.6°C。", "key": true, "weight": 2 },
+    { "item": "cv-jvp", "finding": "沒有頸靜脈怒張。", "key": false, "weight": 1 },
+    { "item": "cv-pmi", "finding": "心尖搏動位置正常，沒有摸到震顫。", "key": false, "weight": 1 },
+    { "item": "cv-pulses", "finding": "兩側橈動脈、足背動脈的搏動對稱。", "key": false, "weight": 2 },
+    { "item": "cv-legs", "finding": "兩腳沒有水腫，小腿沒有壓痛。", "key": false, "weight": 1 },
+    { "item": "cv-heart", "finding": "心律規則，沒有雜音，沒有心包摩擦音。", "key": true, "weight": 2 },
+    { "item": "resp-inspect", "finding": "呼吸稍快，兩側胸廓起伏對稱。", "key": false, "weight": 1 },
+    { "item": "resp-breath", "finding": "兩側呼吸音清楚、對稱，沒有囉音或喘鳴。", "key": true, "weight": 2 },
+    { "item": "msk-chest-wall", "finding": "按壓胸壁不會引發一樣的痛。", "key": false, "weight": 2 },
+    { "item": "gi-palpation", "finding": "腹部柔軟，上腹沒有壓痛。", "key": false, "weight": 1 },
+    { "item": "skin-inspect", "finding": "胸前的皮膚沒有皮疹或水泡。", "key": false, "weight": 1 },
+    { "item": "skin-temp", "finding": "皮膚濕濕冷冷的。", "key": false, "weight": 1 }
+  ],
+
+  "differential": [
+    {
+      "id": "pe", "name": "肺栓塞", "role": "不能漏掉",
+      "note": "常見的表現是喘、吸氣時胸痛、心跳快。這位病人吸氣不會更痛，最近沒有久臥，小腿也沒有腫痛。但它會致命，胸痛一定要想到。"
+    },
+    {
+      "id": "gerd", "name": "胃食道逆流", "role": "合理鑑別",
+      "note": "多半是灼熱感，和吃東西或躺下有關。這位病人的痛和吃飯無關，也沒有火燒心。"
+    },
+    {
+      "id": "acs", "name": "急性冠心症（ACS）", "role": "主診斷",
+      "supported_by": [
+        "interview.quality",
+        "interview.location.0",
+        "interview.onset.0",
+        "interview.provoking",
+        "interview.associated",
+        "exam.gen-appearance"
+      ],
+      "note": "胸口正中間的壓迫感，出力時發作，傳到左肩和下巴，合併冒冷汗和想吐，加上最近兩週越來越容易發作，還有多個危險因子。"
+    },
+    {
+      "id": "asthma", "name": "氣喘急性發作", "role": "干擾",
+      "note": "主要表現是喘和喘鳴，不是壓迫性的胸痛。這位病人的呼吸音清楚，也沒有氣喘病史。"
+    },
+    {
+      "id": "dissection", "name": "主動脈剝離", "role": "不能漏掉",
+      "note": "典型是突然發作、撕裂樣的劇痛，可能傳到背部，兩側脈搏不對稱。這位病人沒有這些表現。但它會致命，胸痛一定要想到。"
+    },
+    {
+      "id": "costochondritis", "name": "肋軟骨炎", "role": "合理鑑別",
+      "note": "按壓肋軟骨的位置會引發一樣的痛。這位病人按壓胸壁不會痛。"
+    },
+    {
+      "id": "pericarditis", "name": "急性心包膜炎", "role": "合理鑑別",
+      "note": "通常是吸氣或躺下更痛的胸痛，可能發燒，可能聽到心包摩擦音。這位病人都沒有。"
+    },
+    {
+      "id": "uti", "name": "泌尿道感染", "role": "干擾",
+      "note": "不會造成這種胸痛，病人也沒有泌尿道症狀。"
+    }
+  ],
+
+  "workup": [
+    {
+      "id": "cxr", "name": "胸部 X 光", "kind": "影像", "role": "可開可不開",
+      "result": "縱膈沒有變寬，肺野清楚，沒有氣胸。",
+      "note": "可以幫忙看其他心臟、肺和胸腔的原因。"
+    },
+    {
+      "id": "ck-mb", "name": "CK-MB", "kind": "檢驗", "role": "不必要",
+      "note": "可以驗 troponin 的時候，CK-MB 對診斷急性心肌損傷沒有額外的幫助。"
+    },
+    {
+      "id": "ecg", "name": "12 導程心電圖", "kind": "檢查", "role": "必要",
+      "result": "II、III、aVF 的 ST 段上升，I、aVL 的 ST 段下降，符合下壁 STEMI。",
+      "note": "急性胸痛要在到院 10 分鐘內做完並判讀，先看有沒有 STEMI。"
+    },
+    {
+      "id": "abd-echo", "name": "腹部超音波", "kind": "影像", "role": "不必要",
+      "note": "腹部沒有壓痛，目前的線索不指向腹部的問題。"
+    },
+    {
+      "id": "hs-ctn", "name": "高敏感度 troponin", "kind": "檢驗", "role": "必要",
+      "result": "第一次的數值高於第 99 百分位參考上限。",
+      "note": "懷疑 ACS 要盡快驗 troponin，首選高敏感度的檢驗，並在 1 到 3 小時後再驗一次看變化。"
+    },
+    {
+      "id": "basic-labs", "name": "血球計數與生化", "kind": "檢驗", "role": "可開可不開",
+      "result": "血色素、腎功能、電解質都在正常範圍。",
+      "note": "常規的基本檢驗。"
+    },
+    {
+      "id": "myoglobin", "name": "肌紅素", "kind": "檢驗", "role": "不必要",
+      "note": "可以驗 troponin 的時候，肌紅素（myoglobin）對診斷急性心肌損傷沒有額外的幫助。"
+    },
+    {
+      "id": "brain-ct", "name": "頭部電腦斷層", "kind": "影像", "role": "不必要",
+      "note": "病人沒有神經學症狀。"
+    }
+  ],
+
+  "trap": null,
+
+  "teaching": {
+    "confirmed": "下壁 STEMI（ST 段上升型心肌梗塞）",
+    "points": [
+      "急性胸痛到院 10 分鐘內要做完 12 導程心電圖並判讀。",
+      "懷疑 ACS 要盡快驗 cardiac troponin，首選高敏感度 troponin。可以驗 troponin 的時候，CK-MB 和 myoglobin 沒有額外的診斷價值。",
+      "胸痛先想會致命的原因：ACS、主動脈剝離、肺栓塞、食道破裂。",
+      "壓迫、悶、緊的感覺，出力時發作，位置在胸骨後方，缺血的可能性比較高。尖銳、和呼吸或姿勢有關、一下子就過去的痛，可能性比較低。",
+      "心肌梗塞的診斷：troponin 超過第 99 百分位參考上限而且有升降變化，再加上缺血的證據，例如症狀或心電圖變化。"
+    ],
+    "sources": [
+      {
+        "cite": "Gulati, M., Levy, P. D., Mukherjee, D., Amsterdam, E., Bhatt, D. L., Birtcher, K. K., Blankstein, R., Boyd, J., Bullock-Palmer, R. P., Conejo, T., Diercks, D. B., Gentile, F., Greenwood, J. P., Hess, E. P., Hollenberg, S. M., Jaber, W. A., Jneid, H., Joglar, J. A., Morrow, D. A., . . . Shaw, L. J. (2021). 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR guideline for the evaluation and diagnosis of chest pain. Circulation, 144(22), e368–e454.",
+        "doi": "10.1161/CIR.0000000000001029"
+      },
+      {
+        "cite": "Thygesen, K., Alpert, J. S., Jaffe, A. S., Chaitman, B. R., Bax, J. J., Morrow, D. A., & White, H. D. (2018). Fourth universal definition of myocardial infarction (2018). Circulation, 138(20), e618–e651.",
+        "doi": "10.1161/CIR.0000000000000617"
+      }
+    ]
+  }
+}

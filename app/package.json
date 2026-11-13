@@ -1,0 +1,29 @@
+{
+  "name": "mist-guild",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "check": "tsc --noEmit",
+    "test": "node --test src/core/engine.test.ts src/ui/backup.test.ts",
+    "cases": "node tools/cases.ts",
+    "review": "node tools/review.ts",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@expo-google-fonts/lxgw-wenkai-tc": "^0.4.3",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "subset-font": "^2.9.0",
+    "typescript": "^5.7.0",
+    "vite": "^7.1.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "霧脈公會",
+  "short_name": "霧脈公會",
+  "description": "給專科護理師學員的臨床推理練習：回合制的口試角色扮演遊戲。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#33443a",
+  "theme_color": "#33443a",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

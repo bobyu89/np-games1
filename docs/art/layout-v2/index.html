@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>新的對戰畫面（版面示意）</title>
+<!-- 版面示意：新的對戰畫面在直式和橫式的排法。內容是寫死的，不能玩。
+     用法：在專案根目錄開網頁伺服器，打開 docs/art/layout-v2/?mode=portrait 或 ?mode=landscape -->
+<style>
+  @font-face { font-family: "Fusion Pixel 12"; src: url("../../../game/art/fonts/fusion-pixel-12px-proportional-zh_hant.otf.woff2") format("woff2"); }
+  :root { --u: 2px; --bg: #0b1030; --ink: #fff; --dim: #9fb0e6; --panel: #1b2a6b; --hi: #2a3d8f; --edge: #0e1740; --sel: #3b55c4; --selhi: #5a76e0; --gold: #ffd94a; --hp: #58d06a; --bad: #ff8f8f; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font: calc(var(--u) * 12)/calc(var(--u) * 14) "Fusion Pixel 12", sans-serif; overflow: hidden; }
+  body { padding: 0 16px; display: flex; justify-content: center; }
+  .box { border: var(--u) solid var(--ink); box-shadow: inset 0 0 0 var(--u) var(--edge); background: linear-gradient(var(--hi), var(--hi)) 0 0 / 100% calc(var(--u) * 3) no-repeat var(--panel); padding: calc(var(--u) * 3) calc(var(--u) * 5); }
+  .btn { text-align: center; padding: calc(var(--u) * 3) calc(var(--u) * 1); white-space: nowrap; overflow: hidden; }
+  .btn.on { background-color: var(--sel); background-image: linear-gradient(var(--selhi), var(--selhi)); }
+  .btn.lit { background: var(--gold); color: #22232f; border-color: var(--gold); box-shadow: inset 0 0 0 var(--u) #b8901c; }
+  .btn.left { text-align: left; padding-left: calc(var(--u) * 5); }
+  .btn.done { color: var(--dim); }
+  .btn b { font-weight: normal; color: var(--gold); margin-right: calc(var(--u) * 1); }
+  .btn.lit b { color: #7a5a00; }
+  .app { height: 100%; display: flex; gap: calc(var(--u) * 2); padding: calc(var(--u) * 2) 0; }
+  .portrait .app { flex-direction: column; width: calc(var(--u) * var(--w)); }
+  .landscape .app { flex-direction: row; width: calc(var(--u) * var(--w)); }
+  .col { display: flex; flex-direction: column; gap: calc(var(--u) * 2); min-width: 0; min-height: 0; }
+  .landscape .left { width: calc(var(--u) * 200); flex: none; }
+  .landscape .right { flex: 1; }
+  .portrait .col { display: contents; }
+  .scene { position: relative; height: calc(var(--u) * 112); flex: none; overflow: hidden; }
+  .scene .inner { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--u) * 112); }
+  .scene canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  /* 螢幕很矮的時候：狀態列縮成一行，場景上緣（本來就被狀態列蓋住）裁掉 */
+  .compact .scene { height: calc(var(--u) * 96); }
+  .status .one { display: none; }
+  .compact .status .two { display: none; }
+  .compact .status .one { display: flex; }
+  .status { position: absolute; left: var(--u); right: var(--u); top: calc(var(--u) * 2); padding: calc(var(--u) * 2) calc(var(--u) * 4); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: calc(var(--u) * 4); }
+  .hpbar { flex: 1; height: calc(var(--u) * 8); border: var(--u) solid var(--ink); background: var(--edge); position: relative; }
+  .hpbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--hp); width: 74%; }
+  .hpbar em { position: absolute; left: 60%; top: 0; bottom: 0; width: 14%; background: #c8ffd0; }
+  .veil { position: absolute; right: calc(var(--u) * 4); width: calc(var(--u) * 60); top: calc(var(--u) * 96); text-align: center; color: #22232f; }
+  .float { position: absolute; text-shadow: var(--u) 0 #22232f, calc(var(--u) * -1) 0 #22232f, 0 var(--u) #22232f, 0 calc(var(--u) * -1) #22232f; }
+  .banner { position: absolute; left: 50%; transform: translateX(-50%); top: calc(var(--u) * 38); background: var(--gold); color: #22232f; padding: calc(var(--u) * 1) calc(var(--u) * 6); border: var(--u) solid #22232f; white-space: nowrap; }
+  .dialog { flex: 1 1 0; min-height: calc(var(--u) * 48); display: flex; flex-direction: column; }
+  .dialog .body { flex: 1; }
+  .dialog .you { color: var(--dim); }
+  .dialog .foot { border-top: var(--u) solid var(--hi); padding-top: calc(var(--u) * 2); color: var(--gold); }
+  .head { color: var(--dim); display: flex; justify-content: space-between; padding: 0 calc(var(--u) * 2); flex: none; }
+  .pad { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: calc(var(--u) * 2); flex: none; }
+  .pad .wide { grid-column: span 4; }
+  .list { display: grid; gap: calc(var(--u) * 2); flex: none; }
+  .list.c2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .chips { display: flex; gap: calc(var(--u) * 2); flex: none; }
+  .chips .btn { padding-left: calc(var(--u) * 3); padding-right: calc(var(--u) * 3); }
+  .bar { display: flex; gap: calc(var(--u) * 2); flex: none; margin-top: auto; }
+  .bar .btn { flex: var(--n) 1 0; }
+  .landscape .right { overflow: hidden; }
+  /* 螢幕很矮的時候：拿掉說明那一行，按鈕矮一點 */
+  .compact .head { display: none; }
+  .compact .btn { padding-top: calc(var(--u) * 2); padding-bottom: calc(var(--u) * 2); }
+  .compact .dialog { min-height: calc(var(--u) * 44); }
+  .spark { position: absolute; width: calc(var(--u) * 2); height: calc(var(--u) * 2); background: var(--gold); }
+</style>
+<body>
+<div class="app" id="app"></div>
+<script type="module">
+import { drawScene } from '../../../game/ui/scene.js';
+const mode = new URLSearchParams(location.search).get('mode') || 'portrait';
+document.body.className = mode + (window.innerHeight / 2 < 300 && mode === 'portrait' ? ' compact' : '');
+const app = document.getElementById('app');
+const availW = document.body.clientWidth - 32;
+const W = mode === 'portrait' ? Math.min(200, Math.floor(availW / 2)) : Math.floor(availW / 2);
+app.style.setProperty('--w', W);
+const sceneW = mode === 'portrait' ? W : 200;
+
+const scene = `
+  <div class="scene">
+    <div class="status box" style="z-index:1">
+      <div class="row two"><span>主訴：胸痛</span><span>第2回合</span></div>
+      <div class="row two"><span>病人</span><div class="hpbar"><i></i><em></em></div><span>74</span></div>
+      <div class="row one"><span>胸痛</span><div class="hpbar"><i></i><em></em></div><span>74</span><span>第2回合</span></div>
+    </div>
+    <div class="inner">
+    <canvas></canvas>
+    <div class="banner">關鍵線索！</div>
+    <div class="float" style="left:calc(var(--u)*10);top:calc(var(--u)*42);color:#58d06a">+14</div>
+    <div class="float" style="left:calc(var(--u)*52);top:calc(var(--u)*72);color:#ff8f8f">−5</div>
+    <div class="float" style="right:calc(var(--u)*8);top:calc(var(--u)*40);color:#ffd94a">−3%</div>
+    <div class="spark" style="right:calc(var(--u)*52);top:calc(var(--u)*50)"></div>
+    <div class="spark" style="right:calc(var(--u)*12);top:calc(var(--u)*62)"></div>
+    <div class="spark" style="right:calc(var(--u)*30);top:calc(var(--u)*34)"></div>
+    <div class="veil">面紗94%</div>
+    </div>
+  </div>`;
+const dialog = `
+  <div class="box dialog">
+    <div class="body"><div class="you">你：會痛到別的地方嗎？</div><div>病人：「會傳到左邊肩膀和下巴。」</div></div>
+    <div class="foot">面紗 −3　回血 +14　掉血 −5</div>
+  </div>`;
+const bar = (on) => `<div class="bar">${['問診', '身體評估', '筆記', '下診斷'].map((t) => `<div class="box btn${t === on ? ' on' : ''}" style="--n:${t.length + 1}">${t}</div>`).join('')}</div>`;
+const pad = `
+  <div class="head"><span>問診：點一下就問</span><span>4 / 13</span></div>
+  <div class="pad">
+    ${[['L', '位置', 1], ['Q', '型態', 1], ['Q', '程度', 1], ['O', '起病', 1], ['P', '誘發', 0], ['E', '加重', 0], ['R', '緩解', 0], ['A', '伴隨', 0]].map(([k, t, lit]) => `<div class="box btn${lit ? ' lit' : ''}"><b>${k}</b>${t}</div>`).join('')}
+    ${['病史', '用藥', '家族', '社會'].map((t) => `<div class="box btn">${t}</div>`).join('')}
+    <div class="box btn wide">系統回顧</div>
+  </div>`;
+const exam = `
+  <div class="head"><span>身體評估：點一下就做</span><span>心血管 1 / 6</span></div>
+  <div class="chips">${['一般', '心血管', '呼吸', '腸胃', '肌肉骨骼'].map((t) => `<div class="box btn${t === '心血管' ? ' on' : ''}">${t}</div>`).join('')}</div>
+  <div class="list c2">
+    ${[['視診｜頸靜脈', 1], ['觸診｜心尖搏動', 0], ['觸診｜周邊脈搏', 0], ['觸診｜下肢', 0], ['聽診｜心音', 0], ['聽診｜頸動脈', 0]].map(([t, d]) => `<div class="box btn left${d ? ' done' : ''}">${d ? '✓ ' : ''}${t}</div>`).join('')}
+  </div>`;
+
+app.innerHTML = mode === 'portrait'
+  ? `<div class="col">${scene}${dialog}${pad}${bar('問診')}</div>`
+  : `<div class="col left">${scene}${dialog}</div><div class="col right">${exam}${bar('身體評估')}</div>`;
+await document.fonts.load('24px "Fusion Pixel 12"', '主訴胸痛');
+drawScene(app.querySelector('canvas'), sceneW, { veil: 94, monster: 'angry-heart', mood: 'pain', flash: false });
+window.__done = true;
+</script>
+</body>
+</html>

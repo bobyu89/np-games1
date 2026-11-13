@@ -1,0 +1,23 @@
+// 霧脈公會放在 Cloudflare 的設定：一個 Worker，同時給遊戲的靜態檔和後端（現在是匿名的使用統計）。
+// 資料放在一個 Durable Object 裡（裡面是 SQLite），所以部署只要一個指令，不用另外建資料庫。怎麼部署看 README.md。
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mist-guild",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  // 只留一個正式的網址。進度是跟著網址存在裝置上的，多一個預覽網址，玩家就可能把進度留在那裡
+  "preview_urls": false,
+  "assets": {
+    // 遊戲建好的那一包（先在 app/ 跑 npm run build）。這些檔由 Cloudflare 直接給，不經過 src/index.ts，也不算 Worker 的請求數
+    "directory": "../app/dist",
+    // 只有 /api/ 底下的才交給 src/index.ts
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    // 除了遊戲自己的網址以外，還有哪些網址的網頁可以用後端。多個用逗號分開。本機（localhost、127.0.0.1）一律可以
+    "ALLOW_ORIGINS": ""
+  },
+  "durable_objects": { "bindings": [{ "name": "STATS", "class_name": "Stats" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Stats"] }]
+}

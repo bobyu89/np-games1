@@ -1,0 +1,122 @@
+/* 霧脈公會風格定稿（繪本版）
+   版面：像翻開一頁繪本。上面是一張貼在紙上的插畫，下面是紙片做的生命徵象、對話和行動。 */
+
+:root {
+  --page: #33443a;        /* 書頁外面的深苔綠 */
+  --paper: #f1e8d0;       /* 紙 */
+  --paper-2: #e2d5b3;     /* 舊一點的紙：不能按的東西 */
+  --ink: #2c2a25;         /* 鉛筆的顏色 */
+  --ink-soft: #6a6352;
+  --sage: #a9c4a0;        /* 可以按的東西 */
+  --ochre: #dba941;       /* 線索、重點 */
+  --rust: #b4532b;        /* 緊急 */
+  --teal: #3f7570;
+  --on-page: #efe6cf;     /* 深色底上的字 */
+  --on-page-soft: #b9c7b0;
+  --font: "LXGW WenKai TC", "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0.17 0 0 0 0 0.16 0 0 0 0 0.13 1.1 0 0 0 -0.52'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* 手畫的框：四個角的圓度都不一樣 */
+  --r-a: 13px 17px 12px 19px / 17px 12px 19px 13px;
+  --r-b: 17px 12px 18px 13px / 12px 18px 13px 17px;
+}
+
+html { box-sizing: border-box; }
+html, body { height: 100%; }
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--page); color: var(--ink); font-family: var(--font);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; justify-content: center; align-items: center; overflow: hidden;
+}
+#app {
+  width: 100%; max-width: 440px; height: 100%; max-height: 900px; padding-block: 8px;
+  display: flex; flex-direction: column; gap: 7px; font-size: 16px; line-height: 1.45;
+}
+#app p { margin: 0; }
+.left, .right { display: contents; }
+.loading { margin: auto; color: var(--on-page-soft); }
+
+.paper { background: var(--grain), var(--paper); border: 2px solid var(--ink); border-radius: var(--r-a); }
+
+.top { flex: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; color: var(--on-page); padding: 0 2px; }
+.top .who { font-weight: 700; font-size: 1.12em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
+.top .clock { flex: none; background: var(--grain), var(--ochre); color: var(--ink); border: 2px solid var(--ink); border-radius: var(--r-b); padding: 0 10px; font-weight: 700; font-variant-numeric: tabular-nums; transform: rotate(1deg); }
+
+.scene { position: relative; flex: 3 1 0; min-height: 170px; max-height: min(94vw, 420px); padding: 5px; overflow: hidden; }
+.scene .frame { position: relative; width: 100%; height: 100%; border-radius: 9px 12px 8px 13px / 12px 8px 13px 9px; overflow: hidden; background: #8fab89; }
+.scene canvas { display: block; width: 100%; height: 100%; }
+.banner {
+  position: absolute; left: 50%; top: 10px; transform: translate(-50%, -64px) rotate(-2deg); white-space: nowrap;
+  background: var(--grain), var(--ochre); color: var(--ink); border: 2px solid var(--ink); border-radius: var(--r-b); padding: 1px 14px; font-weight: 700;
+  box-shadow: 2px 3px 0 var(--ink); transition: transform 0.32s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.banner.show { transform: translate(-50%, 0) rotate(-2deg); }
+.banner.bad { background: var(--grain), var(--rust); color: var(--paper); }
+.bubble {
+  position: absolute; transform: translate(-50%, -100%); background: var(--paper); border: 2px solid var(--ink); border-radius: var(--r-b);
+  padding: 0 9px; line-height: 1.2; font-weight: 700; letter-spacing: 1px; pointer-events: none; animation: bob 0.7s ease-in-out infinite alternate;
+}
+.bubble::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 9px; height: 9px; background: var(--paper); border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); transform: translateX(-50%) rotate(45deg); }
+@keyframes bob { to { margin-top: -3px; } }
+.veil { position: absolute; left: 50%; top: 50%; white-space: nowrap; background: var(--grain), var(--paper); border: 2px solid var(--ink); border-radius: var(--r-b); padding: 0 8px; font-size: 0.86em; font-weight: 700; font-variant-numeric: tabular-nums; transform: translate(-50%, 0) rotate(-1.5deg); }
+
+.vitals { flex: none; display: flex; justify-content: space-between; gap: 6px; font-variant-numeric: tabular-nums; }
+.vitals span { background: var(--grain), var(--paper); border: 2px solid var(--ink); border-radius: var(--r-b); padding: 0 8px; white-space: nowrap; font-weight: 700; font-size: 0.94em; }
+.vitals span:nth-child(odd) { transform: rotate(-0.8deg); }
+.vitals span:nth-child(even) { transform: rotate(0.7deg); border-radius: var(--r-a); }
+.vitals span b { font-weight: 400; color: var(--ink-soft); margin-right: 5px; }
+.vitals .heart { display: inline-block; width: 0.82em; height: 0.74em; margin-right: 5px; color: var(--rust); animation: beat 0.56s ease-out infinite; vertical-align: -0.02em; }
+.vitals .heart svg { display: block; width: 100%; height: 100%; }
+@keyframes beat { 0% { transform: scale(1.35); } 35% { transform: scale(1); } 100% { transform: scale(1); } }
+.vitals span.alert { background: var(--grain), #efc3ad; color: #7c2710; animation: alarm 0.5s ease-in-out 4; }
+@keyframes alarm { 50% { transform: scale(1.08) rotate(-2deg); } }
+
+.talk { flex: 1 1 0; min-height: 84px; overflow-y: auto; padding: 8px 13px; }
+.talk .name { color: var(--rust); font-weight: 700; }
+.talk .you { color: var(--ink-soft); }
+.talk .sys { color: var(--teal); font-weight: 700; }
+.talk .sys.bad { color: var(--rust); }
+.talk .more { color: var(--rust); display: inline-block; animation: more 0.9s ease-in-out infinite alternate; }
+@keyframes more { to { transform: translateY(3px); } }
+
+.clues { flex: none; display: flex; gap: 8px; min-height: 30px; align-items: center; color: var(--on-page-soft); }
+.clues .label { flex: none; font-size: 0.9em; }
+.chips { flex: 1; min-width: 0; display: flex; gap: 7px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; padding: 3px 10px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 10px), transparent); mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 10px), transparent); }
+.chips > * { flex: none; }
+.chip { background: var(--grain), var(--ochre); color: var(--ink); border: 2px solid var(--ink); border-radius: var(--r-b); padding: 0 9px; font-weight: 700; font-size: 0.92em; transform: rotate(-1.4deg); animation: stamp 0.4s cubic-bezier(0.3, 1.7, 0.5, 1); }
+.chip:nth-child(even) { transform: rotate(1.2deg); border-radius: var(--r-a); }
+@keyframes stamp { 0% { transform: translateY(-26px) scale(1.5) rotate(-9deg); opacity: 0; } }
+
+.acts { flex: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 8px; padding: 0 3px 3px 0; }
+button.act {
+  font: inherit; font-weight: 700; color: var(--ink); text-align: center; margin: 0; cursor: pointer; min-height: 44px; padding: 4px 2px;
+  background: var(--grain), var(--paper); border: 2px solid var(--ink); border-radius: var(--r-a); box-shadow: 2px 3px 0 var(--ink);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: transform 0.08s, box-shadow 0.08s;
+}
+button.act:nth-child(even) { border-radius: var(--r-b); }
+button.act:active { transform: translate(2px, 3px); box-shadow: 0 0 0 var(--ink); }
+@media (hover: hover) { button.act:not(:disabled):hover { transform: translate(-1px, -1px); box-shadow: 3px 4px 0 var(--ink); } button.act:not(:disabled):active { transform: translate(2px, 3px); box-shadow: 0 0 0 var(--ink); } }
+button.act:focus-visible, .foot button:focus-visible { outline: 3px solid var(--ochre); outline-offset: 2px; }
+button.act.demo { background: var(--grain), var(--sage); }
+button.act.urgent { background: var(--grain), var(--rust); color: var(--paper); }
+button.act:disabled { background: var(--grain), var(--paper-2); color: var(--ink-soft); border-color: var(--ink-soft); box-shadow: none; transform: translate(1px, 2px); cursor: default; }
+button.act.hint { animation: hint 1.8s ease-in-out infinite; }
+@keyframes hint { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-2.5deg) scale(1.04); } 80% { transform: rotate(2.5deg) scale(1.04); } 90% { transform: rotate(-1.5deg); } }
+
+.foot { flex: none; display: flex; justify-content: space-between; gap: 12px; color: var(--on-page-soft); font-size: 0.9em; }
+.foot button { font: inherit; color: var(--on-page-soft); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline wavy; text-underline-offset: 3px; }
+
+/* 橫式和桌機：插畫在左，文字和行動在右 */
+@media (min-aspect-ratio: 6/5) and (min-width: 620px) {
+  #app { max-width: 960px; max-height: 640px; flex-direction: row; gap: 14px; }
+  .left, .right { display: flex; flex-direction: column; gap: 7px; min-width: 0; min-height: 0; }
+  .left { flex: 1.25 1 0; }
+  .scene { max-height: none; }
+  .right { flex: 1 1 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner, button.act { transition: none; }
+  .chip, .vitals span.alert, .vitals .heart, .bubble, .talk .more, button.act.hint { animation: none; }
+}

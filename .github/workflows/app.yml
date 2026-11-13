@@ -1,0 +1,117 @@
+# 每次推送都檢查一遍；合併到 main 之後，把遊戲和後端一起部署到 Cloudflare（同一個 Worker、同一個網址）。
+# 第一次要先在 GitHub 放 Cloudflare 的兩個 secret，不然部署那一步會失敗並說明缺什麼。說明在 worker/README.md。
+name: 霧脈公會
+
+on:
+  pull_request:
+    paths: ['app/**', 'worker/**', 'docs/review/**', '.github/workflows/app.yml']
+  push:
+    branches: [main]
+    paths: ['app/**', 'worker/**', 'docs/review/**', '.github/workflows/app.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-${{ github.ref }}
+  # 分支上新的推送會取代舊的檢查；main 上不取消，免得部署做到一半被打斷
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  check:
+    name: 檢查和建置
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - name: 規則、評分和存檔的測試
+        run: npm test
+      - name: 每一個病例都走得到滿分
+        run: npm run cases
+      - name: 審查清單和病例檔對得上
+        run: |
+          npm run review
+          git diff --exit-code -- ../docs/review || { echo "::error::病例改過了，docs/review 沒有跟著重新產生。請跑 npm run review 再提交。"; exit 1; }
+      - name: 型別檢查和建置
+        run: npm run build
+
+  worker:
+    name: 後端的測試
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - run: npm ci
+      - name: 檢查、存、算總表的測試
+        run: npm test
+      - name: 型別檢查
+        run: npm run check
+
+  deploy:
+    name: 部署到 Cloudflare
+    needs: [check, worker]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      STATS_ADMIN_KEY: ${{ secrets.STATS_ADMIN_KEY }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - name: 金鑰設定了沒
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::還沒有設定 CLOUDFLARE_API_TOKEN 和 CLOUDFLARE_ACCOUNT_ID 這兩個 secret，沒辦法部署。照 worker/README.md 設定好之後，到 Actions 重跑這個流程。"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 遊戲的版本號看的是最後一次動到 app/ 的提交，要有完整的歷史才找得到
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            app/package-lock.json
+            worker/package-lock.json
+      - name: 建置遊戲
+        working-directory: app
+        env:
+          # 匿名的使用統計：有設定看總表的密碼（STATS_ADMIN_KEY），遊戲才會詢問、回傳；沒有設定就完全不會
+          VITE_STATS_URL: ${{ secrets.STATS_ADMIN_KEY != '' && '/api' || '' }}
+        run: |
+          npm ci
+          npm run build
+      - name: 部署
+        working-directory: worker
+        run: |
+          npm ci
+          npx wrangler deploy | tee deploy.log
+          if [ -n "$STATS_ADMIN_KEY" ]; then printf '%s' "$STATS_ADMIN_KEY" | npx wrangler secret put ADMIN_KEY; fi
+          url=$(grep -o 'https://[A-Za-z0-9.-]*workers\.dev' deploy.log | head -n 1)
+          {
+            echo "### 部署好了"
+            echo
+            echo "網址：${url:-（在上面的紀錄裡找 workers.dev）}"
+            echo
+            if [ -n "$STATS_ADMIN_KEY" ]; then echo "匿名的使用統計：開著。總表在網址後面加 \`#stats\`。"; else echo "匿名的使用統計：關著（沒有設定 \`STATS_ADMIN_KEY\`）。"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
