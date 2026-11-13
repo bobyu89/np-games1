@@ -9,6 +9,7 @@ export const EXCRETA: ComplaintDef = {
   id: 'excreta',
   name: '排泄物異常',
   shadow: { name: '二便獺', look: 'otter', lore: '排泄物異常的症影。把水攪渾了就躲起來。水裡多了什麼顏色，要你自己低頭去看；來的人多半不好意思先開口。' },
+  place: 'quiet',
   forms: [
     { id: 'upper', name: '上消化道', mark: '上', danger: true, blurb: '血從胃和十二指腸來：黑得像柏油的便、吐血。潰瘍、靜脈瘤。' },
     { id: 'lower', name: '下消化道', mark: '下', danger: true, blurb: '血從大腸和肛門來：鮮紅或暗紅的血、排便習慣改變。痔瘡、憩室、大腸的腫瘤。' },

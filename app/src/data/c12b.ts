@@ -14,7 +14,7 @@ export const C12B: CaseSpec = {
   title: '最後一次正常',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '焦菱', age: 66, sex: '女', job: '當鋪的掌櫃', look: 'c12b', pronoun: '她' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['焦菱，66 歲，當鋪的掌櫃。', '半個時辰前在櫃台算帳，右手突然麻掉，筆掉在地上，右邊的臉也麻。夥計說她講話「像含著東西」。她說是手壓太久，想等一下就好。', '夥計硬把她扶來。她一直說沒事，右手卻一直擱在腿上，沒有動過。'],
     prompts: ['最危險的可能是什麼？', '「突然」加上「半邊」，是在說哪裡出了問題？', '這一位，我最需要問出來的一個時間是什麼？'],

@@ -2,9 +2,8 @@
 // 不會動的背景只畫一次存起來，每一格直接貼上；會動的東西每一格重畫。
 import { C, K, TAU, hash, clamp, smooth, ell, rect, rrect, prep, trace, shape, oval, wline, limb, dot, leaf, fillRect, star, createBase } from './sketch.js';
 import { eye, drawCat, drawCen, drawShen, drawHero } from './cast.js';
+import { X0, X1, Y0, Y1, FLOOR_Y, ROOMS, bigLeaf, rainFall } from './rooms.js';
 
-const X0 = -220, X1 = 580, Y0 = -120, Y1 = 420;   // 背景畫到畫面外，窄或寬的螢幕都不會露白
-const FLOOR_Y = 186;
 const LIN = { x: 90, y: 219 }, CEN = { x: 298, y: 264 }, SHEN = { x: 322, y: 268 }, MOTH = { x: 178, y: 88 }, HERO = { x: 207, y: 297 };
 const BIG = 1.14, MOTH_BIG = 1.28;   // 人物比家具大一點，表情在手機上才看得清楚
 
@@ -126,8 +125,9 @@ function drawDockRoom(g) {
   wline(g, [[112, 6], [150, 20], [196, 22], [246, 8]], C.wood2, 1.2);
 }
 
-function drawBack(g, who, scene) {
-  if (scene === 'dock') drawDockRoom(g); else drawWardRoom(g, scene === 'ward-rain');
+// 在哪裡。公會的病室和碼頭的貨棧畫在這個檔；其他地方在 rooms.js
+function drawBack(g, who, place, rain) {
+  if (ROOMS[place]) ROOMS[place].back(g, rain); else if (place === 'dock') drawDockRoom(g); else drawWardRoom(g, rain);
   K.seed = 180;
   // 床：影子、床頭板、床架、床墊、枕頭
   oval(g, 118, 252, 104, 6, { fill: C.shadow, stroke: null });
@@ -273,6 +273,16 @@ const PATIENTS = {
   c12b: { shirt: C.coat, shirt2: C.coat2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bun: true, pale: true, sweat: 1 },
   c12c: { shirt: C.cloak, shirt2: C.cloak2, hair: C.hairGrey, brow: C.hairGrey, moustache: true, calm: true, pale: true },
   c12d: { shirt: C.rose, shirt2: C.rose2, hair: C.hairInk, brow: C.hairInk, woman: true, pony: true, fast: true, flush: true, sweat: 1 },
+  // 終章的值班夜，同時到門口的那幾位（只在分流的小圖出現）
+  n1: { shirt: C.moss, shirt2: C.green2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bun: true, fast: true, pale: true, sweat: 2 },
+  n2: { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairInk, brow: C.hairInk, flush: true },
+  n3: { shirt: C.stone, shirt2: C.stone2, hair: C.cream, brow: C.hairGrey, beard: true, calm: true, pale: true },
+  n4: { shirt: C.slate, shirt2: C.slate2, hair: C.hairDark, brow: C.hairDark, moustache: true },
+  n5: { shirt: C.rose, shirt2: C.rose2, hair: C.hairBrown, brow: C.hairBrown, woman: true, bob: true, calm: true },
+  n6: { shirt: C.wood, shirt2: C.wood2, hair: C.hairInk, brow: C.hairInk, moustache: true, pale: true, sweat: 2 },
+  n7: { shirt: C.sea, shirt2: C.sea2, hair: C.hairDark, brow: C.hairDark, woman: true, pony: true, calm: true },
+  // 終章：忍冬，守燈塔的人
+  dong: { shirt: C.slate, shirt2: C.slate2, hair: C.cream, brow: C.hairGrey, woman: true, bun: true, scarf: true, calm: true, pale: true, sweat: 1 },
 };
 
 // 第四、五章的病人帶來的東西：每個人一大一小，從下面的零件裡挑。[大的, 顏色, 小的]
@@ -284,6 +294,7 @@ const KIT = {
   c10a: ['basket', C.moss, 'teapot'], c10b: ['basket', C.sea, 'fish'], c10c: ['cloth', C.rose, 'spool'], c10d: ['chest', C.plank, 'herbs'],
   c11a: ['pot', C.slate, 'brush'], c11b: ['crate', C.wood, 'knife'], c11c: ['bag', C.wood, 'letter'], c11d: ['chest', C.wood2, 'cane'],
   c12a: ['sack', C.moss, 'teapot'], c12b: ['books', C.rust, 'abacus'], c12c: ['pot', C.iron, 'cup'], c12d: ['bag', C.rose2, 'fan'],
+  dong: ['books', C.coat, 'cup'],
 };
 
 // 第二章四位病人帶來的東西
@@ -391,11 +402,15 @@ export function createWard(canvas, opts = {}) {
   // 病人長什麼樣子：一張表，一位病人一行。新的病人加一行就好
   const who = PATIENTS[opts.patient] ? opts.patient : 'lin', LOOK = PATIENTS[who];
   const calm = !!LOOK.calm, woman = !!LOOK.woman, pony = !!LOOK.pony, fast = !!LOOK.fast;
-  // 在哪裡：ward 公會的病室、ward-rain 下雨天的病室、dock 碼頭的貨棧（出診）
-  const scene = ['ward-rain', 'dock'].includes(opts.scene) ? opts.scene : 'ward', dock = scene === 'dock', rain = scene === 'ward-rain';
-  const base = createBase(canvas, { back: (g) => drawBack(g, who, scene), mid: drawMid }, opts.view), ctx = base.ctx;
+  // 在哪裡：地方（ward 公會的病室、dock 碼頭的貨棧，其他見 rooms.js），後面加 -rain 是下雨天
+  const asked = String(opts.scene || 'ward'), rain = asked.endsWith('-rain'), named = asked.replace('-rain', '');
+  const place = named === 'dock' || ROOMS[named] ? named : 'ward', dock = place === 'dock', room = ROOMS[place] || null;
+  // 公會的診間都掛公會的旗子；窗台上有沒有貓、吊燈旁邊有沒有螢火蟲，看地方
+  const guild = !dock && place !== 'tower', cat = ['ward', 'market', 'archive', 'quiet'].includes(place), flies = place === 'ward' || place === 'quiet';
+  const base = createBase(canvas, { back: (g) => drawBack(g, who, place, rain), mid: drawMid }, opts.view), ctx = base.ctx;
   // hero：主角是哪一位（沒有就不畫）；hide：不畫症影、霧和燈（圖鑑的頭像用）
-  const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [], hero: opts.hero || null, hide: false };
+  // beam：燈塔的燈亮了沒（只有燈塔那一間用得到）
+  const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [], hero: opts.hero || null, hide: false, beam: 0, beamShown: 0 };
   let T = 0, dustClock = 0;
   const sparks = [], dust = [];
   const PUFFS = [
@@ -443,6 +458,7 @@ export function createWard(canvas, opts = {}) {
   }
 
   function drawWindowLife(g, t) {
+    if (room) return room.life?.(g, t, { rain, state });
     if (dock) return drawDockLife(g, t);
     g.save(); g.beginPath(); g.rect(19.5, 21.5, 77.5, 79.5); g.clip();
     // 雲
@@ -451,10 +467,7 @@ export function createWard(canvas, opts = {}) {
       oval(g, x, y, rx, ry, { fill: C.cream, stroke: null, seed: 60 + i }); oval(g, x + rx * 0.5, y - ry * 0.6, rx * 0.55, ry * 0.9, { fill: C.cream, stroke: null, seed: 64 + i });
     });
     // 下雨天：雨絲斜斜地打在窗上
-    if (rain) for (let i = 0; i < 16; i++) {
-      const k = (t * 1.6 + i * 0.137) % 1, x = 16 + ((i * 37) % 84) + k * 6, y = 18 + k * 88;
-      wline(g, [[x, y], [x - 2, y + 7]], C.cream, 1, { amp: 0, seed: 90 + i });
-    }
+    if (rain) rainFall(g, t);
     // 落葉
     for (let i = 0; i < (rain ? 0 : 4); i++) {
       const k = (t * 0.11 + i * 0.27) % 1, x = 24 + i * 19 + Math.sin(t * 1.3 + i * 2) * 5, y = 20 + k * 86;
@@ -487,12 +500,16 @@ export function createWard(canvas, opts = {}) {
         const sw = Math.sin(t * 2.2 + i * 1.3) * 1.6;
         shape(g, [[x - 7, y], [x + 7, y + 1], [x + sw, y + 15]], { fill: col, lw: 1.1, boil: true });
       });
-    } else {
+    }
+    if (guild) {
     // 公會的旗子
     const s1 = Math.sin(t * 1.1) * 1.8;
     shape(g, [[112, 18], [130, 18], [130 + s1 * 0.4, 46], [121 + s1, 62], [112 + s1 * 0.4, 46]], { fill: C.coat, boil: true });
     oval(g, 121 + s1 * 0.3, 34, 4.6, 6, { fill: C.ochre, lw: 1.1, boil: true }); wline(g, [[121 + s1 * 0.3, 29], [121 + s1 * 0.3, 40]], C.ink, 0.9);
     wline(g, [[121 + s1 * 0.3, 33], [124 + s1 * 0.3, 31]], C.ink, 0.8); wline(g, [[121 + s1 * 0.3, 36], [118 + s1 * 0.3, 34]], C.ink, 0.8);
+    }
+    if (room) { K.seed = 760; room.hang?.(g, t); K.seed = 800; }
+    else if (!dock) {
     // 三把草藥
     [[156, 10, C.moss, 0], [190, 14, C.ochre, 1], [224, 11, C.rust, 2]].forEach(([x, y, col, i]) => {
       g.save(); g.translate(x, y); g.rotate(Math.sin(t * 1.0 + i * 1.9) * 0.07);
@@ -525,7 +542,7 @@ export function createWard(canvas, opts = {}) {
     const lf = 0.5 + 0.5 * Math.sin(t * 6.1) * Math.sin(t * 2.3);
     if (who === 'lin') { g.globalAlpha = 0.14 + lf * 0.07; dot(g, 46, 268, 15, C.glow); g.globalAlpha = 1; }
     // 繞著吊燈飛的螢火蟲
-    for (let i = 0; i < (dock ? 0 : 3); i++) {
+    for (let i = 0; i < (flies ? 3 : 0); i++) {
       const a = t * (0.5 + i * 0.13) + i * 2.1, fx = 262 + Math.cos(a) * (26 + i * 9) + Math.sin(t * 1.7 + i) * 4, fy = 44 + Math.sin(a * 1.3) * (14 + i * 4), tw = 0.5 + 0.5 * Math.sin(t * 4 + i * 2);
       g.globalAlpha = 0.25 * tw; dot(g, fx, fy, 4.5, C.glow); g.globalAlpha = 0.5 + 0.5 * tw; dot(g, fx, fy, 1.5, C.ochre);
     }
@@ -932,14 +949,8 @@ export function createWard(canvas, opts = {}) {
 
   function drawFront(g, t) {
     K.seed = 5000;
-    const big = (bx, by, len, rot, col, i) => {
-      g.save(); g.translate(bx, by); g.rotate(rot + Math.sin(t * 0.8 + i * 1.3) * 0.035);
-      wline(g, [[0, 0], [0, -len * 0.45]], C.green, 2.2, { seed: 5001 + i * 9 });
-      shape(g, [[0, -len * 0.3], [len * 0.2, -len * 0.55], [len * 0.14, -len * 0.86], [0, -len], [-len * 0.14, -len * 0.86], [-len * 0.2, -len * 0.55]], { fill: col, seed: 5002 + i * 9, boil: true });
-      wline(g, [[0, -len * 0.36], [0, -len * 0.92]], C.wall2, 1.1, { seed: 5003 + i * 9 });
-      [0.5, 0.66, 0.8].forEach((k, j) => { wline(g, [[0, -len * k], [len * 0.11, -len * (k + 0.07)]], C.wall2, 0.9, { seed: 5004 + i * 9 + j }); wline(g, [[0, -len * k], [-len * 0.11, -len * (k + 0.07)]], C.wall2, 0.9, { seed: 5007 + i * 9 + j }); });
-      g.restore();
-    };
+    const big = (bx, by, len, rot, col, i) => bigLeaf(g, t, bx, by, len, rot, col, i);
+    if (room) return room.front?.(g, t, { rain, state });
     if (dock) {
       shape(g, [[336, 268], [384, 268], [388, 292], [384, 318], [336, 318], [332, 292]], { fill: C.wood, seed: 5080 });
       wline(g, [[334, 280], [386, 280]], C.ink, 2.2, { seed: 5081 }); wline(g, [[333, 304], [387, 304]], C.ink, 2.2, { seed: 5082 });
@@ -970,6 +981,7 @@ export function createWard(canvas, opts = {}) {
     state.veilShown += (state.veil - state.veilShown) * ease(2.6);
     state.slumpShown += (state.slump - state.slumpShown) * ease(2.2);
     state.doctorShown += (state.doctor - state.doctorShown) * ease(1.6);
+    state.beamShown += (state.beam - state.beamShown) * ease(0.7);
     state.bell *= Math.exp(-dt * 1.5); state.shake *= Math.exp(-dt * 7);
     state.nod = Math.max(0, state.nod - dt * 1.6); state.flinch = Math.max(0, state.flinch - dt * 2.4);
     const ph = (t + 2.2) % 5.6;
@@ -991,7 +1003,7 @@ export function createWard(canvas, opts = {}) {
     const sx = state.still ? 0 : (hash(K.boil, Math.floor(T * 30)) - 0.5) * state.shake * 10, sy = state.still ? 0 : (hash(K.boil + 9, Math.floor(T * 30)) - 0.5) * state.shake * 10;
     base.begin(); base.paste('back', sx, sy); base.world(sx, sy);
     K.seed = 50; drawWindowLife(g, t);
-    if (!dock) drawCat(g, t, 40, 101);
+    if (cat) drawCat(g, t, 40, place === 'quiet' ? 104 : 101);
     drawHangings(g, t);
     drawLin(g, t);
     base.paste('mid', sx, sy); base.world(sx, sy);

@@ -12,7 +12,7 @@ export const C01C: CaseSpec = {
   title: '慢慢來的那一隻',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '莫桐', age: 67, sex: '男', job: '退休的船塢填縫工', look: 'tong', pronoun: '他' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['莫桐，67 歲，退休的船塢填縫工。', '左邊胸口悶痛一個多月，越來越常痛，這幾天晚上痛到睡不好。兒子陪他來。', '他自己走進來，說話的聲音有點沙啞。'],
     prompts: ['最危險的可能是什麼？', '痛了一個多月，和痛了四十分鐘，要想的病有什麼不一樣？', '這一關要緊的是什麼：馬上處置，還是不要漏掉？'],

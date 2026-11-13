@@ -14,7 +14,7 @@ export const C07B: CaseSpec = {
   title: '不是坐麻了',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '樂梧', age: 68, sex: '男', job: '退休的領港人', look: 'c07b', pronoun: '他' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['樂梧，68 歲，退休的領港人。', '一個時辰前，他坐在茶館裡喝茶，左腳突然痛起來，接著發麻。他以為是坐太久腳麻了，起來走了一圈，越走越痛。女婿發現他的左腳是白的，把他背來公會。', '他坐著，兩手抱著左小腿。左腳的襪子還穿著。'],
     prompts: ['最危險的可能是什麼？', '「腳麻」和「腳沒有血」，看起來、摸起來差在哪裡？', '這隻腳，可以等多久？'],

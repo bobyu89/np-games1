@@ -12,7 +12,7 @@ export const C02C: CaseSpec = {
   title: '啞掉的拍賣聲',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '柯蒲', age: 52, sex: '男', job: '漁市的拍賣人', look: 'pu', pronoun: '他' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['柯蒲，52 歲，漁市的拍賣人。', '四天前開始發燒、咳嗽，以為是著涼。前天起走幾步就喘，今天早上喊價喊到一半喘不上來，被同行架來公會。', '他裹著外套，臉是紅的，呼吸又快又淺，講話可以成句，但中間要停下來咳。'],
     prompts: ['最危險的可能是什麼？', '發燒的喘，和不發燒的喘，要想的病差在哪裡？', '身體評估的時候，我要特別比較什麼？'],

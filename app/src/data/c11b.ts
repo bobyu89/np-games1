@@ -15,7 +15,7 @@ export const C11B: CaseSpec = {
   title: '那一包胃散',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '屠楠', age: 64, sex: '男', job: '市場肉鋪的老闆', look: 'c11b', pronoun: '他' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['屠楠，64 歲，市場肉鋪的老闆。', '這三個月瘦了八公斤。他說是胃不好，吃一點就脹，所以吃得少；胃散一天吃三四包。是太太看他褲子一直往下掉，硬拉他來的。', '他自己走進來，臉色偏白。皮帶上有兩個新打的洞。'],
     prompts: ['最危險的可能是什麼？', '「胃不好」這三個字底下，有哪幾句話是紅旗？', '檢查出來之前，我可以跟他說到哪裡？'],

@@ -12,7 +12,7 @@ export const C03B: CaseSpec = {
   title: '從肚臍開始的',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '邵棠', age: 19, sex: '男', job: '船塢的學徒', look: 'tang', pronoun: '他' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['邵棠，19 歲，船塢的學徒。', '昨天下午肚臍附近悶悶地痛，以為是吃壞肚子。今天早上痛跑到右下腹，走路會痛，師傅叫他來公會。', '他慢慢走進來，身體微微往右彎。躺上床的時候，右腳不敢伸直。'],
     prompts: ['最危險的可能是什麼？', '「痛的位置會移動」，是在告訴我什麼？', '如果不是我想的那一個，右下腹還有什麼？'],

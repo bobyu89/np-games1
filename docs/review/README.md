@@ -1,6 +1,6 @@
 # 給臨床老師的審查清單
 
-《霧脈公會》現在有 48 個病例、12 個主訴。**全部都還沒經過臨床老師審查，不能當教材。**這份清單把每一關裡「有對錯」的地方攤開，請老師逐項看。
+《霧脈公會》現在有 49 個病例、12 個主訴。**全部都還沒經過臨床老師審查，不能當教材。**這份清單把每一關裡「有對錯」的地方攤開，請老師逐項看。
 
 這一頁和各主訴的檔案都是程式從病例檔產生的（在 `app/` 底下跑 `npm run review`）。不要手改；病例改了，重跑一次就會更新。
 
@@ -70,6 +70,9 @@
 | C12B | 感覺異常 | 腦 | 焦菱，66 歲，當鋪的掌櫃 | 不穩定 | 未審查 | [paresthesia.md](paresthesia.md) |
 | C12C | 感覺異常 | 脊髓與神經根 | 鮑藤，62 歲，退休的廚子 | 穩定 | 未審查 | [paresthesia.md](paresthesia.md) |
 | C12D | 感覺異常 | 代謝與其他 | 祝葦，28 歲，歌樓的歌手 | 穩定 | 未審查 | [paresthesia.md](paresthesia.md) |
+| C01E | 胸痛 | 心因性 | 忍冬，71 歲，燈塔的守燈人（終章） | 不穩定 | 未審查 | [chest-pain.md](chest-pain.md) |
+
+最後一位（C01E）是終章的病人，不在委託板的章節裡，也不會被資格試煉抽到。終章的前半另外有三輪分流的題目，不是病例，在 [night.md](night.md)。
 
 ## 每一關共用的設計
 
@@ -139,6 +142,11 @@
 - **頭痛的評估**：加了一組神經學檢查（腦神經、肌力與漂移、感覺與反射、協調與步態）和眼底。專科護理師在考站會不會被要求做眼底鏡，請老師確認。
 - **指引類的文獻**：胸痛、急性冠心症、心衰竭、肺栓塞、膽囊炎、肺炎、氣胸、敗血症、蜘蛛膜下腔出血的指引，以及腎盂腎炎的綜論、頭痛的分類、結核病的診斷指引和細菌性腦膜炎的指引，只核對了書目。引用它們的教學重點請對照原文。
 - **甄審的規定**：遊戲的配分照 115 年度的口試。第一批玩家考的是下一年度，公告之後要再核對。
+- **終章的胸痛（C01E）**：71 歲女性，說「不算痛、大概是胃」，三天來出力就悶、今天休息也不退，心電圖是側壁導程 ST 段下降、T 波倒置。設計成非 ST 段上升型的急性冠心症。這樣的病史、生命徵象和心電圖配不配？遊戲把她當成不穩定（下診斷後兩分鐘沒有通報就變差），會不會太快？
+- **終章的胸痛（C01E）**：回顧寫「第一張心電圖看不出變化、症狀還在，就要再做一次，並等心肌旋蛋白」。依據是胸痛指引，只核對了書目，請對照原文。「女性比較常合併噁心、喘」也是出自同一份指引。
+- **終章的分流（值班夜）**：三輪都是原則層級的題目：呼吸費力的安靜病人先於大聲喊痛的扭傷；今天才出現的意識改變先於壓得住的頭皮出血；答應回頭看的病人安靜下來，要先重新評估。情境、數字（血氧 86%、心跳 118、血壓 92/58）都是設計出來的。請看排的順序對不對、有沒有哪一題在實際的急診不會這樣排。
+- **終章的分流**：沒有寫檢傷的級數。臺灣的五級檢傷只引用了驗證研究的摘要；「等候中的病人要照分級定時重新評估」引用的是加拿大檢傷指引的修訂，只核對了書目，請對照原文和院內的規定。
+- **終章的分流**：交給同事的那一句寫成「現在的狀況、請對方先做什麼、什麼變化要叫我、我什麼時候回來」；回報醫師的那一句先講最急的是誰。這是把交班工具（I-PASS、SBAR）的精神縮成一句話，不是工具的原文。意識改變那一題，後來寫成「血糖很低」，是設計出來的結果。
 - **背痛的四個診斷**：肌肉骨骼、泌尿、脊椎與神經、血管與內臟。教案分成泌尿和骨骼兩類；這裡把「骨骼」拆成一般的肌肉骨骼和不能等的脊椎問題，再加上血管。胰臟、帶狀疱疹和婦科來的背痛沒有放進四個診斷。這樣分合不合適？
 - **背痛（C06A）**：沒有紅旗的急性下背痛，回報時「馬上照腰椎的片子」標成錯的選項（依引用文獻的摘要）。「不用整天躺著、照常活動」「多半幾天到幾個禮拜會好」是一般的教法，沒有掛文獻。請老師決定要不要保留。
 - **背痛的評估**：加了「會陰的感覺和肛門收縮」。遊戲裡寫成先說明、取得同意、有人陪同才做。專科護理師在考站和實務上做到哪裡，請老師確認。
@@ -195,7 +203,10 @@
 | Barocas, D. A., et al. (2020). Microhematuria: AUA/SUFU guideline. The Journal of Urology, 204(4), 778–786. https://doi.org/10.1097/JU.0000000000001297 | 教學重點對過摘要（這是顯微血尿的指引；遊戲裡的病人是肉眼血尿） | C09C |
 | Biggins, S. W., Angeli, P., Garcia-Tsao, G., Ginès, P., Ling, S. C., Nadim, M. K., Wong, F., & Kim, W. R. (2021). Diagnosis, evaluation, and management of ascites, spontaneous bacterial peritonitis and hepatorenal syndrome: 2021 practice guidance by the American Association for the Study of Liver Diseases. Hepatology, 74(2), 1014–1048. https://doi.org/10.1002/hep.31884 | 只核對書目 | C08C |
 | Björck, M., et al. (2020). Editor's choice – European Society for Vascular Surgery (ESVS) 2020 clinical practice guidelines on the management of acute limb ischaemia. European Journal of Vascular and Endovascular Surgery, 59(2), 173–218. https://doi.org/10.1016/j.ejvs.2019.09.006 | 只核對書目 | C07B |
+| Bullard, M. J., et al. (2017). Revisions to the Canadian Emergency Department Triage and Acuity Scale (CTAS) guidelines 2016. CJEM, 19(S2), S18–S27. https://doi.org/10.1017/cem.2017.365 | 只核對書目 | 值班夜 |
 | Callaham, M. (1989). Hypoxic hazards of traditional paper bag rebreathing in hyperventilating patients. Annals of Emergency Medicine, 18(6), 622–628. https://doi.org/10.1016/s0196-0644(89)80515-3 | 教學重點對過摘要 | C12D |
+| Canto, J. G., et al. (2012). Association of age and sex with myocardial infarction symptom presentation and in-hospital mortality. JAMA, 307(8), 813–822. https://doi.org/10.1001/jama.2012.199 | 教學重點對過摘要 | C01E |
+| Canto, J. G., Shlipak, M. G., Rogers, W. J., Malmgren, J. A., Frederick, P. D., Lambrew, C. T., Ornato, J. P., Barron, H. V., & Kiefe, C. I. (2000). Prevalence, clinical characteristics, and mortality among patients with myocardial infarction presenting without chest pain. JAMA, 283(24), 3223–3229. https://doi.org/10.1001/jama.283.24.3223 | 教學重點對過摘要 | C01E |
 | Chaikof, E. L., et al. (2018). The Society for Vascular Surgery practice guidelines on the care of patients with an abdominal aortic aneurysm. Journal of Vascular Surgery, 67(1), 2–77.e2. https://doi.org/10.1016/j.jvs.2017.10.044 | 教學重點對過摘要（只引用摘要裡的兩句（破裂時 90 分鐘內開始處置、4.0 到 4.9 公分每 12 個月追蹤）；症狀和危險因子不在摘要裡） | C06D |
 | Chou, R., Qaseem, A., Owens, D. K., & Shekelle, P. (2011). Diagnostic imaging for low back pain: Advice for high-value health care from the American College of Physicians. Annals of Internal Medicine, 154(3), 181–189. https://doi.org/10.7326/0003-4819-154-3-201102010-00008 | 教學重點對過摘要 | C06A |
 | Di Saverio, S., et al. (2020). Diagnosis and treatment of acute appendicitis: 2020 update of the WSES Jerusalem guidelines. World Journal of Emergency Surgery, 15, 27. https://doi.org/10.1186/s13017-020-00306-3 | 教學重點對過摘要 | C03B |
@@ -204,7 +215,7 @@
 | Dworkin, R. H., et al. (2007). Recommendations for the management of herpes zoster. Clinical Infectious Diseases, 44(Suppl. 1), S1–S26. https://doi.org/10.1086/510206 | 教學重點對過摘要（摘要支持「抗病毒藥是第一線」；幾小時之內要開始用藥沒有對到原文，遊戲裡沒有寫死時間） | C10A |
 | Evans, L., et al. (2021). Surviving Sepsis Campaign: International guidelines for management of sepsis and septic shock 2021. Critical Care Medicine, 49(11), e1063–e1143. https://doi.org/10.1097/CCM.0000000000005337 | 只核對書目 | C04A、C04B |
 | Gardner, A., Gardner, E., & Morley, T. (2011). Cauda equina syndrome: A review of the current clinical and medico-legal position. European Spine Journal, 20(5), 690–697. https://doi.org/10.1007/s00586-010-1668-3 | 教學重點對過摘要 | C06C |
-| Gulati, M., et al. (2021). 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR guideline for the evaluation and diagnosis of chest pain. Circulation, 144(22), e368–e454. https://doi.org/10.1161/CIR.0000000000001029 | 只核對書目 | C01A、C01B、C01C、C01D、C03A、C03C |
+| Gulati, M., et al. (2021). 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR guideline for the evaluation and diagnosis of chest pain. Circulation, 144(22), e368–e454. https://doi.org/10.1161/CIR.0000000000001029 | 只核對書目 | C01A、C01B、C01C、C01D、C03A、C03C、C01E |
 | Hamilton, W., Peters, T. J., Round, A., & Sharp, D. (2005). What are the clinical features of lung cancer before the diagnosis is made? A population based case-control study. Thorax, 60(12), 1059–1065. https://doi.org/10.1136/thx.2005.045880 | 只核對書目 | C01C |
 | Hamilton, W., Round, A., Sharp, D., & Peters, T. J. (2005). Clinical features of colorectal cancer before diagnosis: A population-based case-control study. British Journal of Cancer, 93(4), 399–405. https://doi.org/10.1038/sj.bjc.6602714 | 教學重點對過摘要（摘要支持的是哪些線索和大腸直腸癌有關、單獨看機會都不高；「血混在便裡」「解不乾淨」這些和痔瘡分辨的說法不在摘要裡） | C09B |
 | Headache Classification Committee of the International Headache Society. (2018). The International Classification of Headache Disorders, 3rd edition. Cephalalgia, 38(1), 1–211. https://doi.org/10.1177/0333102417738202 | 只核對書目 | C05A |
@@ -221,18 +232,23 @@
 | Lichtenstein, G. R., Loftus, E. V., Isaacs, K. L., Regueiro, M. D., Gerson, L. B., & Sands, B. E. (2018). ACG clinical guideline: Management of Crohn's disease in adults. American Journal of Gastroenterology, 113(4), 481–517. https://doi.org/10.1038/ajg.2018.27 | 教學重點對過摘要（摘要只支持「原因不明的慢性發炎、發生率增加」；口腔潰瘍、瘻管等臨床表現沒有對到原文） | C11C |
 | MacDuff, A., Arnold, A., & Harvey, J. (2010). Management of spontaneous pneumothorax: British Thoracic Society pleural disease guideline 2010. Thorax, 65(Suppl. 2), ii18–ii31. https://doi.org/10.1136/thx.2010.136986 | 只核對書目 | C02D |
 | Metlay, J. P., et al. (2019). Diagnosis and treatment of adults with community-acquired pneumonia: An official clinical practice guideline of the American Thoracic Society and Infectious Diseases Society of America. American Journal of Respiratory and Critical Care Medicine, 200(7), e45–e67. https://doi.org/10.1164/rccm.201908-1581ST | 只核對書目 | C02C |
+| Müller, M., Jürgens, J., Redaèlli, M., Klingberg, K., Hautz, W. E., & Stock, S. (2018). Impact of the communication and patient hand-off tool SBAR on patient safety: A systematic review. BMJ Open, 8(8), e022202. https://doi.org/10.1136/bmjopen-2018-022202 | 教學重點對過摘要 | 值班夜 |
 | Neunert, C., et al. (2019). American Society of Hematology 2019 guidelines for immune thrombocytopenia. Blood Advances, 3(23), 3829–3866. https://doi.org/10.1182/bloodadvances.2019000966 | 教學重點對過摘要 | C10D |
+| Ng, C.-J., et al. (2011). Validation of the Taiwan triage and acuity scale: A new computerised five-level triage system. Emergency Medicine Journal, 28(12), 1026–1031. https://doi.org/10.1136/emj.2010.094185 | 教學重點對過摘要（摘要只支持「依需要處置的急迫程度排優先順序」；各級的判定條件不在摘要裡，遊戲裡沒有寫級數） | 值班夜 |
 | Patel, R. A., & Gallagher, J. C. (2010). Drug fever. Pharmacotherapy, 30(1), 57–69. https://doi.org/10.1592/phco.30.1.57 | 教學重點對過摘要（相對性的心跳慢、疹子和嗜酸性球不在摘要裡，遊戲裡沒有把這幾項掛在這篇文獻上） | C04D |
 | Peery, A. F., Shaukat, A., & Strate, L. L. (2021). AGA clinical practice update on medical management of colonic diverticulitis: Expert review. Gastroenterology, 160(3), 906–911.e1. https://doi.org/10.1053/j.gastro.2020.09.059 | 教學重點對過摘要 | C03D |
 | Perry, J. J., et al. (2013). Clinical decision rules to rule out subarachnoid hemorrhage for acute headache. JAMA, 310(12), 1248–1255. https://doi.org/10.1001/jama.2013.278018 | 教學重點對過摘要 | C05B |
 | Pop-Busui, R., Boulton, A. J. M., Feldman, E. L., Bril, V., Freeman, R., Malik, R. A., Sosenko, J. M., & Ziegler, D. (2017). Diabetic neuropathy: A position statement by the American Diabetes Association. Diabetes Care, 40(1), 136–154. https://doi.org/10.2337/dc16-2042 | 只核對書目 | C12A |
 | Powers, W. J., et al. (2019). Guidelines for the early management of patients with acute ischemic stroke: 2019 update to the 2018 guidelines for the early management of acute ischemic stroke: A guideline for healthcare professionals from the American Heart Association/American Stroke Association. Stroke, 50(12), e344–e418. https://doi.org/10.1161/STR.0000000000000211 | 只核對書目 | C12B |
-| Rao, S. V., et al. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. Journal of the American College of Cardiology, 85(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009 | 只核對書目 | C01A |
+| Rao, S. V., et al. (2025). 2025 ACC/AHA/ACEP/NAEMSP/SCAI guideline for the management of patients with acute coronary syndromes. Journal of the American College of Cardiology, 85(22), 2135–2237. https://doi.org/10.1016/j.jacc.2024.11.009 | 只核對書目 | C01A、C01E |
 | Ropper, A. H., & Zafonte, R. D. (2015). Sciatica. New England Journal of Medicine, 372(13), 1240–1248. https://doi.org/10.1056/NEJMra1410151 | 只核對書目 | C07D |
 | Ross, D. S., et al. (2016). 2016 American Thyroid Association guidelines for diagnosis and management of hyperthyroidism and other causes of thyrotoxicosis. Thyroid, 26(10), 1343–1421. https://doi.org/10.1089/thy.2016.0229 | 教學重點對過摘要（只有「先確定原因再談治療」「葛瑞夫茲氏病有三種治療」對過摘要；症狀和要回來的警訊沒有對到原文） | C11A |
 | Sampson, H. A., et al. (2006). Second symposium on the definition and management of anaphylaxis: Summary report—Second National Institute of Allergy and Infectious Disease/Food Allergy and Anaphylaxis Network symposium. Journal of Allergy and Clinical Immunology, 117(2), 391–397. https://doi.org/10.1016/j.jaci.2005.12.1303 | 教學重點對過摘要（摘要只說明會議訂了臨床的判斷準則；準則的內容沒有對到原文，遊戲裡寫在回顧的文字、不掛在這篇文獻上） | C10B |
+| Smith, A. T., & Han, J. H. (2019). Altered mental status in the emergency department. Seminars in Neurology, 39(1), 5–19. https://doi.org/10.1055/s-0038-1677035 | 教學重點對過摘要（「先量血糖」不在摘要裡；摘要只說要特別注意馬上危及生命、可以矯正的原因） | 值班夜 |
 | Stabler, S. P. (2013). Vitamin B12 deficiency. New England Journal of Medicine, 368(2), 149–160. https://doi.org/10.1056/NEJMcp1113996 | 只核對書目 | C12C |
+| Starmer, A. J., et al. (2014). Changes in medical errors after implementation of a handoff program. New England Journal of Medicine, 371(19), 1803–1812. https://doi.org/10.1056/NEJMsa1405556 | 教學重點對過摘要（研究對象是兒科住院醫師的交班，不是急診的分流） | 值班夜 |
 | Stevens, D. L., et al. (2014). Practice guidelines for the diagnosis and management of skin and soft tissue infections: 2014 update by the Infectious Diseases Society of America. Clinical Infectious Diseases, 59(2), e10–e52. https://doi.org/10.1093/cid/ciu444 | 教學重點對過摘要（摘要只支持「從輕微到壞死性筋膜炎都有、要靠臨床評估及早認出」；壞死性感染的警訊沒有對到原文） | C04B |
+| Thim, T., Krarup, N. H. V., Grove, E. L., Rohde, C. V., & Løfgren, B. (2012). Initial assessment and treatment with the Airway, Breathing, Circulation, Disability, Exposure (ABCDE) approach. International Journal of General Medicine, 5, 117–121. https://doi.org/10.2147/IJGM.S28478 | 教學重點對過摘要（摘要只支持「適用於所有緊急狀況、幫助把注意力放在最會危及生命的問題」；每一步怎麼做在原文） | 值班夜 |
 | Türk, C., et al. (2016). EAU guidelines on diagnosis and conservative management of urolithiasis. European Urology, 69(3), 468–474. https://doi.org/10.1016/j.eururo.2015.07.040 | 教學重點對過摘要（「堵住又感染、尿不出來不能等」不在摘要裡，遊戲裡沒有把這一句掛在這篇文獻上） | C06B |
 | van de Beek, D., de Gans, J., Spanjaard, L., Weisfelt, M., Reitsma, J. B., & Vermeulen, M. (2004). Clinical features and prognostic factors in adults with bacterial meningitis. New England Journal of Medicine, 351(18), 1849–1859. https://doi.org/10.1056/NEJMoa040845 | 教學重點對過摘要 | C05C |
 | van de Beek, D., et al. (2016). ESCMID guideline: Diagnosis and treatment of acute bacterial meningitis. Clinical Microbiology and Infection, 22(Suppl. 3), S37–S62. https://doi.org/10.1016/j.cmi.2016.01.007 | 只核對書目 | C05C |

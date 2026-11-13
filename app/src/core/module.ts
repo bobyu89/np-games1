@@ -5,13 +5,15 @@
 //
 // 這樣同一個主訴的每個病例，畫面上的選項一模一樣，玩家沒辦法從「有哪些題目」猜出答案；
 // 要寫新病例也只要填回答，不用重寫整套題目。
-import type { CaseDef, Clue, Exam, Question, TestDef, TrueForm, Vitals } from './types.ts';
+import type { CaseDef, Clue, Exam, Home, Question, Scene, TestDef, TrueForm, Vitals } from './types.ts';
 
 export interface ComplaintDef {
   id: string;
   name: string;
   /** look：症影長什麼樣子，只給畫面用 */
   shadow: { name: string; lore: string; look?: string };
+  /** 這個主訴的委託平常在公會的哪一個診間看。沒寫就是公會的病室 */
+  place?: Home;
   /** 四個診斷 */
   forms: TrueForm[];
   questions: Omit<Question, 'answer' | 'clue'>[];
@@ -23,8 +25,10 @@ export interface ComplaintDef {
 export type ClueSpec = Omit<Clue, 'id'>;
 export interface Reply { say: string; clue?: ClueSpec }
 
-type Shared = 'complaintName' | 'shadow' | 'forms' | 'clues' | 'questions' | 'exams' | 'tests' | 'vitals';
+type Shared = 'complaintName' | 'shadow' | 'forms' | 'clues' | 'questions' | 'exams' | 'tests' | 'vitals' | 'scene';
 export interface CaseSpec extends Omit<CaseDef, Shared> {
+  /** 沒寫：在這個主訴平常的診間。rain：同一個診間，下雨天。dock：出診到碼頭的貨棧。tower：燈塔（終章） */
+  scene?: 'rain' | 'dock' | 'tower';
   vitals: { base: Vitals; worse?: Vitals; clue: ClueSpec };
   /** 問題代號 → 這個病人的回答 */
   answers: Record<string, Reply>;
@@ -53,7 +57,8 @@ export function resolveCase(m: ComplaintDef, spec: CaseSpec): CaseDef {
   const questions = m.questions.map((q) => ({ ...q, answer: spec.answers[q.id]?.say ?? '', clue: take('問題', q.id, spec.answers[q.id]) }));
   const exams = m.exams.map((e) => ({ ...e, finding: spec.findings[e.id]?.say ?? '', clue: take('評估', e.id, spec.findings[e.id]) }));
   const tests = m.tests.map((t) => ({ ...t, result: spec.results[t.id]?.say, pending: spec.results[t.id]?.pending, clue: take('檢查', t.id, spec.results[t.id]) }));
-  const { answers: _a, findings: _f, results: _r, vitals, ...rest } = spec;
+  const { answers: _a, findings: _f, results: _r, vitals, scene: where, ...rest } = spec;
   void _a; void _f; void _r;
-  return { ...rest, complaintName: m.name, shadow: m.shadow, forms: m.forms, vitals: { base: vitals.base, worse: vitals.worse }, clues, questions, exams, tests };
+  const home: Home = m.place ?? 'ward', scene: Scene = where === 'rain' ? `${home}-rain` : where ?? home;
+  return { ...rest, scene, complaintName: m.name, shadow: m.shadow, forms: m.forms, vitals: { base: vitals.base, worse: vitals.worse }, clues, questions, exams, tests };
 }

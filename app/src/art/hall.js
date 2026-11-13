@@ -95,8 +95,9 @@ export function createHall(canvas, opts = {}) {
   // hero：主角是哪一位（沒有就不畫）
   // fx：故事演到這一句的時候，場景要跟著做什麼（空白分開，可以好幾個）：
   //   window 岑禾走到窗邊　shen 沈渡走進大廳　dusk 天色暗下來（在講以前的事）　dark 燈塔的燈熄了　page 那一頁勘誤浮出來　page12 第十二行亮起來
+  //   fog 霧從門縫和窗縫漫進大廳（終章的值班夜）
   const state = { talker: null, still: false, glow: 1, hero: opts.hero || null, fx: '' };
-  const shown = { window: 0, shen: 0, dusk: 0, dark: 0, page: 0, page12: 0 };
+  const shown = { window: 0, shen: 0, dusk: 0, dark: 0, page: 0, page12: 0, fog: 0 };
   let T = 0;
 
   function drawWindowLife(g, t) {
@@ -197,6 +198,14 @@ export function createHall(canvas, opts = {}) {
       g.globalAlpha = 1;
       // 講以前的事：整個大廳暗下來
       if (shown.dusk > 0.02) { base.tint('rgba(26, 36, 54, ' + (0.46 * shown.dusk).toFixed(3) + ')'); base.world(); }
+      // 值班夜：霧貼著地板和牆邊漫進來
+      if (shown.fog > 0.02) {
+        [[10, 250, 44, 15, 5], [330, 236, 40, 14, 4], [150, 300, 60, 16, 7], [356, 120, 30, 20, 3], [0, 130, 26, 18, 3.5], [240, 286, 46, 13, 6]].forEach(([x, y, rx, ry, sp], i) => {
+          const dx = state.still ? 0 : Math.sin(t * 0.25 + i * 1.9) * sp * 3;
+          g.globalAlpha = shown.fog * (0.34 + 0.08 * Math.sin(t * 0.6 + i)); oval(g, x + dx, y, rx, ry, { fill: C.fog, stroke: null, seed: 9000 + i }); oval(g, x + dx + rx * 0.5, y - ry * 0.45, rx * 0.6, ry * 0.8, { fill: C.fog, stroke: null, seed: 9010 + i });
+        });
+        g.globalAlpha = 1;
+      }
       // 那一頁勘誤：十一個名字，第十二行是空的
       if (shown.page > 0.02) {
         const p = shown.page, bob = state.still ? 0 : Math.sin(t * 1.3) * 1.6;

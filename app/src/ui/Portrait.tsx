@@ -12,6 +12,8 @@ export interface Shot {
   hero?: string;
   /** 值班醫師在場 */
   doctor?: boolean;
+  /** 燈塔的燈亮著（只有燈塔那一間看得出來） */
+  lit?: boolean;
   view?: { w: number; h: number; cx: number; cy: number };
 }
 interface Still { state: Record<string, unknown>; resize(w: number, h: number): void; update(t: number, dt: number): void; render(): void }
@@ -21,7 +23,7 @@ export function Portrait({ shot, label, locked, wide }: { shot: Shot; label: str
   useEffect(() => {
     const el = ref.current!;
     const s = (shot.kind === 'ward' ? createWard(el, { patient: shot.patient, scene: shot.scene, hero: shot.hero, view: shot.view }) : createHall(el, { hero: shot.hero, view: shot.view })) as unknown as Still;
-    s.state.still = true; s.state.hide = true; s.state.glow = 0; s.state.doctor = shot.doctor ? 1 : 0;
+    s.state.still = true; s.state.hide = true; s.state.glow = 0; s.state.doctor = shot.doctor ? 1 : 0; s.state.beam = shot.lit ? 1 : 0;
     const draw = () => { if (!el.clientWidth) return; s.resize(el.clientWidth, el.clientHeight); s.update(0, 1); s.render(); };
     draw();
     const ro = new ResizeObserver(draw); ro.observe(el);

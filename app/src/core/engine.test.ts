@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CASES, COMPLAINTS, caseById } from '../data/index.ts';
+import { CASES, COMPLAINTS, FINALE_ID, caseById } from '../data/index.ts';
 import { C01A } from '../data/c01a.ts';
 import { resolveCase } from './module.ts';
 import { createSession, perform, stability, veil, lights, hintFor, COMMIT_AFTER, COST, HINT_LIMIT } from './engine.ts';
@@ -311,7 +311,8 @@ test('每隻症影各有自己的四個診斷、自己的檢查；同一隻底�
     assert.ok(m.shadow.look, m.id + ' 沒有寫症影的樣子');
     const shape = (c: typeof A) => JSON.stringify([c.questions.map((q) => [q.id, q.label, q.ask]), c.exams.map((e) => [e.id, e.part, e.label]), c.tests.map((t) => [t.id, t.label])]);
     mine.forEach((c) => assert.equal(shape(c), shape(mine[0]), c.id));
-    assert.equal(new Set(mine.map((c) => c.answer.truth)).size, mine.length, m.id + ' 有兩位病人是同一個診斷');
+    const board = mine.filter((c) => c.id !== FINALE_ID);   // 終章的那一位不在委託板上，診斷會和板上的一位重複
+    assert.equal(new Set(board.map((c) => c.answer.truth)).size, board.length, m.id + ' 有兩位病人是同一個診斷');
     // 開場、病史、系統回顧每一隻都一樣；只有主訴那一段的問法不同
     const shared = (c: typeof A) => JSON.stringify(c.questions.filter((q) => q.group !== 'cc').map((q) => [q.id, q.ask]));
     assert.equal(shared(mine[0]), shared(A));
@@ -346,10 +347,23 @@ test('腹痛：評估照看、聽、敲、摸的順序；讓病人吃東西或�
 
 test('十二隻症影的四個診斷，每一個都有一位病人', () => {
   for (const m of COMPLAINTS) {
-    const truths = CASES.filter((c) => c.complaint === m.id).map((c) => c.answer.truth).sort();
+    const truths = CASES.filter((c) => c.complaint === m.id && c.id !== FINALE_ID).map((c) => c.answer.truth).sort();
     assert.deepEqual(truths, m.forms.map((f) => f.id).sort(), m.id);
   }
-  assert.equal(CASES.length, 48);
+  assert.equal(CASES.length, 49);
+});
+
+test('地點：每個主訴有自己平常的診間；下雨天和出診是病例自己寫的；終章在燈塔', () => {
+  const at = (id: string) => caseById(id).scene;
+  assert.deepEqual(['c01a', 'c02a', 'c04a', 'c06a', 'c09a'].map(at), ['ward', 'market', 'archive', 'yard', 'quiet']);
+  assert.deepEqual(['c01c', 'c02c', 'c04c', 'c06b', 'c09b'].map(at), ['ward-rain', 'market-rain', 'archive-rain', 'yard-rain', 'quiet-rain']);
+  assert.deepEqual(['c01d', 'c02d', 'c05c', 'c10b'].map(at), ['dock', 'dock', 'dock', 'dock']);
+  const end = caseById(FINALE_ID);
+  assert.equal(end.scene, 'tower'); assert.equal(end.answer.truth, 'cardiac'); assert.equal(end.complaint, 'chest-pain');
+  // 同一章的主訴在同一個地方
+  const home = (m: string) => COMPLAINTS.find((k) => k.id === m)!.place ?? 'ward';
+  assert.deepEqual(['dyspnea', 'abdomen', 'fever', 'headache', 'back-pain', 'leg-pain', 'swelling', 'excreta', 'rash', 'weight-loss', 'paresthesia'].map(home),
+    ['market', 'market', 'archive', 'archive', 'yard', 'yard', 'yard', 'quiet', 'quiet', 'quiet', 'quiet']);
 });
 
 test('第三章：三位不穩定、五位穩定；頭痛的評估有神經學檢查', () => {

@@ -9,6 +9,7 @@ export const LEG_PAIN: ComplaintDef = {
   id: 'leg-pain',
   name: '腳痛',
   shadow: { name: '跛足鷺', look: 'heron', lore: '腳痛的症影。永遠只用一隻腳站著，另一隻縮在肚子底下，不讓人看。要牠把腳放下來，得先知道牠在護著什麼。' },
+  place: 'yard',
   forms: [
     { id: 'vascular', name: '血管', mark: '脈', danger: true, blurb: '血送不到，或是回不來：急性肢體缺血、周邊動脈疾病、靜脈栓塞。' },
     { id: 'joint', name: '關節', mark: '節', danger: true, blurb: '關節裡面在發炎：痛風、化膿性關節炎。' },

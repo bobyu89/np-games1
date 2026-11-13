@@ -14,7 +14,7 @@ export const C05D: CaseSpec = {
   title: '早上的頭痛',
   review: { state: '未審查', note: REVIEW_NOTE },
   patient: { name: '季蘭', age: 58, sex: '女', job: '染坊的老闆娘', look: 'lan', pronoun: '她' },
-  scene: 'ward-rain',
+  scene: 'rain',
   reading: {
     lines: ['季蘭，58 歲，染坊的老闆娘。', '頭痛一個半月了，越來越常痛，早上起床最痛，有幾次一起床就吐。藥鋪說是更年期、睡不好。這個禮拜，她發現自己的左手拿不穩晾布的竹竿。', '她自己走進來，女兒陪著。講話清楚；女兒說，媽媽最近「變得不太一樣」。'],
     prompts: ['最危險的可能是什麼？', '這個頭痛的「時間」和「什麼時候最痛」，在說什麼？', '如果我想的是對的，我現在可以跟她說到哪裡？'],

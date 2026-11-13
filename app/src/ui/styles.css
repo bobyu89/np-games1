@@ -411,3 +411,26 @@ html.admin #app:has(.prose) { padding-inline: 4px; }
 @media (prefers-reduced-motion: reduce) {
   .screen, #app .title-head h1, .title-head p, .menu > *, .quests > .quest { animation: none; }
 }
+
+/* ── 終章：值班夜（三輪分流）── */
+.night .scene { flex: 2 1 0; }
+.night .panel { flex: 3 1 0; }
+.night .talk { max-height: 7.2em; }
+.card.arrival { grid-template-columns: 4.2em minmax(0, 1fr); padding: 6px 7px; box-shadow: 2px 3px 0 var(--ink); }
+.card.arrival .says { font-weight: 700; }
+.card.arrival i { font-style: normal; color: var(--teal); font-weight: 700; }
+.card.arrival .pick { margin-top: 6px; padding: 4px 14px; font-weight: 700; border-color: var(--ink); background: var(--grain), var(--ochre); box-shadow: 1px 2px 0 var(--ink); }
+.night .stack .pick { padding: 7px 10px; border-color: var(--ink); box-shadow: 1px 2px 0 var(--ink); }
+.night .acts.one { margin: auto 0; }
+.tally { text-align: center; }
+.acts .tally { font-size: 0.86em; color: var(--on-page-soft); }
+.recap { gap: 9px; background: var(--grain), var(--paper); border: 2px solid var(--ink); border-radius: var(--r-a); padding: 10px 12px 12px; }
+.recap .leaf p { font-size: 0.93em; line-height: 1.4; }
+.recap .leaf .up { color: var(--teal); font-weight: 700; }
+.recap .leaf .down { color: var(--rust); font-weight: 700; }
+.recap .refs { padding-left: 1.4em; }
+.recap > .act { flex: none; }
+@media (min-aspect-ratio: 6/5) and (min-width: 620px) {
+  .night .panel { flex: 1 1 0; max-height: none; min-height: 0; }
+  .night .talk { flex: 0 0 auto; max-height: 9em; }
+}
