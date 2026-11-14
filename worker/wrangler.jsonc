@@ -14,6 +14,9 @@
     // 只有 /api/ 底下的才交給 src/index.ts
     "run_worker_first": ["/api/*"]
   },
+  // 定時器：每天臺灣時間早上 7:37 把當天的「每日一案」發到 Threads（這裡寫的是 UTC，前一天的 23:37）。
+  // 程式在 src/daily.ts；沒有放 THREADS_ACCESS_TOKEN 這個 secret 的時候，它醒來什麼都不做。說明在 ../social/README.md
+  "triggers": { "crons": ["37 23 * * *"] },
   "vars": {
     // 除了遊戲自己的網址以外，還有哪些網址的網頁可以用後端。多個用逗號分開。本機（localhost、127.0.0.1）一律可以
     "ALLOW_ORIGINS": ""
