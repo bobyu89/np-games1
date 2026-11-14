@@ -128,6 +128,15 @@
 
 打開遊戲的網址，後面加 `#stats`，輸入 `STATS_ADMIN_KEY` 那一組密碼。可以選範圍、下載每一筆事件的 CSV。
 
+## Threads 的每日一案（定時器）
+
+這個 Worker 另外有一個定時器（`wrangler.jsonc` 的 `triggers`）：每天臺灣時間早上 7:37 把當天的「每日一案」發到遊戲的 Threads 帳號。程式是 `src/daily.ts`，發文的流程和日程在 [`../social/`](../social/README.md)，設定、怎麼停也寫在那裡。
+
+- 要 Worker 的 secret：`THREADS_ACCESS_TOKEN`。部署的時候，GitHub 那邊有放這個 secret 就會交過來；沒有的話，定時器醒來什麼都不做。
+- 它不是網址，外面叫不到；跟統計、帳號的資料也沒有關係，不讀不寫那兩個資料庫。
+- 這一次有沒有跑、有沒有出錯：Cloudflare 儀表板 → Workers & Pages → `mist-guild` → Settings → Trigger Events 的「View events」，留最近 100 次。
+- 定時器的時間寫的是 UTC。改了時間，部署之後最多要十五分鐘才會在 Cloudflare 那邊生效。
+
 ## 端點
 
 | 路徑 | 做什麼 | 要密碼 |
@@ -154,7 +163,8 @@
 src/core.ts           統計：檢查送進來的東西、存、算總表。不碰網路，測試直接用 SQLite 跑
 src/accounts.ts       帳號：登入到一半的狀態、帳號的代號、登入狀態、雲端的進度、檢查身分憑證。一樣不碰網路
 src/*.test.ts         npm test
-src/index.ts          Worker：/api/ 底下的路徑、誰可以用、管理密碼、登入的流程；資料放在兩個 Durable Object 的 SQLite 裡
+src/daily.ts          定時器：每天早上發 Threads 的每日一案（流程和日程在 ../social/）
+src/index.ts          Worker：/api/ 底下的路徑、誰可以用、管理密碼、登入的流程、定時器；資料放在兩個 Durable Object 的 SQLite 裡
 wrangler.jsonc     部署的設定：Worker 的名字、遊戲的靜態檔在哪、哪些路徑交給後端
 ```
 

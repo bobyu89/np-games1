@@ -1,11 +1,13 @@
-# 每天把當天的「每日一案」發到 Threads（social/）。
-# 要先在 GitHub 放一個 secret：THREADS_ACCESS_TOKEN。沒有放的時候，這個排程每天跑完檢查就停，什麼都不發。
-# 想暫停：把那個 secret 刪掉，或是在 Actions 頁面把這個 workflow 停用。說明在 social/README.md。
+# 「每日一案」發到 Threads 的後備和試跑（social/）。
+# 每天早上主要是 Cloudflare 的定時器在發（worker/src/daily.ts，臺灣時間 7:37）。GitHub 的排程不保證準時，
+# 有時候晚幾個小時、有時候整次漏掉，所以這裡只當後備：晚一點再看一次，帳號上還沒有當天那一則才補發。
+# 要先在 GitHub 放一個 secret：THREADS_ACCESS_TOKEN。沒有放的時候，兩邊都什麼都不發。
+# 想暫停：把那個 secret 刪掉、再部署一次（Actions →「霧脈公會」→ Run workflow）。說明在 social/README.md。
 name: Threads 每日一案
 
 on:
   schedule:
-    - cron: '37 23 * * *'   # 臺灣時間每天早上 7:37（這裡寫的是 UTC，前一天的 23:37）。GitHub 的排程有時候會晚幾十分鐘
+    - cron: '17 1 * * *'   # 後備：臺灣時間每天早上 9:17（這裡寫的是 UTC）。主要的那一次是 Cloudflare 的定時器，7:37
   workflow_dispatch:
     inputs:
       dry_run:

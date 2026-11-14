@@ -1,13 +1,14 @@
 # 每次推送都檢查一遍；合併到 main 之後，把遊戲和後端一起部署到 Cloudflare（同一個 Worker、同一個網址）。
 # 第一次要先在 GitHub 放 Cloudflare 的兩個 secret，不然部署那一步會失敗並說明缺什麼。說明在 worker/README.md。
+# social/ 也會觸發：Worker 每天早上發的「每日一案」，日程和發文的流程是部署當下那一份。
 name: 霧脈公會
 
 on:
   pull_request:
-    paths: ['app/**', 'worker/**', 'docs/review/**', '.github/workflows/app.yml']
+    paths: ['app/**', 'worker/**', 'social/**', 'docs/review/**', '.github/workflows/app.yml']
   push:
     branches: [main]
-    paths: ['app/**', 'worker/**', 'docs/review/**', '.github/workflows/app.yml']
+    paths: ['app/**', 'worker/**', 'social/**', 'docs/review/**', '.github/workflows/app.yml']
   workflow_dispatch:
 
 permissions:
@@ -80,6 +81,8 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       LINE_CHANNEL_ID: ${{ secrets.LINE_CHANNEL_ID }}
       LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
+      # Threads 的每日一案（選用）：有放，Worker 每天早上的定時器才會發；沒放，它醒來什麼都不做
+      THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
       WRANGLER_SEND_METRICS: 'false'
     steps:
       - name: 金鑰設定了沒
@@ -112,7 +115,7 @@ jobs:
           npm ci
           npx wrangler deploy | tee deploy.log
           # 把有放的 secret 一次交給 Worker（沒放的不動）。內容不會印出來
-          node -e 'const o = {}; for (const [k, e] of [["ADMIN_KEY", "STATS_ADMIN_KEY"], ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_ID"], ["GOOGLE_CLIENT_SECRET", "GOOGLE_CLIENT_SECRET"], ["LINE_CHANNEL_ID", "LINE_CHANNEL_ID"], ["LINE_CHANNEL_SECRET", "LINE_CHANNEL_SECRET"]]) if (process.env[e]) o[k] = process.env[e]; process.stdout.write(JSON.stringify(o));' > "$RUNNER_TEMP/worker-secrets.json"
+          node -e 'const o = {}; for (const [k, e] of [["ADMIN_KEY", "STATS_ADMIN_KEY"], ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_ID"], ["GOOGLE_CLIENT_SECRET", "GOOGLE_CLIENT_SECRET"], ["LINE_CHANNEL_ID", "LINE_CHANNEL_ID"], ["LINE_CHANNEL_SECRET", "LINE_CHANNEL_SECRET"], ["THREADS_ACCESS_TOKEN", "THREADS_ACCESS_TOKEN"]]) if (process.env[e]) o[k] = process.env[e]; process.stdout.write(JSON.stringify(o));' > "$RUNNER_TEMP/worker-secrets.json"
           if [ "$(cat "$RUNNER_TEMP/worker-secrets.json")" != "{}" ]; then npx wrangler secret bulk "$RUNNER_TEMP/worker-secrets.json"; fi
           rm -f "$RUNNER_TEMP/worker-secrets.json"
           url=$(grep -o 'https://[A-Za-z0-9.-]*workers\.dev' deploy.log | head -n 1)
@@ -124,5 +127,6 @@ jobs:
             if [ -n "$STATS_ADMIN_KEY" ]; then echo "匿名的使用統計：開著。總表在網址後面加 \`#stats\`。"; else echo "匿名的使用統計：關著（沒有設定 \`STATS_ADMIN_KEY\`）。"; fi
             echo
             if [ -n "$GOOGLE_CLIENT_ID" ] && [ -n "$GOOGLE_CLIENT_SECRET" ]; then echo "Google 登入：這一次有設定。回呼網址要在 Google 那邊登記：\`${url}/api/auth/google/callback\`"; else echo "Google 登入：這一次沒有設定（要 \`GOOGLE_CLIENT_ID\` 和 \`GOOGLE_CLIENT_SECRET\`）。"; fi
+            if [ -n "$THREADS_ACCESS_TOKEN" ]; then echo "Threads 每日一案：這一次有把權杖交給 Worker，每天臺灣時間早上 7:37 的定時器會發。"; else echo "Threads 每日一案：沒有設定 \`THREADS_ACCESS_TOKEN\`，定時器醒來什麼都不做。"; fi
             if [ -n "$LINE_CHANNEL_ID" ] && [ -n "$LINE_CHANNEL_SECRET" ]; then echo "LINE 登入：這一次有設定。回呼網址要在 LINE 那邊登記：\`${url}/api/auth/line/callback\`"; else echo "LINE 登入：這一次沒有設定（要 \`LINE_CHANNEL_ID\` 和 \`LINE_CHANNEL_SECRET\`）。"; fi
           } >> "$GITHUB_STEP_SUMMARY"

@@ -12,7 +12,8 @@
 |---|---|
 | `make.mjs` | 產生四十八天的圖（`app/public/social/NN.jpg`）和文字（`schedule.json`）。圖是用遊戲自己的畫在瀏覽器裡畫出來的 |
 | `schedule.json` | 哪一天發哪一則、文字是什麼、圖在哪裡。產生的，不要手改 |
-| `post.mjs` | 把當天那一則發到 Threads |
+| `core.mjs` | 把某一天那一則發到 Threads 的流程。兩邊共用：Cloudflare 的定時器、GitHub 的排程 |
+| `post.mjs` | GitHub 那一邊的入口（後備排程、手動跑、試跑） |
 | `post.test.mjs` | 日程和發文程式的測試 |
 
 圖放在 `app/public/social/`，跟著網站一起上線（Threads 發圖是它自己到網址上抓的，所以圖要在公開的網站上）。它們不是遊戲的一部分：不進玩家裝置上的離線快取，換圖也不會讓玩家看到「有新的版本」。
@@ -21,10 +22,14 @@
 
 **手動**：每天存圖、複製文字、貼到 Threads。
 
-**自動**：`.github/workflows/threads.yml` 每天臺灣時間早上 7:37 跑一次 `post.mjs`。要先做下面的設定；沒有設定之前，它每天只檢查、不發。
+**自動**：要先做下面的設定；沒有設定之前，兩邊都不發。
 
-- 帳號上已經有當天那一則（例如那天手動發過了），就不會再發第二次。
+- **主要的**：Cloudflare 的定時器，每天臺灣時間早上 7:37（`worker/wrangler.jsonc` 的 `triggers`，程式在 `worker/src/daily.ts`）。它跟遊戲的後端是同一個 Worker。
+- **後備**：GitHub 的排程，每天早上 9:17 左右再看一次（`.github/workflows/threads.yml`）。帳號上還沒有當天那一則才補發。
+- 為什麼要兩邊：GitHub 的排程不保證準時，有時候晚幾個小時、有時候整次漏掉（2026-11-14 第一天就沒有跑）。Cloudflare 的定時器準時，但是它的紀錄不好查；後備那一次的紀錄剛好看得出早上那一次有沒有發成（「已經有這一則，不重複發」就是發成了）。
+- 帳號上已經有當天那一則（另一邊發了，或是那天手動發過了），就不會再發第二次。
 - 當天沒有排（四十八天發完了），就什麼都不做。
+- Worker 用的日程和流程是**部署當下**的那一份：改了 `social/` 底下的東西，合併之後會跟著重新部署。
 
 ## 自動發文的設定（一次）
 
@@ -34,15 +39,20 @@ Threads 的官方 API 要帳號主人授權。權杖是機密：**直接貼進 G
 2. 權限要有 `threads_basic` 和 `threads_content_publish`。
 3. 在應用程式的「應用程式角色 → 角色」新增一位「Threads 測試人員」，填遊戲的 Threads 帳號；再到 Threads 的「設定 → 帳號 → 網站權限」接受邀請。
 4. 取得這個帳號的**長期權杖**（60 天有效）。應用程式主控板的「使用案例 → 存取 Threads API → 自訂 → 設定」最底下有「用戶權杖產生器」，可以直接替測試人員產生（這個位置是照別人的教學寫的，Meta 的官方文件沒有寫，介面改了就可能不在那裡）；沒有的話要走授權流程（授權碼 → 短期權杖 → 換成長期權杖）。
-5. 到這個 repo 的 Settings → Secrets and variables → Actions，新增 secret：`THREADS_ACCESS_TOKEN`。
+5. 到這個 repo 的 Settings → Secrets and variables → Actions，新增 secret：`THREADS_ACCESS_TOKEN`。GitHub 的排程直接用它；Cloudflare 那一邊要等下一次部署才拿得到（部署的時候會把它交給 Worker，存成 Worker 的 secret）：到 Actions →「霧脈公會」→ Run workflow 重跑一次，或是等下一次合併。部署完的摘要會寫這一次有沒有交給 Worker。
 6. 到 Actions → 「Threads 每日一案」→ Run workflow，「試跑」保持打勾。試跑會做到發布的前一步：把圖和文字交給 Threads（這一步才驗得出發文的權限對不對、Threads 抓不抓得到圖），但是不發布；交出去的那一份二十四小時後自己過期，帳號上看不到。紀錄裡出現「試跑：Threads 收下了這一則的圖和文字，處理好了，只差發布。會發到 @帳號」就是設定好了。當天那一則已經在帳號上的話，試跑到「不重複發」就停；想驗完整段，在「要發哪一天的」填還沒發的日期。紀錄裡另外有一行「權杖到哪一天過期」：只剩不到一天的是短期權杖（一小時就失效），要換成長期的；撐不到日程走完也會提醒。
 7. 之後每天早上自己發。想馬上發當天那一則：再按一次 Run workflow，把「試跑」取消。
 
-權杖從產生那天起 60 天到期。四十八天的日程在到期之前就發完了；要繼續用，到期前重新產生一組、換掉 secret。
+權杖從產生那天起 60 天到期。四十八天的日程在到期之前就發完了；要繼續用，到期前重新產生一組、換掉 GitHub 的 secret，再部署一次（Worker 那一份才會跟著換）。
 
 ## 想停下來
 
-把 `THREADS_ACCESS_TOKEN` 這個 secret 刪掉，或是在 Actions 頁面把「Threads 每日一案」停用。兩種都是馬上生效。
+權杖在兩個地方，兩邊都要拿掉才是全停：
+
+1. **Cloudflare**：儀表板 → Worker `mist-guild` → Settings → Variables and Secrets，把 `THREADS_ACCESS_TOKEN` 刪掉。早上的定時器醒來就什麼都不做。（光刪 GitHub 那邊的不夠，Worker 手上還留著。）
+2. **GitHub**：把 `THREADS_ACCESS_TOKEN` 這個 secret 刪掉，或是在 Actions 頁面把「Threads 每日一案」停用。後備就不會補發。
+
+兩個都是馬上生效。只做第 2 步的話，下一次部署不會再把權杖交給 Worker，但是 Worker 手上原來那一份還在、還會發。
 
 ## 重新產生
 

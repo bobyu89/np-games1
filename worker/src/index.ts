@@ -14,13 +14,16 @@
 //     GET  /api/save、PUT /api/save 讀、寫雲端那一份進度（要登入）
 //     POST /api/signout             登出這一台
 //     DELETE /api/account           刪掉帳號和雲端的進度
+//   定時器（不是網址；wrangler.jsonc 的 triggers）
+//     每天早上                      把當天的「每日一案」發到遊戲的 Threads 帳號（src/daily.ts；要 secret：THREADS_ACCESS_TOKEN）
 // 管理密碼是 Worker 的 secret：ADMIN_KEY。沒有設定的時候，總表一律不給看。
 // 登入要另外設定 GOOGLE_CLIENT_ID／GOOGLE_CLIENT_SECRET、LINE_CHANNEL_ID／LINE_CHANNEL_SECRET；哪一家沒設定，那一家就不會出現。
 import { DurableObject } from 'cloudflare:workers';
 import { SCHEMA, add, addReport, csv, listReports, parse, parseReport, summary, type Exec, type Report, type Row, type Value } from './core.ts';
+import { daily, type DailyEnv } from './daily.ts';
 import { ACCOUNT_SCHEMA, LIMIT, PROVIDERS, accountId, begin, checkClaims, checkSave, counts, finish, isProvider, pepperOf, random, readSave, remove, sha256, signIn, signOut, who, writeSave, type Provider } from './accounts.ts';
 
-interface Env {
+interface Env extends DailyEnv {
   STATS: DurableObjectNamespace<Stats>; ACCOUNTS: DurableObjectNamespace<Accounts>; ADMIN_KEY?: string; ALLOW_ORIGINS?: string;
   GOOGLE_CLIENT_ID?: string; GOOGLE_CLIENT_SECRET?: string; LINE_CHANNEL_ID?: string; LINE_CHANNEL_SECRET?: string;
   // 只有測試會設：把登入服務換成本機的假服務
@@ -203,5 +206,9 @@ export default {
     }
 
     return text('沒有這一頁。', 404);
+  },
+  // 每天早上的定時器。出錯就讓這一次算失敗：Cloudflare 的定時器紀錄裡看得到，GitHub 那一邊的後備排程晚一點會補發
+  async scheduled(_event: ScheduledController, env: Env): Promise<void> {
+    await daily(env);
   },
 } satisfies ExportedHandler<Env>;
