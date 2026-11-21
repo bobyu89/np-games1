@@ -15,11 +15,12 @@ import type { Run, Save } from './store.ts';
 import { Settings, StatsFacts } from './Settings.tsx';
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
-import { AXE, axesLit, cantoOpen, islandOf, questsOn, nextStep, sideStep, type NextAction, perilsPassed, PASSED, chapterDone, chapterOpen, homeOf, ARCHIVE, BEATS, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, questName, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
+import { AXE, axesLit, cantoOpen, islandOf, journey, questsOn, nextStep, sideStep, type NextAction, perilsPassed, PASSED, chapterDone, chapterOpen, homeOf, ARCHIVE, BEATS, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, questName, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
 import { WELCOME, WORLD } from './world.ts';
 import { CANTOS, PERILS, type Canto } from '../data/odyssey.ts';
 import { Portrait } from './Portrait.tsx';
 import { Trailer, TRAILER_SEEN } from './Trailer.tsx';
+import { Journey } from './Journey.tsx';
 import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
@@ -87,6 +88,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   });
   const boat = ([...isles].reverse().find((i) => i.open && i.done < i.total) ?? isles[0]).id;
   const [isle, setIsle] = useState<IslandId>(boat);
+  const [board, setBoard] = useState(false);   // 航海圖和全部委託：預設收起來
   const [pendingBeat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
   // 先知道自己是誰，故事才開始：還沒選主角之前，序章先等著
   const beat = save.hero === null ? null : pendingBeat;
@@ -166,7 +168,8 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
         <div className="panel">
           {beat ? (
             <div className="acts one">
-              <button type="button" className="act demo" onClick={() => (talk.current?.busy() ? talk.current.finish() : next())}>{step + 1 >= beat.lines.length ? '回到委託板' : '繼續'}</button>
+              <p className="beat-note">故事：{beat.title}（{step + 1}／{beat.lines.length}）。看完會回到委託板，告訴你下一步。</p>
+              <button type="button" className="act demo" onClick={() => (talk.current?.busy() ? talk.current.finish() : next())}>{step + 1 >= beat.lines.length ? '回到委託板' : '繼續（' + (step + 1) + '／' + beat.lines.length + '）'}</button>
               <button type="button" className="skip" onClick={endBeat}>跳過這一段</button>
             </div>
           ) : (
@@ -174,6 +177,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               {pwa.update && <button type="button" className="quest paper hint" onClick={() => { sfx.done(); applyUpdate(); }}><i className="seal" aria-hidden="true" /><b>有新的版本</b><span>換上只要幾秒，進度不會動</span><em>現在更新</em></button>}
               {/* 下一步：一次只說一件事。按下去直接帶到那裡 */}
               <div className="next paper" role="region" aria-label="下一步">
+                <Journey save={save} compact />
                 <span className="next-label">下一步</span>
                 <b>{todo.title}</b>
                 <p>{todo.why}</p>
@@ -181,6 +185,9 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 {pending && run && run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>{run.trial ? '不考了，放掉這一場' : '不接了，放掉這一張'}</button>}
               </div>
               {side && <div className="side"><span>{side.text}</span><button type="button" className="pick" onClick={() => { sfx.page(); go(side.action); }}>{side.button}</button></div>}
+              {/* 航海圖和整張委託板：平常收起來，只看上面那一張「下一步」；想自己挑的時候再打開 */}
+              <details className="board" open={board} onToggle={(e) => setBoard((e.currentTarget as HTMLDetailsElement).open)}>
+              <summary>{board ? '收起航海圖和全部委託' : '看航海圖和全部委託'}<span>{journey(save).done}／{journey(save).total} 張・想自己挑委託、讀篇章、考試弓的時候打開</span></summary>
               <SeaChart isles={isles} picked={isle} boat={boat} home={finaleDone(save)} onPick={setIsle} />
               <div className="quest-head">{ISLANDS[isle].name}・{ISLANDS[isle].tag}</div>
               {/* 篇章：在那座島結過一張委託才出現（選讀），不在第一次到的時候就擺一堆字 */}
@@ -232,6 +239,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               </>}
               {finaleDone(save) && <><div className="quest-head">十二斧之試</div><div className="paper axes-card"><Axes save={save} /></div></>}
               </>}
+              </details>
             </div>
           )}
         </div>

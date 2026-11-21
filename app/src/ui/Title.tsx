@@ -1,13 +1,13 @@
 // 遊戲的首頁：打開遊戲先到這裡。開始或繼續、登入與同步、設定、這是什麼。
 import { useRef, useState, useSyncExternalStore } from 'react';
-import { caseById } from '../data/index.ts';
 import { Stage, type StageHandle } from './Stage.tsx';
 import { Sheet } from './Sheets.tsx';
 import { Settings } from './Settings.tsx';
 import { AccountPanel } from './Account.tsx';
 import { sfx, sound } from './sound.ts';
 import type { Run, Save } from './store.ts';
-import { QUESTS, heroOf, rankOf } from './progress.ts';
+import { nextStep } from './progress.ts';
+import { Journey } from './Journey.tsx';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
 import { PROVIDER_NAME, accountState, accountSubscribe, cameBack } from './account.ts';
 import { WELCOME } from './world.ts';
@@ -26,7 +26,6 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
   const [sheet, setSheet] = useState<null | 'account' | 'settings' | 'about' | 'report'>(() => (cameBack() ? 'account' : null));
   const [soundOn, setSoundOn] = useState(sound.on);
   const started = save.hero !== null || save.beats.length > 0 || Object.keys(save.cases).length > 0;
-  const done = QUESTS.filter((q) => save.cases[q.caseId]).length, pending = run ? caseById(run.caseId) : null;
   const canSignIn = acct.providers.length > 0 || !!acct.account;
   const open = (s: 'account' | 'settings' | 'about' | 'report') => { sfx.page(); setSheet(s); };
 
@@ -45,8 +44,9 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
           {pwa.update && <button type="button" className="quest paper hint" onClick={() => { sfx.done(); applyUpdate(); }}><i className="seal" aria-hidden="true" /><b>有新的版本</b><span>換上只要幾秒，進度不會動</span><em>現在更新</em></button>}
           <button type="button" className="act demo big" onClick={() => { sfx.page(); onPlay(); }}>
             {started ? '繼續遊戲' : '開始遊戲'}
-            <small>{!started ? '第一次來，從報到開始' : pending ? pending.patient.name + '那一張還沒結案' : (save.hero ? heroOf(save.hero).name + '・' : '') + rankOf(save) + '｜完成 ' + done + '／' + QUESTS.length + ' 張委託'}</small>
+            <small>{!started ? '第一次來，從報到開始' : '下一步：' + nextStep(save, run ? { caseId: run.caseId, trial: !!run.trial, closed: run.session.closedAt !== null } : null).title}</small>
           </button>
+          {started && <div className="journey-card"><Journey save={save} /></div>}
           {canSignIn && <button type="button" className="act" onClick={() => open('account')}>
             {acct.account ? '帳號與同步' : '登入・同步進度'}
             <small>{acct.account ? '用 ' + PROVIDER_NAME[acct.account.provider] + ' 登入中' + (acct.sync === 'busy' ? '，同步中……' : acct.sync === 'fail' ? '，剛才沒有同步成功' : '') : '換手機、換瀏覽器也接得上。不登入也可以玩'}</small>
