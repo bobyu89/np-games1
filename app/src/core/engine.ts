@@ -270,7 +270,7 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
       break;
     }
     case 'call': {
-      if (s.bell) return reject('值班鐘已經響過了。');
+      if (s.bell) return reject('已經緊急通報過了。');
       s.time += COST.call;
       s.bell = true;
       if (s.calledAt === null) summon(x, 'you', 'bell'); else { s.doctorAt = s.doctorAt ?? s.time + c.timeline.doctorDelay; note(x, 'bell'); }

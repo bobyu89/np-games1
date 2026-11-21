@@ -264,7 +264,7 @@ test('穩定的病人敲了值班鐘：安全行動只算部分達成', () => {
     const acts = idealActions(c), i = acts.findIndex((a) => a.type === 'report');
     const sc = scoreSession(c, run(c, [...acts.slice(0, i), { type: 'call' }, ...acts.slice(i)]));
     assert.equal(sc.safety, 'late');
-    assert.ok(sc.safetyNote.includes('不需要敲值班鐘'));
+    assert.ok(sc.safetyNote.includes('不需要緊急通報'));
   }
 });
 

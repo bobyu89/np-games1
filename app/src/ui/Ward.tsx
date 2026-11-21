@@ -21,12 +21,12 @@ const GROUP_NAME: Record<QuestionGroup, string> = { open: '開場', cc: '主訴'
 const NEXT_GROUP: Partial<Record<QuestionGroup, QuestionGroup>> = { open: 'cc', cc: 'hx', hx: 'ros' };
 /** 第一張委託，岑禾在每一步開始的時候說的話：只講「現在要做什麼、畫面上哪裡按」 */
 const COACH = {
-  start: '第一次，我帶著你走。下面那一排，從「開場」到「檢查」，就是順序。先從最左邊開始：洗手、介紹自己、說明流程。點一下，就是做一件事。',
-  cc: '開場做完了。接下來問主訴：從「怎麼不舒服」開始，一題一題問。問過的會打勾；時間只在你做事的時候走，慢慢看沒關係。',
-  read: '這一條是重要的線索，要你判斷：它讓哪一個診斷更像，還是比較不像。判斷對了，畫面上對應的那盞燈會跟著變，霧也會散一點。',
+  start: '第一次，我帶著你走。下面那一排，從「開場」到「檢查」，就是看一位病人的順序。先從最左邊的「開場」開始：洗手、介紹自己、說明流程。每點一個按鈕，就是你對病人做了那一件事。',
+  cc: '開場做完了。接下來問主訴：從「怎麼不舒服」開始，一題一題問。問過的會打勾。時間只在你問問題、做檢查的時候走，停下來看字不算時間。',
+  read: '這一條是重要的線索。畫面上的四盞燈是四個鑑別診斷；請你判斷，這條線索是讓其中哪一個更像，還是比較不像。答對了，那一盞燈會變亮（更像）或變暗（比較不像）。',
   exam: '問診到這裡。評估先量生命徵象：點上面那一格。每一項檢查動手之前，先跟病人說明。',
-  dx: '現在下診斷：一句話說出問題，選最可能的，再選還要排除的。這一步不扣時間，想清楚再按。',
-  plan: '診斷下了，從現在開始算時間。病人等不了就敲值班鐘；該做的檢查先提出，然後向醫師回報、跟病人說明，最後結案。',
+  dx: '現在下診斷，有三件事：選一句話摘要這位病人、選最可能的診斷、選還要排除的診斷。這一步不算時間，想清楚再按。',
+  plan: '診斷下了，從現在開始，病人的狀況會跟著時間變。還有四件事：提出需要的檢查、向沈渡醫師回報、向病人說明、提交摘要結案。病人等不了的話，先按下面的「緊急通報」（敲值班鐘），請醫師馬上過來。',
 };
 type SheetName = null | 'board' | 'report' | 'explain' | 'clues' | 'confirm' | 'quit' | 'next' | 'bell';
 const HEART = <svg viewBox="0 0 22 20" aria-hidden="true"><path fill="currentColor" stroke="#2c2a25" strokeWidth="2" strokeLinejoin="round" d="M11 18.5C4.5 13.6 1.3 10.2 1.3 6.5 1.3 3.6 3.5 1.5 6.2 1.5c1.9 0 3.6 1 4.8 2.7 1.2-1.7 2.9-2.7 4.8-2.7 2.7 0 4.9 2.1 4.9 5 0 3.7-3.2 7.1-9.7 12z" /></svg>;
@@ -106,7 +106,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
     s.state.talker = key;
     const at = key ? s.anchor(key) : null, b = bubble.current, v = veilTag.current;
     if (b) { b.hidden = !at; if (at) { b.style.left = Math.round(at.x) + 'px'; b.style.top = Math.round(at.y) + 'px'; } }
-    if (v) { v.hidden = !!trial; const named = live.current.closedAt !== null; v.textContent = named ? c.shadow.name : '霧 ' + Math.max(0, Math.round((s.state.veilShown as number) * 100)) + '%'; v.classList.toggle('named', named); }
+    if (v) { v.hidden = !!trial; const named = live.current.closedAt !== null; v.textContent = named ? c.shadow.name : '未釐清 ' + Math.max(0, Math.round((s.state.veilShown as number) * 100)) + '%'; v.classList.toggle('named', named); }
   };
 
   /** 做一個行動：規則核心算結果，這裡把事件演出來 */
@@ -137,7 +137,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
     if (a.type === 'exam' && !a.explain && !nudged.current && !trial) { nudged.current = true; lines.push({ who: 'mentor', text: c.lines.hintNoExplain }); }
     // 馬上演的
     for (const e of events) {
-      if (e.type === 'bell') { sfx.bell(); buzz([40, 60, 40]); stage.current?.ring(); toast(e.by === 'you' ? '值班鐘響了' : '岑禾敲了值班鐘', e.by !== 'you'); }
+      if (e.type === 'bell') { sfx.bell(); buzz([40, 60, 40]); stage.current?.ring(); toast(e.by === 'you' ? '已緊急通報，醫師趕過來了' : '岑禾替你通報了醫師', e.by !== 'you'); }
       if (e.type === 'worsen') { sfx.alarm(); buzz([60, 40, 60]); stage.current?.jolt(); toast(who + '的狀況變了', true); }
       if (e.type === 'doctor') toast('沈渡醫師到了');
       if (e.type === 'read' && !trial) { if (e.ok) { sfx.key(); buzz(20); stage.current?.clue(true); toast('解讀正確'); } else { sfx.miss(); toast('再想一下', true); } }
@@ -194,7 +194,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
     sfx.miss(); talk.current?.say([{ who: 'sys', text: session.phase === 3 ? '先下診斷，才會進到檢查。' : '照順序來：先把前面的做完。' }]);
   };
   const leftAsk = c.questions.length - session.asked.length, leftExam = c.exams.length - examsDone;
-  const missing = [!session.board.likely && '還沒有下診斷。', c.safety.some((r) => r.type === 'call') && session.calledAt === null && '還沒有通報。', session.dxAt !== null && !session.ordered.length && '還沒有提出任何檢查。',
+  const missing = [!session.board.likely && '還沒有下診斷。', c.safety.some((r) => r.type === 'call') && session.calledAt === null && '還沒有緊急通報醫師。', session.dxAt !== null && !session.ordered.length && '還沒有提出任何檢查。',
     !session.report && '還沒有向值班醫師回報。', !session.explained && '還沒有向' + who + '說明。', leftAsk > 0 && '問診還有 ' + leftAsk + ' 題沒問。', leftExam > 0 && '身體評估還有 ' + leftExam + ' 項沒做。'].filter(Boolean) as string[];
   const nextLines = session.phase === 1
     ? [...(['open', 'cc', 'hx', 'ros'] as const).map((g) => GROUP_NAME[g] + '：問了 ' + askedIn(g) + '／' + inGroup(g).length), '進到評估之後，想到還可以回來補問。']
@@ -246,7 +246,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
                   <p>這條線索，是讓某一個診斷更像，還是比較不像？</p>
                   <div className="forms dirs">
                     <button type="button" className="form" onClick={() => { sfx.tap(); setDir(1); }}><em className="up">更像</em>支持它</button>
-                    <button type="button" className="form" onClick={() => { sfx.tap(); setDir(-1); }}><em className="down">比較不像</em>排除它</button>
+                    <button type="button" className="form" onClick={() => { sfx.tap(); setDir(-1); }}><em className="down">比較不像</em>不支持它</button>
                   </div>
                 </>
               ) : (
@@ -300,8 +300,8 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
         </div>
         <div className="foot">
           <button type="button" onClick={() => { sfx.page(); setSheet('clues'); }}>線索 {session.clues.length}</button>
-          {!trial && !closed && !reading && !session.needCommit && <button type="button" aria-label={session.tier >= 1 ? '問岑禾，這一張委託還可以問 ' + Math.max(0, HINT_LIMIT - session.hints) + ' 次' : undefined} onClick={() => act({ type: 'hint' })}>問岑禾{session.tier >= 1 ? ' ×' + Math.max(0, HINT_LIMIT - session.hints) : ''}</button>}
-          {!closed && !reading && !session.needCommit && <button type="button" className={session.bell ? 'rung' : ''} onClick={() => (session.bell ? act({ type: 'call' }) : (sfx.page(), setSheet('bell')))}>{session.bell ? '鐘已響' : '值班鐘'}</button>}
+          {!trial && !closed && !reading && !session.needCommit && <button type="button" aria-label={session.tier >= 1 ? '向岑禾要提示，這一張委託還可以問 ' + Math.max(0, HINT_LIMIT - session.hints) + ' 次' : undefined} onClick={() => act({ type: 'hint' })}>要提示{session.tier >= 1 ? ' ×' + Math.max(0, HINT_LIMIT - session.hints) : ''}</button>}
+          {!closed && !reading && !session.needCommit && <button type="button" className={session.bell ? 'rung' : ''} onClick={() => (session.bell ? act({ type: 'call' }) : (sfx.page(), setSheet('bell')))}>{session.bell ? '已通報' : '緊急通報'}</button>}
           <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
         </div>
       </div>
@@ -313,7 +313,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
       {sheet === 'confirm' && <ConfirmSheet title={trial ? '要交卷了嗎？' : '要結案了嗎？'} yes={trial ? '交卷' : '結案'} no="回去補" onNo={() => setSheet(null)} onYes={() => { setSheet(null); act({ type: 'close' }); }}
         lines={trial ? [...missing, '交卷之後就不能再補了。還剩 ' + mmss(left) + '。'] : missing.length ? ['岑禾：「提交之前再看一眼。」', ...missing, '結案之後就不能再補了。'] : ['岑禾：「該做的都做了。」', '提交之後會進到這一關的回顧。']} />}
       {sheet === 'next' && <ConfirmSheet title={session.phase === 1 ? '問診問完了嗎？' : '評估做完了嗎？'} yes={session.phase === 1 ? '開始評估' : '去下診斷'} no="再補一下" onNo={() => setSheet(null)} onYes={() => { setSheet(null); act({ type: 'advance' }); }} lines={nextLines} />}
-      {sheet === 'bell' && <ConfirmSheet title="要敲值班鐘嗎？" yes="敲鐘" no="先不要" onNo={() => setSheet(null)} onYes={() => { setSheet(null); act({ type: 'call' }); }} lines={['值班鐘是留給等不了的病人。', '敲了，沈渡醫師會放下手邊的事趕過來。病人等不了的時候，隨時都可以敲，不用等到問完。']} />}
+      {sheet === 'bell' && <ConfirmSheet title="要緊急通報醫師嗎？" yes="馬上通報" no="先不要" onNo={() => setSheet(null)} onYes={() => { setSheet(null); act({ type: 'call' }); }} lines={['緊急通報就是敲值班鐘：沈渡醫師會放下手邊的事，馬上趕過來。', '這是留給等不了的病人的，隨時可以按，不用等到問完。', '病人穩定的話不用按：做完評估和診斷，到「檢查」那一頁按「向醫師回報」就可以。']} />}
       {sheet === 'quit' && <ConfirmSheet title="要先回公會嗎？" yes="回公會" no="留下" onNo={() => setSheet(null)} onYes={() => { saveNow(); onQuit(); }} lines={trial ? ['試煉做到這裡的都會留著，回到公會可以接著考；倒數會從你離開的時候接下去。', '不想考了，在委託板上可以把這一場放掉，不會留下成績。'] : ['做到這裡的都會留著，回到公會可以接著做。', '不想接了，在委託板上可以把這一張放掉。']} />}
     </div>
   );
