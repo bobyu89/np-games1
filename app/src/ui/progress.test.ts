@@ -89,3 +89,10 @@ test('進門之前不先給方向：標題結案才出現、值班鐘那一句�
     assert.ok(k.reading.prompts[0].includes('最危險'), k.id + '：第一題都是最危險的可能');
   }
 });
+
+test('值班夜的一句話：三個選項差不多長，最長的那一句不會剛好是答案', () => {
+  for (const r of NIGHT) {
+    const len = r.then.picks.map((p) => p.text.length);
+    assert.ok(Math.max(...len) / Math.min(...len) <= 2, r.id + '：選項的長度差太多（' + len.join('、') + '）');
+  }
+});

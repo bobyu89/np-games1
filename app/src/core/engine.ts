@@ -63,14 +63,19 @@ export function veil(c: CaseDef, s: Session): number {
 /** 四盞燈的亮度：解讀過的線索，讓每個診斷更像（正）或比較不像（負） */
 export function lights(c: CaseDef, s: Session): Record<string, number> {
   const out: Record<string, number> = Object.fromEntries(c.forms.map((f) => [f.id, 0]));
-  for (const r of s.reads) { const k = clueOf(c, r.clue); if (k.tell) out[k.tell.form] += k.tell.dir * (k.key ? 2 : 1); }
+  // 只算判斷對的。判斷錯的時候燈不動；不然選錯了，設定好的那一盞照樣亮，等於把答案演給他看
+  for (const r of s.reads) { const k = clueOf(c, r.clue); if (r.ok && k.tell) out[k.tell.form] += k.tell.dir * (k.key ? 2 : 1); }
   return out;
 }
 
 const hit = (k: Clue, form: string) => [k.tell, ...(k.alsoOk ?? [])].some((t) => (t as Tell).form === form);
 const vitalsAfterChange = (s: Session) => s.worsenedAt === null || s.vitalsLog.some((t) => t >= s.worsenedAt!);
 
-/** 岑禾現在會給的提示。照現在走到哪個階段挑一句，不直接講答案 */
+/**
+ * 岑禾現在會給的提示。只看「玩家做了什麼、還沒做什麼」，不看這位病人的答案：
+ * 不點名該做哪一項檢查、不點名玩家自己沒寫上去的診斷，也不會只對急的病人多問一句。
+ * 同樣的操作，換一位病人，聽到的是同一句（病人的名字和玩家自己寫的診斷除外）。
+ */
 export function hintFor(c: CaseDef, s: Session): string {
   const who = c.patient.name, asked = (g: string) => c.questions.filter((q) => q.group === g && s.asked.includes(q.id)).length, all = (g: string) => c.questions.filter((q) => q.group === g).length;
   if (s.phase === 1) {
@@ -86,12 +91,12 @@ export function hintFor(c: CaseDef, s: Session): string {
     return '評估得差不多了，就去下診斷。';
   }
   if (s.phase === 3) return '把線索排一排：一句話說出問題，最可能的是哪一個，還要排除哪幾個。';
-  if (c.safety.some((r) => r.type === 'call') && s.calledAt === null) return '你下了診斷。這位病人等得了嗎？該讓誰知道？';
-  for (const r of c.safety) if (r.type === 'order' && !s.ordered.some((o) => o.id === r.test)) return '依你的診斷，有一項檢查要先做：' + c.tests.find((t) => t.id === r.test)!.label + '。';
   if (!vitalsAfterChange(s)) return who + '的樣子變了。你手上的數字還是剛才的。';
-  // 有些關卡某一盞燈本來就放不下（沒有任何線索指向它），那一盞不提示
-  const untouched = c.forms.find((f) => f.danger && c.clues.some((k) => k.tell?.form === f.id) && !s.reads.some((r) => clueOf(c, r.clue).tell?.form === f.id));
-  if (untouched) return '「' + untouched.name + '」還沒有任何線索談到。回到問診或評估，找一條能讓它更像或比較不像的線索。';
+  if (s.calledAt === null && !s.ordered.length && !s.report) return '你下了診斷。先判斷' + who + '等不等得了：等不了，就緊急通報；等得了，就提出檢查、向醫師回報。';
+  if (!s.ordered.length) return '還沒有提出任何檢查。你的診斷，和你要排除的，各靠哪一項檢查來回答？';
+  // 只提玩家自己寫在「要排除」裡的；他解讀過的線索裡，沒有一條是他拿來談這個診斷的
+  const loose = s.board.exclude.map((id) => c.forms.find((f) => f.id === id)).find((f) => f && !s.reads.some((r) => r.form === f.id));
+  if (loose && !s.report) return '你寫了要排除「' + loose.name + '」，可是你解讀過的線索裡，還沒有一條是談它的。回到問診或評估找找看。';
   if (!s.report) return '把你的診斷和打算，報給值班醫師。';
   if (!s.explained) return who + '還不知道自己怎麼了。結案之前，跟' + c.patient.pronoun + '說明。';
   return '該做的都做了。可以提交摘要了。';
