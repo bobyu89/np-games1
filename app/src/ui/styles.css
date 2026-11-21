@@ -440,3 +440,32 @@ html.admin #app:has(.prose) { padding-inline: 4px; }
   .night .panel { flex: 1 1 0; max-height: none; min-height: 0; }
   .night .talk { flex: 0 0 auto; max-height: 9em; }
 }
+
+/* ── 航海圖（大廳的委託板上面） ── */
+.chart { flex: none; background: var(--grain), var(--paper); border: 2px solid var(--ink); border-radius: var(--r-a); padding: 4px; box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.25); }
+.chart svg { display: block; width: 100%; height: auto; max-height: 46vh; font-family: var(--font); }
+@media (max-width: 700px) { .chart svg { max-height: 30vh; } }
+.chart .rhumb line { stroke: var(--teal); stroke-opacity: 0.16; stroke-width: 1; }
+.chart .compass circle { fill: none; stroke: var(--ink-soft); stroke-width: 1.5; }
+.chart .compass path { fill: var(--paper-2); stroke: var(--ink); stroke-width: 1.5; }
+.chart .compass .needle { fill: var(--rust-2); }
+.chart .compass text { font-size: 24px; fill: var(--ink); }
+.chart .depth { font-size: 17px; fill: var(--ink-soft); opacity: 0.55; font-style: italic; }
+.chart .route { fill: none; stroke: var(--ink-soft); stroke-width: 2.5; stroke-dasharray: 3 9; stroke-linecap: round; opacity: 0.35; }
+.chart .route.open { stroke: var(--teal); opacity: 0.8; }
+.chart .isle { cursor: pointer; outline: none; }
+.chart .isle.fogged { cursor: default; }
+.chart .isle .surf { fill: none; stroke: var(--teal); stroke-width: 2; stroke-dasharray: 2 7; opacity: 0.55; }
+.chart .isle .land { fill: var(--sage-2); stroke: var(--ink); stroke-width: 3; }
+.chart .isle.fogged .land { fill: var(--paper-2); stroke: var(--ink-soft); stroke-dasharray: 6 6; }
+.chart .isle.on .land { fill: var(--ochre); }
+.chart .isle:focus-visible .land { stroke: var(--rust); stroke-width: 5; }
+.chart .isle .name { font-size: 28px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: var(--paper); stroke-width: 5px; }
+.chart .isle .sub { font-size: 20px; fill: var(--ink-soft); paint-order: stroke; stroke: var(--paper); stroke-width: 4px; }
+.chart .isle .seal { fill: var(--rust); stroke: var(--ink); stroke-width: 2; }
+.chart .lighthouse path, .chart .lighthouse rect { fill: var(--paper); stroke: var(--ink); stroke-width: 2.5; }
+.chart .lighthouse .lamp { fill: var(--ochre); stroke: var(--ink); stroke-width: 2; }
+.chart .boat path { fill: var(--wood, #8a5a3b); stroke: var(--ink); stroke-width: 2.5; stroke-linejoin: round; }
+.chart .boat .sail { fill: var(--paper); }
+@media (prefers-reduced-motion: no-preference) { .chart .boat { animation: bob 2.6s ease-in-out infinite; transform-box: fill-box; } }
+@keyframes bob { 50% { translate: 0 4px; } }

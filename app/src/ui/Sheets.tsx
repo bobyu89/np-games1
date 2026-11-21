@@ -1,6 +1,8 @@
 // 蓋在畫面上的紙：診斷、回報、說明、線索、確認。
 // 看字和下診斷不扣時間，所以這些都可以慢慢想。
 import { useState, type ReactNode } from 'react';
+import { ISLANDS, elderOf } from '../data/islands.ts';
+import { shuffled } from '../core/order.ts';
 import type { Board, CaseDef, Clue, Session } from '../core/types.ts';
 import { sfx } from './sound.ts';
 
@@ -36,7 +38,7 @@ export function BoardSheet({ c, s, onSave, onClose }: { c: CaseDef; s: Session; 
   return (
     <Sheet title="下診斷" onClose={onClose} footer={<button type="button" className="act demo" disabled={!b.likely} onClick={() => onSave(b)}>{b.likely ? '這是我的診斷' : '先選一個最可能的'}</button>}>
       <h3>一、用一句話說出問題</h3>
-      <div className="stack">{c.summaries.map((k) => <Pick key={k.id} on={b.summary === k.id} onClick={() => setB({ ...b, summary: k.id })}>{k.text}</Pick>)}</div>
+      <div className="stack">{shuffled(c.id, c.summaries).map((k) => <Pick key={k.id} on={b.summary === k.id} onClick={() => setB({ ...b, summary: k.id })}>{k.text}</Pick>)}</div>
 
       <h3>二、你的診斷：最可能的是哪一個？還要排除哪幾個？</h3>
       <p className="dim">底下是你解讀過的線索：＋ 讓它更像，－ 讓它比較不像。</p>
@@ -72,9 +74,9 @@ export function ReportSheet({ c, s, onSend, onClose }: { c: CaseDef; s: Session;
       <h3>背景</h3>
       <p className="quote">{bg.length ? bg.join('；') + '。' : '過去病史、用藥和過敏都還沒問。'}</p>
       <h3>評估：你認為是什麼狀況？</h3>
-      <div className="stack">{c.sbar.assessments.map((k) => <Pick key={k.id} on={a === k.id} onClick={() => setA(k.id)}>{k.text}</Pick>)}</div>
+      <div className="stack">{shuffled(c.id, c.sbar.assessments).map((k) => <Pick key={k.id} on={a === k.id} onClick={() => setA(k.id)}>{k.text}</Pick>)}</div>
       <h3>請求：你要對方做什麼？你自己會做什麼？（可以複選）</h3>
-      <div className="stack">{c.sbar.requests.map((k) => <Pick key={k.id} on={r.includes(k.id)} onClick={() => setR(toggle(r, k.id))}>{k.text}</Pick>)}</div>
+      <div className="stack">{shuffled(c.id, c.sbar.requests).map((k) => <Pick key={k.id} on={r.includes(k.id)} onClick={() => setR(toggle(r, k.id))}>{k.text}</Pick>)}</div>
     </Sheet>
   );
 }
@@ -86,7 +88,7 @@ export function ExplainSheet({ c, s, onSend, onClose }: { c: CaseDef; s: Session
   return (
     <Sheet title={'向' + c.patient.name + '說明'} onClose={onClose} footer={<button type="button" className="act demo" disabled={!ids.length} onClick={() => onSend(ids)}>跟{c.patient.pronoun}說</button>}>
       <p className="dim">選你要說的話，最多四句。要讓{c.patient.pronoun}知道評估的結果、接下來會怎樣、要注意什麼。</p>
-      <div className="stack">{opts.map((e) => <Pick key={e.id} on={ids.includes(e.id)} onClick={() => setIds(toggle(ids, e.id, 4))}>{e.text}</Pick>)}</div>
+      <div className="stack">{shuffled(c.id, opts).map((e) => <Pick key={e.id} on={ids.includes(e.id)} onClick={() => setIds(toggle(ids, e.id, 4))}>{e.text}</Pick>)}</div>
     </Sheet>
   );
 }
@@ -103,6 +105,25 @@ export function CluesSheet({ c, s, onClose }: { c: CaseDef; s: Session; onClose(
         return list.length ? <div key={kind}><h3>{KIND[kind]}</h3><div className="chips wrap">{list.map((k) => <span key={k.id} className={'chip ' + kind + (k.key ? ' key' : '')}>{k.key ? '★ ' : ''}{k.text}{markOf(c, s, k)}</span>)}</div></div> : null;
       })}
       {ready.length > 0 && <><h3>資料和檢查結果</h3>{ready.map((t) => <p key={t.id} className="quote"><b>{t.label}</b>：{t.result}</p>)}</>}
+    </Sheet>
+  );
+}
+
+/**
+ * 要提示：問岑禾，或是請教去過的島上的老醫生。老醫生要打燈號請過來，花一點時間；
+ * 每一位都有自己問的方式，也有他不提的地方。回顧會問你看出來了沒有。
+ */
+export function AskSheet({ elders, left, onAsk, onClose }: { elders: string[]; left: number | null; onAsk(by: string | null): void; onClose(): void }) {
+  return (
+    <Sheet title="向誰要提示？" onClose={onClose}>
+      <p className="dim">{left === null ? '' : '這一張委託還可以問 ' + left + ' 次（燈油還有 ' + left + ' 份）。'}每一位只看你做了什麼、還沒做什麼，不會告訴你答案。</p>
+      <div className="stack">
+        <Pick on={false} onClick={() => onAsk(null)}><b>岑禾</b>　資深專科護理師，就在旁邊。不花時間。</Pick>
+        {elders.map((id) => {
+          const e = elderOf(id);
+          return <Pick key={id} on={false} onClick={() => onAsk(id)}><b>{e.name}</b>　{ISLANDS[e.island].name}的老醫生。{e.knack}<br /><span className="dim">要打燈號請{e.pronoun}過來：花 {e.sec} 秒。{e.pronoun}有{e.pronoun}不提的地方。</span></Pick>;
+        })}
+      </div>
     </Sheet>
   );
 }

@@ -1,18 +1,26 @@
-// 霧港裡看診的地方。前五個是公會的診間：每一章的委託在其中一間看，哪個主訴在哪一間寫在主訴模組（place）。
+// 霧港裡看診的地方。前五個是公會的診間，在五座島上（本島、汐市島、書嶼、龍骨島、竹坡島；見 islands.ts）：
+// 每一章的委託在其中一間看，哪個主訴在哪一間寫在主訴模組（place）。
 // 病例的內容不跟著地方變；地方只決定畫面，和故事裡為什麼要到那裡去。
 import type { Place, Scene } from '../core/types.ts';
+import { ISLANDS, ISLAND_OF } from './islands.ts';
+const ISLAND_NAME = Object.fromEntries(Object.values(ISLANDS).map((i) => [i.id, i.name])) as Record<string, string>;
 
 /** name 全名；at 給螢幕報讀器的那一句；enter 進門的時候畫面上的一句旁白（公會的病室和出診不用：病室是預設，出診的病例自己會說；資格試煉不說） */
 export const PLACES: Record<Place, { name: string; at: string; enter?: string }> = {
-  ward: { name: '公會的病室', at: '霧脈公會的病室' },
-  market: { name: '魚市口的診間', at: '公會在魚市口的診間', enter: '魚市口的診間。窗外就是魚市，喊價的聲音隔著牆傳進來。' },
-  archive: { name: '檔案室旁的舊病室', at: '公會檔案室旁邊的舊病室', enter: '檔案室旁的舊病室。繩子上晾著一張一張泡過水的舊索引。' },
-  yard: { name: '船塢的工寮', at: '公會在船塢借的工寮', enter: '船塢的工寮。門外的船台上，有一艘造到一半的船。' },
-  quiet: { name: '坡上的靜室', at: '公會在坡上的靜室', enter: '坡上的靜室。門關上之後，只剩窗外很遠的海。' },
+  ward: { name: '公會的病室', at: '霧港本島，霧脈公會的病室', enter: '本島，公會的病室。阿嵐在床尾掛好一塊新的紀錄板，三格都是空的。' },
+  market: { name: '魚市口的診間', at: '汐市島，公會在魚市口的診間', enter: '汐市島，魚市口的診間。貝姐把門口的竹簾捲起來；喊價的聲音隔著牆傳進來。' },
+  archive: { name: '檔案室旁的舊病室', at: '書嶼，公會檔案室旁邊的舊病室', enter: '書嶼，檔案室旁的舊病室。欒枝在繩子上晾著一張一張泡過水的舊索引。' },
+  yard: { name: '船塢的工寮', at: '龍骨島，公會在船塢借的工寮', enter: '龍骨島，船塢的工寮。舵叔在門上的板子記下公會借走的東西；門外的船台上，有一艘造到一半的船。' },
+  quiet: { name: '坡上的靜室', at: '竹坡島，公會在坡上的靜室', enter: '竹坡島，坡上的靜室。蕗姨試了一次屏風，拉得攏。門關上之後，只剩窗外很遠的海。' },
   dock: { name: '碼頭的貨棧', at: '碼頭的貨棧' },
-  tower: { name: '燈塔的值夜房', at: '燈塔的值夜房', enter: '燈塔的值夜房。窗外只有霧；頭頂上的燈室是暗的。' },
+  tower: { name: '燈塔的值夜房', at: '霧港本島，燈塔的值夜房', enter: '燈塔的值夜房。窗外只有霧；頭頂上的燈室是暗的。' },
 };
 export const placeOf = (scene: Scene): Place => scene.replace('-rain', '') as Place;
 export const rainy = (scene: Scene) => scene.endsWith('-rain');
 /** 審查清單和圖鑑用的全名 */
 export const sceneName = (scene: Scene) => PLACES[placeOf(scene)].name + (rainy(scene) ? '（下雨天）' : placeOf(scene) === 'dock' ? '（出診）' : '');
+
+/** 哪一座島。出診的貨棧沒有固定的島：看那一張委託平常在哪一間（home） */
+export const islandName = (scene: Scene, home: Place = 'ward') => { const p = placeOf(scene); return ISLAND_NAME[ISLAND_OF[p === 'dock' ? home : p] ?? 'main']; };
+/** 委託單上的地點：島名＋地方 */
+export const whereOf = (scene: Scene, home: Place = 'ward') => islandName(scene, home) + '・' + sceneName(scene);

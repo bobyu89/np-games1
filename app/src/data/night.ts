@@ -4,7 +4,7 @@
 // 都是原則層級的題目，情境和數字是設計出來的，還沒經過臨床老師審查（要請老師看的地方寫在 shared.ts 的 REVIEW_ASKS）。
 import { BULLARD_2017, MULLER_2018, NG_2011, SMITH_2019, STARMER_2014, THIM_2012 } from './shared.ts';
 
-export interface NightLine { who: 'sys' | 'mentor' | 'doctor'; text: string }
+export interface NightLine { who: 'sys' | 'mentor' | 'doctor' | 'guest'; text: string; name?: string }
 /** 到門口的一位。look：長什麼樣子（art/ward.js 的 PATIENTS）；says：他說的；see：你看到的 */
 export interface Arrival { id: string; look: string; name: string; tag: string; says: string; see: string }
 export interface NightPick { id: string; text: string; ok: boolean; note: string }

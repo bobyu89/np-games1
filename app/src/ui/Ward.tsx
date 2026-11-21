@@ -5,7 +5,7 @@ import type { Action, CaseDef, QuestionGroup, Session } from '../core/types.ts';
 import { HINT_LIMIT, clueOf, createSession, formOf, lights, perform, stability, testReady, veil } from '../core/engine.ts';
 import { Stage, type StageHandle } from './Stage.tsx';
 import { Talk, type Line, type TalkHandle, type Who } from './Talk.tsx';
-import { BoardSheet, CluesSheet, ConfirmSheet, ExplainSheet, ReportSheet } from './Sheets.tsx';
+import { AskSheet, BoardSheet, CluesSheet, ConfirmSheet, ExplainSheet, ReportSheet } from './Sheets.tsx';
 import { buzz, sfx, sound } from './sound.ts';
 import { TRIAL_SECONDS, TRIAL_WARN, toYou } from './progress.ts';
 import { PLACES, placeOf } from '../data/places.ts';
@@ -28,7 +28,7 @@ const COACH = {
   dx: '現在下診斷，有三件事：選一句話摘要這位病人、選最可能的診斷、選還要排除的診斷。這一步不算時間，想清楚再按。',
   plan: '診斷下了，從現在開始，病人的狀況會跟著時間變。還有四件事：提出需要的檢查、向沈渡醫師回報、向病人說明、提交摘要結案。病人等不了的話，先按下面的「緊急通報」（敲值班鐘），請醫師馬上過來。',
 };
-type SheetName = null | 'board' | 'report' | 'explain' | 'clues' | 'confirm' | 'quit' | 'next' | 'bell';
+type SheetName = null | 'board' | 'report' | 'explain' | 'clues' | 'confirm' | 'quit' | 'next' | 'bell' | 'ask';
 const HEART = <svg viewBox="0 0 22 20" aria-hidden="true"><path fill="currentColor" stroke="#2c2a25" strokeWidth="2" strokeLinejoin="round" d="M11 18.5C4.5 13.6 1.3 10.2 1.3 6.5 1.3 3.6 3.5 1.5 6.2 1.5c1.9 0 3.6 1 4.8 2.7 1.2-1.7 2.9-2.7 4.8-2.7 2.7 0 4.9 2.1 4.9 5 0 3.7-3.2 7.1-9.7 12z" /></svg>;
 const mmss = (t: number) => String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
 
@@ -43,12 +43,12 @@ function Forms({ c, onPick }: { c: CaseDef; onPick(id: string): void }) {
 
 /** resume：上次做到一半的那一場。onProgress：每做一個行動就交出去存，中途離開回來可以接著做。coach：第一張委託，岑禾一步一步帶 */
 /** trial：資格試煉。照真的時間倒數 15 分鐘、沒有提示、不告訴你線索判讀得對不對、症影和燈都收起來；時間到自動交卷 */
-interface Props { c: CaseDef; tier: 0 | 1; hero: string | null; takeaway: string | null; coach?: boolean; trial?: boolean; resume?: { session: Session; seconds: number } | null; onProgress?(s: Session, seconds: number): void; onDone(s: Session, seconds: number, timeUp: boolean): void; onQuit(): void }
+interface Props { c: CaseDef; tier: 0 | 1; hero: string | null; elders?: string[]; takeaway: string | null; coach?: boolean; trial?: boolean; resume?: { session: Session; seconds: number } | null; onProgress?(s: Session, seconds: number): void; onDone(s: Session, seconds: number, timeUp: boolean): void; onQuit(): void }
 /** 接著做的時候，翻到做到一半的那一頁 */
 const tabFor = (c: CaseDef, s: Session): Tab => (s.phase === 2 ? 'exam' : s.phase === 3 ? 'dx' : s.phase === 4 ? 'plan'
   : (['open', 'cc', 'hx', 'ros'] as QuestionGroup[]).find((g) => c.questions.some((q) => q.group === g && !s.asked.includes(q.id))) ?? 'ros');
 
-export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress, onDone, onQuit }: Props) {
+export function Ward({ c, tier, hero, elders = [], takeaway, coach, trial, resume, onProgress, onDone, onQuit }: Props) {
   const [session, setSession] = useState(() => resume?.session ?? createSession(c, trial ? 1 : tier));
   const [, tick] = useState(0);   // 試煉的倒數：每半秒重畫一次
   const warned = useRef(false), timeUp = useRef(false), ended = useRef<number | null>(null);
@@ -125,7 +125,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
       if (to && c.questions.filter((q) => q.group === g).every((q) => next.asked.includes(q.id))) setTab((t) => (t === g ? to : t));
     }
     if (next.phase !== before.phase) setTab(next.phase === 2 ? 'exam' : next.phase === 3 ? 'dx' : 'plan');
-    let lines: Line[] = events.flatMap((e) => (e.type === 'say' ? [{ who: e.who, text: e.who === 'you' ? toYou(e.text, hero) : e.text, bad: e.bad }] : []));
+    let lines: Line[] = events.flatMap((e) => (e.type === 'say' ? [{ who: e.who, name: e.name, text: e.who === 'you' ? toYou(e.text, hero) : e.text, bad: e.bad }] : []));
     if (trial) {
       // 試煉不給回饋：判讀對不對不說；結案那一句換成交卷
       if (a.type === 'read') lines = [{ who: 'sys', text: '記下了。' }, ...(next.needCommit && !before.needCommit ? [{ who: 'mentor' as const, text: '先停一下。到目前為止，你最擔心哪一個？' }] : [])];
@@ -300,7 +300,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
         </div>
         <div className="foot">
           <button type="button" onClick={() => { sfx.page(); setSheet('clues'); }}>線索 {session.clues.length}</button>
-          {!trial && !closed && !reading && !session.needCommit && <button type="button" aria-label={session.tier >= 1 ? '向岑禾要提示，這一張委託還可以問 ' + Math.max(0, HINT_LIMIT - session.hints) + ' 次' : undefined} onClick={() => act({ type: 'hint' })}>要提示{session.tier >= 1 ? ' ×' + Math.max(0, HINT_LIMIT - session.hints) : ''}</button>}
+          {!trial && !closed && !reading && !session.needCommit && <button type="button" aria-label={session.tier >= 1 ? '向岑禾要提示，這一張委託還可以問 ' + Math.max(0, HINT_LIMIT - session.hints) + ' 次' : undefined} onClick={() => (elders.length ? (sfx.page(), setSheet('ask')) : act({ type: 'hint' }))}>要提示{session.tier >= 1 ? ' ×' + Math.max(0, HINT_LIMIT - session.hints) : ''}</button>}
           {!closed && !reading && !session.needCommit && <button type="button" className={session.bell ? 'rung' : ''} onClick={() => (session.bell ? act({ type: 'call' }) : (sfx.page(), setSheet('bell')))}>{session.bell ? '已通報' : '緊急通報'}</button>}
           <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
         </div>
@@ -310,6 +310,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
       {sheet === 'report' && <ReportSheet c={c} s={session} onClose={() => setSheet(null)} onSend={(a, r) => { setSheet(null); act({ type: 'report', a, r }); }} />}
       {sheet === 'explain' && <ExplainSheet c={c} s={session} onClose={() => setSheet(null)} onSend={(ids) => { setSheet(null); act({ type: 'explain', ids }); }} />}
       {sheet === 'clues' && <CluesSheet c={c} s={session} onClose={() => setSheet(null)} />}
+      {sheet === 'ask' && <AskSheet elders={elders} left={session.tier >= 1 ? Math.max(0, HINT_LIMIT - session.hints) : null} onClose={() => setSheet(null)} onAsk={(by) => { setSheet(null); act(by ? { type: 'hint', by } : { type: 'hint' }); }} />}
       {sheet === 'confirm' && <ConfirmSheet title={trial ? '要交卷了嗎？' : '要結案了嗎？'} yes={trial ? '交卷' : '結案'} no="回去補" onNo={() => setSheet(null)} onYes={() => { setSheet(null); act({ type: 'close' }); }}
         lines={trial ? [...missing, '交卷之後就不能再補了。還剩 ' + mmss(left) + '。'] : missing.length ? ['岑禾：「提交之前再看一眼。」', ...missing, '結案之後就不能再補了。'] : ['岑禾：「該做的都做了。」', '提交之後會進到這一關的回顧。']} />}
       {sheet === 'next' && <ConfirmSheet title={session.phase === 1 ? '問診問完了嗎？' : '評估做完了嗎？'} yes={session.phase === 1 ? '開始評估' : '去下診斷'} no="再補一下" onNo={() => setSheet(null)} onYes={() => { setSheet(null); act({ type: 'advance' }); }} lines={nextLines} />}

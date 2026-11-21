@@ -189,6 +189,8 @@ export interface Session {
   board: Board;
   explained: string[] | null;
   hints: number;
+  /** 請教過的老醫生：誰、什麼時候、他提了哪一項、那時候還沒做的、他漏了的（舊存檔沒有這一欄） */
+  consults?: import('./elders.ts').Consult[];
   closedAt: number | null;
   log: LogEntry[];
 }
@@ -206,12 +208,12 @@ export type Action =
   | { type: 'call' }
   | { type: 'report'; a: string; r: string[] }
   | { type: 'explain'; ids: string[] }
-  | { type: 'hint' }
+  | { type: 'hint'; by?: string }
   | { type: 'close' };
 
 /** 規則核心告訴畫面「發生了什麼」，畫面決定怎麼演 */
 export type GameEvent =
-  | { type: 'say'; who: 'you' | 'patient' | 'mentor' | 'doctor' | 'sys'; text: string; bad?: boolean }
+  | { type: 'say'; who: 'you' | 'patient' | 'mentor' | 'doctor' | 'sys' | 'guest'; text: string; bad?: boolean; name?: string }
   | { type: 'clue'; id: string; key: boolean }
   | { type: 'read'; id: string; ok: boolean }
   | { type: 'vitals'; v: Vitals; changed: boolean }

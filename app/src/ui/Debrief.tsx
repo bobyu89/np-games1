@@ -1,5 +1,8 @@
 // 關後回顧：蒐集 → 分析 → 摘要。學習發生在這裡。
 import { useMemo, useState } from 'react';
+import { consultQuestion } from '../core/elders.ts';
+import { GAP_NAME } from '../data/islands.ts';
+import { heroOf } from './progress.ts';
 import type { CaseDef, Session } from '../core/types.ts';
 import { SAFETY_LABEL, moments, scoreSession, takeaways, trajectory } from '../core/scoring.ts';
 import { formOf } from '../core/engine.ts';
@@ -11,9 +14,12 @@ const mmss = (t: number) => Math.floor(t / 60) + ' 分 ' + String(t % 60).padSta
 const STEPS = ['蒐集', '分析', '摘要'];
 
 /** trial：這一場是資格試煉。timeUp：時間到自動交卷的 */
-interface Props { c: CaseDef; session: Session; seconds: number; trial?: { timeUp: boolean }; fresh: { text: string; form: string; dir: 1 | -1 }[]; onFinish(takeaway: string | null): void }
+interface Props { c: CaseDef; session: Session; seconds: number; hero?: string | null; echo?: { got: boolean; before: boolean; text: string } | null; trial?: { timeUp: boolean }; fresh: { text: string; form: string; dir: 1 | -1 }[]; onFinish(takeaway: string | null): void }
 
-export function Debrief({ c, session, seconds, trial, fresh, onFinish }: Props) {
+export function Debrief({ c, session, seconds, hero = null, echo = null, trial, fresh, onFinish }: Props) {
+  const cq = useMemo(() => (trial ? null : consultQuestion(session)), [session, trial]);
+  const [cqPick, setCqPick] = useState<string | null>(null);
+  const me = heroOf(hero);
   const sc = useMemo(() => scoreSession(c, session), [c, session]);
   const ms = useMemo(() => moments(c, session), [c, session]);
   const tk = useMemo(() => takeaways(c, session, sc), [c, session, sc]);
@@ -81,6 +87,25 @@ export function Debrief({ c, session, seconds, trial, fresh, onFinish }: Props) 
 
         {step === 2 && (
           <>
+            {cq && (
+              <div className="leaf">
+                <b>你請教的那一位，漏了什麼？</b>
+                <p>你在第 {Math.floor(cq.t / 60)} 分 {String(cq.t % 60).padStart(2, '0')} 秒請教了{cq.name}。那時候你還沒做、{cq.pronoun}也沒提的，是哪一項？</p>
+                <div className="stack">{cq.options.map((g) => <button key={g} type="button" className={'pick' + (cqPick === g ? (g === cq.answer ? ' on' : ' off') : '')} disabled={cqPick !== null} onClick={() => { sfx.tap(); setCqPick(g); }}>{GAP_NAME[g]}</button>)}</div>
+                {cqPick && <p className={cqPick === cq.answer ? 'up' : 'down'}>{cqPick === cq.answer ? '對。' : '不是這一項：那時候你已經做了。是「' + GAP_NAME[cq.answer] + '」。'}{cq.name}的盲點是：{cq.blind}{cq.pronoun}說的要聽，{cq.pronoun}沒提的，要自己看。</p>}
+                <p className="dim">這一題不計分。</p>
+              </div>
+            )}
+            {!trial && (
+              <div className="leaf">
+                <b>{me.name}的盲點：{me.blind}</b>
+                <p>{me.ask}</p>
+                <p className="dim">想一想就好，不用作答，不計分。</p>
+              </div>
+            )}
+            {echo && (echo.got
+              ? <div className="leaf"><b>{echo.before ? '港城回音' : '港城回音（新的）'}</b><p>{echo.text}</p></div>
+              : <div className="leaf"><b>港城回音</b><p className="dim">這一次，{c.patient.name}由公會的前輩接手安頓。重接這一張，診斷對、也回應{c.patient.pronoun}擔心的事，才會收到{c.patient.pronoun}的近況。</p></div>)}
             <p><b className="name">岑禾</b>「選一件下次要做到的事，帶進下一張委託。」</p>
             <div className="stack">{tk.map((t) => <button key={t} type="button" className={'pick' + (mine === t ? ' on' : '')} aria-pressed={mine === t} onClick={() => { sfx.tap(); setMine(t); }}>{t}</button>)}</div>
             <p className="dim">下一次進病室的時候，岑禾會提醒你這一句。</p>
