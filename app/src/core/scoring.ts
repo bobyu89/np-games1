@@ -23,7 +23,7 @@ function judge(c: CaseDef, s: Session, r: SafetyRule): { got: number; state: 'me
       const byYou = s.calledBy === 'you', early = byYou && (s.worsenedAt === null || s.calledAt! <= s.worsenedAt);
       if (early) return { got: r.points, state: 'met', note: '在' + who + '變差之前就通報了（' + mmss(s.calledAt!) + '）。' };
       if (byYou) return { got: r.points / 2, state: 'part', note: who + '變差之後才通報（' + mmss(s.calledAt!) + '），有補救回來。' };
-      return { got: 0, state: 'miss', note: s.calledBy === 'mentor' ? '沒有通報，由岑禾接手敲鐘。' : '沒有通報。' };
+      return { got: 0, state: 'miss', note: s.calledBy === 'mentor' ? '沒有緊急通報，由岑禾接手通報。' : '沒有通報。' };
     }
     case 'order': {
       const o = s.ordered.find((k) => k.id === r.test), label = c.tests.find((t) => t.id === r.test)!.label, limit = Math.round(r.within / 60), late = o ? o.at - (s.dxAt ?? 0) : 0;
@@ -42,7 +42,7 @@ function judge(c: CaseDef, s: Session, r: SafetyRule): { got: number; state: 'me
       return said ? { got: r.points, state: 'met', note: '有' + what + '。' } : { got: 0, state: 'miss', note: '沒有' + what + '。' };
     }
     case 'calm':
-      return s.bell ? { got: 0, state: 'part', note: who + '很穩定，這次不需要敲值班鐘。鐘是留給等不了的病人。' } : { got: r.points, state: 'met', note: '判斷' + who + '穩定，沒有動用值班鐘。' };
+      return s.bell ? { got: 0, state: 'part', note: who + '很穩定，這次不需要緊急通報（敲值班鐘）。那是留給等不了的病人的。' } : { got: r.points, state: 'met', note: '判斷' + who + '穩定，沒有緊急通報。' };
   }
 }
 
@@ -159,7 +159,7 @@ export function takeaways(c: CaseDef, s: Session, sc: Score): string[] {
   const has = (type: SafetyRule['type']) => c.safety.some((r) => r.type === type);
   const out: string[] = [];
   if (has('call') && sc.safety !== 'met') out.push('判斷病人不穩定，下了診斷就馬上通報。');
-  if (has('calm') && s.bell) out.push('先判斷病人穩不穩定，再決定要不要敲值班鐘。');
+  if (has('calm') && s.bell) out.push('先判斷病人穩不穩定，再決定要不要緊急通報。');
   if (c.safety.some((r) => r.type === 'order' && !s.ordered.some((o) => o.id === r.test && o.at - (s.dxAt ?? 0) <= r.within))) out.push('下了診斷，最關鍵的那項檢查要先提出。');
   if (has('exclude') && sc.safety !== 'met') out.push('說「沒事」之前，每個危險的可能都要有一條排除它的線索。');
   if (got('consent').got < 8) out.push('動手評估之前，先說明目的、項目和部位。');
