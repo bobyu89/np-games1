@@ -563,9 +563,9 @@ export function nextStep(s: Save, pending: { caseId: string; trial: boolean; clo
   if (q) {
     const c = caseById(q.caseId), isle = islandOf(c), i = ISLANDS[isle], left = questsOn(isle).filter((x) => !s.cases[x.caseId]).length;
     const action: NextAction = { kind: 'quest', caseId: c.id, island: isle };
-    if (!done) return { title: '接下第一張委託：' + c.patient.name, why: '一張委託就是一位病人。順序和考站一樣：問診 → 身體評估 → 下診斷 → 檢查、向醫師回報 → 跟病人說明。卡住了，按「要提示」。', button: '看委託單', action };
-    if (!questsOn(isle).some((x) => s.cases[x.caseId])) return { title: CHAPTERS_ZH[q.chapter] + '：坐巡診船到' + i.name, why: '航海圖上，有字的島就是可以去的地方。' + i.name + '有一種新的劫影，委託單上寫的是病人和地點。', button: '去' + i.name, action };
-    return { title: '接下' + c.patient.name + '的委託', why: i.name + '還有 ' + left + ' 張沒結。同一種劫影，每一位背後的病都可能不一樣。', button: '看委託單', action };
+    if (!done) return { title: '接下第一張委託：' + c.patient.name + '（' + c.complaintName + '）', why: '一張委託就是一位病人。順序和考站一樣：問診 → 身體評估 → 下診斷 → 檢查、向醫師回報 → 跟病人說明。卡住了，按「要提示」。', button: '看委託單', action };
+    if (!questsOn(isle).some((x) => s.cases[x.caseId])) return { title: CHAPTERS_ZH[q.chapter] + '：坐巡診船到' + i.name + '（' + c.complaintName + '）', why: '新的症狀：' + c.complaintName + '。航海圖上，有字的島就是可以去的地方；' + i.name + '的病人都是因為' + c.complaintName + '來的。', button: '去' + i.name, action };
+    return { title: '接下' + c.patient.name + '的委託（' + c.complaintName + '）', why: '這座島的病人都是' + c.complaintName + '，還有 ' + left + ' 張沒結。同一個症狀，每一位背後的病都可能不一樣。', button: '看委託單', action };
   }
   if (finaleOpen(s) && !nightDone(s)) return { title: '終章：大霧值班夜', why: '燈塔熄了，今晚門口會同時來好幾位。這一場練的是分流：先看誰、另一位交給誰、什麼時候回頭。', button: '進值班夜', action: { kind: 'night' } };
   if (towerOpen(s) && !finaleDone(s)) return { title: '最後一張委託：燈塔', why: '送燈油的人帶了一句話下來。這一張要你自己判斷，等不等得了。', button: '看委託單', action: { kind: 'tower' } };

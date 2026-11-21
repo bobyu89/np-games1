@@ -8,6 +8,7 @@ import { sfx, sound } from './sound.ts';
 import type { Run, Save } from './store.ts';
 import { nextStep } from './progress.ts';
 import { Journey } from './Journey.tsx';
+import { Trailer } from './Trailer.tsx';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
 import { accountState, accountSubscribe, cameBack } from './account.ts';
 import { WELCOME } from './world.ts';
@@ -25,6 +26,7 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
   // 剛登入完被送回來：直接打開帳號那一頁，讓人看到結果
   const [sheet, setSheet] = useState<null | 'account' | 'settings' | 'about' | 'report'>(() => (cameBack() ? 'account' : null));
   const [soundOn, setSoundOn] = useState(sound.on);
+  const [film, setFilm] = useState(false);   // 前導片：在「關於」裡可以看
   const started = save.hero !== null || save.beats.length > 0 || Object.keys(save.cases).length > 0;
   const open = (s: 'account' | 'settings' | 'about' | 'report') => { sfx.page(); setSheet(s); };
 
@@ -49,19 +51,21 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
           {/* 其他都是小按鈕：帳號與同步放在設定裡 */}
           <div className="small-row">
             <button type="button" onClick={() => open('settings')}>設定{pwa.update ? '・有新版' : acct.account ? '・已登入' : ''}</button>
-            <button type="button" onClick={() => open('about')}>關於</button>
+            <button type="button" onClick={() => open('about')}>關於・前導片</button>
             <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
           </div>
         </nav>
         <div className="foot"><span>版本 {__BUILD__}</span></div>
       </div>
 
+      {film && <Trailer onDone={() => setFilm(false)} />}
       {sheet === 'account' && <Sheet title="登入與同步" onClose={() => setSheet(null)}><AccountPanel /></Sheet>}
       {sheet === 'settings' && <Settings save={save} onImport={onImport} onReset={onReset} onClose={() => setSheet(null)} />}
       {sheet === 'report' && <ReportSheet place="title" onClose={() => setSheet(null)} />}
       {sheet === 'about' && (
         <Sheet title="關於這個遊戲" onClose={() => setSheet(null)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setSheet(null); onPlay(); }}>{started ? '繼續遊戲' : '開始遊戲'}</button>}>
           <p>{WELCOME.what}</p>
+          <button type="button" className="pick" onClick={() => { sfx.page(); setSheet(null); setFilm(true); }}>看前導片（52 秒）</button>
           <dl className="pairs">{WELCOME.points.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
           <h3>要注意的事</h3>
           <ul>

@@ -549,3 +549,8 @@ html.admin #app:has(.prose) { padding-inline: 4px; }
 .isle-head > b { font-size: 1.2em; color: var(--teal); }
 .isle-head > span { font-size: 0.85em; color: var(--ink-soft); }
 .isle-head p { margin: 2px 0 0; line-height: 1.5; font-size: 0.93em; }
+.isle-head .tip { background: var(--paper-2); border-left: 4px solid var(--ochre); padding: 4px 8px; border-radius: 4px; }
+.isle-head .tip b { font-size: 1em; color: var(--rust); }
+.map-help { display: flex; flex-direction: column; gap: 6px; color: var(--paper); font-size: 0.9em; line-height: 1.5; }
+.map-help p { margin: 0; }
+.map-help .pick { align-self: flex-start; color: var(--ink); background: var(--paper); border: 2px solid var(--ink); border-radius: 999px; padding: 4px 12px; }
