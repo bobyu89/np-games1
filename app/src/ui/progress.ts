@@ -585,3 +585,19 @@ export function sideStep(s: Save): { text: string; button: string; action: NextA
   if (trialOpen(s) && !s.trials.length && !finaleDone(s)) return { text: '選做：試弓已經開放。想知道真的口試是什麼感覺，可以先考一次，不影響委託。', button: '看規則', action: { kind: 'trial' } };
   return null;
 }
+
+// ── 你在哪裡 ──
+// 首頁和大廳最上面那一條：五章加終章，每一段做了幾張、現在在哪一段。
+export interface Leg { key: string; short: string; name: string; place: string; done: number; total: number; state: 'done' | 'now' | 'later' }
+const HUB: Record<number, IslandId> = { 1: 'main', 2: 'tide', 3: 'book', 4: 'keel', 5: 'bamboo' };
+export function journey(s: Save): { legs: Leg[]; now: Leg; done: number; total: number } {
+  const legs: Leg[] = [1, 2, 3, 4, 5].map((n) => {
+    const qs = QUESTS.filter((q) => q.chapter === n), isles = new Set(qs.map((q) => islandOf(caseById(q.caseId))));
+    const place = ISLANDS[HUB[n]].name + (isles.size > 1 ? '一帶（' + isles.size + ' 座島）' : '');
+    return { key: 'ch' + n, short: '一二三四五'[n - 1], name: CHAPTERS_ZH[n], place, done: qs.filter((q) => s.cases[q.caseId]).length, total: qs.length, state: chapterDone(n, s) ? 'done' : chapterOpen(n, s) ? 'now' : 'later' };
+  });
+  const fin = [nightDone(s), finaleDone(s)].filter(Boolean).length;
+  legs.push({ key: 'end', short: '終', name: '終章', place: '值班夜和燈塔', done: fin, total: 2, state: finaleDone(s) ? 'done' : finaleOpen(s) ? 'now' : 'later' });
+  const now = legs.find((l) => l.state === 'now') ?? legs[legs.length - 1];
+  return { legs, now, done: QUESTS.filter((q) => s.cases[q.caseId]).length, total: QUESTS.length };
+}

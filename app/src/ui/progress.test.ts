@@ -210,3 +210,14 @@ test('下一步：每一個階段都只指一件事，而且按下去帶得到�
   assert.equal(sideStep(save(['c01a', 'c01b', 'c01c', 'c01d']))?.action.kind, 'trial');
   assert.equal(sideStep(save([])), null);
 });
+
+test('你在哪裡：五章加終章，現在在哪一段、這一段做了幾張', () => {
+  const { journey } = PROGRESS;
+  let j = journey(save(['c01a']));
+  assert.equal(j.legs.length, 6); assert.equal(j.now.key, 'ch1'); assert.equal(j.now.done, 1); assert.equal(j.now.total, 4); assert.equal(j.done, 1);
+  assert.deepEqual(j.legs.map((l) => l.state), ['now', 'later', 'later', 'later', 'later', 'later']);
+  j = journey(save(['c01a', 'c01b', 'c01c', 'c01d']));
+  assert.equal(j.now.key, 'ch2'); assert.ok(j.now.place.includes('斯克里亞'));
+  j = journey(save(BOARD, STORY));
+  assert.equal(j.now.key, 'end'); assert.equal(j.legs.filter((l) => l.state === 'done').length, 5);
+});

@@ -20,6 +20,7 @@ import { WELCOME, WORLD } from './world.ts';
 import { CANTOS, PERILS, type Canto } from '../data/odyssey.ts';
 import { Portrait } from './Portrait.tsx';
 import { Trailer, TRAILER_SEEN } from './Trailer.tsx';
+import { Journey } from './Journey.tsx';
 import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
@@ -87,6 +88,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   });
   const boat = ([...isles].reverse().find((i) => i.open && i.done < i.total) ?? isles[0]).id;
   const [isle, setIsle] = useState<IslandId>(boat);
+  const [view, setView] = useState<IslandId | null>(null);   // null：地圖頁；一座島：那座島的症狀和委託
   const [pendingBeat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
   // 先知道自己是誰，故事才開始：還沒選主角之前，序章先等著
   const beat = save.hero === null ? null : pendingBeat;
@@ -115,9 +117,9 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const todo = nextStep(save, run ? { caseId: run.caseId, trial: !!run.trial, closed: run.session.closedAt !== null } : null), side = run ? null : sideStep(save);
   const go = (a: NextAction) => {
     if (a.kind === 'resume') onResume();
-    else if (a.kind === 'quest') { setIsle(a.island); setReading(caseById(a.caseId)); }
+    else if (a.kind === 'quest') { setIsle(a.island); setView(a.island); setReading(caseById(a.caseId)); }
     else if (a.kind === 'night') onNight();
-    else if (a.kind === 'tower') { setIsle('main'); setReading(ending); }
+    else if (a.kind === 'tower') setReading(ending);
     else if (a.kind === 'trial') setTrialSheet(true);
     else if (a.kind === 'tide') onTide(a.n);
     else setCodex(true);
@@ -153,7 +155,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   };
 
   return (
-    <div className="screen hall">
+    <div className={'screen hall' + (!beat && save.hero !== null ? ' mapview' : '')}>
       <div className="left">
         <div className="top"><span className="who"><button type="button" className="home" onClick={() => { sfx.page(); onHome(); }}>‹ 首頁</button>霧脈公會</span><span className="clock">{save.hero ? heroOf(save.hero).name + '・' : ''}{rankOf(save)}</span></div>
         <Stage kind="hall" hero={save.hero} stage={stage} onFrame={onFrame} label="霧脈公會的大廳：牆上是委託板，斐米歐坐在櫃台後面寫字，蒙托拉站在委託板旁邊，窗外是霧港和燈塔">
@@ -166,34 +168,26 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
         <div className="panel">
           {beat ? (
             <div className="acts one">
-              <button type="button" className="act demo" onClick={() => (talk.current?.busy() ? talk.current.finish() : next())}>{step + 1 >= beat.lines.length ? '回到委託板' : '繼續'}</button>
+              <p className="beat-note">故事：{beat.title}（{step + 1}／{beat.lines.length}）。看完會回到委託板，告訴你下一步。</p>
+              <button type="button" className="act demo" onClick={() => (talk.current?.busy() ? talk.current.finish() : next())}>{step + 1 >= beat.lines.length ? '回到委託板' : '繼續（' + (step + 1) + '／' + beat.lines.length + '）'}</button>
               <button type="button" className="skip" onClick={endBeat}>跳過這一段</button>
             </div>
           ) : (
             <div className="quests">
               {pwa.update && <button type="button" className="quest paper hint" onClick={() => { sfx.done(); applyUpdate(); }}><i className="seal" aria-hidden="true" /><b>有新的版本</b><span>換上只要幾秒，進度不會動</span><em>現在更新</em></button>}
-              {/* 下一步：一次只說一件事。按下去直接帶到那裡 */}
-              <div className="next paper" role="region" aria-label="下一步">
-                <span className="next-label">下一步</span>
-                <b>{todo.title}</b>
-                <p>{todo.why}</p>
-                <button type="button" className="act demo" onClick={() => { sfx.page(); go(todo.action); }}>{todo.button}</button>
-                {pending && run && run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>{run.trial ? '不考了，放掉這一場' : '不接了，放掉這一張'}</button>}
+              {view ? <>
+              {/* 島嶼頁：這座島的症狀（劫影）和它的委託 */}
+              <button type="button" className="back" onClick={() => { sfx.page(); setView(null); }}>‹ 回地圖</button>
+              <div className="isle-head paper"><b>{ISLANDS[isle].name}</b><span>{ISLANDS[isle].tag}</span>
+                {COMPLAINTS.filter((m) => islandOf({ complaint: m.id }) === isle).map((m) => <p key={m.id}>這座島的劫影：<b>{m.shadow.name}</b>，症狀是「{m.name}」。{PERILS[m.id] ? PERILS[m.id].name + '：' + PERILS[m.id].trap : ''}</p>)}
               </div>
-              {side && <div className="side"><span>{side.text}</span><button type="button" className="pick" onClick={() => { sfx.page(); go(side.action); }}>{side.button}</button></div>}
-              <SeaChart isles={isles} picked={isle} boat={boat} home={finaleDone(save)} onPick={setIsle} />
-              <div className="quest-head">{ISLANDS[isle].name}・{ISLANDS[isle].tag}</div>
-              {/* 篇章：在那座島結過一張委託才出現（選讀），不在第一次到的時候就擺一堆字 */}
-              {CANTOS.filter((k) => (k.island === isle && questsOn(isle).some((q) => save.cases[q.caseId])) || (isle === 'main' && !k.island && cantoOpen(k.id, save))).map((k) => (
-                <details key={k.id} className="canto paper"><summary><b>{k.no}　{k.title}</b><span>史詩的篇章・選讀</span></summary><CantoBody k={k} save={save} /></details>
-              ))}
               {COMPLAINTS.map((m) => {
                 const mine = QUESTS.filter((q) => caseById(q.caseId).complaint === m.id);
                 if (!mine.length || islandOf({ complaint: m.id }) !== isle) return null;
                 const seen = mine.some((q) => unlocked(q, save));
                 return (
                   <Fragment key={m.id}>
-                    <div className="quest-head">{seen ? m.shadow.name + '｜' + m.name : '還沒送到的委託'}</div>
+                    <div className="quest-head">{seen ? m.name + '的委託（' + mine.filter((q) => save.cases[q.caseId]).length + '／' + mine.length + '）' : '還沒送到的委託'}</div>
                     {mine.map((q) => {
                       const c = caseById(q.caseId), res = save.cases[c.id];
                       if (!unlocked(q, save)) return <div key={c.id} className="quest paper locked" aria-disabled="true"><b>？？？</b><span>{q.chapter > 1 && !seen ? CHAPTERS[q.chapter - 1] + '走完之後才會送到' : '完成上一張委託之後才會送到'}</span><em>還沒出現</em></div>;
@@ -210,27 +204,41 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 );
               })}
               {(() => {
-                // 海神的風暴：一章一場，放在那一章有長老的那座島
-                const n = ISLANDS[isle].chapter, done = chapterDone(n, save), seen = save.beats.includes(TIDE_DONE(n));
-                if (!ISLANDS[isle].elder) return null;
-                // 還沒輪到的不擺出來：這一章走完，「下一步」那裡會先介紹它
-                return done
-                  ? <button type="button" className={'quest paper' + (seen ? '' : ' hint')} onClick={() => { sfx.page(); onTide(n); }}><i className="seal" aria-hidden="true" /><b>{TIDES[n].title}</b><span>推演：這一章的兩位同一刻到門口，先看誰、怎麼交代</span><em>{seen ? '走過了・可以再走' : '選做'}</em></button>
-                  : null;
+                // 海神的風暴：一章一場，放在那一章有長老的那座島；還沒輪到的不擺出來
+                const n = ISLANDS[isle].chapter, seen = save.beats.includes(TIDE_DONE(n));
+                if (!ISLANDS[isle].elder || !chapterDone(n, save)) return null;
+                return <button type="button" className={'quest paper' + (seen ? '' : ' hint')} onClick={() => { sfx.page(); onTide(n); }}><i className="seal" aria-hidden="true" /><b>{TIDES[n].title}</b><span>推演：這一章的兩位同一刻到門口，先看誰、怎麼交代</span><em>{seen ? '走過了・可以再走' : '選做'}</em></button>;
               })()}
-              {isle === 'main' && <>
+              {/* 篇章：在那座島結過一張委託才出現（選讀） */}
+              {CANTOS.filter((k) => k.island === isle && questsOn(isle).some((q) => save.cases[q.caseId])).map((k) => (
+                <details key={k.id} className="canto paper"><summary><b>{k.no}　{k.title}</b><span>這座島的史詩・選讀</span></summary><CantoBody k={k} save={save} /></details>
+              ))}
+              </> : <>
+              {/* 地圖頁：先看進度和下一步，再點一座島 */}
+              <div className="next paper" role="region" aria-label="下一步">
+                <Journey save={save} compact />
+                <span className="next-label">下一步</span>
+                <b>{todo.title}</b>
+                <p>{todo.why}</p>
+                <button type="button" className="act demo" onClick={() => { sfx.page(); go(todo.action); }}>{todo.button}</button>
+                {pending && run && run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>{run.trial ? '不考了，放掉這一場' : '不接了，放掉這一張'}</button>}
+              </div>
+              {side && <div className="side"><span>{side.text}</span><button type="button" className="pick" onClick={() => { sfx.page(); go(side.action); }}>{side.button}</button></div>}
+              <div className="quest-head">地圖：一座島一種症狀。點有名字的島，看那裡的委託</div>
+              <SeaChart isles={isles} picked={boat} boat={boat} home={finaleDone(save)} onPick={(id) => { setIsle(id); setView(id); }} />
               {finaleOpen(save) && <>
-              <div className="quest-head">終章　大霧值班夜</div>
+                <div className="quest-head">終章　大霧值班夜</div>
                 <button type="button" className={'quest paper' + (nightNew ? ' hint' : '')} onClick={() => { sfx.page(); onNight(); }}><i className="seal" aria-hidden="true" /><b>值班夜</b><span>門口同時有兩三位：先看誰、怎麼交代、什麼時候回頭</span><em>{nightDone(save) ? '走過了・可以再走' : '今晚'}</em></button>
-                {towerOpen(save)
-                  ? <button type="button" className={'quest paper' + (towerNew ? ' hint' : '')} onClick={() => { sfx.page(); setReading(ending); }}><i className="seal" aria-hidden="true" /><b>{questName(ending, !!save.cases[FINALE_ID])}</b><span>{save.cases[FINALE_ID] ? ending.patient.name + '｜' : ''}{ending.complaintName}｜燈塔</span><em>{save.cases[FINALE_ID] ? '最佳 ' + save.cases[FINALE_ID].best + ' 分・' + SAFETY_LABEL[save.cases[FINALE_ID].safety] : '最後一張'}</em></button>
-                  : null}
+                {towerOpen(save) && <button type="button" className={'quest paper' + (towerNew ? ' hint' : '')} onClick={() => { sfx.page(); setReading(ending); }}><i className="seal" aria-hidden="true" /><b>{questName(ending, !!save.cases[FINALE_ID])}</b><span>{save.cases[FINALE_ID] ? ending.patient.name + '｜' : ''}{ending.complaintName}｜燈塔</span><em>{save.cases[FINALE_ID] ? '最佳 ' + save.cases[FINALE_ID].best + ' 分・' + SAFETY_LABEL[save.cases[FINALE_ID].safety] : '最後一張'}</em></button>}
               </>}
               {trialOpen(save) && <>
-              <div className="quest-head">驗收{exam ? '・' + exam : ''}</div>
-              <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>試弓</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
+                <div className="quest-head">驗收{exam ? '・' + exam : ''}</div>
+                <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>試弓</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
               </>}
               {finaleDone(save) && <><div className="quest-head">十二斧之試</div><div className="paper axes-card"><Axes save={save} /></div></>}
+              {CANTOS.filter((k) => !k.island && cantoOpen(k.id, save)).map((k) => (
+                <details key={k.id} className="canto paper"><summary><b>{k.no}　{k.title}</b><span>史詩的篇章・選讀</span></summary><CantoBody k={k} save={save} /></details>
+              ))}
               </>}
             </div>
           )}
