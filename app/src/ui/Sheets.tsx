@@ -1,6 +1,7 @@
 // 蓋在畫面上的紙：診斷、回報、說明、線索、確認。
 // 看字和下診斷不扣時間，所以這些都可以慢慢想。
 import { useState, type ReactNode } from 'react';
+import { shuffled } from '../core/order.ts';
 import type { Board, CaseDef, Clue, Session } from '../core/types.ts';
 import { sfx } from './sound.ts';
 
@@ -36,7 +37,7 @@ export function BoardSheet({ c, s, onSave, onClose }: { c: CaseDef; s: Session; 
   return (
     <Sheet title="下診斷" onClose={onClose} footer={<button type="button" className="act demo" disabled={!b.likely} onClick={() => onSave(b)}>{b.likely ? '這是我的診斷' : '先選一個最可能的'}</button>}>
       <h3>一、用一句話說出問題</h3>
-      <div className="stack">{c.summaries.map((k) => <Pick key={k.id} on={b.summary === k.id} onClick={() => setB({ ...b, summary: k.id })}>{k.text}</Pick>)}</div>
+      <div className="stack">{shuffled(c.id, c.summaries).map((k) => <Pick key={k.id} on={b.summary === k.id} onClick={() => setB({ ...b, summary: k.id })}>{k.text}</Pick>)}</div>
 
       <h3>二、你的診斷：最可能的是哪一個？還要排除哪幾個？</h3>
       <p className="dim">底下是你解讀過的線索：＋ 讓它更像，－ 讓它比較不像。</p>
@@ -72,9 +73,9 @@ export function ReportSheet({ c, s, onSend, onClose }: { c: CaseDef; s: Session;
       <h3>背景</h3>
       <p className="quote">{bg.length ? bg.join('；') + '。' : '過去病史、用藥和過敏都還沒問。'}</p>
       <h3>評估：你認為是什麼狀況？</h3>
-      <div className="stack">{c.sbar.assessments.map((k) => <Pick key={k.id} on={a === k.id} onClick={() => setA(k.id)}>{k.text}</Pick>)}</div>
+      <div className="stack">{shuffled(c.id, c.sbar.assessments).map((k) => <Pick key={k.id} on={a === k.id} onClick={() => setA(k.id)}>{k.text}</Pick>)}</div>
       <h3>請求：你要對方做什麼？你自己會做什麼？（可以複選）</h3>
-      <div className="stack">{c.sbar.requests.map((k) => <Pick key={k.id} on={r.includes(k.id)} onClick={() => setR(toggle(r, k.id))}>{k.text}</Pick>)}</div>
+      <div className="stack">{shuffled(c.id, c.sbar.requests).map((k) => <Pick key={k.id} on={r.includes(k.id)} onClick={() => setR(toggle(r, k.id))}>{k.text}</Pick>)}</div>
     </Sheet>
   );
 }
@@ -86,7 +87,7 @@ export function ExplainSheet({ c, s, onSend, onClose }: { c: CaseDef; s: Session
   return (
     <Sheet title={'向' + c.patient.name + '說明'} onClose={onClose} footer={<button type="button" className="act demo" disabled={!ids.length} onClick={() => onSend(ids)}>跟{c.patient.pronoun}說</button>}>
       <p className="dim">選你要說的話，最多四句。要讓{c.patient.pronoun}知道評估的結果、接下來會怎樣、要注意什麼。</p>
-      <div className="stack">{opts.map((e) => <Pick key={e.id} on={ids.includes(e.id)} onClick={() => setIds(toggle(ids, e.id, 4))}>{e.text}</Pick>)}</div>
+      <div className="stack">{shuffled(c.id, opts).map((e) => <Pick key={e.id} on={ids.includes(e.id)} onClick={() => setIds(toggle(ids, e.id, 4))}>{e.text}</Pick>)}</div>
     </Sheet>
   );
 }
