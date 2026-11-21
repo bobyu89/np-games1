@@ -538,3 +538,14 @@ html.admin #app:has(.prose) { padding-inline: 4px; }
 .board[open] > summary { margin-bottom: 8px; }
 .board[open] { display: block; }
 .board[open] > * + * { margin-top: 8px; }
+/* 首頁：除了開始遊戲，其他都是一排小按鈕 */
+.menu .small-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.menu .small-row button { flex: 1; min-width: 0; padding: 8px 6px; border: 2px solid rgba(255, 255, 255, 0.35); border-radius: 999px; color: var(--paper); background: transparent; font-size: 0.92em; }
+.menu button.act.big { min-height: 76px; font-size: 1.3em; }
+/* 大廳的地圖頁：手機直向時把大廳的畫收起來，地圖和下一步放上面；故事段落才看得到大廳 */
+@media (max-aspect-ratio: 6/5), (max-width: 619px) { .hall.mapview .scene { display: none; } .hall.mapview .panel { flex: 1 1 0; } }
+.hall .back { align-self: flex-start; color: var(--paper); background: transparent; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 999px; padding: 4px 14px; }
+.isle-head { padding: 10px 12px; border: 2px solid var(--ink); border-radius: var(--r-a); display: flex; flex-direction: column; gap: 4px; }
+.isle-head > b { font-size: 1.2em; color: var(--teal); }
+.isle-head > span { font-size: 0.85em; color: var(--ink-soft); }
+.isle-head p { margin: 2px 0 0; line-height: 1.5; font-size: 0.93em; }

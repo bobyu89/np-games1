@@ -1,4 +1,4 @@
-// 遊戲的首頁：打開遊戲先到這裡。開始或繼續、登入與同步、設定、這是什麼。
+// 遊戲的首頁：打開遊戲先到這裡。一顆大的「開始／繼續遊戲」和你的進度；設定（含帳號與同步）、關於、聲音都是小按鈕。
 import { useRef, useState, useSyncExternalStore } from 'react';
 import { Stage, type StageHandle } from './Stage.tsx';
 import { Sheet } from './Sheets.tsx';
@@ -9,7 +9,7 @@ import type { Run, Save } from './store.ts';
 import { nextStep } from './progress.ts';
 import { Journey } from './Journey.tsx';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
-import { PROVIDER_NAME, accountState, accountSubscribe, cameBack } from './account.ts';
+import { accountState, accountSubscribe, cameBack } from './account.ts';
 import { WELCOME } from './world.ts';
 import { ReportSheet } from './Report.tsx';
 import { openPrivacy } from './PrivacyPage.tsx';
@@ -26,7 +26,6 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
   const [sheet, setSheet] = useState<null | 'account' | 'settings' | 'about' | 'report'>(() => (cameBack() ? 'account' : null));
   const [soundOn, setSoundOn] = useState(sound.on);
   const started = save.hero !== null || save.beats.length > 0 || Object.keys(save.cases).length > 0;
-  const canSignIn = acct.providers.length > 0 || !!acct.account;
   const open = (s: 'account' | 'settings' | 'about' | 'report') => { sfx.page(); setSheet(s); };
 
   return (
@@ -47,17 +46,14 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
             <small>{!started ? '第一次來，從報到開始' : '下一步：' + nextStep(save, run ? { caseId: run.caseId, trial: !!run.trial, closed: run.session.closedAt !== null } : null).title}</small>
           </button>
           {started && <div className="journey-card"><Journey save={save} /></div>}
-          {canSignIn && <button type="button" className="act" onClick={() => open('account')}>
-            {acct.account ? '帳號與同步' : '登入・同步進度'}
-            <small>{acct.account ? '用 ' + PROVIDER_NAME[acct.account.provider] + ' 登入中' + (acct.sync === 'busy' ? '，同步中……' : acct.sync === 'fail' ? '，剛才沒有同步成功' : '') : '換手機、換瀏覽器也接得上。不登入也可以玩'}</small>
-          </button>}
-          <button type="button" className="act" onClick={() => open('settings')}>設定與進度<small>匯出匯入、裝到手機、版本{pwa.update ? '（有新版）' : ''}</small></button>
-          <button type="button" className="act" onClick={() => open('about')}>關於這個遊戲<small>這是什麼、怎麼玩、要注意什麼</small></button>
+          {/* 其他都是小按鈕：帳號與同步放在設定裡 */}
+          <div className="small-row">
+            <button type="button" onClick={() => open('settings')}>設定{pwa.update ? '・有新版' : acct.account ? '・已登入' : ''}</button>
+            <button type="button" onClick={() => open('about')}>關於</button>
+            <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
+          </div>
         </nav>
-        <div className="foot">
-          <span>版本 {__BUILD__}</span>
-          <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
-        </div>
+        <div className="foot"><span>版本 {__BUILD__}</span></div>
       </div>
 
       {sheet === 'account' && <Sheet title="登入與同步" onClose={() => setSheet(null)}><AccountPanel /></Sheet>}

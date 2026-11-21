@@ -85,6 +85,9 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
   const standalone = isStandalone();
   return (
     <Sheet title="設定與進度" onClose={onClose}>
+      <h3>帳號與同步</h3>
+      <AccountPanel />
+
       <h3>進度</h3>
       <p>{brief(save)}。</p>
       <p className="dim">{acct.account ? '進度存在這台裝置上，雲端也有一份（見下面的「登入與同步」）。' : '進度存在這台裝置的這個瀏覽器裡。清除瀏覽器資料、換瀏覽器或換裝置，進度不會跟著走；可以登入同步，或是先匯出一份帶過去。'}</p>
@@ -104,9 +107,6 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
         <button type="button" className="pick" disabled={!paste.trim()} onClick={() => read(paste)}>讀取</button>
       </>}
       {note && <p className={'note' + (note.bad ? ' bad' : '')} role="status">{note.text}</p>}
-
-      <h3>登入與同步</h3>
-      <AccountPanel />
 
       <h3>裝到手機上</h3>
       {standalone ? <p>你現在就是從主畫面的圖示開的。</p>
