@@ -10,6 +10,7 @@ import { AFTER, echoOf, eldersFor, homeOf, islandOf, BEATS, NIGHT_DONE, QUESTS, 
 import type { Save } from './store.ts';
 import { AXE, PASSED, axesLit, bardOf, cantoOpen, record, recordTrial } from './progress.ts';
 import { CANTOS } from '../data/odyssey.ts';
+import * as PROGRESS from './progress.ts';
 import { idealActions, run } from '../core/autoplay.ts';
 import { scoreSession } from '../core/scoring.ts';
 
@@ -180,4 +181,32 @@ test('篇章：每一章的開場由斐米歐先唸那一篇的開場；英雄�
   assert.equal(cantoOpen('home', done), true);
   assert.equal(CANTOS.length, 14);
   for (const id of Object.keys(ISLANDS)) assert.equal(CANTOS.filter((k) => k.island === id).length, 1, id + ' 要剛好一篇');
+});
+
+test('下一步：每一個階段都只指一件事，而且按下去帶得到那裡', () => {
+  const { nextStep, sideStep } = PROGRESS;
+  // 第一次：接林秋那一張，說明一張委託要做什麼
+  let n = nextStep(save([]), null);
+  assert.deepEqual(n.action, { kind: 'quest', caseId: 'c01a', island: 'main' });
+  assert.ok(n.title.includes('第一張') && n.why.includes('問診'));
+  // 做到一半：先接著做
+  assert.deepEqual(nextStep(save([]), { caseId: 'c01a', trial: false, closed: false }).action, { kind: 'resume' });
+  assert.ok(nextStep(save([]), { caseId: 'c01a', trial: false, closed: true }).title.includes('回顧'));
+  // 第一章走完：到下一座島，說明航海圖
+  n = nextStep(save(['c01a', 'c01b', 'c01c', 'c01d']), null);
+  assert.equal(n.action.kind, 'quest'); assert.ok(n.title.includes('巡診船') && n.why.includes('航海圖'));
+  // 同一座島還有沒結的：說還剩幾張
+  n = nextStep(save(['c01a']), null);
+  assert.ok(n.why.includes('還有 3 張'));
+  // 委託都結了 → 值班夜 → 燈塔 → 十二斧
+  assert.equal(nextStep(save(BOARD, STORY), null).action.kind, 'night');
+  assert.equal(nextStep(save(BOARD, [...STORY, NIGHT_DONE, 'finale-tower']), null).action.kind, 'tower');
+  const end = save([...BOARD, FINALE_ID], [...STORY, NIGHT_DONE, 'finale-tower']);
+  n = nextStep(end, null); assert.equal(n.action.kind, 'trial'); assert.ok(n.title.includes('12 把'));
+  assert.equal(nextStep({ ...end, beats: [...end.beats, ...COMPLAINTS.map((m) => AXE(m.id))] }, null).action.kind, 'codex');
+  // 選做的那一句：一章走完、風暴還沒推演，才提風暴；沒有就提試弓；都做過了就不說
+  const ch2 = [...['c01a', 'c01b', 'c01c', 'c01d'], 'c02a', 'c02b', 'c02c', 'c02d', 'c03a', 'c03b', 'c03c', 'c03d'];
+  assert.deepEqual(sideStep(save(ch2))?.action, { kind: 'tide', n: 2 });
+  assert.equal(sideStep(save(['c01a', 'c01b', 'c01c', 'c01d']))?.action.kind, 'trial');
+  assert.equal(sideStep(save([])), null);
 });

@@ -7,6 +7,7 @@ import type { ComplaintDef } from '../core/module.ts';
 import { harvest } from '../core/scoring.ts';
 import { perilOf } from '../core/perils.ts';
 import { CANTOS } from '../data/odyssey.ts';
+import { TIDE_DONE } from '../data/tides.ts';
 import { CASES, COMPLAINTS, FINALE_ID, caseById } from '../data/index.ts';
 import { PLACES } from '../data/places.ts';
 import { AFTER_MORE } from '../data/extras.ts';
@@ -541,3 +542,46 @@ export const eldersFor = (s: Save) => eldersMet((n) => chapterOpen(n, s));
 
 /** 這一張委託平常在哪一間看（出診的貨棧，算在那一章的島） */
 export const homeOf = (c: { complaint: string }) => COMPLAINTS.find((m) => m.id === c.complaint)?.place ?? 'ward';
+
+// ── 下一步 ──
+// 大廳最上面那一張卡：一次只說一件事。現在該做什麼、為什麼、按一下就帶過去。
+// 新的東西第一次出現的時候，在這裡說明它是什麼；還沒輪到的東西，大廳先不擺出來。
+export type NextAction =
+  | { kind: 'resume' }
+  | { kind: 'quest'; caseId: string; island: IslandId }
+  | { kind: 'night' } | { kind: 'tower' } | { kind: 'trial' } | { kind: 'tide'; n: number } | { kind: 'codex' };
+export interface NextStep { title: string; why: string; button: string; action: NextAction }
+
+/** pending：上次沒結案的那一張（試弓也算），沒有就是 null */
+export function nextStep(s: Save, pending: { caseId: string; trial: boolean; closed: boolean } | null): NextStep {
+  if (pending) {
+    const c = caseById(pending.caseId);
+    if (pending.trial) return { title: pending.closed ? '試弓交卷了，去看成績' : '試弓考到一半', why: pending.closed ? '成績和回顧要看完，這一場才算數。' : '倒數會從你離開的時候接下去。', button: pending.closed ? '看成績' : '接著考', action: { kind: 'resume' } };
+    return { title: pending.closed ? c.patient.name + '結案了，去看回顧' : c.patient.name + '還在等你', why: pending.closed ? '回顧裡會告訴你哪裡做到、哪裡漏了，還有這一劫有沒有被困住。看完才會寫進圖鑑。' : '上次做到一半，回來可以接著做。', button: pending.closed ? '看回顧' : '接著做', action: { kind: 'resume' } };
+  }
+  const done = Object.keys(s.cases).length, q = QUESTS.find((x) => unlocked(x, s) && !s.cases[x.caseId]);
+  if (q) {
+    const c = caseById(q.caseId), isle = islandOf(c), i = ISLANDS[isle], left = questsOn(isle).filter((x) => !s.cases[x.caseId]).length;
+    const action: NextAction = { kind: 'quest', caseId: c.id, island: isle };
+    if (!done) return { title: '接下第一張委託：' + c.patient.name, why: '一張委託就是一位病人。順序和考站一樣：問診 → 身體評估 → 下診斷 → 檢查、向醫師回報 → 跟病人說明。卡住了，按「要提示」。', button: '看委託單', action };
+    if (!questsOn(isle).some((x) => s.cases[x.caseId])) return { title: CHAPTERS_ZH[q.chapter] + '：坐巡診船到' + i.name, why: '航海圖上，有字的島就是可以去的地方。' + i.name + '有一種新的劫影，委託單上寫的是病人和地點。', button: '去' + i.name, action };
+    return { title: '接下' + c.patient.name + '的委託', why: i.name + '還有 ' + left + ' 張沒結。同一種劫影，每一位背後的病都可能不一樣。', button: '看委託單', action };
+  }
+  if (finaleOpen(s) && !nightDone(s)) return { title: '終章：大霧值班夜', why: '燈塔熄了，今晚門口會同時來好幾位。這一場練的是分流：先看誰、另一位交給誰、什麼時候回頭。', button: '進值班夜', action: { kind: 'night' } };
+  if (towerOpen(s) && !finaleDone(s)) return { title: '最後一張委託：燈塔', why: '送燈油的人帶了一句話下來。這一張要你自己判斷，等不等得了。', button: '看委託單', action: { kind: 'tower' } };
+  if (finaleDone(s)) {
+    const n = 12 - axesLit(s).length;
+    if (n > 0) return { title: '十二斧之試：還有 ' + n + ' 把沒亮', why: '試弓照真的口試走：抽一位病人、15 分鐘、沒有提示。在一種劫影的試弓及格一次，那一把斧頭就亮；還沒亮的比較容易抽到。', button: '去試弓', action: { kind: 'trial' } };
+    return { title: '十二把斧頭都亮了', why: '想再練，可以重接舊的委託把圖鑑寫滿，或再考一次試弓。', button: '打開圖鑑', action: { kind: 'codex' } };
+  }
+  // 委託都結了、下一章還沒開（照現在的規則不會發生；留著讓大廳永遠有一句話）
+  return { title: '圖鑑還有空白', why: '重接舊的委託，少了提示，你看到的東西會不一樣。', button: '打開圖鑑', action: { kind: 'codex' } };
+}
+
+/** 次要的建議（選做）：一章走完的海神的風暴、第一章之後開放的試弓。一次最多一句 */
+export function sideStep(s: Save): { text: string; button: string; action: NextAction } | null {
+  const tide = [2, 3, 4, 5].find((n) => chapterDone(n, s) && !s.beats.includes(TIDE_DONE(n)));
+  if (tide) return { text: CHAPTERS_ZH[tide] + '走完了。選做：海神的風暴，這一章的兩位同一刻到門口，先看誰？', button: '推演', action: { kind: 'tide', n: tide } };
+  if (trialOpen(s) && !s.trials.length && !finaleDone(s)) return { text: '選做：試弓已經開放。想知道真的口試是什麼感覺，可以先考一次，不影響委託。', button: '看規則', action: { kind: 'trial' } };
+  return null;
+}
