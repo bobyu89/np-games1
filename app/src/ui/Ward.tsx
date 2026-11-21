@@ -21,12 +21,12 @@ const GROUP_NAME: Record<QuestionGroup, string> = { open: '開場', cc: '主訴'
 const NEXT_GROUP: Partial<Record<QuestionGroup, QuestionGroup>> = { open: 'cc', cc: 'hx', hx: 'ros' };
 /** 第一張委託，岑禾在每一步開始的時候說的話：只講「現在要做什麼、畫面上哪裡按」 */
 const COACH = {
-  start: '第一次，我帶著你走。下面那一排，從「開場」到「檢查」，就是順序。先從最左邊開始：洗手、介紹自己、說明流程。點一下，就是做一件事。',
-  cc: '開場做完了。接下來問主訴：從「怎麼不舒服」開始，一題一題問。問過的會打勾；時間只在你做事的時候走，慢慢看沒關係。',
-  read: '這一條是重要的線索，要你判斷：它讓哪一個診斷更像，還是比較不像。判斷對了，畫面上對應的那盞燈會跟著變，霧也會散一點。',
+  start: '第一次，我帶著你走。下面那一排，從「開場」到「檢查」，就是看一位病人的順序。先從最左邊的「開場」開始：洗手、介紹自己、說明流程。每點一個按鈕，就是你對病人做了那一件事。',
+  cc: '開場做完了。接下來問主訴：從「怎麼不舒服」開始，一題一題問。問過的會打勾。時間只在你問問題、做檢查的時候走，停下來看字不算時間。',
+  read: '這一條是重要的線索。畫面上的四盞燈是四個鑑別診斷；請你判斷，這條線索是讓其中哪一個更像，還是比較不像。答對了，那一盞燈會變亮（更像）或變暗（比較不像）。',
   exam: '問診到這裡。評估先量生命徵象：點上面那一格。每一項檢查動手之前，先跟病人說明。',
-  dx: '現在下診斷：一句話說出問題，選最可能的，再選還要排除的。這一步不扣時間，想清楚再按。',
-  plan: '診斷下了，從現在開始算時間。病人等不了就敲值班鐘；該做的檢查先提出，然後向醫師回報、跟病人說明，最後結案。',
+  dx: '現在下診斷，有三件事：選一句話摘要這位病人、選最可能的診斷、選還要排除的診斷。這一步不算時間，想清楚再按。',
+  plan: '診斷下了，從現在開始，病人的狀況會跟著時間變。還有四件事：提出需要的檢查、向沈渡醫師回報、向病人說明、提交摘要結案。病人等不了的話，先敲值班鐘請醫師過來。',
 };
 type SheetName = null | 'board' | 'report' | 'explain' | 'clues' | 'confirm' | 'quit' | 'next' | 'bell';
 const HEART = <svg viewBox="0 0 22 20" aria-hidden="true"><path fill="currentColor" stroke="#2c2a25" strokeWidth="2" strokeLinejoin="round" d="M11 18.5C4.5 13.6 1.3 10.2 1.3 6.5 1.3 3.6 3.5 1.5 6.2 1.5c1.9 0 3.6 1 4.8 2.7 1.2-1.7 2.9-2.7 4.8-2.7 2.7 0 4.9 2.1 4.9 5 0 3.7-3.2 7.1-9.7 12z" /></svg>;
@@ -246,7 +246,7 @@ export function Ward({ c, tier, hero, takeaway, coach, trial, resume, onProgress
                   <p>這條線索，是讓某一個診斷更像，還是比較不像？</p>
                   <div className="forms dirs">
                     <button type="button" className="form" onClick={() => { sfx.tap(); setDir(1); }}><em className="up">更像</em>支持它</button>
-                    <button type="button" className="form" onClick={() => { sfx.tap(); setDir(-1); }}><em className="down">比較不像</em>排除它</button>
+                    <button type="button" className="form" onClick={() => { sfx.tap(); setDir(-1); }}><em className="down">比較不像</em>不支持它</button>
                   </div>
                 </>
               ) : (

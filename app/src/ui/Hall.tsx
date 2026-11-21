@@ -12,7 +12,7 @@ import type { Run, Save } from './store.ts';
 import { Settings, StatsFacts } from './Settings.tsx';
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
-import { ARCHIVE, BEATS, CHAPTER_PLACE, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
+import { ARCHIVE, BEATS, CHAPTER_PLACE, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, questName, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
 import { WELCOME, WORLD } from './world.ts';
 import { Portrait } from './Portrait.tsx';
 import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
@@ -125,7 +125,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 {run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>不考了，放掉這一場</button>}
               </> : <>
                 <div className="quest-head">還沒結案</div>
-                <button type="button" className="quest paper hint" onClick={() => { sfx.page(); onResume(); }}><i className="seal" aria-hidden="true" /><b>{pending.title}</b><span>{pending.patient.name}｜{run.session.closedAt !== null ? '結案了，回顧還沒看完' : '做到一半'}</span><em>{run.session.closedAt !== null ? '看回顧' : '接著做'}</em></button>
+                <button type="button" className="quest paper hint" onClick={() => { sfx.page(); onResume(); }}><i className="seal" aria-hidden="true" /><b>{questName(pending, run.session.closedAt !== null)}</b><span>{pending.complaintName}｜{run.session.closedAt !== null ? '結案了，回顧還沒看完' : '做到一半'}</span><em>{run.session.closedAt !== null ? '看回顧' : '接著做'}</em></button>
                 {run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>不接了，放掉這一張</button>}
               </>)}
               {COMPLAINTS.map((m) => {
@@ -141,8 +141,8 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                       return (
                         <button key={c.id} type="button" className={'quest paper' + (res ? '' : ' hint')} onClick={() => { sfx.page(); setReading(c); }}>
                           <i className="seal" aria-hidden="true" />
-                          <b>{c.title}</b>
-                          <span>{c.patient.name}｜{c.complaintName}{placeOf(c.scene) === 'dock' ? '｜出診' : ''}</span>
+                          <b>{questName(c, !!res)}</b>
+                          <span>{res ? c.patient.name + '｜' : ''}{c.complaintName}{placeOf(c.scene) === 'dock' ? '｜出診' : ''}</span>
                           <em>{res ? '最佳 ' + res.best + ' 分・' + SAFETY_LABEL[res.safety] : '新的委託'}</em>
                         </button>
                       );
@@ -154,7 +154,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               {!finaleOpen(save) ? <div className="quest paper locked" aria-disabled="true"><b>？？？</b><span>第五章走完之後才會送到</span><em>還沒出現</em></div> : <>
                 <button type="button" className={'quest paper' + (nightNew ? ' hint' : '')} onClick={() => { sfx.page(); onNight(); }}><i className="seal" aria-hidden="true" /><b>值班夜</b><span>門口同時有兩三位：先看誰、怎麼交代、什麼時候回頭</span><em>{nightDone(save) ? '走過了・可以再走' : '今晚'}</em></button>
                 {towerOpen(save)
-                  ? <button type="button" className={'quest paper' + (towerNew ? ' hint' : '')} onClick={() => { sfx.page(); setReading(ending); }}><i className="seal" aria-hidden="true" /><b>{ending.title}</b><span>{ending.patient.name}｜{ending.complaintName}｜燈塔</span><em>{save.cases[FINALE_ID] ? '最佳 ' + save.cases[FINALE_ID].best + ' 分・' + SAFETY_LABEL[save.cases[FINALE_ID].safety] : '最後一張'}</em></button>
+                  ? <button type="button" className={'quest paper' + (towerNew ? ' hint' : '')} onClick={() => { sfx.page(); setReading(ending); }}><i className="seal" aria-hidden="true" /><b>{questName(ending, !!save.cases[FINALE_ID])}</b><span>{save.cases[FINALE_ID] ? ending.patient.name + '｜' : ''}{ending.complaintName}｜燈塔</span><em>{save.cases[FINALE_ID] ? '最佳 ' + save.cases[FINALE_ID].best + ' 分・' + SAFETY_LABEL[save.cases[FINALE_ID].safety] : '最後一張'}</em></button>
                   : <div className="quest paper locked" aria-disabled="true"><b>？？？</b><span>值班夜走完之後才會送到</span><em>還沒出現</em></div>}
               </>}
               <div className="quest-head">驗收{exam ? '・' + exam : ''}</div>
@@ -172,19 +172,33 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
       </div>
 
       {reading && (
-        <Sheet title={'委託：' + reading.title} onClose={() => setReading(null)} footer={<button type="button" className="act demo" onClick={() => onStart(reading)}>{placeOf(reading.scene) === 'tower' ? '接下委託，上燈塔' : '接下委託，進病室'}</button>}>
+        <Sheet title={'委託：' + (save.cases[reading.id] ? reading.title : reading.patient.name + '，' + reading.complaintName)} onClose={() => setReading(null)} footer={<button type="button" className="act demo" onClick={() => onStart(reading)}>{placeOf(reading.scene) === 'tower' ? '接下委託，上燈塔' : '接下委託，進病室'}</button>}>
           <p className="dim">地點：{sceneName(reading.scene)}</p>
+          <h3>病人</h3>
           {reading.reading.lines.map((l, i) => <p key={i}>{l}</p>)}
+          <h3>你的角色和任務</h3>
+          <p>你是霧脈公會的{rankOf(save)}。這位病人由你先看；岑禾（資深專科護理師）在旁邊，沈渡醫師值班。</p>
+          <ol>
+            <li>問診：主訴、病史、系統回顧。</li>
+            <li>身體評估：先量生命徵象；每一項動手之前先向病人說明。</li>
+            <li>說出最可能的診斷，和還要排除的診斷。</li>
+            <li>提出需要的檢查，向沈渡醫師回報（檢查和用藥由醫師決定）。</li>
+            <li>用病人聽得懂的話向病人說明，然後結案。</li>
+          </ol>
           <h3>進門之前，先想三件事</h3>
           <ul>{reading.reading.prompts.map((p, i) => <li key={i}>{p}</li>)}</ul>
-          <h3>這張委託怎麼進行</h3>
+          {/* 操作的說明只有還沒結過案的人需要整段攤開；之後收成一行，要看再點開 */}
+          <details className="how" open={!Object.keys(save.cases).length}>
+          <summary>畫面怎麼操作</summary>
           <ul>
-            <li>照順序做：開場 → 主訴 → 病史 → 系統回顧 → 身體評估 → 下診斷 → 檢查。前面的隨時可以回去補，後面的要做完前一段才會打開。</li>
-            <li>畫面上掛著四盞燈，是這個主訴四個可能的診斷。拿到關鍵的線索，要你判斷它讓哪一個診斷更像、哪一個比較不像；更像，那一盞就亮一點。</li>
-            <li>時間只在你做行動的時候走。看字、想事情、下診斷都不扣時間。</li>
-            <li>病人等不了的時候，值班鐘隨時可以敲。卡住的時候可以問岑禾。</li>
+            <li>下面一排是順序：開場 → 主訴 → 病史 → 系統回顧 → 評估 → 診斷 → 檢查。前面的隨時可以回去補；後面的要做完前一段才會打開。</li>
+            <li>畫面上的四盞燈，是這個主訴的四個鑑別診斷。問到或檢查到重要的線索，遊戲會停下來問你：這條線索讓哪一個診斷更像，或是比較不像。答對了，那一盞燈會變亮或變暗。</li>
+            <li>「穩定度」是病人現在的狀況，會跟著時間和你做的事變化。「霧」是還沒釐清的程度：線索判斷對了，霧就散一點。</li>
+            <li>時間只在你做事（問一題、做一項檢查）的時候走。看字、想事情、下診斷都不算時間。</li>
+            <li>病人等不了的時候，按「值班鐘」請醫師馬上過來。不知道下一步的時候，按「問岑禾」。</li>
             <li>一張委託大約 10 到 12 分鐘。</li>
           </ul>
+          </details>
           <p className="dim">{reading.review.note}</p>
         </Sheet>
       )}
@@ -208,11 +222,13 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
       {trialSheet && drawn && (
         <Sheet title="資格試煉：閱題" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { const c = drawn; setDrawn(null); setTrialSheet(false); onTrial(c); }}>進場，開始倒數</button>}>
           <p className="dim">正式考試在門口有 2 分鐘讀這一頁。這裡不計時：準備好了再進場，進場才開始倒數。</p>
+          <h3>病人</h3>
           {drawn.reading.lines.map((l, i) => <p key={i}>{l}</p>)}
+          <h3>你的角色和任務</h3>
+          <p>你是考生，扮演專科護理師；病人由你獨立完成評估，口試委員在旁邊看，不給提示。</p>
+          <p>順序：開場 → 主訴 → 病史 → 系統回顧 → 身體評估 → 說出診斷和要排除的診斷 → 提出檢查、向醫師回報、向病人說明 → 交卷。動手檢查之前，記得先向病人說明。</p>
           <h3>進門之前，先想三件事</h3>
           <ul>{drawn.reading.prompts.map((p, i) => <li key={i}>{p}</li>)}</ul>
-          <h3>順序</h3>
-          <p>開場 → 主訴 → 病史 → 系統回顧 → 身體評估 → 下診斷 → 檢查、回報、說明 → 交卷。動手檢查之前，記得先向病人說明。</p>
         </Sheet>
       )}
       {settings && <Settings save={save} onImport={onImport} onReset={onReset} onReplayIntro={() => { setSettings(false); setBeat(BEATS[0]); setStep(0); }} onClose={() => setSettings(false)} />}

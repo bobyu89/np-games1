@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { CASES, COMPLAINTS, FINALE_ID } from '../data/index.ts';
 import { NIGHT, NIGHT_REFS, NIGHT_TOTAL } from '../data/night.ts';
 import { PLACES, placeOf, sceneName } from '../data/places.ts';
-import { BEATS, CHAPTER_PLACE, NIGHT_DONE, QUESTS, codexOf, finaleDone, finaleOpen, nextBeat, nightDone, peopleOf, pickTrial, placesOf, towerOpen } from './progress.ts';
+import { BEATS, CHAPTER_PLACE, NIGHT_DONE, QUESTS, codexOf, finaleDone, finaleOpen, nextBeat, nightDone, peopleOf, pickTrial, placesOf, questName, towerOpen } from './progress.ts';
 import type { Save } from './store.ts';
 
 const rec = { best: 90, safety: 'met' as const, plays: 1, seconds: 500, found: true, concern: true, reads: [] };
@@ -73,4 +73,19 @@ test('值班夜的三輪：每一輪剛好一位該先看、剛好一句對的�
   assert.ok(new Set(NIGHT.map((n) => n.then.picks.findIndex((k) => k.ok))).size > 1);
   NIGHT_REFS.forEach((r) => assert.match(r.doi, /^10\.\d{4,}\//));
   assert.ok(NIGHT_REFS.every((r) => NIGHT.some((n) => n.teach.some((t) => t.ref === r.id))), '有沒被引用的文獻');
+});
+
+test('進門之前不先給方向：標題結案才出現、值班鐘那一句每一張出診都一樣、提問都是三題', () => {
+  const c = CASES.find((k) => k.id === 'c02a')!;
+  assert.equal(questName(c, false), c.patient.name, '結案之前，板子上只寫病人的名字');
+  assert.equal(questName(c, true), c.title);
+  const BELL = '值班鐘我帶來了，用不用由你決定。';
+  for (const k of CASES) {
+    const opening = k.lines.opening.join(''), dock = placeOf(k.scene) === 'dock';
+    // 以前只有緊急的那幾張，岑禾才會提值班鐘；提了，就等於先說了這一張要敲
+    assert.equal(opening.includes('值班鐘'), dock, k.id + '：只有出診會提值班鐘，而且每一張出診都提');
+    if (dock) assert.ok(opening.includes(BELL), k.id + '：出診提值班鐘的那一句要一樣');
+    assert.equal(k.reading.prompts.length, 3, k.id);
+    assert.ok(k.reading.prompts[0].includes('最危險'), k.id + '：第一題都是最危險的可能');
+  }
 });

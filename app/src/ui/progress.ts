@@ -47,15 +47,16 @@ export const BEATS: Beat[] = [
   { id: 'prologue', title: '序章　遺失的一頁', when: () => true, lines: [
     { who: 'sys', text: '霧港。依山傍海的港城，一年裡有大半的日子起霧。' },
     { who: 'sys', text: '幾十年前，這裡的霧開始會凝成形狀。人在痛、在喘、說不清自己怎麼了的時候，身邊會浮出一團有形的霧。港城的人叫它「症影」。' },
-    { who: 'sys', text: '霧脈公會，是港城的人不舒服的時候會來的地方。你，{you}，剛結束訓練，今天第一天來報到。' },
-    { who: 'mentor', text: '{you}？我是岑禾，在這裡值班十幾年了。{greet}' },
-    { who: 'mentor', text: '櫃台後面寫字的是眠墨，管檔案室。值班的醫師叫沈渡；敲值班鐘，他就會來。' },
+    { who: 'sys', text: '霧脈公會，是港城的人不舒服的時候會來的地方。你，{you}，是剛結束訓練的見習專科護理師，今天第一天來報到。' },
+    { who: 'mentor', text: '{you}？我是岑禾，這裡的資深專科護理師，值班十幾年了。接下來由我帶你。{greet}' },
+    { who: 'mentor', text: '櫃台後面寫字的是眠墨，管檔案室和圖鑑。值班的醫師叫沈渡：病人你先看，看完向他回報；檢查和用藥由他決定。病人等不了的時候敲值班鐘，他會馬上來。' },
     { who: 'mo', text: '……抱歉，沒辦法好好招呼你。檔案室昨晚淹水了。圖鑑只救回症影的外形，底下寫的字都糊掉了。' },
     { who: 'mo', text: '還有一件事。清點的時候才發現，最前面少了一頁。不是泡爛的；裝訂的線頭是舊的，很久以前就被人拆走了。' },
     { who: 'mentor', text: '……那一頁以後再說。先顧眼前的。' },
     { who: 'mentor', text: '圖鑑是前人一筆一筆記下來的：每一種症影，背後可能是哪幾種病，該問什麼，什麼時候不能等。現在只剩圖。從今天起，每一位進來的人都要重新看，一頁一頁寫回來。' },
     { who: 'mentor', text: '記住一件事：症影只告訴你「哪裡不舒服」，不告訴你「為什麼」。同一隻症影，背後可能是四種完全不同的病。' },
-    { who: 'mentor', text: '你要做的事，和受訓的時候學的一樣：問診、身體評估、下診斷、提出檢查、向醫師回報、跟病人說明。我在旁邊；卡住了就問我。' },
+    { who: 'mentor', text: '來看病的人，公會記成一張一張的「委託」：一張委託，就是一位病人。' },
+    { who: 'mentor', text: '每一張你要做的事，和受訓的時候學的一樣：問診、身體評估、說出最可能的診斷和還要排除的診斷、提出檢查、向醫師回報、跟病人說明。我在旁邊；卡住了就問我。' },
     { who: 'mentor', text: '板子上那張蓋了紅蠟的，是剛送來的。去看看吧。' },
   ] },
   { id: 'ch1-second', title: '第一章　鐘聲之前', when: (s) => !!s.cases.c01a, lines: [
@@ -66,7 +67,7 @@ export const BEATS: Beat[] = [
   { id: 'ch1-third', title: '第一章　同一張面孔', when: (s) => has(s, ['c01a', 'c01b']), lines: [
     { who: 'mo', text: '兩個人，同一隻蛾，兩個診斷。舊索引那一行，我劃掉了。' },
     { who: 'mentor', text: '還沒完。這一頁底下還有兩盞燈，你沒看過它們亮起來的樣子。' },
-    { who: 'mentor', text: '有位老船工，胸口悶了一個多月。他不急。你去想清楚：不急的，是不是就不要緊。' },
+    { who: 'mentor', text: '有位老船工，胸口悶了一個多月。他說不急。你去看看。' },
   ] },
   { id: 'ch1-fourth', title: '第一章　慢慢來的那一隻', when: (s) => has(s, ['c01a', 'c01b', 'c01c']), lines: [
     { who: 'mo', text: '胸悶蛾這一頁，三個診斷底下都有人名了。只剩「血管急症」那一盞，還沒有人讓它亮過。' },
@@ -256,6 +257,11 @@ export const nextBeat = (s: Save) => BEATS.find((b) => !s.beats.includes(b.id) &
 
 const chapterDone = (n: number, s: Save) => QUESTS.filter((q) => q.chapter === n).every((q) => s.cases[q.caseId]);
 /** 階級只代表提示少了幾層，不加任何數值。第一章走完是巡診，第二章走完是值班 */
+/**
+ * 委託在板子上叫什麼。標題常常就是那一位病人的關鍵線索（「躺不平的夜」「從肚臍開始的」），
+ * 先看到等於先知道方向；所以結案之前只寫病人的名字，結案之後才換成標題。
+ */
+export const questName = (c: { title: string; patient: { name: string } }, done: boolean) => (done ? c.title : c.patient.name);
 export const rankOf = (s: Save) => (!chapterDone(1, s) ? '見習專科護理師' : !chapterDone(2, s) ? '巡診專科護理師' : '值班專科護理師');
 /** 提示拿掉了幾層：升到值班之後拿掉第一層 */
 export const tierOf = (s: Save): 0 | 1 => (chapterDone(1, s) && chapterDone(2, s) ? 1 : 0);
@@ -381,7 +387,7 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
     return {
       id: c.id, name: c.patient.name, tag: c.patient.age + ' 歲，' + c.patient.job,
       lines: [rec?.found ? '診斷：' + truth.name + '。' : '還沒有診斷對過。', ...(after[c.id] ? [after[c.id]] : [])],
-      shot: { kind: 'ward', patient: c.patient.look, scene: c.scene, view: face(92, 170) }, open: !!rec, hint: '完成「' + c.title + '」之後',
+      shot: { kind: 'ward', patient: c.patient.look, scene: c.scene, view: face(92, 170) }, open: !!rec, hint: '看完' + c.patient.name + '（' + c.complaintName + '）之後',
     };
   });
   return { guild, patients };
