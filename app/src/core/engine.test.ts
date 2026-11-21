@@ -487,13 +487,33 @@ test('提示跟著階段走，而且不講出診斷', () => {
   assert.ok(hintFor(A, run(A, A.questions.map((q) => ask(q.id)))).includes('評估'));
   assert.ok(hintFor(A, run(A, [next])).includes('血壓'));
   assert.ok(hintFor(A, run(A, [next, next])).includes('最可能'));
-  assert.ok(hintFor(A, run(A, toDx(A))).includes('該讓誰知道'));
-  assert.ok(hintFor(A, run(A, [...toDx(A), { type: 'call' }])).includes('心電圖'));
-  assert.ok(hintFor(C, run(C, toDx(C))).includes('胸部 X 光'));
   for (const c of CASES) {
     assert.ok(hintFor(c, run(c, idealActions(c).slice(0, -1))).includes('提交'));
     for (const f of c.forms) assert.ok(!hintFor(c, run(c, [next, next])).includes(f.name));
   }
+});
+
+test('提示只講你做過什麼，不看這位病人的答案', () => {
+  // 下了診斷之後的那一句，急的和不急的病人聽到的一樣（只有名字不同）：問不問，不透露急不急
+  const shape = (c: typeof A) => hintFor(c, run(c, toDx(c))).replaceAll(c.patient.name, '某某');
+  assert.ok(shape(A).includes('等不等得了'));
+  assert.equal(shape(A), shape(C), '要通報的病人和穩定的病人，這一句要一樣');
+  // 還沒提出檢查：只說還沒提，不點名是哪一項
+  assert.ok(hintFor(A, run(A, [...toDx(A), { type: 'call' }])).includes('還沒有提出任何檢查'));
+  for (const c of CASES) {
+    const acts = idealActions(c);
+    for (let i = 0; i <= acts.length; i++) {
+      const s = run(c, acts.slice(0, i)), hint = hintFor(c, s);
+      for (const t of c.tests) assert.ok(!hint.includes(t.label), c.id + ' 第 ' + i + ' 步：提示點名了檢查「' + t.label + '」');
+      for (const f of c.forms) if (hint.includes(f.name)) assert.ok(s.board.exclude.includes(f.id), c.id + ' 第 ' + i + ' 步：提示點名了玩家沒寫上去的診斷「' + f.name + '」');
+    }
+  }
+});
+
+test('判斷錯的線索，燈不動', () => {
+  const s = run(A, [ask('q-onset')], true);   // 第三個參數：解讀故意選錯
+  assert.ok(s.reads.length > 0 && s.reads.every((r) => !r.ok));
+  assert.ok(Object.values(lights(A, s)).every((v) => v === 0), '選錯了，設定好的那一盞不能照樣亮');
 });
 
 test('回顧：時間點照順序；看得出想法有沒有跟著線索變', () => {
