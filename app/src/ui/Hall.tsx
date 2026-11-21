@@ -84,7 +84,8 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const isles: ChartIsle[] = (Object.keys(ISLANDS) as IslandId[]).map((id) => {
     const ch = ISLANDS[id].chapter, qs = questsOn(id);
     const marks = COMPLAINTS.filter((m) => islandOf({ complaint: m.id }) === id).map((m) => perilsPassed(m.id, save) > 0);
-    return { id, open: chapterOpen(ch, save), done: qs.filter((q) => save.cases[q.caseId]).length, total: qs.length, fresh: qs.some((q) => unlocked(q, save) && !save.cases[q.caseId]), marks };
+    const tag = COMPLAINTS.filter((m) => islandOf({ complaint: m.id }) === id).map((m) => m.name).join('、');
+    return { id, open: chapterOpen(ch, save), done: qs.filter((q) => save.cases[q.caseId]).length, total: qs.length, fresh: qs.some((q) => unlocked(q, save) && !save.cases[q.caseId]), marks, tag };
   });
   const boat = ([...isles].reverse().find((i) => i.open && i.done < i.total) ?? isles[0]).id;
   const [isle, setIsle] = useState<IslandId>(boat);
@@ -178,9 +179,14 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               {view ? <>
               {/* 島嶼頁：這座島的症狀（劫影）和它的委託 */}
               <button type="button" className="back" onClick={() => { sfx.page(); setView(null); }}>‹ 回地圖</button>
-              <div className="isle-head paper"><b>{ISLANDS[isle].name}</b><span>{ISLANDS[isle].tag}</span>
-                {COMPLAINTS.filter((m) => islandOf({ complaint: m.id }) === isle).map((m) => <p key={m.id}>這座島的劫影：<b>{m.shadow.name}</b>，症狀是「{m.name}」。{PERILS[m.id] ? PERILS[m.id].name + '：' + PERILS[m.id].trap : ''}</p>)}
-              </div>
+              {COMPLAINTS.filter((m) => islandOf({ complaint: m.id }) === isle).map((m) => (
+                <div key={m.id} className="isle-head paper">
+                  <b>{m.name}</b>
+                  <span>{ISLANDS[isle].name}・{ISLANDS[isle].tag}・這裡的劫影叫{m.shadow.name}</span>
+                  <p>這座島的病人都是因為「{m.name}」來的。一張委託就是一位病人：照考站的順序問診、身體評估、說出診斷和要排除的、提出檢查、向醫師回報、跟病人說明。</p>
+                  {PERILS[m.id] && <p className="tip"><b>提示・這個症狀最容易犯的錯：</b>{PERILS[m.id].trap}</p>}
+                </div>
+              ))}
               {COMPLAINTS.map((m) => {
                 const mine = QUESTS.filter((q) => caseById(q.caseId).complaint === m.id);
                 if (!mine.length || islandOf({ complaint: m.id }) !== isle) return null;
@@ -224,7 +230,10 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 {pending && run && run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>{run.trial ? '不考了，放掉這一場' : '不接了，放掉這一張'}</button>}
               </div>
               {side && <div className="side"><span>{side.text}</span><button type="button" className="pick" onClick={() => { sfx.page(); go(side.action); }}>{side.button}</button></div>}
-              <div className="quest-head">地圖：一座島一種症狀。點有名字的島，看那裡的委託</div>
+              <div className="map-help">
+                <p><b>地圖：一座島一種症狀。</b>島名是故事裡的地名，底下寫的是那裡的病人來看什麼（例如「胸痛 1/4」）。點有名字的島，看那裡的委託。</p>
+                <button type="button" className="pick" onClick={() => { sfx.page(); setFilm(true); }}>看前導片（52 秒）</button>
+              </div>
               <SeaChart isles={isles} picked={boat} boat={boat} home={finaleDone(save)} onPick={(id) => { setIsle(id); setView(id); }} />
               {finaleOpen(save) && <>
                 <div className="quest-head">終章　大霧值班夜</div>
