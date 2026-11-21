@@ -3,8 +3,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CASES, COMPLAINTS, FINALE_ID } from '../data/index.ts';
 import { NIGHT, NIGHT_REFS, NIGHT_TOTAL } from '../data/night.ts';
-import { PLACES, placeOf, sceneName } from '../data/places.ts';
-import { BEATS, CHAPTER_PLACE, NIGHT_DONE, QUESTS, codexOf, finaleDone, finaleOpen, nextBeat, nightDone, peopleOf, pickTrial, placesOf, questName, towerOpen } from './progress.ts';
+import { PLACES, placeOf, sceneName, whereOf } from '../data/places.ts';
+import { ISLANDS } from '../data/islands.ts';
+import { TIDES } from '../data/tides.ts';
+import { AFTER, echoOf, eldersFor, homeOf, BEATS, CHAPTER_PLACE, NIGHT_DONE, QUESTS, codexOf, finaleDone, finaleOpen, nextBeat, nightDone, peopleOf, pickTrial, placesOf, questName, towerOpen } from './progress.ts';
 import type { Save } from './store.ts';
 
 const rec = { best: 90, safety: 'met' as const, plays: 1, seconds: 500, found: true, concern: true, reads: [] };
@@ -17,7 +19,46 @@ test('每一章的委託都在那一章的地方，除了出診', () => {
     assert.ok(at === CHAPTER_PLACE[q.chapter as 1 | 2 | 3 | 4 | 5] || at === 'dock', c.id + ' 在 ' + at);
   }
   assert.equal(sceneName('market-rain'), '魚市口的診間（下雨天）'); assert.equal(sceneName('dock'), '碼頭的貨棧（出診）'); assert.equal(sceneName('tower'), '燈塔的值夜房');
-  assert.ok(!PLACES.ward.enter && PLACES.market.enter && PLACES.tower.enter);
+  assert.ok(PLACES.ward.enter && PLACES.market.enter && PLACES.tower.enter);
+  // 每一章在一座島；出診的貨棧，算在那一章的島
+  for (const q of QUESTS) {
+    const c = CASES.find((k) => k.id === q.caseId)!, isle = Object.values(ISLANDS).find((i) => i.chapter === q.chapter)!;
+    assert.ok(whereOf(c.scene, homeOf(c)).startsWith(isle.name), c.id + '：' + whereOf(c.scene, homeOf(c)));
+  }
+});
+
+test('港城回音：診斷對、也回應了擔心的事，才收到近況；四十八位都有一句', () => {
+  for (const c of CASES.filter((k) => k.id !== FINALE_ID)) {
+    assert.ok(AFTER[c.id], c.id + ' 沒有後來的近況');
+    assert.ok(c.explain.some((e) => e.concern), c.id + ' 沒有回應擔心的那一句，永遠收不到回音');
+  }
+  assert.ok(echoOf({ found: true, concern: true }, '好了。').startsWith('港城回音'));
+  assert.ok(echoOf({ found: true, concern: false }, '好了。').includes('前輩接手'));
+  assert.ok(echoOf({ found: false, concern: true }, '好了。').includes('前輩接手'));
+});
+
+test('霧潮夜：每一章一場，用那一章看過的病人；先看的那一位在門口，對的交代剛好一句、三句差不多長', () => {
+  for (const n of [1, 2, 3, 4, 5]) {
+    const r = TIDES[n];
+    assert.ok(r.arrivals.some((a) => a.id === r.first) && Object.keys(r.notes).length === r.arrivals.length);
+    assert.equal(r.then.picks.filter((p) => p.ok).length, 1);
+    const len = r.then.picks.map((p) => p.text.length);
+    assert.ok(Math.max(...len) / Math.min(...len) <= 1.6, r.id + '：選項長度 ' + len.join('、'));
+    const looks = QUESTS.filter((q) => q.chapter === n).map((q) => CASES.find((c) => c.id === q.caseId)!.patient.look);
+    for (const a of r.arrivals) assert.ok(looks.includes(a.look), r.id + '：' + a.name + ' 不是這一章的病人');
+    for (const t of r.teach) assert.ok(NIGHT_REFS.some((x) => x.id === t.ref), r.id + ' 的文獻 ' + t.ref);
+  }
+});
+
+test('長老會：第五章走完先重新表決，再進終章；請教的名單跟著去過的島', () => {
+  const ids = BEATS.map((b) => b.id);
+  assert.ok(ids.indexOf('ch5-complete') < ids.indexOf('council') && ids.indexOf('council') < ids.indexOf('finale-open'));
+  const none: Save = { v: 3, cases: {}, beats: [], hero: null, takeaways: [], trials: [] } as unknown as Save;
+  assert.deepEqual(eldersFor(none), []);
+  const ch1 = { ...none, cases: Object.fromEntries(QUESTS.filter((q) => q.chapter === 1).map((q) => [q.caseId, { best: 90, safety: 'met', plays: 1, seconds: 1, found: true, concern: true, reads: [] }])) } as unknown as Save;
+  assert.deepEqual(eldersFor(ch1).sort(), ['lu', 'nie']);
+  const all = { ...none, cases: Object.fromEntries(QUESTS.map((q) => [q.caseId, { best: 90, safety: 'met', plays: 1, seconds: 1, found: true, concern: true, reads: [] }])) } as unknown as Save;
+  assert.equal(eldersFor(all).length, 5);
 });
 
 test('終章不在委託板上：照 第五章走完 → 值班夜 → 聽完那一段 → 燈塔 的順序打開', () => {

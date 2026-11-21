@@ -2,6 +2,8 @@
 // 沒有亂數、不看真實時間、不碰畫面。同樣的行動順序一定得到同樣的結果。
 // 這裡不認得任何一個特定的病例：規則全部從病例的資料來。
 import type { Action, Board, CaseDef, Clue, GameEvent, Session, Tell, Vitals } from './types.ts';
+import { consult } from './elders.ts';
+import { elderOf } from '../data/islands.ts';
 
 /** 每種行動花掉的模擬時間（秒）。看字、解讀線索、排推理板都不扣時間 */
 // 問診加評估整套做完大約 15 分鐘，和考站的時間差不多
@@ -19,7 +21,7 @@ export function createSession(c: CaseDef, tier: 0 | 1 = 0): Session {
     asked: [], examined: [], ordered: [], results: [], clues: [], pending: [], reads: [], commits: [], needCommit: false,
     vitalsSeen: null, vitalsLog: [],
     worsenedAt: null, calledAt: null, calledBy: null, bell: false, doctorAt: null, doctorHere: false,
-    report: null, testRead: false, board: emptyBoard(), explained: null, hints: 0, closedAt: null, log: [],
+    report: null, testRead: false, board: emptyBoard(), explained: null, hints: 0, consults: [], closedAt: null, log: [],
   };
 }
 
@@ -310,8 +312,17 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
       break;
     }
     case 'hint': {
-      if (s.tier >= 1 && s.hints >= HINT_LIMIT) { x.ev.push({ type: 'say', who: 'mentor', text: '這一張委託，我已經回答你 ' + HINT_LIMIT + ' 次了。剩下的，你自己看。' }); return { session: s, events: x.ev }; }
+      if (s.tier >= 1 && s.hints >= HINT_LIMIT) { x.ev.push({ type: 'say', who: 'mentor', text: '這一張委託，已經回答你 ' + HINT_LIMIT + ' 次了。剩下的，你自己看。' }); return { session: s, events: x.ev }; }
       s.hints += 1;
+      if (a.by) {
+        // 請教老醫生：要打燈號請他過來，花一點時間。他只看你做了什麼，而且有他不提的那幾類
+        const e = elderOf(a.by), r = consult(e, c, s);
+        s.time += e.sec;
+        s.consults = [...(s.consults ?? []), r.record];
+        note(x, 'hint', e.id, r.record.said ?? 'none');
+        x.ev.push({ type: 'say', who: 'guest', name: e.name, text: r.text });
+        break;
+      }
       note(x, 'hint');
       x.ev.push({ type: 'say', who: 'mentor', text: hintFor(c, s) });
       break;

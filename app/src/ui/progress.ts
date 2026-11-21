@@ -1,9 +1,11 @@
 // 長期的推進：委託怎麼解鎖、故事什麼時候往下走、圖鑑怎麼被寫回來、階級怎麼升。
 // 全部從「玩過哪些病例、解讀對哪些線索」算出來，沒有另外的經驗值。
+import { eldersMet, elderChapter } from '../core/elders.ts';
+import { ELDERS, ISLANDS, RESIDENTS } from '../data/islands.ts';
 import type { CaseDef, Score, Session } from '../core/types.ts';
 import type { ComplaintDef } from '../core/module.ts';
 import { harvest } from '../core/scoring.ts';
-import { CASES, FINALE_ID } from '../data/index.ts';
+import { CASES, COMPLAINTS, FINALE_ID } from '../data/index.ts';
 import { PLACES } from '../data/places.ts';
 import { AFTER_MORE } from '../data/extras.ts';
 import type { Line } from './Talk.tsx';
@@ -45,12 +47,15 @@ const CH3_HALF = ['c04a', 'c04b', 'c05a', 'c05b'], CH4_HALF = ['c06a', 'c06b', '
 export const BEATS: Beat[] = [
   // 序章要交代四件事：這是哪裡、你是誰、出了什麼事、你要做什麼
   { id: 'prologue', title: '序章　遺失的一頁', when: () => true, lines: [
-    { who: 'sys', text: '霧港。依山傍海的港城，一年裡有大半的日子起霧。' },
+    { who: 'sys', text: '霧港。五座島連成的港城：本島，和四座搭巡診船就到得了的外島。一年裡有大半的日子起霧。' },
     { who: 'sys', text: '幾十年前，這裡的霧開始會凝成形狀。人在痛、在喘、說不清自己怎麼了的時候，身邊會浮出一團有形的霧。港城的人叫它「症影」。' },
+    { who: 'sys', text: '症影誰都看得見，所以身邊一浮出來，人就知道該來公會了。可是它只描得出「哪裡不舒服」，描不出「為什麼」。' },
     { who: 'sys', text: '霧脈公會，是港城的人不舒服的時候會來的地方。你，{you}，是剛結束訓練的見習專科護理師，今天第一天來報到。' },
     { who: 'mentor', text: '{you}？我是岑禾，這裡的資深專科護理師，值班十幾年了。接下來由我帶你。{greet}' },
     { who: 'mentor', text: '櫃台後面寫字的是眠墨，管檔案室和圖鑑。值班的醫師叫沈渡：病人你先看，看完向他回報；檢查和用藥由他決定。病人等不了的時候敲值班鐘，他會馬上來。' },
-    { who: 'mo', text: '……抱歉，沒辦法好好招呼你。檔案室昨晚淹水了。圖鑑只救回症影的外形，底下寫的字都糊掉了。' },
+    { who: 'mo', text: '……抱歉，沒辦法好好招呼你。檔案室昨晚淹水了。檔案室在書嶼，本島東邊那座低低的小島。開架上的圖鑑只救回症影的外形，底下寫的字都糊掉了。' },
+    { who: 'mo', text: '大潮常淹到門口。淹進櫃子裡的那種潮，上一次是十五年前。' },
+    { who: 'sys', text: '岑禾抬頭看了窗外一眼，沒有說話。' },
     { who: 'mo', text: '還有一件事。清點的時候才發現，最前面少了一頁。不是泡爛的；裝訂的線頭是舊的，很久以前就被人拆走了。' },
     { who: 'mentor', text: '……那一頁以後再說。先顧眼前的。' },
     { who: 'mentor', text: '圖鑑是前人一筆一筆記下來的：每一種症影，背後可能是哪幾種病，該問什麼，什麼時候不能等。現在只剩圖。從今天起，每一位進來的人都要重新看，一頁一頁寫回來。' },
@@ -81,14 +86,21 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '劃掉舊的那一行的時候，我才看清楚：這本索引有兩種筆跡。一種很穩，一種很年輕。' },
     { who: 'sys', text: '岑禾沒有接話。她走到窗邊，看了一會兒燈塔。', fx: 'window' },
     { who: 'mentor', text: '第一章到這裡。下一頁是別的症影，還在整理，好了會貼到委託板上。', fx: 'window' },
+    { who: 'sys', text: '大廳的門開了。一位頭髮全白的老人走進來，岑禾站了起來。' },
+    { who: 'guest', name: '聶川', text: '我是聶川，公會的會首。四座外島，各有一位老醫生顧著分站；我們五個，就是五島長老會。' },
+    { who: 'guest', name: '聶川', text: '外島的人不肯爬坡，也不肯搭船來看病。巡診船明天出海，你跟著去。' },
     { who: 'sys', text: '你升為「巡診專科護理師」。' },
   ] },
   { id: 'ch2-open', title: '第二章　同一張面孔', when: (s) => chapterDone(1, s), lines: [
     { who: 'mo', text: '下一頁有兩隻。一隻肚子像風箱，一鼓一縮；一隻把繩子打成結，抱在懷裡不放。' },
     { who: 'mentor', text: '氣促蛙是喘，腹痛蟹是腹痛。這兩隻最會騙人：來的人講的話都差不多，底下卻完全不一樣。' },
     { who: 'mentor', text: '流程你已經熟了。這一章要練的是聽：同樣一句「我很喘」「我肚子痛」，要問到它們不一樣的地方。' },
-    { who: 'mentor', text: '這一章不在這間病室看。魚市口的人天沒亮就上工，喘了、痛了，也不肯爬坡上來。公會在魚市口有一間診間，我們過去。' },
-    { who: 'sys', text: '委託板上多了兩張新的。地點寫的是：魚市口。' },
+    { who: 'mentor', text: '這一章不在本島看。汐市島的魚市天沒亮就開，喘了、痛了，也不肯搭船過來。公會在魚市口有一間診間，我們搭巡診船過去。' },
+    { who: 'sys', text: '汐市島的碼頭上，一位老醫生拿著一本潮汐表在等。' },
+    { who: 'guest', name: '盧刻', text: '我是盧刻。這間分站的紀錄表，一格一格都是我畫的。數字不會騙人。' },
+    { who: 'mentor', text: '從這一章起，卡住的時候，除了問我，也可以請教老醫生：會首聶川，和你去過的島上的那一位。要打燈號請他們過來，會花時間。' },
+    { who: 'mentor', text: '他們每一位都很會問，也都有不問的地方。他們沒提的，不代表你做完了。' },
+    { who: 'sys', text: '委託板上多了兩張新的。地點寫的是：汐市島，魚市口。' },
   ] },
   { id: 'ch2-half', title: '第二章　三行', when: (s) => has(s, ['c02a', 'c02b', 'c03a', 'c03b']), lines: [
     { who: 'mo', text: '兩頁各寫回了一半。氣促蛙還有「肺部感染」和「突發急症」，腹痛蟹還有「胰臟與胃」和「大腸憩室」，底下都還沒有人名。' },
@@ -102,6 +114,8 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '氣促蛙四盞，腹痛蟹四盞，都有人名了。圖鑑寫回了三頁。' },
     { who: 'mentor', text: '八個人，講的幾乎是同樣兩句話：「我很喘」「我肚子痛」。你問到了他們不一樣的地方。' },
     { who: 'mentor', text: '還有一件事：最後那一位怕的不是痛。她怕什麼，不問是聽不到的。' },
+    { who: 'guest', name: '盧刻', text: '這八個人，數字有一半是正常的。你是問出來的，不是量出來的。' },
+    { who: 'guest', name: '盧刻', text: '……我的表上，從來沒有「他在擔心什麼」這一格。' },
     { who: 'mentor', text: '第二章到這裡。' },
   ] },
   { id: 'rank-duty', title: '升階　值班專科護理師', when: (s) => tierOf(s) === 1, lines: [
@@ -112,14 +126,17 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '舊的委託也可以重接。同一位病人，少了提示，你看到的東西會不一樣。' },
   ] },
   { id: 'ch3-open', title: '第三章　被蓋掉的紀錄', when: (s) => tierOf(s) === 1, lines: [
-    { who: 'mo', text: '我在淹過水的櫃子底下，找到一疊舊索引。每一張上面只有一行字：「著涼」「年紀大了」「老毛病」。然後就歸檔了。' },
+    { who: 'mo', text: '我在書嶼淹過水的櫃子最底下，找到一個鉛盒。外面裹著油布，一滴水都沒進。' },
+    { who: 'mo', text: '裡面是一疊舊索引。每一張上面只有一行字：「著涼」「年紀大了」「老毛病」。然後就歸檔了。' },
     { who: 'mo', text: '這一疊對到兩隻症影。一隻背上的炭一明一滅，是發燒；一隻停在人頭上一下一下地啄，是頭痛。' },
     { who: 'mo', text: '最底下還壓著一張，不是索引。是一張名單：十一個名字。抬頭被水泡掉了，只剩半個字。', fx: 'page' },
     { who: 'mentor', text: '……那一張先收著。', fx: 'page' },
     { who: 'mentor', text: '太早寫下的結論，會把後面的線索都蓋掉。這一章，你把這幾張重新打開。' },
     { who: 'mentor', text: '不過記住：舊索引不一定都寫錯。對的，你要替它找到憑據；錯的，你要說得出錯在哪裡。' },
-    { who: 'mo', text: '這一疊要一張一張對，離不開檔案室。隔壁那間舊病室，我清出來了。繩子上晾的是還沒乾的索引，別碰掉。' },
-    { who: 'sys', text: '委託板上多了兩張新的。地點寫的是：檔案室旁的舊病室。' },
+    { who: 'mo', text: '這一疊要一張一張對，離不開檔案室。隔壁那間舊病室，是公會最早的一間診間，我清出來了。繩子上晾的是還沒乾的索引，別碰掉。' },
+    { who: 'sys', text: '書嶼的老醫生在舊病室門口等你們。' },
+    { who: 'guest', name: '關憶', text: '關憶。這幾張索引上的人，我都記得。哪一年、什麼天氣，我都記得。' },
+    { who: 'sys', text: '委託板上多了兩張新的。地點寫的是：書嶼，檔案室旁的舊病室。' },
   ] },
   { id: 'ch3-half', title: '第三章　落款', when: (s) => has(s, CH3_HALF), lines: [
     { who: 'mo', text: '四張舊索引，三張劃掉重寫，一張底下補了憑據。' },
@@ -134,19 +151,23 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '這些字不是亂寫的。「感冒」「宿醉」「更年期」，十次裡有九次是對的。危險的是第十次，還有寫完就不再看的那個習慣。' },
     { who: 'mentor', text: '有一張的答案是「不是感染」，有一張是「真的只是老毛病」。把東西排除掉，跟把東西找出來，一樣是本事。' },
     { who: 'mo', text: '……那張名單，我把抬頭拼回來了。兩個字：「勘誤」。', fx: 'page' },
-    { who: 'mo', text: '你報到那天，我說最前面那一頁「被人拆走了」。那個人是我。十五年前，公會說圖鑑不能有勘誤，要我拆下來燒掉。我拆了，沒有燒。', fx: 'page dusk' },
+    { who: 'mo', text: '你報到那天，我說最前面那一頁「被人拆走了」。那個人是我。十五年前，長老會說圖鑑不能有勘誤，要我拆下來燒掉。我拆了，沒有燒。用油布包好，鎖進鉛盒，塞在最底下。', fx: 'page dusk' },
+    { who: 'guest', name: '關憶', text: '那一次是五島長老會表決，三比二。我和竹坡島的葛綿投「訂上去」。會首、汐市島的盧刻、龍骨島的褚迅投「不訂」。', fx: 'page dusk' },
+    { who: 'guest', name: '關憶', text: '他們不是壞人。那個冬天，大家都怕。', fx: 'dusk' },
     { who: 'mentor', text: '第三章到這裡。' },
   ] },
   { id: 'ch4-open', title: '第四章　撐著走來的人', when: (s) => chapterDone(3, s), lines: [
     { who: 'mo', text: '這一頁開始，圖鑑上多了三隻：背上馱著石頭的龜、只用一隻腳站的鷺、一碰就鼓起來的豚。背痛、腳痛、腫。' },
     { who: 'mentor', text: '這一章來的人，都是撐著、拖著才來的。能撐，不代表不要緊。' },
     { who: 'mentor', text: '一樣是痛、一樣是腫，你要分出哪一個不能等。方法很土：把兩邊比一比，把該脫的鞋襪脫掉看。' },
-    { who: 'mentor', text: '船塢在趕一艘船，沒有人肯放下手上的活走過來。公會跟船塢借了一間工寮，這一章我們過去看。' },
-    { who: 'sys', text: '委託板上多了三張新的。地點寫的是：船塢。' },
+    { who: 'mentor', text: '龍骨島的船塢在趕一艘船，沒有人肯放下手上的活走過來。公會跟船塢借了一間工寮，這一章我們過去看。' },
+    { who: 'sys', text: '龍骨島的碼頭上，一個站著不坐的人迎上來。' },
+    { who: 'guest', name: '褚迅', text: '褚迅。船塢一出事，我先到。先看他等不等得了，其他的等一下。' },
+    { who: 'sys', text: '委託板上多了三張新的。地點寫的是：龍骨島，船塢。' },
   ] },
   { id: 'ch4-half', title: '第四章　四十天', when: (s) => has(s, CH4_HALF), lines: [
     { who: 'sys', text: '值班鐘沒有響，沈渡卻自己走進了大廳。他看了一眼櫃台上那張名單。', fx: 'shen' },
-    { who: 'doctor', text: '十五年前的冬天，霧四十天沒有散。船出不去，人一直進來。值班的只有三個：忍冬、我，還有一個見習。', fx: 'shen dusk' },
+    { who: 'doctor', text: '十五年前的冬天，先是一場大潮把書嶼淹了。然後霧四十天沒有散。船出不去，人一直進來。值班的只有三個：忍冬、我，還有一個見習。', fx: 'shen dusk' },
     { who: 'doctor', text: '忍冬寫了那本索引。一隻症影一行字，讓誰來都能先分出輕重。那個冬天，它救了很多人。', fx: 'shen dusk' },
     { who: 'doctor', text: '我負責簽名。四十天，我簽了幾百張，沒有一張是看過才簽的。', fx: 'shen dusk' },
     { who: 'doctor', text: '所以我現在只問一句：「告訴我重點。」問了，我就得聽完。', fx: 'shen' },
@@ -161,15 +182,19 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '勘誤上的第十一個名字是他。那一行字，是我的筆跡。', fx: 'dusk dark page' },
     { who: 'you', text: '{own}', fx: 'dusk' },
     { who: 'mentor', text: '這一句「還撐得住」，你以後聽到，要多看一眼：看另一邊、看襪子底下、看他是怎麼走進來的。' },
+    { who: 'guest', name: '褚迅', text: '我那一票投「不訂」。大霧裡，見習要的是一個馬上能照做的答案。勘誤會讓人猶豫；猶豫，也會死人。', fx: 'dusk' },
+    { who: 'guest', name: '褚迅', text: '……可是這一章的人，你如果照一行字放回去，有幾個撐不到天亮。下一次表決，我改。' },
     { who: 'mentor', text: '第四章到這裡。' },
   ] },
   { id: 'ch5-open', title: '第五章　說不出口的事', when: (s) => chapterDone(4, s), lines: [
     { who: 'mo', text: '最後這四頁，我一直壓在最底下：排泄物、疹子、瘦了、麻了。來的人自己都講不清楚。' },
     { who: 'mentor', text: '有些是不好意思說，有些是不知道怎麼說。要問，他才會說；怎麼問，決定他說不說。' },
     { who: 'mentor', text: '簾子拉好，話說慢一點。該看的地方要看；看之前，先讓他知道為什麼。' },
-    { who: 'mentor', text: '這一章的話，在人來人往的地方問不出來。坡上有一間靜室，門關得起來，屏風拉得上。我們到那裡看。' },
+    { who: 'mentor', text: '這一章的話，在人來人往的地方問不出來。竹坡島的坡頂有一間靜室，門關得起來，屏風拉得上。我們到那裡看。' },
+    { who: 'sys', text: '爬到半坡，一位老太太坐在竹籬邊縫衣服，等你們。' },
+    { who: 'guest', name: '葛綿', text: '我是葛綿。讓他說完，你再說。' },
     { who: 'mentor', text: '說不出口的，不只是病人。那張勘誤，我們三個人十五年沒有提過一個字。' },
-    { who: 'sys', text: '委託板上多了四張新的。地點寫的是：坡上的靜室。' },
+    { who: 'sys', text: '委託板上多了四張新的。地點寫的是：竹坡島，坡上的靜室。' },
   ] },
   { id: 'ch5-half', title: '第五章　第十二行', when: (s) => has(s, CH5_HALF), lines: [
     { who: 'mo', text: '勘誤我重新抄了一份。原來那張有十二行：十一個名字，第十二行是空的。', fx: 'page page12' },
@@ -177,20 +202,34 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '冬天過完，她要把這一頁訂在索引的最前面。公會不肯。她把值班鐘交回來，上了燈塔。檜伯走了，燈總要有人顧。', fx: 'dusk' },
     { who: 'mentor', text: '十五年，那盞燈沒有熄過。她也沒有下來過。', fx: 'window' },
     { who: 'mentor', text: '她留的不是一個位置，是一條規矩：錯了，寫上去，放在第一頁。' },
+    { who: 'guest', name: '葛綿', text: '十五年前我投「訂上去」。錯了，要讓人說得出口。病人是這樣，寫圖鑑的人也是。' },
   ] },
   { id: 'ch5-complete', title: '第五章　完', when: (s) => chapterDone(5, s), lines: [
     { who: 'mo', text: '十二隻症影，四十八盞燈。舊索引上的一行字，一行一行都改寫完了。' },
     { who: 'mentor', text: '你現在看到一隻症影，想到的不是一個答案，是四個方向，還有哪一個不能漏。' },
+    { who: 'mentor', text: '圖鑑寫完了，可是來的人不會照著圖鑑生病，也不會一個一個來。' },
+    { who: 'mo', text: '還有一件事。那一頁要不要訂在第一頁，不是我說了算。' },
+  ] },
+  { id: 'council', title: '五島長老會', when: (s) => chapterDone(5, s), lines: [
+    { who: 'sys', text: '新的圖鑑裝訂好的那天，四座外島的老醫生都搭巡診船來了。五島長老會，在大廳開會。' },
+    { who: 'guest', name: '聶川', text: '十五年前那一頁，要不要訂在圖鑑的第一頁，今天重新表決。' },
+    { who: 'guest', name: '關憶', text: '訂上去。' },
+    { who: 'guest', name: '葛綿', text: '訂上去。' },
+    { who: 'guest', name: '盧刻', text: '十五年前我算的是：十一個，對上那個冬天救回來的四百多個。這一次，我把他們在擔心什麼也算進去了。訂上去。' },
+    { who: 'guest', name: '褚迅', text: '訂上去。' },
+    { who: 'sys', text: '大廳安靜了很久。聶川把手按在那一頁上。', fx: 'page' },
+    { who: 'guest', name: '聶川', text: '我十五年前說，圖鑑有勘誤，就沒有人敢來。這十五年，來的人沒有少。少的，是肯說「我錯了」的人。', fx: 'page' },
+    { who: 'guest', name: '聶川', text: '訂上去。五票。', fx: 'page' },
     { who: 'mo', text: '新的圖鑑，我把勘誤訂回第一頁了。十一個名字都在。第十二行，還是空的。', fx: 'page page12' },
     { who: 'mentor', text: '希望你永遠用不到那一行。可是如果有那一天：寫上去，不要拆。', fx: 'page page12' },
     { who: 'sys', text: '眠墨抄了一份新圖鑑的目錄，託送燈油的人帶上燈塔。三天後，回信只有一行。' },
     { who: 'sys', text: '「第三行，還寫嗎？」', fx: 'window' },
     { who: 'sys', text: '岑禾看了很久。然後她拿起紀錄板，寫下今天的第三行。', fx: 'window' },
-    { who: 'mentor', text: '圖鑑寫完了，可是來的人不會照著圖鑑生病，也不會一個一個來。' },
   ] },
   // 終章分三段：燈熄了（開場）→ 值班夜的三輪分流（Night.tsx）→ 上燈塔看忍冬（病例 C01E）→ 結尾
   { id: 'finale-open', title: '終章　大霧值班夜', when: (s) => finaleOpen(s), lines: [
     { who: 'sys', text: '回信送到的第三天。傍晚，霧比平常來得早。', fx: 'dusk' },
+    { who: 'sys', text: '書嶼傳來燈號：大潮又漫上來了。跟十五年前一樣。', fx: 'dusk' },
     { who: 'sys', text: '眠墨去關窗。他的手停在窗框上。', fx: 'dusk' },
     { who: 'mo', text: '……燈塔的燈，沒有亮。', fx: 'dusk dark' },
     { who: 'sys', text: '十五年沒有熄過的那一盞燈，熄了。', fx: 'dusk dark' },
@@ -251,11 +290,11 @@ export const ARCHIVE: Leaf[] = [
   { id: 'log-31', day: '第三十一天', hint: '第四章走到一半之後', when: (s) => has(s, CH4_HALF), lines: ['守燈塔的檜伯自己從塔上走下來。他說不太舒服，還撐得住；塔上沒有人不行。', '見習看了索引，寫了一行，讓他回去。我在隔壁縫一個傷口，沒有過去看。'] },
   { id: 'log-32', day: '第三十二天', hint: '第四章走完之後', when: (s) => chapterDone(4, s), lines: ['昨天夜裡，燈塔沒有亮。', '早上去的人說，燈油是滿的。'] },
   { id: 'log-40', day: '第四十天', hint: '第五章走到一半之後', when: (s) => has(s, CH5_HALF), lines: ['霧散了。我把四十天的紀錄從頭看了一遍。索引寫錯的，十一個。', '十一個名字，我抄成一頁，要訂在最前面。見習的那一行我沒有劃掉。那不是她一個人寫的：索引是我的，簽名是沈渡的。'] },
-  { id: 'log-after', day: '之後', hint: '第五章走完之後', when: (s) => chapterDone(5, s), lines: ['公會說，圖鑑不能有勘誤，不然沒有人敢來。', '索引不是錯在快。錯在它讓人不再問。', '鐘我交回去了。檜伯的燈，我去顧。第十二行留著。'] },
+  { id: 'log-after', day: '之後', hint: '第五章走完之後', when: (s) => chapterDone(5, s), lines: ['長老會表決，三比二：圖鑑不能有勘誤，不然沒有人敢來。', '索引不是錯在快。錯在它讓人不再問。', '鐘我交回去了。檜伯的燈，我去顧。第十二行留著。'] },
 ];
 export const nextBeat = (s: Save) => BEATS.find((b) => !s.beats.includes(b.id) && b.when(s));
 
-const chapterDone = (n: number, s: Save) => QUESTS.filter((q) => q.chapter === n).every((q) => s.cases[q.caseId]);
+export const chapterDone = (n: number, s: Save) => QUESTS.filter((q) => q.chapter === n).every((q) => s.cases[q.caseId]);
 /** 階級只代表提示少了幾層，不加任何數值。第一章走完是巡診，第二章走完是值班 */
 /**
  * 委託在板子上叫什麼。標題常常就是那一位病人的關鍵線索（「躺不平的夜」「從肚臍開始的」），
@@ -323,17 +362,17 @@ export function codexOf(m: ComplaintDef, save: Save) {
 /** 主角：三位見習專科護理師。只有外表和帶的東西不同，能做的事一模一樣 */
 export const HEROES = [
   { id: 'cheng', name: '葉澄', tag: '內科病房出身', line: '習慣把每一件事寫下來，筆記本從不離手。', greet: '內科病房來的？寫紀錄的習慣留著，這裡用得上。',
-    habit: '還有你自己的習慣。你什麼都寫下來；可是寫得很滿的筆記，看起來會像是都問過了。', own: '我的筆記本裡，也有只寫了一行的。' },
+    habit: '還有你自己的習慣。你什麼都寫下來；可是寫得很滿的筆記，看起來會像是都問過了。', own: '我的筆記本裡，也有只寫了一行的。', knack: '紀錄寫得清楚，交班的人一看就懂。', blind: '寫得很滿的筆記，看起來會像是都問過了。', ask: '這一張，你的紀錄裡有哪一格，其實只是照病人的說法寫下來，還沒有自己確認？' },
   { id: 'yuan', name: '高遠', tag: '急診出身', line: '手腳很快，正在學慢下來把話問完。巡夜的時候提著一盞小燈。', greet: '急診來的？手腳快是好事。在這裡，先學把話問完。',
-    habit: '還有你自己的習慣。你快；快的人，最容易在第一個說得通的答案停下來。', own: '急診那幾年，我也讓人回去過。有幾位，我不知道後來怎麼了。' },
+    habit: '還有你自己的習慣。你快；快的人，最容易在第一個說得通的答案停下來。', own: '急診那幾年，我也讓人回去過。有幾位，我不知道後來怎麼了。', knack: '一進門就看得出誰不能等。', blind: '第一個說得通的答案，就停下來了。', ask: '如果你一開始想的是錯的，哪一條線索會讓你發現？這一張，你找過它嗎？' },
   { id: 'zhi', name: '白芷', tag: '社區巡診出身', line: '很會聽人說話。出診包裡總有一把剛採的草藥。', greet: '社區巡診來的？會聽人說話，就已經贏一半了。',
-    habit: '還有你自己的習慣。你會聽；可是有些事光聽是聽不到的，要把手放上去。', own: '巡診的時候，很多人跟我說還撐得住。我都信了。' },
+    habit: '還有你自己的習慣。你會聽；可是有些事光聽是聽不到的，要把手放上去。', own: '巡診的時候，很多人跟我說還撐得住。我都信了。', knack: '會聽，病人願意跟你說。', blind: '聽到「還撐得住」就放心，少做一次客觀的確認。', ask: '這一張，病人說的，和你自己量到、看到的，有沒有哪裡對不上？' },
   { id: 'heng', name: '杜衡', tag: '外科病房出身', line: '手很穩，話很少。口袋裡永遠有一捲繃帶。', greet: '外科病房來的？手穩很好。話少沒關係，該問的要問出口。',
-    habit: '還有你自己的習慣。你手穩，相信自己摸到的；沒摸到的，也要記一筆「還不知道」。', own: '……我沒摸到的，以前都當作沒有。' },
+    habit: '還有你自己的習慣。你手穩，相信自己摸到的；沒摸到的，也要記一筆「還不知道」。', own: '……我沒摸到的，以前都當作沒有。', knack: '手穩，身體評估做得紮實。', blind: '沒摸到的，就當作沒有。', ask: '這一張，有哪一項其實你沒有做，卻在心裡當成了正常？' },
   { id: 'mu', name: '蘇木', tag: '兒科病房出身', line: '會蹲下來跟孩子說話。手上那隻布做的小魚，是哄人用的。', greet: '兒科病房來的？會蹲下來說話的人，大人也願意跟你講。',
-    habit: '還有你自己的習慣。你會讓人放心；可是病人放心了，不代表他沒事。', own: '我讓很多人放心地回去了。後來怎麼了，我很少回頭去問。' },
+    habit: '還有你自己的習慣。你會讓人放心；可是病人放心了，不代表他沒事。', own: '我讓很多人放心地回去了。後來怎麼了，我很少回頭去問。', knack: '讓人放心，病人肯配合。', blind: '病人放心了，就以為狀況也清楚了。', ask: '病人安心下來之後，你有沒有回頭再確認一件事？是哪一件？' },
   { id: 'qiao', name: '連翹', tag: '加護病房出身', line: '習慣看著懷錶數呼吸。別人慌的時候，她的聲音會慢下來。', greet: '加護病房來的？你習慣看數字。在這裡，數字之前先看人。',
-    habit: '還有你自己的習慣。你看數字；可是數字還正常的時候，人可能已經不對了。', own: '我也等過數字。等它變了，才肯相信人不對。' },
+    habit: '還有你自己的習慣。你看數字；可是數字還正常的時候，人可能已經不對了。', own: '我也等過數字。等它變了，才肯相信人不對。', knack: '看數字的變化很敏銳。', blind: '要等數字變了，才肯相信人不對。', ask: '這一張，數字變之前，人有沒有先變？你是看到哪一樣才確定的？' },
 ] as const;
 export const heroOf = (id: string | null) => HEROES.find((h) => h.id === id) ?? HEROES[0];
 /** 故事裡的 {you}、{greet}、{habit}、{own}：換成玩家選的那一位的名字、岑禾見到他說的第一句話、岑禾提醒他的習慣、他自己說的那一句 */
@@ -344,8 +383,41 @@ export const heroShots = Object.fromEntries(HEROES.map((h) => [h.id, heroShot(h.
 export interface Entry { id: string; name: string; tag: string; lines: string[]; shot: Shot; open: boolean; hint: string }
 const face = (cx: number, cy: number, w = 104): Shot['view'] => ({ w, h: w, cx, cy });
 
+/** 港城回音：每一位病人回到生活之後的近況（echoOf 決定玩家看不看得到） */
+export const AFTER: Record<string, string> = {
+  c01a: '後來他把菸戒了。那一晚，女兒自己守完了燈。',
+  c01b: '那一船貨，她隔了三天才回去卸。現在會催同事來公會。',
+  c01c: '檢查的結果，他是自己先聽的。過了兩天，才帶兒子一起來。',
+  c01d: '帳冊有人幫她收好了。那一趟船，是別人代她出的海。',
+  c02a: '藥調好之後，腳消了。孫子出海那天，他自己走到了碼頭。',
+  c02b: '那一批魚是徒弟出的貨。他回到坊裡，把菸斗掛在牆上，沒有再點。',
+  c03a: '攤子歇了十天。再開張的時候，滷肥肉從菜單上劃掉了。',
+  c03b: '師傅沒有不要他。工寮的人輪流送了一個禮拜的粥。',
+  c02c: '大拍賣是老陳代的。他躺在病室裡聽人轉述，一邊聽一邊糾正喊價的節奏。',
+  c02d: '三個月後他回到桅杆上。口袋裡那包菸，換成了一小袋炒豆子。',
+  c03c: '那幾缸酒是徒弟顧出來的。之後試酒，他只含一口，再吐掉。',
+  c03d: '發炎好了之後，她做了那個一直不敢做的檢查。出來的時候，她買了一袋青菜回麵包坊。',
+  c04a: '網子是隔壁的阿嬸交的。她現在補網的凳子旁邊，多了一只水壺。',
+  c04b: '腳保住了。孫女每天晚上幫他看一次腳底，他嘴上嫌煩，襪子倒是自己先脫好。',
+  c05a: '她在帳冊的最後一頁記下每一次頭痛的日子。亮線再出現的時候，她先去把燈調暗。',
+  c05b: '兒子的親事延了兩個月。那一天她坐在主桌，是自己走進去的。',
+  c04c: '他在單獨的房間住了一陣子。半年後回到船上，還是廚子；同艙的七個人都去照了片子。',
+  c04d: '藥停掉的第三天，燒退了。他的紀錄上多了一行紅字，藥鋪的櫃台上也貼了一張。',
+  c05c: '他在第九天認得出同伴。母親是他自己寫信去說的，信裡只寫了：「生了一場病，好了。」',
+  c05d: '結果是醫師、她和女兒三個人一起聽的。之後的每一次回診，女兒都陪著。',
+  ...AFTER_MORE,   // 第四章以後的，寫在每個主訴自己的文獻檔裡
+};
+
+/**
+ * 港城回音：病人回到生活之後的近況。診斷對、也回應了他擔心的事，他才會託人帶口信回來；
+ * 沒做到的，是公會的前輩接手安頓的。重接這一張、做到了，口信才會到。
+ */
+export const echoOf = (rec: { found: boolean; concern: boolean }, after: string | undefined) =>
+  rec.found && rec.concern && after ? '港城回音：' + after : '由公會的前輩接手安頓。重接這一張，診斷對、也回應他擔心的事，才會收到他的近況。';
+export const echoed = (rec: { found: boolean; concern: boolean } | undefined) => !!rec && rec.found && rec.concern;
+
 /** 人物：公會的人，和你照顧過的病人 */
-export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
+export function peopleOf(save: Save): { guild: Entry[]; elders: Entry[]; patients: Entry[] } {
   const any = Object.keys(save.cases).length > 0;
   const ch = (n: number) => chapterDone(n, save);
   const guild: Entry[] = [
@@ -359,54 +431,42 @@ export function peopleOf(save: Save): { guild: Entry[]; patients: Entry[] } {
       ...(finaleDone(save) ? ['大霧的那一夜，她說「還撐得住」。' + (save.cases[FINALE_ID].found ? '你沒有照她的話看，也沒有照索引看。' : '那一夜的診斷，你還沒有對過。'), '她留了三行字給你。'] : [])],
       shot: finaleDone(save) ? { kind: 'ward', patient: 'dong', scene: 'tower', view: face(92, 170) } : { kind: 'hall', view: face(87, 84, 62) }, open: has(save, CH3_HALF), hint: '第三章走到一半之後' },
   ];
-  const after: Record<string, string> = {
-    c01a: '後來他把菸戒了。那一晚，女兒自己守完了燈。',
-    c01b: '那一船貨，她隔了三天才回去卸。現在會催同事來公會。',
-    c01c: '檢查的結果，他是自己先聽的。過了兩天，才帶兒子一起來。',
-    c01d: '帳冊有人幫她收好了。那一趟船，是別人代她出的海。',
-    c02a: '藥調好之後，腳消了。孫子出海那天，他自己走到了碼頭。',
-    c02b: '那一批魚是徒弟出的貨。他回到坊裡，把菸斗掛在牆上，沒有再點。',
-    c03a: '攤子歇了十天。再開張的時候，滷肥肉從菜單上劃掉了。',
-    c03b: '師傅沒有不要他。工寮的人輪流送了一個禮拜的粥。',
-    c02c: '大拍賣是老陳代的。他躺在病室裡聽人轉述，一邊聽一邊糾正喊價的節奏。',
-    c02d: '三個月後他回到桅杆上。口袋裡那包菸，換成了一小袋炒豆子。',
-    c03c: '那幾缸酒是徒弟顧出來的。之後試酒，他只含一口，再吐掉。',
-    c03d: '發炎好了之後，她做了那個一直不敢做的檢查。出來的時候，她買了一袋青菜回麵包坊。',
-    c04a: '網子是隔壁的阿嬸交的。她現在補網的凳子旁邊，多了一只水壺。',
-    c04b: '腳保住了。孫女每天晚上幫他看一次腳底，他嘴上嫌煩，襪子倒是自己先脫好。',
-    c05a: '她在帳冊的最後一頁記下每一次頭痛的日子。亮線再出現的時候，她先去把燈調暗。',
-    c05b: '兒子的親事延了兩個月。那一天她坐在主桌，是自己走進去的。',
-    c04c: '他在單獨的房間住了一陣子。半年後回到船上，還是廚子；同艙的七個人都去照了片子。',
-    c04d: '藥停掉的第三天，燒退了。他的紀錄上多了一行紅字，藥鋪的櫃台上也貼了一張。',
-    c05c: '他在第九天認得出同伴。母親是他自己寫信去說的，信裡只寫了：「生了一場病，好了。」',
-    c05d: '結果是醫師、她和女兒三個人一起聽的。之後的每一次回診，女兒都陪著。',
-    ...AFTER_MORE,   // 第四章以後的，寫在每個主訴自己的文獻檔裡
-  };
   const patients: Entry[] = CASES.filter((c) => c.id !== FINALE_ID).map((c) => {
     const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;
     return {
       id: c.id, name: c.patient.name, tag: c.patient.age + ' 歲，' + c.patient.job,
-      lines: [rec?.found ? '診斷：' + truth.name + '。' : '還沒有診斷對過。', ...(after[c.id] ? [after[c.id]] : [])],
+      lines: [rec?.found ? '診斷：' + truth.name + '。' : '還沒有診斷對過。', ...(rec ? [echoOf(rec, AFTER[c.id])] : [])],
       shot: { kind: 'ward', patient: c.patient.look, scene: c.scene, view: face(92, 170) }, open: !!rec, hint: '看完' + c.patient.name + '（' + c.complaintName + '）之後',
     };
   });
-  return { guild, patients };
+  const voteKnown = has(save, CH3), revoted = chapterDone(5, save);
+  const elders: Entry[] = ELDERS.map((e) => ({
+    id: e.id, name: e.name, tag: e.tag,
+    lines: [...e.bio, '怎麼問：' + e.knack, '盲點：' + e.blind, '口頭禪：「' + e.motto + '」',
+      ...(voteKnown ? ['十五年前那一票：' + (e.voted ? '訂上去。' : '不訂。') + (revoted ? '今年重新表決：訂上去。' : '')] : [])],
+    shot: { kind: 'ward', patient: 'e-' + e.id, view: face(92, 170) },
+    open: chapterOpen(elderChapter(e.id) - (e.id === 'nie' ? 1 : 0), save) && (e.id !== 'nie' || chapterDone(1, save)),
+    hint: e.id === 'nie' ? '第一章走完之後' : CHAPTERS_ZH[ISLANDS[e.island].chapter] + '，到' + ISLANDS[e.island].name + '的時候',
+  }));
+  return { guild, elders, patients };
 }
 
 /** 場景：去過的地方。公會在霧港有五個診間，一章換一個；出診到碼頭；終章上燈塔 */
 export function placesOf(save: Save): Entry[] {
   const any = Object.keys(save.cases).length > 0;
   const been = (ch: number) => QUESTS.some((q) => q.chapter === ch && save.cases[q.caseId]);
-  const room = (id: 'market' | 'archive' | 'yard' | 'quiet', ch: number, patient: string, lines: string[]): Entry => (
-    { id, name: PLACES[id].name, tag: CHAPTERS_ZH[ch], lines, shot: { kind: 'ward', patient, scene: id }, open: been(ch), hint: '完成' + CHAPTERS_ZH[ch] + '的第一張委託之後' });
+  const isle = (ch: number) => Object.values(ISLANDS).find((i) => i.chapter === ch)!;
+  const who = (ch: number) => { const r = RESIDENTS[isle(ch).resident]; return been(ch) ? [r.name + '（' + r.tag + '）：' + r.habit, ...r.lines] : []; };
+  const room = (id: 'market' | 'archive' | 'yard' | 'quiet', ch: number, _patient: string, lines: string[]): Entry => (
+    { id, name: PLACES[id].name, tag: isle(ch).name + '・' + CHAPTERS_ZH[ch], lines: [...lines, ...who(ch)], shot: { kind: 'ward', patient: RESIDENTS[isle(ch).resident].look, scene: id }, open: been(ch), hint: '完成' + CHAPTERS_ZH[ch] + '的第一張委託之後' });
   return [
-    { id: 'hall', name: '公會大廳', tag: '霧港', lines: ['委託板、眠墨的櫃台、看得到燈塔的拱窗。每一張委託從這裡開始，也回到這裡。'], shot: { kind: 'hall' }, open: true, hint: '' },
-    { id: 'ward', name: PLACES.ward.name, tag: '第一章・大廳旁邊那扇門', lines: ['一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。'], shot: { kind: 'ward', patient: 'lin' }, open: any, hint: '完成第一張委託之後' },
-    { id: 'dock', name: PLACES.dock.name, tag: '出診', lines: ['船一靠岸，走不到公會的人就先扶進這裡。', '出診的時候，岑禾會把值班鐘一起帶來，掛在樑上。'], shot: { kind: 'ward', patient: 'zhou', scene: 'dock' }, open: !!save.cases.c01d, hint: '完成「靠岸的那天早上」之後' },
-    room('market', 2, 'song', ['魚市口的人天沒亮就上工，不舒服也不肯爬坡。公會在這裡留了一間診間。', '窗外就是魚市的棚子。那隻貓，在這裡待得最久。']),
-    room('archive', 3, 'he', ['檔案室隔壁，很久沒有人用的一間。牆上那一道線，是淹水那一夜的水痕。', '繩子上晾著一張一張舊索引。墨暈開的那幾張，眠墨說還認得出來。']),
-    room('yard', 4, 'c06a', ['公會跟船塢借的工寮。門外的船台上，有一艘造到一半的船。', '來這裡的人，多半是放下手上的活、撐著走過來的。']),
-    room('quiet', 5, 'c09d', ['坡上的一間。門關得起來，屏風拉得上。圓窗看下去是整個霧港，遠遠的是燈塔。', '有些話，要在這樣的地方才問得出來。']),
+    { id: 'hall', name: '公會大廳', tag: '霧港本島', lines: ['委託板、眠墨的櫃台、看得到燈塔的拱窗。每一張委託從這裡開始，也回到這裡。'], shot: { kind: 'hall' }, open: true, hint: '' },
+    { id: 'ward', name: PLACES.ward.name, tag: '霧港本島・第一章', lines: ['大廳旁邊那扇門。一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。', ...who(1)], shot: { kind: 'ward', patient: 'r-lan' }, open: any, hint: '完成第一張委託之後' },
+    { id: 'dock', name: PLACES.dock.name, tag: '每一座島都有・出診', lines: ['船一靠岸，走不到公會的人就先扶進這裡。每一座島的碼頭邊，都有這樣一間。', '出診的時候，岑禾會把值班鐘一起帶來，掛在樑上。'], shot: { kind: 'ward', patient: 'zhou', scene: 'dock' }, open: !!save.cases.c01d, hint: '完成「靠岸的那天早上」之後' },
+    room('market', 2, 'song', ['汐市島的魚市天沒亮就開，不舒服的人也不肯搭船。公會在魚市口留了一間診間。', '窗外就是魚市的棚子。那隻貓，在這裡待得最久。']),
+    room('archive', 3, 'he', ['書嶼的檔案室隔壁，公會最早的一間診間，很久沒有人用。牆上那一道線，是大潮那一夜的水痕。', '繩子上晾著一張一張舊索引。墨暈開的那幾張，眠墨說還認得出來。']),
+    room('yard', 4, 'c06a', ['公會跟龍骨島的船塢借的工寮。門外的船台上，有一艘造到一半的船。', '來這裡的人，多半是放下手上的活、撐著走過來的。']),
+    room('quiet', 5, 'c09d', ['竹坡島坡頂的一間。門關得起來，屏風拉得上。圓窗看出去是整片海，遠遠的是本島的燈塔。', '有些話，要在這樣的地方才問得出來。']),
     { id: 'tower', name: PLACES.tower.name, tag: finaleDone(save) ? '終章' : '還沒去過', lines: finaleDone(save) ? ['燈室底下的一間圓房間。架上一排值夜日誌，一年一本，十五本。', '大霧的那一夜，燈熄過一次。天亮之前，有人把它點回來了。'] : [],
       shot: { kind: 'ward', patient: 'dong', scene: 'tower', lit: true }, open: finaleDone(save), hint: finaleOpen(save) ? '終章：大霧值班夜' : '第五章走完之後' },
   ];
@@ -418,6 +478,14 @@ export const codexPercent = (list: ComplaintDef[], save: Save) => (list.length ?
 
 /** 人物和場景加起來打開了幾個 */
 export function albumCount(save: Save): { got: number; total: number } {
-  const { guild, patients } = peopleOf(save), all = [...guild, ...patients, ...placesOf(save)];
+  const { guild, elders, patients } = peopleOf(save), all = [...guild, ...elders, ...patients, ...placesOf(save)];
   return { got: all.filter((e) => e.open).length + HEROES.length, total: all.length + HEROES.length };
 }
+
+/** 第幾章已經開了（第一章一開始就開；之後是前一章走完） */
+export const chapterOpen = (n: number, s: Save) => n <= 1 || chapterDone(n - 1, s);
+/** 病室裡「要提示」的時候，除了岑禾還可以請教誰：去過那座島、見過的那幾位長老 */
+export const eldersFor = (s: Save) => eldersMet((n) => chapterOpen(n, s));
+
+/** 這一張委託平常在哪一間看（出診的貨棧，算在那一章的島） */
+export const homeOf = (c: { complaint: string }) => COMPLAINTS.find((m) => m.id === c.complaint)?.place ?? 'ward';

@@ -281,6 +281,17 @@ const PATIENTS = {
   n5: { shirt: C.rose, shirt2: C.rose2, hair: C.hairBrown, brow: C.hairBrown, woman: true, bob: true, calm: true },
   n6: { shirt: C.wood, shirt2: C.wood2, hair: C.hairInk, brow: C.hairInk, moustache: true, pale: true, sweat: 2 },
   n7: { shirt: C.sea, shirt2: C.sea2, hair: C.hairDark, brow: C.hairDark, woman: true, pony: true, calm: true },
+  // 五島長老會的五位老醫生，和五間診間的常駐的人（只在圖鑑的人物卡出現）
+  'e-nie': { shirt: C.teal, shirt2: C.teal2, hair: C.cream, brow: C.hairGrey, moustache: true, beard: true, calm: true },
+  'e-lu': { shirt: C.sky, shirt2: C.wall2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bob: true, calm: true },
+  'e-guan': { shirt: C.stone, shirt2: C.stone2, hair: C.cream, brow: C.hairGrey, beard: true, scarf: true, calm: true },
+  'e-chu': { shirt: C.rust, shirt2: C.wood2, hair: C.hairGrey, brow: C.hairDark, moustache: true, calm: true },
+  'e-ge': { shirt: C.frog, shirt2: C.frog2, hair: C.cream, brow: C.hairGrey, woman: true, bun: true, scarf: true, calm: true },
+  'r-lan': { shirt: C.paper, shirt2: C.paperLine, hair: C.hairDark, brow: C.hairDark, woman: true, pony: true, calm: true },
+  'r-xi': { shirt: C.pumpkin, shirt2: C.rust, hair: C.hairInk, brow: C.hairInk, woman: true, bob: true, calm: true },
+  'r-luan': { shirt: C.plank, shirt2: C.plank2, hair: C.hairBrown, brow: C.hairBrown, calm: true },
+  'r-duo': { shirt: C.coat, shirt2: C.coat2, hair: C.hairGrey, brow: C.hairGrey, beard: true, cap: true, calm: true },
+  'r-lu': { shirt: C.rose, shirt2: C.rose2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bun: true, calm: true },
   // 終章：忍冬，守燈塔的人
   dong: { shirt: C.slate, shirt2: C.slate2, hair: C.cream, brow: C.hairGrey, woman: true, bun: true, scarf: true, calm: true, pale: true, sweat: 1 },
 };

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { TIDES, TIDE_DONE } from '../data/tides.ts';
 import type { CaseDef, Session } from '../core/types.ts';
 import { harvest, scoreSession } from '../core/scoring.ts';
 import { CASES } from '../data/index.ts';
@@ -10,13 +11,13 @@ import { Night } from './Night.tsx';
 import { load, loadRun, store, storeRun, wipe, type Run, type Save } from './store.ts';
 import { validRun } from './backup.ts';
 import { keepStorage } from './pwa.ts';
-import { NIGHT_DONE, TRIAL_SECONDS, newReads, record, recordTrial, tierOf } from './progress.ts';
+import { AFTER, echoed, eldersFor, NIGHT_DONE, TRIAL_SECONDS, newReads, record, recordTrial, tierOf } from './progress.ts';
 import { track, trackOpen } from './stats.ts';
 import { StatsPage } from './StatsPage.tsx';
 import { bindSave, startAccount, syncSoon } from './account.ts';
 import { PrivacyPage } from './PrivacyPage.tsx';
 
-type Screen = { name: 'title' } | { name: 'hall' } | { name: 'night' } | { name: 'ward'; c: CaseDef; n: number; tier: 0 | 1; resume: Run | null; trial: boolean } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number; trial: boolean; timeUp: boolean };
+type Screen = { name: 'title' } | { name: 'hall' } | { name: 'night' } | { name: 'tide'; n: number } | { name: 'ward'; c: CaseDef; n: number; tier: 0 | 1; resume: Run | null; trial: boolean } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number; trial: boolean; timeUp: boolean };
 
 const caseOf = (id: string) => CASES.find((c) => c.id === id);
 /** 上次沒結案的那一場。病例改過、對不上了就丟掉 */
@@ -54,14 +55,16 @@ export function App() {
 
   if (screen.name === 'ward') {
     const { c, trial } = screen;
-    return <Ward key={screen.n} c={c} tier={screen.tier} hero={save.hero} takeaway={save.takeaways[0] ?? null} resume={screen.resume} trial={trial} coach={!trial && Object.keys(save.cases).length === 0}
+    return <Ward key={screen.n} c={c} tier={screen.tier} hero={save.hero} elders={trial ? [] : eldersFor(save)} takeaway={save.takeaways[0] ?? null} resume={screen.resume} trial={trial} coach={!trial && Object.keys(save.cases).length === 0}
       onProgress={(session, seconds) => keepRun({ v: 1, caseId: c.id, session, seconds, at: Date.now(), ...(trial ? { trial: true } : {}) })}
       onQuit={() => { if (!trial && run?.caseId === c.id) track({ t: 'leave', c: c.id, tier: run.session.tier, ph: run.session.phase, gt: run.session.time, h: run.session.hints }); toHall(); }}
       onDone={(session, seconds, timeUp) => setScreen({ name: 'debrief', c, session, seconds, trial, timeUp })} />;
   }
   if (screen.name === 'debrief') {
     const { c, session, seconds, trial, timeUp } = screen;
-    return <Debrief c={c} session={session} seconds={seconds} trial={trial ? { timeUp } : undefined} fresh={trial ? [] : newReads(save, c, session)} onFinish={(takeaway) => {
+    const prev = save.cases[c.id], now = harvest(c, session);
+    const echo = trial ? null : { got: echoed({ found: !!prev?.found || now.found, concern: !!prev?.concern || now.concern }), before: echoed(prev), text: AFTER[c.id] ?? '' };
+    return <Debrief c={c} session={session} seconds={seconds} hero={save.hero} echo={echo} trial={trial ? { timeUp } : undefined} fresh={trial ? [] : newReads(save, c, session)} onFinish={(takeaway) => {
       const score = scoreSession(c, session);
       if (trial) {
         // 資格試煉：不寫圖鑑、不算完成委託，只留一筆成績
@@ -77,11 +80,13 @@ export function App() {
     }} />;
   }
   // 終章的值班夜：走完記一筆（和看過的故事記在一起），回到公會接下一段故事
+  if (screen.name === 'tide') { const n = screen.n; return <Night hero={save.hero} rounds={[TIDES[n]]} title="霧潮夜" banner={TIDES[n].title} onQuit={toHall} onDone={() => { if (!save.beats.includes(TIDE_DONE(n))) keep({ ...save, beats: [...save.beats, TIDE_DONE(n)] }); keepStorage(); toHall(); }} />; }
   if (screen.name === 'night') return <Night hero={save.hero} onQuit={toHall} onDone={() => { if (!save.beats.includes(NIGHT_DONE)) keep({ ...save, beats: [...save.beats, NIGHT_DONE] }); keepStorage(); toHall(); }} />;
   if (screen.name === 'title') return <Title save={save} run={run} onPlay={toHall} onImport={(s) => { keepRun(null); keep(s); }} onReset={() => { setRun(null); latest.current = wipe(); setSave(latest.current); }} />;
   return <Hall save={save} run={run} onHome={() => setScreen({ name: 'title' })} onHero={(hero) => keep({ ...save, hero })} onBeatSeen={(id) => keep({ ...save, beats: save.beats.includes(id) ? save.beats : [...save.beats, id] })}
     onStart={(c) => { keepRun(null); track({ t: 'start', c: c.id, tier: tierOf(save), n: (save.cases[c.id]?.plays ?? 0) + 1 }); setScreen({ name: 'ward', c, n: Date.now(), tier: tierOf(save), resume: null, trial: false }); }}
     onNight={() => setScreen({ name: 'night' })}
+    onTide={(n) => setScreen({ name: 'tide', n })}
     onTrial={(c) => { keepRun(null); setScreen({ name: 'ward', c, n: Date.now(), tier: 1, resume: null, trial: true }); }}
     onResume={() => {
       const c = run && caseOf(run.caseId);

@@ -1,7 +1,7 @@
 // 終章的前半「值班夜」：三輪分流。每一輪兩個決定：先看誰；另一位怎麼交代（或是回頭之後先做什麼）。
 // 沒有分數，不寫圖鑑；每個決定當下就有回饋，走完有一頁整理。題目在 data/night.ts。
 import { useEffect, useRef, useState } from 'react';
-import { NIGHT, NIGHT_REFS, NIGHT_TOTAL } from '../data/night.ts';
+import { NIGHT, NIGHT_REFS, type NightRound } from '../data/night.ts';
 import { Stage, type StageHandle } from './Stage.tsx';
 import { Talk, type Line, type TalkHandle, type Who } from './Talk.tsx';
 import { Portrait } from './Portrait.tsx';
@@ -12,13 +12,15 @@ import { sfx, buzz } from './sound.ts';
 type Phase = 'intro' | 'first' | 'noted' | 'then' | 'after' | 'end';
 interface Mark { round: string; first: boolean; then: boolean; said: string }
 
-export function Night({ hero, onDone, onQuit }: { hero: string | null; onDone(right: number): void; onQuit(): void }) {
+/** rounds：哪幾輪（預設是終章的值班夜三輪）；title、banner：畫面上方的字（霧潮夜用） */
+export function Night({ hero, onDone, onQuit, rounds = NIGHT, title = '值班夜', banner = '終章　大霧值班夜' }: { hero: string | null; onDone(right: number): void; onQuit(): void; rounds?: NightRound[]; title?: string; banner?: string }) {
+  const NIGHT_TOTAL = rounds.length * 2;
   const [r, setR] = useState(0);
   const [phase, setPhase] = useState<Phase>('intro');
   const [marks, setMarks] = useState<Mark[]>([]);
   const [quit, setQuit] = useState(false);
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null), speaker = useRef<Who | null>(null), bubble = useRef<HTMLDivElement>(null);
-  const round = NIGHT[r], mark = marks[r];
+  const round = rounds[r], mark = marks[r];
   const right = marks.reduce((n, m) => n + (m.first ? 1 : 0) + (m.then ? 1 : 0), 0);
 
   useEffect(() => {
@@ -53,16 +55,16 @@ export function Night({ hero, onDone, onQuit }: { hero: string | null; onDone(ri
     sfx.page();
     if (phase === 'intro') go('first', [{ who: 'sys', text: round.ask }]);
     else if (phase === 'noted') go('then', [{ who: 'sys', text: round.then.ask }]);
-    else if (phase === 'after') { if (r + 1 < NIGHT.length) { setR(r + 1); setPhase('intro'); } else { sfx.done(); go('end', [{ who: 'mentor', text: '門口空了。這一夜的六個決定，你回頭看一遍。' }]); } }
+    else if (phase === 'after') { if (r + 1 < rounds.length) { setR(r + 1); setPhase('intro'); } else { sfx.done(); go('end', [{ who: 'mentor', text: rounds.length > 1 ? '門口空了。這一夜的 ' + NIGHT_TOTAL + ' 個決定，你回頭看一遍。' : '推演到這裡。這兩個決定，你回頭看一遍。' }]); } }
   };
 
   return (
     <div className="screen hall night">
       <div className="left">
-        <div className="top"><span className="who"><button type="button" className="home" onClick={() => { sfx.page(); if (phase === 'end') onDone(right); else setQuit(true); }}>‹ 公會</button>值班夜</span><span className="clock">{phase === 'end' ? '走完了' : round.title}</span></div>
+        <div className="top"><span className="who"><button type="button" className="home" onClick={() => { sfx.page(); if (phase === 'end') onDone(right); else setQuit(true); }}>‹ 公會</button>{title}</span><span className="clock">{phase === 'end' ? '走完了' : round.title}</span></div>
         <Stage kind="hall" hero={hero} stage={stage} onFrame={onFrame} label="夜裡的公會大廳：窗外的燈塔沒有亮，霧貼著窗。岑禾站在委託板旁邊，眠墨在櫃台後面">
           <div className="bubble" ref={bubble} hidden>…</div>
-          <div className="chapter">終章　大霧值班夜</div>
+          <div className="chapter">{banner}</div>
         </Stage>
       </div>
       <div className="right">
@@ -88,8 +90,8 @@ export function Night({ hero, onDone, onQuit }: { hero: string | null; onDone(ri
             </div>
           ) : phase === 'end' ? (
             <div className="quests recap">
-              <p className="tally">六個決定，你做對了 <b>{right}</b> 個。</p>
-              {NIGHT.map((n, i) => (
+              <p className="tally">{NIGHT_TOTAL} 個決定，你做對了 <b>{right}</b> 個。</p>
+              {rounds.map((n, i) => (
                 <div key={n.id} className="leaf">
                   <b>{n.title}</b>
                   <p className={marks[i]?.first ? 'up' : 'down'}>{marks[i]?.first ? '✓' : '✗'} 先看：{n.arrivals.find((a) => a.id === n.first)!.name}。{n.notes[n.first].replace(/^對。/, '')}</p>
@@ -103,13 +105,13 @@ export function Night({ hero, onDone, onQuit }: { hero: string | null; onDone(ri
             </div>
           ) : (
             <div className="acts one">
-              <button type="button" className="act demo" onClick={next}>{phase === 'intro' ? '看門口' : phase === 'noted' ? '繼續' : r + 1 < NIGHT.length ? '下一輪' : '這一夜的整理'}</button>
+              <button type="button" className="act demo" onClick={next}>{phase === 'intro' ? '看門口' : phase === 'noted' ? '繼續' : r + 1 < rounds.length ? '下一輪' : '這一夜的整理'}</button>
               {mark && phase !== 'intro' && <p className="dim tally">這一夜到目前：{right}／{NIGHT_TOTAL}</p>}
             </div>
           )}
         </div>
       </div>
-      {quit && <ConfirmSheet title="要先回公會嗎？" yes="回公會" no="留下" onNo={() => setQuit(false)} onYes={onQuit} lines={['值班夜沒有走完的話，下次要從第一輪開始。', '走完之後，燈塔那一張委託才會貼上板子。']} />}
+      {quit && <ConfirmSheet title="要先回公會嗎？" yes="回公會" no="留下" onNo={() => setQuit(false)} onYes={onQuit} lines={rounds === NIGHT ? ['值班夜沒有走完的話，下次要從第一輪開始。', '走完之後，燈塔那一張委託才會貼上板子。'] : ['推演沒有走完的話，下次從頭開始。不影響委託。']} />}
     </div>
   );
 }
