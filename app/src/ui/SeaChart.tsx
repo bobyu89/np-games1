@@ -1,9 +1,11 @@
 // 大廳的航海圖：五座島、巡診船的航線、燈塔。點一座島，委託板只列那座島的委託。
-// 還沒去過的島蓋在霧裡；去過的島寫上結了幾張案。圖是用 SVG 畫的，沒有外部的圖檔。
+// 還沒去過的島蓋在霧裡；去過的島寫上結了幾張案，島邊一劫一個小菱形（過了那一劫就塗滿）。
+// 終章走完，外海多一條回伊塔洛斯的歸航線。圖是用 SVG 畫的，沒有外部的圖檔。
 import { ISLANDS, type IslandId } from '../data/islands.ts';
 import { sfx } from './sound.ts';
 
-export interface ChartIsle { id: IslandId; open: boolean; done: number; total: number; fresh: boolean }
+/** marks：這座島的每一劫，過了沒有 */
+export interface ChartIsle { id: IslandId; open: boolean; done: number; total: number; fresh: boolean; marks: boolean[] }
 
 /** 用島的位置算一條固定的海岸線：同一座島每次畫出來都一樣 */
 function coast(id: string, x: number, y: number, r: number): string {
@@ -25,11 +27,11 @@ function coast(id: string, x: number, y: number, r: number): string {
 const SOUNDINGS: [number, number, string][] = [[90, 90, '12'], [330, 120, '9'], [560, 80, '15'], [880, 140, '21'], [620, 200, '7'], [940, 380, '18'], [80, 400, '11'],
   [360, 610, '8'], [560, 650, '14'], [930, 650, '23'], [140, 660, '10'], [600, 470, '6'], [330, 250, '5'], [880, 470, '17']];
 
-export function SeaChart({ isles, picked, boat, onPick }: { isles: ChartIsle[]; picked: IslandId; boat: IslandId; onPick(id: IslandId): void }) {
+export function SeaChart({ isles, picked, boat, home = false, onPick }: { isles: ChartIsle[]; picked: IslandId; boat: IslandId; home?: boolean; onPick(id: IslandId): void }) {
   const main = ISLANDS.main;
   return (
     <div className="chart">
-      <svg viewBox="0 0 1000 700" role="group" aria-label="霧港群島的航海圖：點一座島，看那裡的委託">
+      <svg viewBox="0 0 1000 700" role="group" aria-label="霧海群島的航海圖：點一座島，看那裡的委託">
         <defs>
           <pattern id="chart-grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="var(--ink-soft)" strokeOpacity="0.12" strokeWidth="1" /></pattern>
           <radialGradient id="chart-fog"><stop offset="0" stopColor="var(--paper)" stopOpacity="0.95" /><stop offset="0.7" stopColor="var(--paper)" stopOpacity="0.85" /><stop offset="1" stopColor="var(--paper)" stopOpacity="0" /></radialGradient>
@@ -42,12 +44,15 @@ export function SeaChart({ isles, picked, boat, onPick }: { isles: ChartIsle[]; 
           <path d="M0,-62 L9,0 L0,62 L-9,0Z" className="needle" /><path d="M-62,0 L0,9 L62,0 L0,-9Z" />
           <text y="-70" textAnchor="middle">北</text>
         </g>
+        <text x="880" y="215" textAnchor="middle" className="sea">霧　海</text>
         {SOUNDINGS.map(([x, y, t]) => <text key={x + '-' + y} x={x} y={y} className="depth">{t}</text>)}
         {/* 巡診船的航線：從本島到每一座外島 */}
         {isles.filter((i) => i.id !== 'main').map((i) => {
           const s = ISLANDS[i.id], mx = (main.x + s.x) / 2, my = (main.y + s.y) / 2 - 40;
           return <path key={i.id} d={`M${main.x},${main.y} Q${mx},${my} ${s.x},${s.y}`} className={'route' + (i.open ? ' open' : '')} />;
         })}
+        {/* 歸航線：終章走完，從外海繞回伊塔洛斯 */}
+        {home && <path d={`M985,690 C900,640 760,660 ${main.x + 120},${main.y + 90} S${main.x + 40},${main.y + 30} ${main.x},${main.y}`} className="route home" />}
         {isles.map((i) => {
           const s = ISLANDS[i.id], on = picked === i.id;
           return (
@@ -59,6 +64,7 @@ export function SeaChart({ isles, picked, boat, onPick }: { isles: ChartIsle[]; 
               {!i.open && <ellipse cx={s.x} cy={s.y} rx={s.r * 1.9} ry={s.r * 1.4} fill="url(#chart-fog)" />}
               <text x={s.x} y={s.y - 4} textAnchor="middle" className="name">{i.open ? s.name : '？？？'}</text>
               <text x={s.x} y={s.y + 26} textAnchor="middle" className="sub">{i.open ? (i.total ? i.done + '／' + i.total : '') : '霧'}</text>
+              {i.open && i.marks.map((ok, n) => { const x = s.x - (i.marks.length - 1) * 9 + n * 18, y = s.y + s.r * 0.82 + 14; return <path key={n} d={`M${x},${y - 7} L${x + 6},${y} L${x},${y + 7} L${x - 6},${y}Z`} className={'peril' + (ok ? ' ok' : '')} />; })}
               {i.fresh && i.open && <circle cx={s.x + s.r * 0.9} cy={s.y - s.r * 0.6} r="11" className="seal" />}
             </g>
           );

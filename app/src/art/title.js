@@ -97,7 +97,7 @@ export function createTitle(canvas, opts = {}) {
       const span = 760, x = 520 - ((x0 + t * sp) % span);
       puff(g, x, y + Math.sin(t * 0.4 + i) * 2, rx, ry, al, 9400 + i * 5);
     });
-    // 有一團長出了眼睛：症影
+    // 有一團長出了眼睛：劫影
     const sx = 176 + Math.sin(t * 0.23) * 26, sy = 126 + Math.sin(t * 0.61) * 5, blink = (t * 0.7 + 2.2) % 5.1 < 0.14;
     g.globalAlpha = 0.94;
     oval(g, sx, sy, 22, 13, { fill: C.fog, stroke: C.fogLine, lw: 1.2, seed: 9500, boil: true, n: 14 });

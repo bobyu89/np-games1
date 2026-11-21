@@ -11,7 +11,7 @@ import { Night } from './Night.tsx';
 import { load, loadRun, store, storeRun, wipe, type Run, type Save } from './store.ts';
 import { validRun } from './backup.ts';
 import { keepStorage } from './pwa.ts';
-import { AFTER, echoed, eldersFor, NIGHT_DONE, TRIAL_SECONDS, newReads, record, recordTrial, tierOf } from './progress.ts';
+import { AFTER, echoed, eldersFor, finaleDone, NIGHT_DONE, TRIAL_SECONDS, newReads, record, recordTrial, tierOf } from './progress.ts';
 import { track, trackOpen } from './stats.ts';
 import { StatsPage } from './StatsPage.tsx';
 import { bindSave, startAccount, syncSoon } from './account.ts';
@@ -64,10 +64,10 @@ export function App() {
     const { c, session, seconds, trial, timeUp } = screen;
     const prev = save.cases[c.id], now = harvest(c, session);
     const echo = trial ? null : { got: echoed({ found: !!prev?.found || now.found, concern: !!prev?.concern || now.concern }), before: echoed(prev), text: AFTER[c.id] ?? '' };
-    return <Debrief c={c} session={session} seconds={seconds} hero={save.hero} echo={echo} trial={trial ? { timeUp } : undefined} fresh={trial ? [] : newReads(save, c, session)} onFinish={(takeaway) => {
+    return <Debrief c={c} session={session} seconds={seconds} hero={save.hero} echo={echo} trial={trial ? { timeUp, axes: finaleDone(save) } : undefined} fresh={trial ? [] : newReads(save, c, session)} onFinish={(takeaway) => {
       const score = scoreSession(c, session);
       if (trial) {
-        // 資格試煉：不寫圖鑑、不算完成委託，只留一筆成績
+        // 試弓：不寫圖鑑、不算完成委託，只留一筆成績
         track({ t: 'trial', c: c.id, sc: Math.round(score.total), sf: score.safety, sec: seconds, gt: session.time, f: harvest(c, session).found ? 1 : 0, n: save.trials.length + 1 });
         const next = recordTrial(save, c, session, score, seconds, timeUp, Date.now());
         keep({ ...next, takeaways: takeaway ? [takeaway, ...next.takeaways.filter((t) => t !== takeaway)].slice(0, 5) : next.takeaways });
@@ -80,7 +80,7 @@ export function App() {
     }} />;
   }
   // 終章的值班夜：走完記一筆（和看過的故事記在一起），回到公會接下一段故事
-  if (screen.name === 'tide') { const n = screen.n; return <Night hero={save.hero} rounds={[TIDES[n]]} title="霧潮夜" banner={TIDES[n].title} onQuit={toHall} onDone={() => { if (!save.beats.includes(TIDE_DONE(n))) keep({ ...save, beats: [...save.beats, TIDE_DONE(n)] }); keepStorage(); toHall(); }} />; }
+  if (screen.name === 'tide') { const n = screen.n; return <Night hero={save.hero} rounds={[TIDES[n]]} title="海神的風暴" banner={TIDES[n].title} onQuit={toHall} onDone={() => { if (!save.beats.includes(TIDE_DONE(n))) keep({ ...save, beats: [...save.beats, TIDE_DONE(n)] }); keepStorage(); toHall(); }} />; }
   if (screen.name === 'night') return <Night hero={save.hero} onQuit={toHall} onDone={() => { if (!save.beats.includes(NIGHT_DONE)) keep({ ...save, beats: [...save.beats, NIGHT_DONE] }); keepStorage(); toHall(); }} />;
   if (screen.name === 'title') return <Title save={save} run={run} onPlay={toHall} onImport={(s) => { keepRun(null); keep(s); }} onReset={() => { setRun(null); latest.current = wipe(); setSave(latest.current); }} />;
   return <Hall save={save} run={run} onHome={() => setScreen({ name: 'title' })} onHero={(hero) => keep({ ...save, hero })} onBeatSeen={(id) => keep({ ...save, beats: save.beats.includes(id) ? save.beats : [...save.beats, id] })}

@@ -34,7 +34,7 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
     <div className="screen title">
       <div className="left">
         <header className="title-head">
-          <h1>霧脈公會</h1>
+          <h1>霧脈公會<small>歸航記</small></h1>
           <p>專科護理師口試的練習</p>
           {exam && <p className="exam" role="note"><b>{exam}</b><span>{EXAM.label}</span></p>}
         </header>

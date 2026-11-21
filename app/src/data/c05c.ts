@@ -103,7 +103,7 @@ export const C05C: CaseSpec = {
     { id: 'e-scare', text: '這個病的死亡率很高，就算救得回來，也可能留下後遺症，你們現在就要先有心理準備。', ok: false, note: '數字是真的，但現在說只會讓人慌。現在該說的是：很急，我們正在處理。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，岑禾接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-blood', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -114,7 +114,7 @@ export const C05C: CaseSpec = {
     watchWorse: '賀楓叫不太醒了，捏他才皺眉。小腿上的紫色小點比剛才多，有幾個連成了一片。手腳冰涼。',
     worsen: '……（他沒有回答。）',
     stepIn: '我先敲鐘了。你看他腿上的點，比剛才多。這個病是用分鐘在算的。',
-    called: '鐘響了，整個碼頭都聽得到。沈渡醫師馬上到。口罩戴上，管路先準備。',
+    called: '鐘響了，整個碼頭都聽得到。馬卡翁醫師馬上到。口罩戴上，管路先準備。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。培養抽完馬上給藥，不等斷層。口罩你們都戴了，很好。同艙那幾個，我來處理。',
     reportWeak: '「頭痛、發燒、不清楚」，我要知道有多急。脖子硬不硬？身上有沒有出血點？血壓多少？',

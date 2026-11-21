@@ -37,12 +37,12 @@ export function validateCase(c: CaseDef): string[] {
 
   // 安全行動
   const tl = c.timeline;
-  if (tl.worsenAfter !== undefined && tl.stepInAfter !== undefined && !(tl.worsenAfter < tl.stepInAfter)) errs.push('病況變差的時間要早於岑禾接手的時間');
+  if (tl.worsenAfter !== undefined && tl.stepInAfter !== undefined && !(tl.worsenAfter < tl.stepInAfter)) errs.push('病況變差的時間要早於蒙托拉接手的時間');
   if (!c.safety.length) errs.push('沒有宣告任何安全行動');
   if (Math.abs(c.safety.reduce((n, r) => n + r.points, 0) - 9) > 0.001) errs.push('安全行動的分數加起來要是 9 分');
   c.safety.forEach((r) => {
     if (r.type === 'call' && tl.worsenAfter === undefined) errs.push('要求在變差之前通報，卻沒有寫變差的時間');
-    if (r.type === 'call' && (!c.vitals.worse || !c.lines.worsen || !c.lines.stepIn)) errs.push('會變差的病例要寫變差後的生命徵象、病人的話和岑禾接手的話');
+    if (r.type === 'call' && (!c.vitals.worse || !c.lines.worsen || !c.lines.stepIn)) errs.push('會變差的病例要寫變差後的生命徵象、病人的話和蒙托拉接手的話');
     if (r.type === 'order' && !test.has(r.test)) errs.push('安全行動指到不存在的檢查：' + r.test);
     if (r.type === 'exclude') r.forms.forEach((f) => {
       if (!form.has(f)) errs.push('安全行動要排除不存在的診斷：' + f);
@@ -62,9 +62,9 @@ export function validateCase(c: CaseDef): string[] {
   if (!c.explain.some((e) => e.concern && e.ok)) errs.push('說明裡少了回應病人擔心的那一句');
   c.debrief.teaching.forEach((t) => { if (!c.debrief.references.some((r) => r.id === t.ref)) errs.push('教學重點指到不存在的文獻：' + t.ref); });
   c.debrief.references.forEach((r) => { if (!/^10\.\d{4,}\//.test(r.doi)) errs.push('文獻 ' + r.id + ' 的 DOI 格式不對'); });
-  // 病室和回顧裡講臨床的話：圖鑑的詞（症影、那一盞燈、症影的名字）會讓人分心去翻譯，
-  // 只留在結案的那一句（lines.closing）、症影自己的說明，還有公會和圖鑑的畫面。
-  const worldly = new RegExp('症影|圖鑑|[這那同]一盞|[兩三四]盞|這盞|那盞|' + c.shadow.name);
+  // 病室和回顧裡講臨床的話：圖鑑的詞（劫影、那一盞燈、劫影的名字）會讓人分心去翻譯，
+  // 只留在結案的那一句（lines.closing）、劫影自己的說明，還有公會和圖鑑的畫面。
+  const worldly = new RegExp('劫影|症影|圖鑑|[這那同]一盞|[兩三四]盞|這盞|那盞|' + c.shadow.name);
   // 「真身」這個詞已經不用了（2026-11-12）：四盞燈就叫「診斷」，在哪裡都一樣
   if (JSON.stringify(c).includes('\u771f\u8eab')) errs.push('用了已經不用的詞「\u771f\u8eab」：請改成「診斷」');
   const walk = (x: unknown, path: string): void => {

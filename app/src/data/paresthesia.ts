@@ -1,4 +1,4 @@
-// 主訴模組：感覺異常。症影是麻木鰻，底下有四個診斷。
+// 主訴模組：感覺異常。劫影是冥河鰻，底下有四個診斷。
 // 開場、病史、系統回顧用共用的骨架；主訴那一段的問法和身體評估是感覺異常自己的。
 // 這個主訴最重要的兩件事是「分布」和「時間」：麻的範圍畫出來是什麼形狀，是突然還是慢慢來的。
 import type { ComplaintDef } from '../core/module.ts';
@@ -7,7 +7,7 @@ import { HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const PARESTHESIA: ComplaintDef = {
   id: 'paresthesia',
   name: '感覺異常',
-  shadow: { name: '麻木鰻', look: 'eel', lore: '感覺異常的症影。游過的地方又麻又刺，像有細細的電。它從哪一段神經游過去，麻的地方就畫出那一段的形狀。' },
+  shadow: { name: '冥河鰻', look: 'eel', lore: '感覺異常的劫影。游過的地方又麻又刺，像有細細的電。它從哪一段神經游過去，麻的地方就畫出那一段的形狀。' },
   place: 'quiet',
   forms: [
     { id: 'brain', name: '腦', mark: '腦', danger: true, blurb: '腦的血管堵住或破掉：中風、暫時性腦缺血。' },

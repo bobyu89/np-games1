@@ -155,7 +155,7 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
 export function StatsFacts() {
   return (
     <ul className="dim">
-      <li>會回傳：哪一張委託開始了、做到哪一段、有沒有結案、分數、花了多久、問了岑禾幾次、用手機還是電腦、是哪一版。</li>
+      <li>會回傳：哪一張委託開始了、做到哪一段、有沒有結案、分數、花了多久、問了蒙托拉幾次、用手機還是電腦、是哪一版。</li>
       <li>不會回傳：姓名、帳號、你選的句子、任何文字。就算你有登入，統計和帳號也是分開存的，連不起來。</li>
       <li>用一組隨機的代號分辨不同的裝置，沒辦法從它知道你是誰。選「不要」，代號和還沒送出去的都會清掉。</li>
       <li>用途是讓作者知道哪一關有人玩、哪裡容易卡住。選哪一個都不影響遊戲。</li>

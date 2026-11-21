@@ -84,7 +84,7 @@ function caseSection(c: CaseDef): string {
   p(table(['生命徵象', '血壓', '心跳', '呼吸', '血氧', '體溫'], [['一開始', ...vit(v.base)], ...(v.worse ? [['變差之後', ...vit(v.worse)]] : [])]));
 
   p('### 1. 要玩家自己解讀的線索（' + tells.length + ' 條，解讀對 ' + c.readsNeeded + ' 條拿滿）', '玩家拿到線索之後，要選它讓哪一個診斷更像或比較不像。請看「指向」和「理由」對不對、有沒有說得太滿。');
-  p(table(['從哪裡來', '線索', '指向', '理由（解讀之後岑禾說的話）', '也算對的解讀', '審查'], tells.map((k: Clue) => [sourceOf(c, k.id), (k.key ? '★ ' : '') + k.text, tellText(c, k.tell!), k.why ?? '', (k.alsoOk ?? []).map((t) => tellText(c, t)).join('；') || '—', BOX]), [3, 4, 2, 6, 2, 3]));
+  p(table(['從哪裡來', '線索', '指向', '理由（解讀之後蒙托拉說的話）', '也算對的解讀', '審查'], tells.map((k: Clue) => [sourceOf(c, k.id), (k.key ? '★ ' : '') + k.text, tellText(c, k.tell!), k.why ?? '', (k.alsoOk ?? []).map((t) => tellText(c, t)).join('；') || '—', BOX]), [3, 4, 2, 6, 2, 3]));
 
   p('### 2. 其他關鍵線索（不用解讀，但沒拿到會被提醒）');
   p(keys.length ? table(['從哪裡來', '線索', '審查'], keys.map((k) => [sourceOf(c, k.id), k.text, BOX]), [3, 8, 2]) : '沒有。');
@@ -97,7 +97,7 @@ function caseSection(c: CaseDef): string {
   p(table(['安全行動', '分數', '審查'], c.safety.map((r) => [safetyText(c, r), String(r.points), BOX]), [10, 1, 2]));
   p(table(['時間點（從下診斷那一刻算起）', '發生什麼'], [
     ...(urgent ? [[sec(c.timeline.worsenAfter!) + '還沒有人知道', '病況變差：' + (c.lines.watchWorse ?? '')]] : [['—', '這位病人不會變差']]),
-    ...(c.timeline.stepInAfter !== undefined ? [[sec(c.timeline.stepInAfter) + '還沒有人知道', '岑禾接手敲鐘（安全行動變成需要複核）']] : []),
+    ...(c.timeline.stepInAfter !== undefined ? [[sec(c.timeline.stepInAfter) + '還沒有人知道', '蒙托拉接手敲鐘（安全行動變成需要複核）']] : []),
     ['通報之後 ' + sec(c.timeline.doctorDelay), '值班醫師到場'],
   ], [4, 9]));
 
@@ -118,9 +118,9 @@ function caseSection(c: CaseDef): string {
   p(table(['檢查', '多久有結果', '結果'], c.tests.map((t) => [t.label, t.delay ? sec(t.delay) : '這一關等不到', t.result ?? t.pending ?? '']), [3, 2, 9]));
   const L = c.lines;
   p(table(['什麼時候', '誰說', '說什麼'], [
-    ...L.opening.map((t) => ['進病室', '岑禾', t]), ['陪著觀察', '旁白', L.watch], ...(L.watchWorse ? [['變差之後觀察', '旁白', L.watchWorse]] : []), ...(L.worsen ? [['變差的那一刻', c.patient.name, L.worsen]] : []),
-    ...(L.stepIn ? [['太久沒有通報', '岑禾', L.stepIn]] : []), ['敲了值班鐘', '岑禾', L.called], ['醫師到場', '沈渡', L.doctorArrives], ['回報得好', '沈渡', L.reportGood], ['回報得不清楚', '沈渡', L.reportWeak],
-    ...(L.testRead ? [['關鍵檢查的結果回來', '沈渡', L.testRead]] : []), ['說明得好', c.patient.name, L.explainOk], ['回應了他擔心的事', c.patient.name, L.explainConcern], ['說明得不好', c.patient.name, L.explainBad], ['結案', '岑禾', L.closing],
+    ...L.opening.map((t) => ['進病室', '蒙托拉', t]), ['陪著觀察', '旁白', L.watch], ...(L.watchWorse ? [['變差之後觀察', '旁白', L.watchWorse]] : []), ...(L.worsen ? [['變差的那一刻', c.patient.name, L.worsen]] : []),
+    ...(L.stepIn ? [['太久沒有通報', '蒙托拉', L.stepIn]] : []), ['敲了值班鐘', '蒙托拉', L.called], ['醫師到場', '馬卡翁', L.doctorArrives], ['回報得好', '馬卡翁', L.reportGood], ['回報得不清楚', '馬卡翁', L.reportWeak],
+    ...(L.testRead ? [['關鍵檢查的結果回來', '馬卡翁', L.testRead]] : []), ['說明得好', c.patient.name, L.explainOk], ['回應了他擔心的事', c.patient.name, L.explainConcern], ['說明得不好', c.patient.name, L.explainBad], ['結案', '蒙托拉', L.closing],
   ], [3, 1, 10]));
   p('</details>');
 
@@ -152,10 +152,10 @@ function nightDoc(): string {
   NIGHT.forEach((n) => {
     p('## ' + n.title);
     p('**開場的旁白**：' + n.intro.map((l) => l.text).join(' '));
-    p(table(['誰', '他說的', '玩家看到的', '該不該先看', '選了這一位，岑禾說', '審查'], n.arrivals.map((a) => [a.name + '，' + a.tag, a.says, a.see, a.id === n.first ? '**先看**' : '可以等', n.notes[a.id], BOX]), [2, 4, 5, 1, 6, 2]));
+    p(table(['誰', '他說的', '玩家看到的', '該不該先看', '選了這一位，蒙托拉說', '審查'], n.arrivals.map((a) => [a.name + '，' + a.tag, a.says, a.see, a.id === n.first ? '**先看**' : '可以等', n.notes[a.id], BOX]), [2, 4, 5, 1, 6, 2]));
     p('**第二個決定**：' + n.then.ask);
     p(table(['選項', '對不對', '回饋', '審查'], n.then.picks.map((k) => [k.text, k.ok ? '**對**' : '不對', k.note, BOX]), [7, 1, 6, 2]));
-    p('**這一輪的結果**：' + n.after.map((l) => (l.who === 'sys' ? '' : (l.who === 'doctor' ? '沈渡' : '岑禾') + '：') + l.text).join(' '));
+    p('**這一輪的結果**：' + n.after.map((l) => (l.who === 'sys' ? '' : (l.who === 'doctor' ? '馬卡翁' : '蒙托拉') + '：') + l.text).join(' '));
     p('**走完之後整理頁上的重點**');
     p(table(['重點', '文獻', '核對到哪裡', '審查'], n.teach.map((t) => { const r = NIGHT_REFS.find((x) => x.id === t.ref)!; return [t.text, r.text.split('(')[0].trim() + '（' + (r.text.match(/\((\d{4})\)/)?.[1] ?? '') + '）', checkOf(t.ref), BOX]; }), [7, 3, 4, 2]));
     if (boxes) p('### 這一輪的整體意見', '☐ 4 可以用　☐ 3 小修　☐ 2 大修　☐ 1 不適合', '意見：', '', '審查人：　　　　　　日期：');
@@ -179,7 +179,7 @@ function readme(): string {
   if (boxes) p('每一列後面有「☐同意 ☐要改」。每一位病人最後有一個整體的四點評分（4 可以用、3 小修、2 大修、1 不適合），和專家效度常用的四點量表同一個刻度；這只是方便彙整，不是正式的效度工具。');
   p('## 索引');
   p(table(['代號', '主訴', '診斷', '病人', '穩不穩定', '狀態', '在哪一份'], CASES.map((c) => [c.id.toUpperCase(), c.complaintName, formOf(c, c.answer.truth)!.name, c.patient.name + '，' + c.patient.age + ' 歲，' + c.patient.job + (c.id === FINALE_ID ? '（終章）' : ''), c.timeline.worsenAfter !== undefined ? '不穩定' : '穩定', c.review.state, '[' + c.complaint + '.md](' + c.complaint + '.md)'])));
-  p('最後一位（' + FINALE_ID.toUpperCase() + '）是終章的病人，不在委託板的章節裡，也不會被資格試煉抽到。終章的前半另外有三輪分流的題目，不是病例，在 [night.md](night.md)。');
+  p('最後一位（' + FINALE_ID.toUpperCase() + '）是終章的病人，不在委託板的章節裡，也不會被試弓抽到。終章的前半另外有三輪分流的題目，不是病例，在 [night.md](night.md)。');
   p('## 每一關共用的設計');
   p('這幾項是所有病例共用的規則。請老師看它們本身合不合理。');
   p('**流程**：問診 → 身體評估 → 下診斷 → 檢查與處置。照考站的順序，整套做完才說計畫。真實的情境不會等：血氧低就先處理、先叫人。這一點寫在每一關的回顧裡。生命徵象和值班鐘任何時候都可以用，提早通報不扣分。');
@@ -196,7 +196,7 @@ function readme(): string {
     ['照護、回報和重評', '15', '安全行動 9 分、回報 4 分、重評 2 分'],
     ['對病人說明', '5', '說對的句子最多 3 分、回應病人擔心的事 2 分、說錯一句扣 1.5 分'],
   ], [4, 1, 9]));
-  p('前三項是「資料收集與診察」55 分，後四項是「推理與決策」45 分。安全行動另外有一個結果：達成、部分達成、需要複核。有一條沒做到，或是由岑禾接手通報，就是需要複核。');
+  p('前三項是「資料收集與診察」55 分，後四項是「推理與決策」45 分。安全行動另外有一個結果：達成、部分達成、需要複核。有一條沒做到，或是由蒙托拉接手通報，就是需要複核。');
   p('## 要特別請老師確認的地方');
   p('下面是寫的時候就知道沒把握的地方。');
   p(...REVIEW_ASKS.map((t) => '- ' + t));

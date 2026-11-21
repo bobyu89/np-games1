@@ -46,10 +46,10 @@ test('請教要花時間；回顧那一題的答案，是他那時候漏的那�
   assert.equal(s.time, before + ge.sec);
   assert.equal(s.consults!.length, 1);
   const q = consultQuestion(s)!;
-  assert.ok(q, '葛綿不提生命徵象：一進門請教她，一定漏了「量生命徵象」');
+  assert.ok(q, '阿瑞忒不提生命徵象：一進門請教她，一定漏了「量生命徵象」');
   assert.ok(ge.never.includes(q.answer) && q.options.includes(q.answer) && q.options.length === 3);
   // 另外兩個選項，是那時候已經做完的事：選它們一定不對
   for (const o of q.options) if (o !== q.answer) assert.ok(!s.consults![0].open.includes(o));
-  // 岑禾不算請教老醫生，回顧不會問
+  // 蒙托拉不算請教老醫生，回顧不會問
   assert.equal(consultQuestion(perform(c, createSession(c), { type: 'hint' }).session), null);
 });

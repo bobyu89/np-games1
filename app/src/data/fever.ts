@@ -1,4 +1,4 @@
-// 主訴模組：發燒。症影是發熱蜥，底下有四個診斷。
+// 主訴模組：發燒。劫影是日神蜥，底下有四個診斷。
 // 教案把發燒分成感染和非感染兩類；這裡把感染照「火在哪裡」再拆成三個。
 // 開場、病史、系統回顧用共用的骨架；主訴那一段的問法和身體評估是發燒自己的：從頭到腳找源頭。
 import type { ComplaintDef } from '../core/module.ts';
@@ -7,7 +7,7 @@ import { HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const FEVER: ComplaintDef = {
   id: 'fever',
   name: '發燒',
-  shadow: { name: '發熱蜥', look: 'newt', lore: '發燒的症影。背上的炭一明一滅。它只告訴你「燒起來了」，不告訴你火是從哪裡燒起來的。' },
+  shadow: { name: '日神蜥', look: 'newt', lore: '發燒的劫影。背上的炭一明一滅。它只告訴你「燒起來了」，不告訴你火是從哪裡燒起來的。' },
   place: 'archive',
   forms: [
     { id: 'lung', name: '呼吸道', mark: '肺', danger: true, blurb: '火在肺裡：肺炎、支氣管的感染。' },

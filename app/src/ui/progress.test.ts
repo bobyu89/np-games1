@@ -8,6 +8,10 @@ import { ISLANDS } from '../data/islands.ts';
 import { TIDES } from '../data/tides.ts';
 import { AFTER, echoOf, eldersFor, homeOf, BEATS, CHAPTER_PLACE, NIGHT_DONE, QUESTS, codexOf, finaleDone, finaleOpen, nextBeat, nightDone, peopleOf, pickTrial, placesOf, questName, towerOpen } from './progress.ts';
 import type { Save } from './store.ts';
+import { AXE, PASSED, axesLit, bardOf, cantoOpen, record, recordTrial } from './progress.ts';
+import { CANTOS } from '../data/odyssey.ts';
+import { idealActions, run } from '../core/autoplay.ts';
+import { scoreSession } from '../core/scoring.ts';
 
 const rec = { best: 90, safety: 'met' as const, plays: 1, seconds: 500, found: true, concern: true, reads: [] };
 const save = (cases: string[], beats: string[] = []): Save => ({ v: 3, beats, cases: Object.fromEntries(cases.map((id) => [id, rec])), takeaways: [], hero: 'cheng', trials: [] });
@@ -27,17 +31,17 @@ test('每一章的委託都在那一章的地方，除了出診', () => {
   }
 });
 
-test('港城回音：診斷對、也回應了擔心的事，才收到近況；四十八位都有一句', () => {
+test('歸鄉的消息：診斷對、也回應了擔心的事，才收到近況；四十八位都有一句', () => {
   for (const c of CASES.filter((k) => k.id !== FINALE_ID)) {
     assert.ok(AFTER[c.id], c.id + ' 沒有後來的近況');
     assert.ok(c.explain.some((e) => e.concern), c.id + ' 沒有回應擔心的那一句，永遠收不到回音');
   }
-  assert.ok(echoOf({ found: true, concern: true }, '好了。').startsWith('港城回音'));
+  assert.ok(echoOf({ found: true, concern: true }, '好了。').startsWith('歸鄉的消息'));
   assert.ok(echoOf({ found: true, concern: false }, '好了。').includes('前輩接手'));
   assert.ok(echoOf({ found: false, concern: true }, '好了。').includes('前輩接手'));
 });
 
-test('霧潮夜：每一章一場，用那一章看過的病人；先看的那一位在門口，對的交代剛好一句、三句差不多長', () => {
+test('海神的風暴：每一章一場，用那一章看過的病人；先看的那一位在門口，對的交代剛好一句、三句差不多長', () => {
   for (const n of [1, 2, 3, 4, 5]) {
     const r = TIDES[n];
     assert.ok(r.arrivals.some((a) => a.id === r.first) && Object.keys(r.notes).length === r.arrivals.length);
@@ -123,7 +127,7 @@ test('進門之前不先給方向：標題結案才出現、值班鐘那一句�
   const BELL = '值班鐘我帶來了，用不用由你決定。';
   for (const k of CASES) {
     const opening = k.lines.opening.join(''), dock = placeOf(k.scene) === 'dock';
-    // 以前只有緊急的那幾張，岑禾才會提值班鐘；提了，就等於先說了這一張要敲
+    // 以前只有緊急的那幾張，蒙托拉才會提值班鐘；提了，就等於先說了這一張要敲
     assert.equal(opening.includes('值班鐘'), dock, k.id + '：只有出診會提值班鐘，而且每一張出診都提');
     if (dock) assert.ok(opening.includes(BELL), k.id + '：出診提值班鐘的那一句要一樣');
     assert.equal(k.reading.prompts.length, 3, k.id);
@@ -136,4 +140,40 @@ test('值班夜的一句話：三個選項差不多長，最長的那一句不�
     const len = r.then.picks.map((p) => p.text.length);
     assert.ok(Math.max(...len) / Math.min(...len) <= 2, r.id + '：選項的長度差太多（' + len.join('、') + '）');
   }
+});
+
+test('劫的記號：理想的打法結案，記下過了這一劫；掉進陷阱的那一場不記', () => {
+  const c = CASES.find((k) => k.id === 'c01a')!, good = run(c, idealActions(c));
+  const a = record(save([]), c, good, scoreSession(c, good), 600, null);
+  assert.ok(a.beats.includes(PASSED(c.id)));
+  const bad = { ...good, board: { ...good.board, exclude: [] } }, b = record(save([]), c, bad, scoreSession(c, bad), 600, null);
+  assert.ok(!b.beats.includes(PASSED(c.id)));
+  assert.equal(record(a, c, good, scoreSession(c, good), 600, null).beats.filter((x) => x === PASSED(c.id)).length, 1, '不重複記');
+});
+
+test('十二斧之試：試弓及格才亮那一種劫影的斧頭；終章走完之後，還沒亮的比較容易抽到', () => {
+  const c = CASES.find((k) => k.id === 'c02a')!, good = run(c, idealActions(c)), sc = scoreSession(c, good);
+  assert.ok(recordTrial(save([]), c, good, sc, 600, false, 1).beats.includes(AXE('dyspnea')));
+  assert.ok(!recordTrial(save([]), c, good, { ...sc, total: 40 }, 600, false, 1).beats.includes(AXE('dyspnea')));
+  const all = [...BOARD, FINALE_ID], lit = COMPLAINTS.filter((m) => m.id !== 'rash').map((m) => AXE(m.id));
+  const s = save(all, lit), share = (x: Save) => { let n = 0; for (let i = 0; i < 1000; i++) if (pickTrial(x, i / 1000).complaint === 'rash') n++; return n / 1000; };
+  assert.equal(axesLit(s).length, 11);
+  assert.ok(share(s) > 0.25, '還沒亮的疹子應該比較容易抽到：' + share(s));
+  assert.ok(share(save(BOARD, lit)) < 0.15, '終章走完之前不偏');
+});
+
+test('篇章：每一章的開場由斐米歐先唸那一篇的開場；英雄歸來要十二把斧頭都亮', () => {
+  for (const [beat, canto] of [['ch2-open', 'tide'], ['ch3-open', 'book'], ['ch4-open', 'keel'], ['ch5-open', 'bamboo'], ['finale-open', 'home']]) {
+    const b = BEATS.find((x) => x.id === beat)!;
+    assert.equal(b.lines[0].who, 'mo', beat);
+    assert.ok(b.lines[0].text.includes(bardOf(canto)), beat);
+  }
+  const done = save([...BOARD, FINALE_ID], [...STORY, NIGHT_DONE, 'finale-tower', 'finale-open', 'finale-complete']);
+  const hero = BEATS.find((b) => b.id === 'axes-all')!;
+  assert.equal(hero.when(done), false);
+  assert.equal(hero.when({ ...done, beats: [...done.beats, ...COMPLAINTS.map((m) => AXE(m.id))] }), true);
+  assert.equal(cantoOpen('main', save([])), true);
+  assert.equal(cantoOpen('tide', save([])), false);
+  assert.equal(cantoOpen('home', done), true);
+  assert.equal(CANTOS.length, 7);
 });

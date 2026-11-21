@@ -1,11 +1,11 @@
-// 公會大廳：委託板、眠墨的櫃台、看得到霧港和燈塔的窗。
+// 公會大廳：委託板、斐米歐的櫃台、看得到霧港和燈塔的窗。
 import { C, K, TAU, rect, rrect, prep, trace, shape, oval, wline, dot, leaf, fillRect, createBase } from './sketch.js';
 import { drawCat, drawCen, drawMo, drawHero, drawShen } from './cast.js';
 
 const X0 = -220, X1 = 580, Y0 = -120, Y1 = 420;
 const FLOOR_Y = 196;
 const CEN = { x: 266, y: 270 }, MO = { x: 74, y: 191 }, PAPER = { x: 250, y: 82 }, HERO = { x: 190, y: 284 };
-// 故事演出用的位置：岑禾走到窗邊站的地方、沈渡進門站的地方、浮在半空的那一頁勘誤
+// 故事演出用的位置：蒙托拉走到窗邊站的地方、馬卡翁進門站的地方、浮在半空的那一頁勘誤
 const CEN_WINDOW = { x: 172, y: 264 }, SHEN = { x: 330, y: 268 }, PAGE = { x: 214, y: 104 };
 const WINDOW = [[31, 144], [31, 64], [38, 45], [55, 33], [72, 30], [89, 33], [106, 45], [113, 64], [113, 144]];
 
@@ -74,7 +74,7 @@ function drawBack(g) {
     [129, 108, 8, 18, C.coat], [138, 112, 6, 14, C.pumpkin], [145, 106, 7, 20, C.teal2], [158, 112, 9, 14, C.rust]].forEach(([x, y, w, h, col]) => shape(g, rect(x, y, w, h), { fill: col, lw: 1.1, amp: 0.3 }));
 }
 
-// 櫃台：要畫在眠墨前面
+// 櫃台：要畫在斐米歐前面
 function drawMid(g) {
   K.seed = 400;
   oval(g, 86, 256, 82, 6, { fill: C.shadow, stroke: null });
@@ -94,7 +94,7 @@ export function createHall(canvas, opts = {}) {
   // glow：委託板上那張可以接的委託有沒有在發亮
   // hero：主角是哪一位（沒有就不畫）
   // fx：故事演到這一句的時候，場景要跟著做什麼（空白分開，可以好幾個）：
-  //   window 岑禾走到窗邊　shen 沈渡走進大廳　dusk 天色暗下來（在講以前的事）　dark 燈塔的燈熄了　page 那一頁勘誤浮出來　page12 第十二行亮起來
+  //   window 蒙托拉走到窗邊　shen 馬卡翁走進大廳　dusk 天色暗下來（在講以前的事）　dark 燈塔的燈熄了　page 那一頁勘誤浮出來　page12 第十二行亮起來
   //   fog 霧從門縫和窗縫漫進大廳（終章的值班夜）
   const state = { talker: null, still: false, glow: 1, hero: opts.hero || null, fx: '' };
   const shown = { window: 0, shen: 0, dusk: 0, dark: 0, page: 0, page12: 0, fog: 0 };

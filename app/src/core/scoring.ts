@@ -23,7 +23,7 @@ function judge(c: CaseDef, s: Session, r: SafetyRule): { got: number; state: 'me
       const byYou = s.calledBy === 'you', early = byYou && (s.worsenedAt === null || s.calledAt! <= s.worsenedAt);
       if (early) return { got: r.points, state: 'met', note: '在' + who + '變差之前就通報了（' + mmss(s.calledAt!) + '）。' };
       if (byYou) return { got: r.points / 2, state: 'part', note: who + '變差之後才通報（' + mmss(s.calledAt!) + '），有補救回來。' };
-      return { got: 0, state: 'miss', note: s.calledBy === 'mentor' ? '沒有緊急通報，由岑禾接手通報。' : '沒有通報。' };
+      return { got: 0, state: 'miss', note: s.calledBy === 'mentor' ? '沒有緊急通報，由蒙托拉接手通報。' : '沒有通報。' };
     }
     case 'order': {
       const o = s.ordered.find((k) => k.id === r.test), label = c.tests.find((t) => t.id === r.test)!.label, limit = Math.round(r.within / 60), late = o ? o.at - (s.dxAt ?? 0) : 0;
@@ -130,7 +130,7 @@ export function moments(c: CaseDef, s: Session): { id: string; t: number; name: 
   add('vitals', first('vitals'), '第一次量到生命徵象');
   const commit = first('commit');
   add('commit', commit, '你說最擔心的是' + (formOf(c, commit?.id ?? null)?.name ?? ''));
-  add('call', first('call'), s.calledBy === 'mentor' ? '岑禾接手敲鐘' : '你通報了');
+  add('call', first('call'), s.calledBy === 'mentor' ? '蒙托拉接手敲鐘' : '你通報了');
   add('worsen', first('worsen'), c.patient.name + '的狀況變差');
   const keyTest = c.safety.find((r) => r.type === 'order');
   if (keyTest && keyTest.type === 'order') add('result', first('result', keyTest.test), c.tests.find((t) => t.id === keyTest.test)!.label + '的結果回來');

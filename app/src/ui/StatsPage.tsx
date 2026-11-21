@@ -73,7 +73,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
       {data && t && <>
         <h2>總覽（{data.since ?? '一開始'} 到 {data.until}）</h2>
         <div className="tiles">
-          {([['出現過的裝置', t.devices], ['至少結案一張', t.finishers], ['在兩天以上出現', t.returning], ['從主畫面圖示開過', t.installed], ['接了幾張', t.starts], ['結案幾張', t.dones], ['做到一半回公會', t.leaves], ['放掉', t.drops], ['資格試煉幾場', t.trials ?? 0], ['試煉及格幾場', t.trialPass ?? 0]] as [string, number][])
+          {([['出現過的裝置', t.devices], ['至少結案一張', t.finishers], ['在兩天以上出現', t.returning], ['從主畫面圖示開過', t.installed], ['接了幾張', t.starts], ['結案幾張', t.dones], ['做到一半回公會', t.leaves], ['放掉', t.drops], ['試弓幾場', t.trials ?? 0], ['試煉及格幾場', t.trialPass ?? 0]] as [string, number][])
             .map(([name, n]) => <div key={name} className="tile"><b>{n}</b><span>{name}</span></div>)}
         </div>
 
@@ -90,7 +90,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
 
         <h2>每一關</h2>
         <div className="tw"><table>
-          <thead><tr><th>委託</th><th>接過的裝置</th><th>結案的裝置</th><th>結案的比例</th><th>第一次的平均分</th><th>安全行動：達成／部分／複核</th><th>診斷正確</th><th>平均花多久</th><th>平均問岑禾</th><th>離開時停在</th></tr></thead>
+          <thead><tr><th>委託</th><th>接過的裝置</th><th>結案的裝置</th><th>結案的比例</th><th>第一次的平均分</th><th>安全行動：達成／部分／複核</th><th>診斷正確</th><th>平均花多久</th><th>平均問蒙托拉</th><th>離開時停在</th></tr></thead>
           <tbody>{data.cases.map((c) => (
             <tr key={c.case_id}><td>{nameOf(c.case_id)}</td><td>{c.starters}</td><td>{c.finishers}</td><td>{pct(c.finishers, c.starters)}</td><td>{c.firstScore ?? '—'}</td><td>{c.met}／{c.late}／{c.review}</td><td>{pct(c.found, c.dones)}</td><td>{mins(c.secs)}</td><td>{c.hints ?? '—'}</td>
               <td>{c.stuck.some((n) => n > 0) ? c.stuck.map((n, i) => (n ? PHASE[i] + ' ' + n : '')).filter(Boolean).join('、') : '—'}</td></tr>

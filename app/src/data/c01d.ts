@@ -103,7 +103,7 @@ export const C01D: CaseSpec = {
     { id: 'e-jargon', text: '您是肺栓塞，要打抗凝血劑，可能還要溶栓，等一下要做電腦斷層血管攝影。', ok: false, note: '用了病人聽不懂的詞，而且還沒有影像結果就說出診斷和治療。這些要等檢查、由醫師說明。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，她會變差；五分鐘還沒有，岑禾接手
+  // 下了診斷之後：兩分鐘內沒有人知道，她會變差；五分鐘還沒有，蒙托拉接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-ecg', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -114,7 +114,7 @@ export const C01D: CaseSpec = {
     watchWorse: '阮舟的嘴唇發紫，說不出完整的句子。',
     worsen: '我……吸不到氣……',
     stepIn: '我先敲鐘了。血氧這麼低的病人，不能讓她等。',
-    called: '鐘響了，整個碼頭都聽得到。沈渡醫師馬上到，你繼續。',
+    called: '鐘響了，整個碼頭都聽得到。馬卡翁醫師馬上到，你繼續。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。先坐高、給氧，心電圖我來看，影像我來安排。腿上那一段，你量得很清楚。',
     reportWeak: '我聽不出來有多急。先講血氧多少、你最擔心什麼、要我做什麼。我先看病人。',

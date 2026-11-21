@@ -1,4 +1,4 @@
-// 主訴模組：腹痛。症影是腹痛蟹，底下有四個診斷，照肚子的四個角落分。
+// 主訴模組：腹痛。劫影是斯庫拉蟹，底下有四個診斷，照肚子的四個角落分。
 // 開場、病史、系統回顧用共用的骨架；身體評估換成腹部的做法（視診 → 聽診 → 叩診 → 觸診）。
 import type { ComplaintDef } from '../core/module.ts';
 import { HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
@@ -6,7 +6,7 @@ import { HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const ABDOMEN: ComplaintDef = {
   id: 'abdomen',
   name: '腹痛',
-  shadow: { name: '腹痛蟹', look: 'crab', lore: '腹痛的症影。把一條繩子在肚子裡打了結，越扯越緊。結打在哪裡、怎麼打的，每一次都不一樣。' },
+  shadow: { name: '斯庫拉蟹', look: 'crab', lore: '腹痛的劫影。把一條繩子在肚子裡打了結，越扯越緊。結打在哪裡、怎麼打的，每一次都不一樣。' },
   place: 'market',
   forms: [
     { id: 'biliary', name: '膽囊與膽道', mark: '膽', danger: true, blurb: '右上腹：膽結石卡住、膽囊發炎。' },

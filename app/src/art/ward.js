@@ -1,4 +1,4 @@
-// 病室：林秋的床、岑禾、症影「胸悶蛾」和霧。
+// 病室：林秋的床、蒙托拉、劫影「獨眼蛾」和霧。
 // 不會動的背景只畫一次存起來，每一格直接貼上；會動的東西每一格重畫。
 import { C, K, TAU, hash, clamp, smooth, ell, rect, rrect, prep, trace, shape, oval, wline, limb, dot, leaf, fillRect, star, createBase } from './sketch.js';
 import { eye, drawCat, drawCen, drawShen, drawHero } from './cast.js';
@@ -119,7 +119,7 @@ function drawDockRoom(g) {
   // 掛在牆上的一捆纜繩
   dot(g, 232, 64, 2, C.wood2);
   [13, 10, 7].forEach((r) => oval(g, 232, 80, r, r * 1.25, { stroke: C.mustard, lw: 2.2, n: 14, double: false }));
-  // 值班鐘的架子（岑禾把鐘帶來，掛在樑上）
+  // 值班鐘的架子（蒙托拉把鐘帶來，掛在樑上）
   shape(g, rect(306, 4, 5, 20), { fill: C.wood2, lw: 1.2 }); wline(g, [[310, 15], [320, 15]], C.ink, 2);
   // 掛信號旗的繩子
   wline(g, [[112, 6], [150, 20], [196, 22], [246, 8]], C.wood2, 1.2);
@@ -292,7 +292,7 @@ const PATIENTS = {
   'r-luan': { shirt: C.plank, shirt2: C.plank2, hair: C.hairBrown, brow: C.hairBrown, calm: true },
   'r-duo': { shirt: C.coat, shirt2: C.coat2, hair: C.hairGrey, brow: C.hairGrey, beard: true, cap: true, calm: true },
   'r-lu': { shirt: C.rose, shirt2: C.rose2, hair: C.hairGrey, brow: C.hairGrey, woman: true, bun: true, calm: true },
-  // 終章：忍冬，守燈塔的人
+  // 終章：歐律克勒亞，守燈塔的人
   dong: { shirt: C.slate, shirt2: C.slate2, hair: C.cream, brow: C.hairGrey, woman: true, bun: true, scarf: true, calm: true, pale: true, sweat: 1 },
 };
 
@@ -419,7 +419,7 @@ export function createWard(canvas, opts = {}) {
   // 公會的診間都掛公會的旗子；窗台上有沒有貓、吊燈旁邊有沒有螢火蟲，看地方
   const guild = !dock && place !== 'tower', cat = ['ward', 'market', 'archive', 'quiet'].includes(place), flies = place === 'ward' || place === 'quiet';
   const base = createBase(canvas, { back: (g) => drawBack(g, who, place, rain), mid: drawMid }, opts.view), ctx = base.ctx;
-  // hero：主角是哪一位（沒有就不畫）；hide：不畫症影、霧和燈（圖鑑的頭像用）
+  // hero：主角是哪一位（沒有就不畫）；hide：不畫劫影、霧和燈（圖鑑的頭像用）
   // beam：燈塔的燈亮了沒（只有燈塔那一間用得到）
   const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [], hero: opts.hero || null, hide: false, beam: 0, beamShown: 0 };
   let T = 0, dustClock = 0;
@@ -639,7 +639,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 氣促蛙：喘的症影。肚子一鼓一縮，喉嚨的鳴囊跟著反過來動
+  // 風袋蛙：喘的劫影。肚子一鼓一縮，喉嚨的鳴囊跟著反過來動
   function drawFrog(g, t, x, y, flinch, agit) {
     const puff = 0.5 + 0.5 * Math.sin(t * (2.2 + agit * 4 + flinch * 8));
     g.save(); g.translate(x, y + 4); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
@@ -664,7 +664,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 腹痛蟹：腹痛的症影。懷裡抱著一個打死的繩結，兩隻螯一開一合
+  // 斯庫拉蟹：腹痛的劫影。懷裡抱著一個打死的繩結，兩隻螯一開一合
   function drawCrab(g, t, x, y, flinch, agit) {
     const snap = 0.5 + 0.5 * Math.sin(t * (2.6 + agit * 5 + flinch * 10));
     g.save(); g.translate(x, y + 6); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
@@ -692,7 +692,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 發熱蜥：發燒的症影。背上三塊炭一明一滅，尾巴捲著，鼻子冒一縷煙
+  // 日神蜥：發燒的劫影。背上三塊炭一明一滅，尾巴捲著，鼻子冒一縷煙
   function drawNewt(g, t, x, y, flinch, agit) {
     const glow = t * (2.2 + agit * 4 + flinch * 8);
     g.save(); g.translate(x, y + 6); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
@@ -720,7 +720,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 頭痛鳥：頭痛的症影。停在半空，一下一下地往病人那一邊啄
+  // 賽蓮鳥：頭痛的劫影。停在半空，一下一下地往病人那一邊啄
   function drawBird(g, t, x, y, flinch, agit) {
     const beat = (t * (1.1 + agit * 1.3 + flinch * 2)) % 1, peck = beat < 0.18 ? Math.sin((beat / 0.18) * Math.PI) : 0;
     g.save(); g.translate(x, y + 4); g.scale(-MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.03 + flinch * 0.2);
@@ -740,7 +740,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 腰背龜：背痛的症影。背上疊著石頭，走一步、沉一分
+  // 擲石龜：背痛的劫影。背上疊著石頭，走一步、沉一分
   function drawTortoise(g, t, x, y, flinch, agit) {
     const sag = Math.sin(t * (1.6 + agit * 3 + flinch * 6)) * (1 + agit * 1.5);
     g.save(); g.translate(x, y + 8 + sag * 0.6); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.8) * 0.02 + flinch * 0.15);
@@ -756,7 +756,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 跛足鷺：腳痛的症影。只用一隻腳站著，另一隻縮起來不讓人看
+  // 疤腿鷺：腳痛的劫影。只用一隻腳站著，另一隻縮起來不讓人看
   function drawHeron(g, t, x, y, flinch, agit) {
     const sway = Math.sin(t * (1.4 + agit * 3 + flinch * 7)) * (0.04 + agit * 0.05);
     g.save(); g.translate(x, y - 6); g.scale(MOTH_BIG, MOTH_BIG);
@@ -780,7 +780,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 水腫豚：腫脹的症影。一鼓一消
+  // 漩渦豚：腫脹的劫影。一鼓一消
   function drawPuffer(g, t, x, y, flinch, agit) {
     const puff = 0.5 + 0.5 * Math.sin(t * (1.8 + agit * 3.5 + flinch * 8)), r = 19 + puff * 6;
     g.save(); g.translate(x, y + 4); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.05 + flinch * 0.2);
@@ -795,7 +795,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 二便獺：排泄物異常的症影。把水攪渾了就躲起來
+  // 忘憂獺：排泄物異常的劫影。把水攪渾了就躲起來
   function drawOtter(g, t, x, y, flinch, agit) {
     const stir = t * (1.6 + agit * 3 + flinch * 6);
     g.save(); g.translate(x, y + 4); g.scale(MOTH_BIG, MOTH_BIG);
@@ -816,7 +816,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 皮疹魷：皮膚疹子的症影。游過哪裡，墨點就留在哪裡
+  // 喀耳刻魷：皮膚疹子的劫影。游過哪裡，墨點就留在哪裡
   function drawSquid(g, t, x, y, flinch, agit) {
     const wave = t * (2 + agit * 4 + flinch * 8);
     g.save(); g.translate(x, y); g.scale(MOTH_BIG, MOTH_BIG);
@@ -832,7 +832,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 消瘦鼠：體重減輕的症影。每天夜裡把月亮啃掉一小口
+  // 藏洞鼠：體重減輕的劫影。每天夜裡把月亮啃掉一小口
   function drawMouse(g, t, x, y, flinch, agit) {
     const nib = Math.max(0, Math.sin(t * (5 + agit * 6 + flinch * 10)));
     g.save(); g.translate(x + 4, y + 4); g.scale(MOTH_BIG, MOTH_BIG); g.rotate(Math.sin(t * 0.9) * 0.04 + flinch * 0.2);
@@ -854,7 +854,7 @@ export function createWard(canvas, opts = {}) {
     g.restore();
   }
 
-  // 麻木鰻：感覺異常的症影。游過的地方又麻又刺，像有細細的電
+  // 冥河鰻：感覺異常的劫影。游過的地方又麻又刺，像有細細的電
   function drawEel(g, t, x, y, flinch, agit) {
     const sw = t * (2 + agit * 4 + flinch * 8);
     g.save(); g.translate(x, y + 2); g.scale(MOTH_BIG, MOTH_BIG);
@@ -879,7 +879,7 @@ export function createWard(canvas, opts = {}) {
     const tx = LIN.x + 7, ty = LIN.y - 34;
     for (let i = 1; i < 9; i++) { const k = i / 9, px = x + (tx - x) * k + Math.sin(k * 9 + t * 2) * 4, py = y + 14 + (ty - y - 14) * k; dot(g, px, py, 1.5 - k * 0.5, C.cream); }
     g.globalAlpha = 1;
-    // 症影長什麼樣子，看是哪一個主訴
+    // 劫影長什麼樣子，看是哪一個主訴
     if (opts.shadow === 'frog') { drawFrog(g, t, x, y, flinch, agit); return { x, y }; }
     if (opts.shadow === 'crab') { drawCrab(g, t, x, y, flinch, agit); return { x, y }; }
     if (opts.shadow === 'newt') { drawNewt(g, t, x, y, flinch, agit); return { x, y }; }
@@ -998,7 +998,7 @@ export function createWard(canvas, opts = {}) {
     const ph = (t + 2.2) % 5.6;
     state.wince = still ? 0 : Math.max((ph < 1 ? Math.sin(ph * Math.PI) : 0) * (calm ? 0.5 : 1), state.slumpShown * 0.7);
     if (still) { sparks.length = 0; dust.length = 0; return; }
-    // 胸悶蛾翅膀掉下來的鱗粉
+    // 獨眼蛾翅膀掉下來的鱗粉
     dustClock += dt;
     if (dustClock > 0.3 && state.veilShown < 0.85) {
       dustClock = 0;
@@ -1024,7 +1024,7 @@ export function createWard(canvas, opts = {}) {
       drawFog(g, t, m);
       drawLights(g, t, m);
     }
-    // 值班醫師到了，岑禾往旁邊讓一步
+    // 值班醫師到了，蒙托拉往旁邊讓一步
     const d = state.doctorShown;
     drawCen(g, t, { x: CEN.x - 34 * d, y: CEN.y, talking: state.talker === 'cen', nod: state.nod });
     if (d > 0.02) drawShen(g, t, { x: SHEN.x + (1 - d) * 70, y: SHEN.y, talking: state.talker === 'shen', walk: d < 0.97 ? 1 : 0 });
@@ -1055,7 +1055,7 @@ export function createWard(canvas, opts = {}) {
       const p = who === 'lin' ? [LIN.x + 1, LIN.y - 84 * BIG] : who === 'cen' ? [CEN.x - 1 - 34 * d, CEN.y - 128 * BIG] : who === 'shen' ? [SHEN.x - 1, SHEN.y - 150] : who === 'hero' && state.hero ? [HERO.x - 1, HERO.y - 124] : null;
       return p && base.css(p[0], p[1]);
     },
-    /** 拿到一條線索：症影往後縮、岑禾點頭、星星散開 */
+    /** 拿到一條線索：劫影往後縮、蒙托拉點頭、星星散開 */
     clue(key) { state.flinch = 1; state.nod = 1; burst(key ? 12 : 7, key); },
     /** 四盞燈：[{ mark, level }]，level 從 -1（比較不像）到 1（更像） */
     setLights(list) { state.lights = list.map((it, i) => ({ ...it, shown: state.lights[i]?.shown ?? 0 })); },
