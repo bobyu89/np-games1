@@ -1,4 +1,4 @@
-// 主訴模組：腫脹。症影是水腫豚，底下有四個診斷。
+// 主訴模組：腫脹。劫影是漩渦豚，底下有四個診斷。
 // 教案把腫脹分成單側和雙側。這裡照同一個想法：先分「兩邊都腫（全身的水多了）」還是「只腫一邊（局部回不去）」，
 // 兩邊都腫的再分心臟、腎臟、肝臟三條路。
 // 開場、病史、系統回顧用共用的骨架；主訴那一段的問法和身體評估是腫脹自己的：兩邊比著看、用尺量、按下去看凹洞。
@@ -8,7 +8,7 @@ import { HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const SWELLING: ComplaintDef = {
   id: 'swelling',
   name: '腫脹',
-  shadow: { name: '水腫豚', look: 'puffer', lore: '腫脹的症影。一碰就鼓起來。它只讓你看見水，不告訴你水是從哪裡多出來的，還是從哪裡回不去。' },
+  shadow: { name: '漩渦豚', look: 'puffer', lore: '腫脹的劫影。一碰就鼓起來。它只讓你看見水，不告訴你水是從哪裡多出來的，還是從哪裡回不去。' },
   place: 'yard',
   forms: [
     { id: 'cardiac', name: '心臟', mark: '心', danger: true, blurb: '心臟打不出去，水往回積：心衰竭。兩邊一起腫，常常跟著喘。' },

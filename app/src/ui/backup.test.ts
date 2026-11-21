@@ -98,7 +98,7 @@ test('併的順序不影響結果；併過的再併一次不會變', () => {
   assert.ok(back.ok && sameSave(back.save, ab));
 });
 
-test('資格試煉的紀錄：匯出匯入帶得走，兩台併起來不會重複；舊格式（第 3 版）照樣讀得進來，更新的版本不讀', () => {
+test('試弓的紀錄：匯出匯入帶得走，兩台併起來不會重複；舊格式（第 3 版）照樣讀得進來，更新的版本不讀', () => {
   const t1 = { at: 1_800_000_000_000, caseId: 'c01a', score: 72, safety: 'met' as const, seconds: 840, timeUp: false, found: true };
   const t2 = { at: 1_800_000_500_000, caseId: 'c07b', score: 41, safety: 'review' as const, seconds: 900, timeUp: true, found: false };
   const a: Save = { ...played(['c01a']), trials: [t1] }, b: Save = { ...played(['c01a']), trials: [t2, t1] };

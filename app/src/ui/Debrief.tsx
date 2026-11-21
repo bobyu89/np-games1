@@ -1,6 +1,7 @@
 // 關後回顧：蒐集 → 分析 → 摘要。學習發生在這裡。
 import { useMemo, useState } from 'react';
 import { consultQuestion } from '../core/elders.ts';
+import { perilOf } from '../core/perils.ts';
 import { GAP_NAME } from '../data/islands.ts';
 import { heroOf } from './progress.ts';
 import type { CaseDef, Session } from '../core/types.ts';
@@ -13,13 +14,14 @@ import { sfx } from './sound.ts';
 const mmss = (t: number) => Math.floor(t / 60) + ' 分 ' + String(t % 60).padStart(2, '0') + ' 秒';
 const STEPS = ['蒐集', '分析', '摘要'];
 
-/** trial：這一場是資格試煉。timeUp：時間到自動交卷的 */
-interface Props { c: CaseDef; session: Session; seconds: number; hero?: string | null; echo?: { got: boolean; before: boolean; text: string } | null; trial?: { timeUp: boolean }; fresh: { text: string; form: string; dir: 1 | -1 }[]; onFinish(takeaway: string | null): void }
+/** trial：這一場是試弓。timeUp：時間到自動交卷的 */
+interface Props { c: CaseDef; session: Session; seconds: number; hero?: string | null; echo?: { got: boolean; before: boolean; text: string } | null; trial?: { timeUp: boolean; axes?: boolean }; fresh: { text: string; form: string; dir: 1 | -1 }[]; onFinish(takeaway: string | null): void }
 
 export function Debrief({ c, session, seconds, hero = null, echo = null, trial, fresh, onFinish }: Props) {
   const cq = useMemo(() => (trial ? null : consultQuestion(session)), [session, trial]);
   const [cqPick, setCqPick] = useState<string | null>(null);
   const me = heroOf(hero);
+  const pr = useMemo(() => perilOf(c, session), [c, session]);
   const sc = useMemo(() => scoreSession(c, session), [c, session]);
   const ms = useMemo(() => moments(c, session), [c, session]);
   const tk = useMemo(() => takeaways(c, session, sc), [c, session, sc]);
@@ -31,13 +33,13 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
 
   return (
     <div className="screen debrief">
-      <div className="top"><span className="who">{trial ? '資格試煉' : '回顧'}｜{c.title}</span><span className="clock">{Math.round(sc.total)} 分</span></div>
+      <div className="top"><span className="who">{trial ? '試弓' : '回顧'}｜{c.title}</span><span className="clock">{Math.round(sc.total)} 分</span></div>
       <div className="steps" role="tablist">{STEPS.map((name, i) => <button key={name} type="button" role="tab" aria-selected={i === step} className={i === step ? 'on' : ''} onClick={() => go(i)}>{i + 1}. {name}</button>)}</div>
 
       <div className="paper page">
         {step === 0 && (
           <>
-            <p><b className="name">岑禾</b>「先不看分數。哪一刻最影響你的判斷？」</p>
+            <p><b className="name">蒙托拉</b>「先不看分數。哪一刻最影響你的判斷？」</p>
             <div className="stack">
               {ms.map((k) => <button key={k.id} type="button" className={'pick' + (pick === k.id ? ' on' : '')} aria-pressed={pick === k.id} onClick={() => { sfx.tap(); setPick(k.id); }}><b>{mmss(k.t)}</b>　{k.name}</button>)}
               {!ms.length && <p className="dim">這一場沒有留下可以回看的時間點。</p>}
@@ -65,7 +67,7 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
             </div>
             <p className="quote">{sc.safetyNote}</p>
             <h3>你的想法怎麼變</h3>
-            {tr.steps.length ? <ol className="path">{tr.steps.map((k, i) => <li key={i} className={k.right ? 'up' : 'down'}><b>{mmss(k.t)}</b>　{i === tr.steps.length - 1 && session.board.likely ? (trial ? '交卷時' : '結案時') : (trial ? '口試委員問你時' : '岑禾問你時')}：{k.name}</li>)}<li><b>實際上</b>　{tr.truth}</li></ol> : <p className="dim">這一場沒有留下你的判斷。實際上是{tr.truth}。</p>}
+            {tr.steps.length ? <ol className="path">{tr.steps.map((k, i) => <li key={i} className={k.right ? 'up' : 'down'}><b>{mmss(k.t)}</b>　{i === tr.steps.length - 1 && session.board.likely ? (trial ? '交卷時' : '結案時') : (trial ? '口試委員問你時' : '蒙托拉問你時')}：{k.name}</li>)}<li><b>實際上</b>　{tr.truth}</li></ol> : <p className="dim">這一場沒有留下你的判斷。實際上是{tr.truth}。</p>}
             <p className="quote">{tr.verdict}</p>
             {sc.rows.map((r) => (
               <div key={r.id} className="row">
@@ -87,6 +89,17 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
 
         {step === 2 && (
           <>
+            {pr && (
+              <div className={'leaf peril' + (pr.trapped ? ' trapped' : '')}>
+                <b>{pr.peril.name}：{pr.trapped ? '這一劫，你被困住了' : '你過了這一劫'}</b>
+                <p className="dim">{pr.peril.myth}</p>
+                <p>{pr.peril.trap}</p>
+                <p className={pr.trapped ? 'down' : 'up'}>{pr.why}</p>
+                {pr.trapped && <p>{pr.peril.next}</p>}
+                {trial?.axes && sc.total >= TRIAL_PASS && <p className="up">十二斧之試：{c.shadow.name}的那一把斧頭亮了。</p>}
+                <p className="dim">這一段不計分。病室裡不會出現劫的名字；它是讓你把這個主訴最容易掉進去的陷阱記住。</p>
+              </div>
+            )}
             {cq && (
               <div className="leaf">
                 <b>你請教的那一位，漏了什麼？</b>
@@ -104,12 +117,12 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
               </div>
             )}
             {echo && (echo.got
-              ? <div className="leaf"><b>{echo.before ? '港城回音' : '港城回音（新的）'}</b><p>{echo.text}</p></div>
-              : <div className="leaf"><b>港城回音</b><p className="dim">這一次，{c.patient.name}由公會的前輩接手安頓。重接這一張，診斷對、也回應{c.patient.pronoun}擔心的事，才會收到{c.patient.pronoun}的近況。</p></div>)}
-            <p><b className="name">岑禾</b>「選一件下次要做到的事，帶進下一張委託。」</p>
+              ? <div className="leaf"><b>{echo.before ? '歸鄉的消息' : '歸鄉的消息（新的）'}</b><p>{echo.text}</p></div>
+              : <div className="leaf"><b>歸鄉的消息</b><p className="dim">這一次，{c.patient.name}由公會的前輩接手安頓。重接這一張，診斷對、也回應{c.patient.pronoun}擔心的事，才會收到{c.patient.pronoun}的近況。</p></div>)}
+            <p><b className="name">蒙托拉</b>「選一件下次要做到的事，帶進下一張委託。」</p>
             <div className="stack">{tk.map((t) => <button key={t} type="button" className={'pick' + (mine === t ? ' on' : '')} aria-pressed={mine === t} onClick={() => { sfx.tap(); setMine(t); }}>{t}</button>)}</div>
-            <p className="dim">下一次進病室的時候，岑禾會提醒你這一句。</p>
-            {trial ? <p className="dim">資格試煉不會寫進圖鑑，也不算完成這一張委託；成績會記在大廳的「資格試煉」裡。</p> : <>
+            <p className="dim">下一次進病室的時候，蒙托拉會提醒你這一句。</p>
+            {trial ? <p className="dim">試弓不會寫進圖鑑，也不算完成這一張委託；成績會記在大廳的「試弓」裡。</p> : <>
               <h3>這一關寫回圖鑑的</h3>
               {fresh.length ? <ul className="path">{fresh.map((r, i) => <li key={i} className={r.dir > 0 ? 'up' : 'down'}>{r.dir > 0 ? '＋' : '－'} {r.text} → {formOf(c, r.form)!.name}</li>)}</ul> : <p className="dim">這一次沒有新的線索寫回去。解讀對的線索才會留下來。</p>}
             </>}

@@ -101,7 +101,7 @@ export const C03C: CaseSpec = {
     { id: 'e-blame', text: '上次大夫就叫你戒酒，你不聽，每天還喝一斤。這次痛成這樣是自找的，再喝下去命都沒了。', ok: false, note: '責備和嚇唬不會讓他戒酒，只會讓他下次不敢來。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，岑禾接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-blood', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -112,7 +112,7 @@ export const C03C: CaseSpec = {
     watchWorse: '龔椿靠在床頭，眼睛半閉，叫他要叫兩聲才回應。',
     worsen: '……頭好暈……好渴……',
     stepIn: '我先敲鐘了。心跳這麼快、手腳這麼冰的人，不能等你把話想完。',
-    called: '值班鐘響了。沈渡醫師馬上到，你繼續。',
+    called: '值班鐘響了。馬卡翁醫師馬上到，你繼續。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。先抽血、禁食，點滴我來開，管路你先備好。尿量和血壓你有在看，很好，等一下補多少水就靠那兩個數字。',
     reportWeak: '我聽不出有多急。心跳多少、血壓多少、吐了幾次？下次先講這些。我先看病人。',

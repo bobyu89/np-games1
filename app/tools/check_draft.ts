@@ -20,7 +20,7 @@ if (m.forms.length !== 4) problems.push('診斷要四個，現在 ' + m.forms.le
 if (m.questions.length !== 25) problems.push('問題要 25 題，現在 ' + m.questions.length + ' 題');
 if (m.exams.length !== 10) problems.push('評估要 10 項，現在 ' + m.exams.length + ' 項');
 if (m.tests.length !== 4) problems.push('檢查要 4 項，現在 ' + m.tests.length + ' 項');
-if (!m.shadow.look) problems.push('症影沒有寫 look');
+if (!m.shadow.look) problems.push('劫影沒有寫 look');
 problems.forEach((p) => console.log('✗ 主訴模組：' + p));
 bad += problems.length;
 const truths: string[] = [];

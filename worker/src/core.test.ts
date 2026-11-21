@@ -83,7 +83,7 @@ test('總表：人數、每一關、卡在哪一段、玩得多深', () => {
   assert.equal(csv(exec, 7, NOW).trim().split('\n').length, 1 + 12);
 });
 
-test('資格試煉另外算：不混進每一關的表，也不算「結案」', () => {
+test('試弓另外算：不混進每一關的表，也不算「結案」', () => {
   const exec = fresh();
   send(exec, pack(1, [{ t: 'start', c: 'c01a', at: NOW }, { t: 'done', c: 'c01a', at: NOW + 600, sc: 80, sf: 'met', sec: 600, n: 1, f: 1 }, { t: 'trial', c: 'c07b', at: NOW + 900, sc: 72, sf: 'met', sec: 850, f: 1 }]));
   send(exec, pack(2, [{ t: 'trial', c: 'c01a', at: NOW + 50, sc: 41, sf: 'review', sec: 900, f: 0 }]));

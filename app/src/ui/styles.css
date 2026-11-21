@@ -138,7 +138,7 @@ button.act.hint, .quest.hint, .opt.hint:not(.done) { animation: hint 1.8s ease-i
 @keyframes hint { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-2deg) scale(1.03); } 80% { transform: rotate(2deg) scale(1.03); } 90% { transform: rotate(-1deg); } }
 .skip { background: none; border: 0; color: var(--on-page-soft); text-decoration: underline wavy; text-underline-offset: 3px; cursor: pointer; font-size: 0.9em; padding: 4px; }
 
-/* 解讀線索、回答岑禾：四個真身，點一下 */
+/* 解讀線索、回答蒙托拉：四個真身，點一下 */
 .ask-read { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 4px; color: var(--on-page); animation: rise 0.18s ease-out; }
 .ask-read p { line-height: 1.3; }
 .ask-read em { font-style: normal; font-weight: 700; padding: 0 5px; border-radius: 6px; color: var(--ink); }
@@ -276,7 +276,7 @@ button.act.hint, .quest.hint, .opt.hint:not(.done) { animation: hint 1.8s ease-i
 .safety.review { background: var(--grain), var(--rust-2); }
 .safety b { font-size: 1.1em; line-height: 1.64; }
 .row-top { display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; }
-/* 委託板上，一隻症影一個小標題 */
+/* 委託板上，一隻劫影一個小標題 */
 .quest-head { flex: none; color: var(--on-page-soft); font-size: 0.86em; letter-spacing: 0.04em; padding: 2px 2px 0; }
 .quest-head:not(:first-child) { margin-top: 4px; }
 
@@ -395,7 +395,7 @@ html.admin #app { max-width: 1080px; max-height: none; height: auto; margin: 0 a
 .leaf { border-left: 4px solid var(--ochre); padding: 1px 10px 2px; display: flex; flex-direction: column; gap: 3px; }
 .leaf b { color: var(--teal); }
 .leaf.locked { border-left-color: var(--ink-soft); opacity: 0.7; }
-/* 資格試煉的倒數：剩三分鐘變色 */
+/* 試弓的倒數：剩三分鐘變色 */
 .tag-clock.low { background: var(--grain), var(--rust-2); color: var(--rust); }
 /* 回報問題、隱私說明 */
 .code.say { font: inherit; word-break: normal; min-height: 6.5em; }
@@ -469,3 +469,31 @@ html.admin #app:has(.prose) { padding-inline: 4px; }
 .chart .boat .sail { fill: var(--paper); }
 @media (prefers-reduced-motion: no-preference) { .chart .boat { animation: bob 2.6s ease-in-out infinite; transform-box: fill-box; } }
 @keyframes bob { 50% { translate: 0 4px; } }
+
+/* 歸航記：航海圖上的劫、歸航線、篇章、十二斧 */
+.chart .sea { font-size: 26px; fill: var(--teal); opacity: 0.55; letter-spacing: 0.3em; }
+.chart .route.home { stroke: var(--ochre); stroke-width: 3.5; stroke-dasharray: 10 8; opacity: 0.9; }
+.chart .peril { fill: var(--paper); stroke: var(--ink-soft); stroke-width: 2; }
+.chart .peril.ok { fill: var(--ochre); stroke: var(--ink); }
+.steps.five { grid-template-columns: repeat(5, 1fr); }
+.canto { display: block; padding: 8px 12px; border: 2px solid var(--ink); border-radius: var(--r-a); }
+.canto > summary { cursor: pointer; display: flex; flex-direction: column; gap: 2px; list-style: none; }
+.canto > summary::-webkit-details-marker { display: none; }
+.canto > summary b { color: var(--teal); }
+.canto > summary span { font-size: 0.85em; color: var(--ink-soft); }
+.canto[open] > summary { margin-bottom: 6px; }
+.canto p { margin: 6px 0; line-height: 1.55; }
+.canto .leaf { margin: 8px 0; }
+.canto .path .up, .leaf .up { color: var(--teal); }
+.canto .path .down, .leaf .down { color: var(--rust); }
+.invoke { font-style: italic; color: var(--ink-soft); }
+.leaf.peril { border-left-color: var(--teal); }
+.leaf.peril.trapped { border-left-color: var(--rust); }
+.axes { list-style: none; margin: 4px 0; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.axes li { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.72em; color: var(--ink-soft); text-align: center; }
+.axes i { width: 22px; height: 26px; border: 2px solid var(--ink-soft); border-radius: 50% 50% 4px 4px; background: var(--paper-2); }
+.axes li.lit { color: var(--ink); font-weight: 700; }
+.axes li.lit i { background: var(--ochre); border-color: var(--ink); box-shadow: 0 0 8px var(--ochre); }
+#app .title-head h1 small { display: block; font-size: 0.42em; letter-spacing: 0.5em; text-indent: 0.5em; color: var(--ochre); margin-top: 2px; }
+.axes-card { padding: 8px 10px; border: 2px solid var(--ink); border-radius: var(--r-a); }
+.axes-card p { margin: 4px 0 0; }

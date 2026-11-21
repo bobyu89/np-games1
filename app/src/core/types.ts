@@ -19,7 +19,7 @@ export interface Clue {
   tell?: Tell;
   /** 也算對的其他解讀 */
   alsoOk?: Tell[];
-  /** 岑禾的一句話：為什麼這樣解讀 */
+  /** 蒙托拉的一句話：為什麼這樣解讀 */
   why?: string;
 }
 
@@ -62,7 +62,7 @@ export interface TestDef {
   clue?: string;
 }
 
-/** 診斷：同一隻症影底下可能的病。一個主訴固定四個 */
+/** 診斷：同一隻劫影底下可能的病。一個主訴固定四個 */
 export interface TrueForm {
   id: string;
   name: string;
@@ -94,7 +94,7 @@ export interface CaseDef {
   /** 屬於哪個主訴模組 */
   complaint: string;
   complaintName: string;
-  /** 示範：第一次遇到；變體：同一隻症影、不同的診斷；遷移：沒看過的說法 */
+  /** 示範：第一次遇到；變體：同一隻劫影、不同的診斷；遷移：沒看過的說法 */
   kind: '示範' | '變體' | '遷移';
   title: string;
   review: { state: '未審查' | '已審查'; note: string };
@@ -153,7 +153,7 @@ export interface LogEntry { t: number; type: string; id?: string; note?: string;
 export interface Session {
   caseId: string;
   mode: 'quest';
-  /** 提示拿掉了幾層。0：見習和巡診。1：值班（線索是更像還是比較不像要自己選；岑禾一張委託只回答三次） */
+  /** 提示拿掉了幾層。0：見習和巡診。1：值班（線索是更像還是比較不像要自己選；蒙托拉一張委託只回答三次） */
   tier: 0 | 1;
   /** 模擬的時鐘，單位是秒。只有做行動才會走 */
   time: number;
@@ -170,7 +170,7 @@ export interface Session {
   /** 拿到了、還沒解讀的線索 */
   pending: string[];
   reads: { clue: string; form: string; ok: boolean; t: number }[];
-  /** 岑禾中途問「你最擔心哪一個」，和結案時的答案 */
+  /** 蒙托拉中途問「你最擔心哪一個」，和結案時的答案 */
   commits: { t: number; form: string }[];
   needCommit: boolean;
   /** 最後一次量到的生命徵象。沒量過是 null：不知道的就是不知道 */

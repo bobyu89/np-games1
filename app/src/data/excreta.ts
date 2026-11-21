@@ -1,4 +1,4 @@
-// 主訴模組：排泄物異常。症影是二便獺，底下有四個診斷。
+// 主訴模組：排泄物異常。劫影是忘憂獺，底下有四個診斷。
 // 開場、病史、系統回顧用共用的骨架；主訴那一段的問法和身體評估是這個主訴自己的。
 // 問法繞著「顏色、樣子、血在哪裡」問，而且要問得讓病人說得出口；
 // 評估多了躺著和站著的血壓、肛門指診（先說明、取得同意、請人陪同）。
@@ -8,7 +8,7 @@ import { HISTORY, OPENING, REVIEW, oldCarts } from './skeleton.ts';
 export const EXCRETA: ComplaintDef = {
   id: 'excreta',
   name: '排泄物異常',
-  shadow: { name: '二便獺', look: 'otter', lore: '排泄物異常的症影。把水攪渾了就躲起來。水裡多了什麼顏色，要你自己低頭去看；來的人多半不好意思先開口。' },
+  shadow: { name: '忘憂獺', look: 'otter', lore: '排泄物異常的劫影。把水攪渾了就躲起來。水裡多了什麼顏色，要你自己低頭去看；來的人多半不好意思先開口。' },
   place: 'quiet',
   forms: [
     { id: 'upper', name: '上消化道', mark: '上', danger: true, blurb: '血從胃和十二指腸來：黑得像柏油的便、吐血。潰瘍、靜脈瘤。' },

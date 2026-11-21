@@ -28,7 +28,7 @@ test('病室和回顧裡不用圖鑑的詞；結案的那一句可以', () => {
   const base = CASES[0];
   assert.deepEqual(said({ ...base, lines: { ...base.lines, closing: '霧散了。' + base.shadow.name + '的第一盞燈亮了，寫進圖鑑吧。' } }), []);
   assert.equal(said({ ...base, lines: { ...base.lines, opening: ['同一隻' + base.shadow.name + '，停在另一個人身上。'] } }).length, 1);
-  assert.equal(said({ ...base, clues: base.clues.map((k, i) => (i === 0 ? { ...k, why: '這條線索讓這隻症影更清楚。' } : k)) }).length, 1);
+  assert.equal(said({ ...base, clues: base.clues.map((k, i) => (i === 0 ? { ...k, why: '這條線索讓這隻劫影更清楚。' } : k)) }).length, 1);
   assert.equal(said({ ...base, debrief: { ...base.debrief, alternatives: ['「血管急症」那一盞底下有兩個病。'] } }).length, 1);
   assert.deepEqual(said({ ...base, sbar: { ...base.sbar, requests: base.sbar.requests.map((k, i) => (i === 0 ? { ...k, text: '夜裡留一盞燈，走動有人陪。' } : k)) } }), [], '真的燈不算');
   // 「\u771f\u8eab」這個舊的說法在哪裡都不能用，結案的那一句也一樣
@@ -127,7 +127,7 @@ test('提示拿掉一層：線索是更像還是比較不像要自己選，方�
   for (const c of CASES) assert.equal(scoreSession(c, run(c, idealActions(c), false, 1)).total, scoreSession(c, run(c, idealActions(c))).total, c.id);
 });
 
-test('提示拿掉一層：岑禾一張委託只回答三次', () => {
+test('提示拿掉一層：蒙托拉一張委託只回答三次', () => {
   let s = createSession(A, 1);
   for (let i = 0; i < HINT_LIMIT; i++) s = perform(A, s, { type: 'hint' }).session;
   const more = perform(A, s, { type: 'hint' });
@@ -139,7 +139,7 @@ test('提示拿掉一層：岑禾一張委託只回答三次', () => {
   assert.equal(easy.hints, HINT_LIMIT + 2);
 });
 
-test('解讀到第三條，岑禾會問你最擔心哪一個；回答之前不能做別的', () => {
+test('解讀到第三條，蒙托拉會問你最擔心哪一個；回答之前不能做別的', () => {
   let s = createSession(A);
   for (const id of ['q-onset', 'q-character', 'q-assoc']) { s = perform(A, s, ask(id)).session; s = perform(A, s, { type: 'read', clue: s.pending[0], form: 'cardiac' }).session; }
   assert.equal(s.reads.length, COMMIT_AFTER);
@@ -207,7 +207,7 @@ test('下了診斷卻拖著不通報：2 分鐘後變差，要重測才看得到
   assert.equal(scoreSession(A, run(A, [...toDx(A), ...times(watch, 4), { type: 'call' }, { type: 'test', id: 't-ecg' }, { type: 'close' }])).safety, 'late');
 });
 
-test('一直不通報：下診斷 5 分鐘後岑禾接手，安全狀態是需要複核', () => {
+test('一直不通報：下診斷 5 分鐘後蒙托拉接手，安全狀態是需要複核', () => {
   const s = run(A, [...toDx(A), ...times(watch, 10)]);
   assert.equal(s.calledBy, 'mentor');
   assert.equal(scoreSession(A, run(A, [...toDx(A), ...times(watch, 10), { type: 'close' }])).safety, 'review');
@@ -250,7 +250,7 @@ test('肺栓塞那一位：下了診斷不通報一樣會變差；X 光乾淨反
 });
 
 // ── 穩定的病人（C01B、C01C）──
-test('穩定的病人不會變差，岑禾也不會接手', () => {
+test('穩定的病人不會變差，蒙托拉也不會接手', () => {
   for (const c of [B, C]) {
     const s = run(c, [...toDx(c), ...times(watch, 14)]);
     assert.equal(s.worsenedAt, null);
@@ -302,13 +302,13 @@ test('腫瘤那一位：關鍵的檢查是胸部 X 光；沒照就放回去要�
 });
 
 // ── 第二章：喘、腹痛 ──
-test('每隻症影各有自己的四個診斷、自己的檢查；同一隻底下的病例選項一樣', () => {
+test('每隻劫影各有自己的四個診斷、自己的檢查；同一隻底下的病例選項一樣', () => {
   assert.deepEqual(COMPLAINTS.map((m) => m.id), ['chest-pain', 'dyspnea', 'abdomen', 'fever', 'headache', 'back-pain', 'leg-pain', 'swelling', 'excreta', 'rash', 'weight-loss', 'paresthesia']);
   for (const m of COMPLAINTS) {
     const mine = CASES.filter((c) => c.complaint === m.id);
     assert.ok(mine.length >= 2, m.id);
     assert.equal(m.forms.length, 4);
-    assert.ok(m.shadow.look, m.id + ' 沒有寫症影的樣子');
+    assert.ok(m.shadow.look, m.id + ' 沒有寫劫影的樣子');
     const shape = (c: typeof A) => JSON.stringify([c.questions.map((q) => [q.id, q.label, q.ask]), c.exams.map((e) => [e.id, e.part, e.label]), c.tests.map((t) => [t.id, t.label])]);
     mine.forEach((c) => assert.equal(shape(c), shape(mine[0]), c.id));
     const board = mine.filter((c) => c.id !== FINALE_ID);   // 終章的那一位不在委託板上，診斷會和板上的一位重複
@@ -345,7 +345,7 @@ test('腹痛：評估照看、聽、敲、摸的順序；讓病人吃東西或�
   assert.equal(scoreSession(G, run(G, quick)).safety, 'review');
 });
 
-test('十二隻症影的四個診斷，每一個都有一位病人', () => {
+test('十二隻劫影的四個診斷，每一個都有一位病人', () => {
   for (const m of COMPLAINTS) {
     const truths = CASES.filter((c) => c.complaint === m.id && c.id !== FINALE_ID).map((c) => c.answer.truth).sort();
     assert.deepEqual(truths, m.forms.map((f) => f.id).sort(), m.id);

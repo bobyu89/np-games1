@@ -3,7 +3,7 @@
 import type { Action, CaseDef, Session } from './types.ts';
 import { clueOf, createSession, perform } from './engine.ts';
 
-/** 做一個行動，接著把跳出來的解讀和岑禾的提問都答對 */
+/** 做一個行動，接著把跳出來的解讀和蒙托拉的提問都答對 */
 export function step(c: CaseDef, s: Session, a: Action, wrongReads = false): Session {
   let cur = perform(c, s, a).session;
   for (let guard = 0; guard < 50 && (cur.pending.length || cur.needCommit); guard++) {

@@ -1,6 +1,6 @@
 // 病例模組：把「主訴」和「病例」分開寫。
 //
-// 主訴模組（ComplaintDef）寫一次：症影、四個診斷、問題庫、評估項目、檢查項目。
+// 主訴模組（ComplaintDef）寫一次：劫影、四個診斷、問題庫、評估項目、檢查項目。
 // 病例（CaseSpec）只寫這個病人的部分：他怎麼回答、檢查看到什麼、診斷是哪一個、劇本和評分。
 //
 // 這樣同一個主訴的每個病例，畫面上的選項一模一樣，玩家沒辦法從「有哪些題目」猜出答案；
@@ -10,7 +10,7 @@ import type { CaseDef, Clue, Exam, Home, Question, Scene, TestDef, TrueForm, Vit
 export interface ComplaintDef {
   id: string;
   name: string;
-  /** look：症影長什麼樣子，只給畫面用 */
+  /** look：劫影長什麼樣子，只給畫面用 */
   shadow: { name: string; lore: string; look?: string };
   /** 這個主訴的委託平常在公會的哪一個診間看。沒寫就是公會的病室 */
   place?: Home;

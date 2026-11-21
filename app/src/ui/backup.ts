@@ -7,7 +7,7 @@ import type { CaseRecord, Run, Save, TrialRecord } from './store.ts';
 const SAFETY: Safety[] = ['met', 'late', 'review'];
 /** 一個病例：最佳分數、安全行動、玩過幾次、花了幾秒、診斷對了沒、回應在意的事、解讀對的線索 */
 type Row = [number, number, number, number, 0 | 1, 0 | 1, string[]];
-/** 一場資格試煉：什麼時候、哪一位病人、分數、安全行動、花了幾秒、是不是時間到、診斷對了沒 */
+/** 一場試弓：什麼時候、哪一位病人、分數、安全行動、花了幾秒、是不是時間到、診斷對了沒 */
 type TrialRow = [number, string, number, number, number, 0 | 1, 0 | 1];
 /** 第 4 版多了 trials。第 3 版的照樣讀得進來；比這一版新的不讀（請玩家先更新遊戲） */
 interface Packed { app: 'mist-guild'; kind: 'save'; v: 3 | 4; at: string; build: string; hero: string | null; beats: string[]; takeaways: string[]; cases: Record<string, Row>; trials?: TrialRow[] }

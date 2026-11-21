@@ -1,4 +1,4 @@
-// 公會大廳：故事的段落、委託板、圖鑑（症影、人物、場景）、選主角。
+// 公會大廳：故事的段落、委託板、圖鑑（劫影、人物、場景）、選主角。
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { CaseDef } from '../core/types.ts';
 import { SAFETY_LABEL } from '../core/scoring.ts';
@@ -15,8 +15,9 @@ import type { Run, Save } from './store.ts';
 import { Settings, StatsFacts } from './Settings.tsx';
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
-import { chapterDone, chapterOpen, homeOf, ARCHIVE, BEATS, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, questName, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
+import { AXE, axesLit, cantoOpen, perilsPassed, PASSED, chapterDone, chapterOpen, homeOf, ARCHIVE, BEATS, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, questName, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
 import { WELCOME, WORLD } from './world.ts';
+import { CANTOS, PERILS, type Canto } from '../data/odyssey.ts';
 import { Portrait } from './Portrait.tsx';
 import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 
@@ -33,6 +34,34 @@ function Card({ e, wide }: { e: Entry; wide?: boolean }) {
       <div><b>{e.open ? e.name : '？？？'}</b><span>{e.open ? e.tag : e.hint}</span>{e.open && e.lines.map((l) => <p key={l}>{l}</p>)}</div>
     </div>
   );
+}
+/** 一篇篇章：吟遊詩人的開場、史詩的故事、這一篇的劫，和你在這幾劫遇過的人 */
+function CantoBody({ k, save }: { k: Canto; save: Save }) {
+  return <>
+    <p className="invoke">「{k.invoke}」</p>
+    {k.lines.map((t) => <p key={t}>{t}</p>)}
+    {k.id === 'axes' && <Axes save={save} />}
+    {k.perils.map((id) => {
+      const pr = PERILS[id], m = COMPLAINTS.find((x) => x.id === id)!, met = QUESTS.map((q) => caseById(q.caseId)).filter((c) => c.complaint === id && save.cases[c.id]);
+      return (
+        <div key={id} className="leaf">
+          <b>{pr.name}・{m.shadow.name}（{m.name}）</b>
+          <p className="dim">{pr.myth}</p>
+          <p>{pr.trap}</p>
+          {met.length ? <ul className="path">{met.map((c) => <li key={c.id} className={save.beats.includes(PASSED(c.id)) ? 'up' : 'down'}>{c.patient.name}（{c.title}）：{save.beats.includes(PASSED(c.id)) ? '過了這一劫' : '還沒過；重接這一張再試'}</li>)}</ul>
+            : <p className="dim">這一劫的委託，你還沒有接過。</p>}
+        </div>
+      );
+    })}
+  </>;
+}
+/** 十二斧之試：一種劫影一把斧頭，在它的試弓裡及格一次就亮 */
+function Axes({ save }: { save: Save }) {
+  const lit = axesLit(save);
+  return <>
+    <ol className="axes" aria-label={'十二把斧頭，亮了 ' + lit.length + ' 把'}>{COMPLAINTS.map((m) => <li key={m.id} className={save.beats.includes(AXE(m.id)) ? 'lit' : ''}><i aria-hidden="true" /><span>{m.shadow.name}</span></li>)}</ol>
+    <p className="dim">亮了 {lit.length}／12 把。{lit.length < 12 ? '試弓會先抽還沒亮的那幾種。' : '十二把都亮了。'}</p>
+  </>;
 }
 /** 三位主角。picked 是現在選的那一位 */
 function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(id: string): void; action: string }) {
@@ -52,7 +81,8 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   // 航海圖：哪幾座島去過了、每座島結了幾張。巡診船停在現在走到的那一章的島
   const isles: ChartIsle[] = (Object.keys(ISLANDS) as IslandId[]).map((id) => {
     const ch = ISLANDS[id].chapter, qs = QUESTS.filter((q) => q.chapter === ch);
-    return { id, open: chapterOpen(ch, save), done: qs.filter((q) => save.cases[q.caseId]).length, total: qs.length, fresh: qs.some((q) => unlocked(q, save) && !save.cases[q.caseId]) };
+    const marks = COMPLAINTS.filter((m) => QUESTS.some((q) => q.chapter === ch && caseById(q.caseId).complaint === m.id)).map((m) => perilsPassed(m.id, save) > 0);
+    return { id, open: chapterOpen(ch, save), done: qs.filter((q) => save.cases[q.caseId]).length, total: qs.length, fresh: qs.some((q) => unlocked(q, save) && !save.cases[q.caseId]), marks };
   });
   const boat = ([...isles].reverse().find((i) => i.open && i.done < i.total) ?? isles[0]).id;
   const [isle, setIsle] = useState<IslandId>(boat);
@@ -63,11 +93,11 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [step, setStep] = useState(0);
   const [reading, setReading] = useState<CaseDef | null>(null);
   const [codex, setCodex] = useState(false);
-  const [tab, setTab] = useState<'shadow' | 'people' | 'places' | 'world'>('shadow');
+  const [tab, setTab] = useState<'shadow' | 'epic' | 'people' | 'places' | 'world'>('shadow');
   const [soundOn, setSoundOn] = useState(sound.on);
   const [settings, setSettings] = useState(false);
   const [story, setStory] = useState<Beat | null>(null);   // 從圖鑑重看的那一段故事
-  const [trialSheet, setTrialSheet] = useState(false);     // 資格試煉：先看規則，再抽題、閱題
+  const [trialSheet, setTrialSheet] = useState(false);     // 試弓：先看規則，再抽題、閱題
   const [drawn, setDrawn] = useState<CaseDef | null>(null); // 抽到的那一位。抽了就不能重抽
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
@@ -84,7 +114,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
     if (save.hero === null) return;
     if (beat) { talk.current?.say([{ ...beat.lines[step], text: toYou(beat.lines[step].text, save.hero) }]); return; }
     const last = save.takeaways[0];
-    if (pending && run!.trial) { talk.current?.say([{ who: 'mentor', text: run!.session.closedAt !== null ? '試煉交卷了，成績還沒看。' : '資格試煉考到一半。倒數會從你離開的時候接下去。' }]); return; }
+    if (pending && run!.trial) { talk.current?.say([{ who: 'mentor', text: run!.session.closedAt !== null ? '試煉交卷了，成績還沒看。' : '試弓考到一半。倒數會從你離開的時候接下去。' }]); return; }
     if (pending) { talk.current?.say([{ who: 'mentor', text: run!.session.closedAt !== null ? pending.patient.name + '那一張結案了，回顧還沒看完。' : pending.patient.name + '還在等你。上次做到一半，可以接著做。' }]); return; }
     talk.current?.say([{ who: 'mentor', text: last ? '你上次說，下次要做到：' + last : nightNew ? '板子最底下那一張，是今晚的。門口已經有人了。' : towerNew ? '最後一張，地點是燈塔。準備好了，我們就上去。' : fresh ? '委託板上有一張新的。準備好了就接。' : '板子上的委託都走過了。想再走一次也可以，圖鑑還有空白。' }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,7 +143,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
     <div className="screen hall">
       <div className="left">
         <div className="top"><span className="who"><button type="button" className="home" onClick={() => { sfx.page(); onHome(); }}>‹ 首頁</button>霧脈公會</span><span className="clock">{save.hero ? heroOf(save.hero).name + '・' : ''}{rankOf(save)}</span></div>
-        <Stage kind="hall" hero={save.hero} stage={stage} onFrame={onFrame} label="霧脈公會的大廳：牆上是委託板，眠墨坐在櫃台後面寫字，岑禾站在委託板旁邊，窗外是霧港和燈塔">
+        <Stage kind="hall" hero={save.hero} stage={stage} onFrame={onFrame} label="霧脈公會的大廳：牆上是委託板，斐米歐坐在櫃台後面寫字，蒙托拉站在委託板旁邊，窗外是霧港和燈塔">
           <div className="bubble" ref={bubble} hidden>…</div>
           {beat && <div className="chapter">{beat.title}</div>}
         </Stage>
@@ -131,15 +161,18 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               {pwa.update && <button type="button" className="quest paper hint" onClick={() => { sfx.done(); applyUpdate(); }}><i className="seal" aria-hidden="true" /><b>有新的版本</b><span>換上只要幾秒，進度不會動</span><em>現在更新</em></button>}
               {pending && run && (run.trial ? <>
                 <div className="quest-head">還沒交卷</div>
-                <button type="button" className="quest paper hint" onClick={() => { sfx.page(); onResume(); }}><i className="seal" aria-hidden="true" /><b>資格試煉</b><span>{pending.patient.name}｜{run.session.closedAt !== null ? '交卷了，成績還沒看' : '考到一半'}</span><em>{run.session.closedAt !== null ? '看成績' : '接著考'}</em></button>
+                <button type="button" className="quest paper hint" onClick={() => { sfx.page(); onResume(); }}><i className="seal" aria-hidden="true" /><b>試弓</b><span>{pending.patient.name}｜{run.session.closedAt !== null ? '交卷了，成績還沒看' : '考到一半'}</span><em>{run.session.closedAt !== null ? '看成績' : '接著考'}</em></button>
                 {run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>不考了，放掉這一場</button>}
               </> : <>
                 <div className="quest-head">還沒結案</div>
                 <button type="button" className="quest paper hint" onClick={() => { sfx.page(); onResume(); }}><i className="seal" aria-hidden="true" /><b>{questName(pending, run.session.closedAt !== null)}</b><span>{pending.complaintName}｜{run.session.closedAt !== null ? '結案了，回顧還沒看完' : '做到一半'}</span><em>{run.session.closedAt !== null ? '看回顧' : '接著做'}</em></button>
                 {run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>不接了，放掉這一張</button>}
               </>)}
-              <SeaChart isles={isles} picked={isle} boat={boat} onPick={setIsle} />
+              <SeaChart isles={isles} picked={isle} boat={boat} home={finaleDone(save)} onPick={setIsle} />
               <div className="quest-head">{ISLANDS[isle].name}・{ISLANDS[isle].tag}</div>
+              {CANTOS.filter((k) => k.island === isle || (isle === 'main' && !k.island && cantoOpen(k.id, save))).map((k) => (
+                <details key={k.id} className="canto paper"><summary><b>{k.no}　{k.title}</b><span>史詩的篇章・選讀</span></summary><CantoBody k={k} save={save} /></details>
+              ))}
               {COMPLAINTS.map((m) => {
                 const mine = QUESTS.filter((q) => caseById(q.caseId).complaint === m.id);
                 if (!mine.length || mine[0].chapter !== ISLANDS[isle].chapter) return null;
@@ -166,7 +199,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 const n = ISLANDS[isle].chapter, done = chapterDone(n, save), seen = save.beats.includes(TIDE_DONE(n));
                 return done
                   ? <button type="button" className={'quest paper' + (seen ? '' : ' hint')} onClick={() => { sfx.page(); onTide(n); }}><i className="seal" aria-hidden="true" /><b>{TIDES[n].title}</b><span>推演：這一章的兩位同一刻到門口，先看誰、怎麼交代</span><em>{seen ? '走過了・可以再走' : '選讀'}</em></button>
-                  : <div className="quest paper locked" aria-disabled="true"><b>霧潮夜</b><span>這座島的委託都結案之後，才有這一場推演</span><em>還沒出現</em></div>;
+                  : <div className="quest paper locked" aria-disabled="true"><b>海神的風暴</b><span>這座島的委託都結案之後，才有這一場推演</span><em>還沒出現</em></div>;
               })()}
               {isle === 'main' && <>
               <div className="quest-head">終章　大霧值班夜</div>
@@ -178,8 +211,9 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               </>}
               <div className="quest-head">驗收{exam ? '・' + exam : ''}</div>
               {trialOpen(save)
-                ? <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>資格試煉</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
-                : <div className="quest paper locked" aria-disabled="true"><b>資格試煉</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>第一章走完之後開放</em></div>}
+                ? <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>試弓</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
+                : <div className="quest paper locked" aria-disabled="true"><b>試弓</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>第一章走完之後開放</em></div>}
+              {finaleDone(save) && <><div className="quest-head">十二斧之試</div><div className="paper axes-card"><Axes save={save} /></div></>}
               </>}
             </div>
           )}
@@ -197,12 +231,12 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
           <h3>病人</h3>
           {reading.reading.lines.map((l, i) => <p key={i}>{l}</p>)}
           <h3>你的角色和任務</h3>
-          <p>你是霧脈公會的{rankOf(save)}。這位病人由你先看；岑禾（資深專科護理師）在旁邊，沈渡醫師值班。</p>
+          <p>你是霧脈公會的{rankOf(save)}。這位病人由你先看；蒙托拉（資深專科護理師）在旁邊，馬卡翁醫師值班。</p>
           <ol>
             <li>問診：主訴、病史、系統回顧。</li>
             <li>身體評估：先量生命徵象；每一項動手之前先向病人說明。</li>
             <li>說出最可能的診斷，和還要排除的診斷。</li>
-            <li>提出需要的檢查，向沈渡醫師回報（檢查和用藥由醫師決定）。</li>
+            <li>提出需要的檢查，向馬卡翁醫師回報（檢查和用藥由醫師決定）。</li>
             <li>用病人聽得懂的話向病人說明，然後結案。</li>
           </ol>
           <h3>進門之前，先想三件事</h3>
@@ -215,7 +249,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <li>畫面上的四盞燈，是這個主訴的四個鑑別診斷。問到或檢查到重要的線索，遊戲會停下來問你：這條線索讓哪一個診斷更像，或是比較不像。答對了，那一盞燈會變亮或變暗。</li>
             <li>「穩定度」是病人現在的狀況，會跟著時間和你做的事變化。「未釐清」是離診斷還有多遠：線索判斷對了，數字就往下掉，畫面上的霧也會散一點。</li>
             <li>時間只在你做事（問一題、做一項檢查）的時候走。看字、想事情、下診斷都不算時間。</li>
-            <li>病人等不了的時候，按「緊急通報」（敲值班鐘），醫師會馬上過來；病人穩定就不用按，照順序做到最後再「向醫師回報」。不知道下一步的時候，按「要提示」，岑禾會告訴你。</li>
+            <li>病人等不了的時候，按「緊急通報」（敲值班鐘），醫師會馬上過來；病人穩定就不用按，照順序做到最後再「向醫師回報」。不知道下一步的時候，按「要提示」，蒙托拉會告訴你。</li>
             <li>一張委託大約 10 到 12 分鐘。</li>
           </ul>
           </details>
@@ -223,14 +257,15 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
         </Sheet>
       )}
       {trialSheet && !drawn && (
-        <Sheet title="資格試煉" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setDrawn(pickTrial(save, Math.random())); }}>抽題</button>}>
+        <Sheet title="試弓" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setDrawn(pickTrial(save, Math.random())); }}>抽題</button>}>
           <p>照甄審口試的條件，完整走一次。</p>
           <ul>
             <li><b>用抽的。</b>四十八位病人都可能出，包括你還沒遇過的。抽了就不能重抽。</li>
             <li><b>站內 15 分鐘，照真的時間倒數。</b>看字、想事情的時間也算。剩 3 分鐘會提醒；時間到，手上有什麼就交什麼。</li>
-            <li><b>沒有提示。</b>岑禾不在；線索判讀得對不對，當下不會告訴你；症影和四盞燈都收起來。</li>
+            <li><b>沒有提示。</b>蒙托拉不在；線索判讀得對不對，當下不會告訴你；劫影和四盞燈都收起來。</li>
             <li><b>交卷之後才有成績和回顧。</b>{TRIAL_PASS} 分及格（115 年度甄審的規定）。</li>
             <li>不會寫進圖鑑，也不算完成委託。之後在委託板遇到同一位病人，會覺得眼熟，這沒有關係。</li>
+            {finaleDone(save) && <li><b>十二斧之試。</b>在一種劫影的試弓裡及格一次，那一把斧頭就亮；還沒亮的那幾種，比較容易抽到。現在亮了 {axesLit(save).length}／12 把。</li>}
           </ul>
           <p className="dim">遊戲的分數是訓練用的，不代表正式甄審的成績。病例都還是草稿，還沒有經過臨床老師審查。</p>
           {save.trials.length > 0 && <>
@@ -240,7 +275,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
         </Sheet>
       )}
       {trialSheet && drawn && (
-        <Sheet title="資格試煉：閱題" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { const c = drawn; setDrawn(null); setTrialSheet(false); onTrial(c); }}>進場，開始倒數</button>}>
+        <Sheet title="試弓：閱題" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { const c = drawn; setDrawn(null); setTrialSheet(false); onTrial(c); }}>進場，開始倒數</button>}>
           <p className="dim">正式考試在門口有 2 分鐘讀這一頁。這裡不計時：準備好了再進場，進場才開始倒數。</p>
           <h3>病人</h3>
           {drawn.reading.lines.map((l, i) => <p key={i}>{l}</p>)}
@@ -275,8 +310,8 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
       )}
       {codex && (
         <Sheet title="圖鑑" onClose={() => setCodex(false)}>
-          <div className="steps four" role="tablist">
-            {([['shadow', '症影'], ['people', '人物'], ['places', '場景'], ['world', '公會']] as const).map(([id, name]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => { sfx.tap(); setTab(id); }}>{name}</button>)}
+          <div className="steps five" role="tablist">
+            {([['shadow', '劫影'], ['epic', '史詩'], ['people', '人物'], ['places', '場景'], ['world', '公會']] as const).map(([id, name]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => { sfx.tap(); setTab(id); }}>{name}</button>)}
           </div>
           {tab === 'people' && (() => {
             const { guild, elders, patients } = peopleOf(save);
@@ -298,7 +333,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <h3>看過的故事</h3>
             {save.beats.length ? <div className="stack">{BEATS.filter((b) => save.beats.includes(b.id)).map((b) => <button key={b.id} type="button" className="pick" onClick={() => { sfx.page(); setStory(b); }}>{b.title}</button>)}</div> : <p className="dim">還沒有。</p>}
             <h3>舊檔案</h3>
-            <p className="dim">眠墨從淹過水的櫃子裡，一頁一頁晾乾的值班日誌。是誰寫的、寫的是哪一年，故事走到了才知道。不讀也不影響委託。</p>
+            <p className="dim">斐米歐從淹過水的櫃子裡，一頁一頁晾乾的值班日誌。是誰寫的、寫的是哪一年，故事走到了才知道。不讀也不影響委託。</p>
             {ARCHIVE.map((l) => (l.when(save)
               ? <div key={l.id} className="leaf"><b>{l.day}</b>{l.lines.map((t) => <p key={t}>{t}</p>)}</div>
               : <div key={l.id} className="leaf locked"><b>？？？</b><p className="dim">{l.hint}</p></div>))}
@@ -308,19 +343,27 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <p>{WELCOME.what}</p>
             <p className="dim">{WELCOME.note}</p>
           </>}
+          {tab === 'epic' && <>
+            <p className="dim">霧脈公會的故事，借的是荷馬史詩《奧德賽》：一個人在海上漂流很久，一關一關認出眼前的危險，最後回到家。每一座島是一篇；每一種劫影，是一段海上的試煉。病室裡不講這些，回顧的時候才會告訴你，這一劫你有沒有被困住。</p>
+            {CANTOS.map((k) => cantoOpen(k.id, save)
+              ? <details key={k.id} className="canto paper"><summary><b>{k.no}　{k.title}</b><span>{k.perils.length ? k.perils.map((id) => PERILS[id].name).join('、') : k.id === 'axes' ? '亮了 ' + axesLit(save).length + '／12 把' : '終章'}</span></summary><CantoBody k={k} save={save} /></details>
+              : <div key={k.id} className="leaf locked"><b>{k.no}　？？？</b><p className="dim">{k.island ? CHAPTERS[ISLANDS[k.island].chapter] + '開始之後' : '終章走完之後'}</p></div>)}
+            <p className="dim">劫的陷阱是依臨床推理常見的錯誤寫的，跟病例一樣，還沒有經過臨床老師審查。</p>
+          </>}
           {tab === 'places' && <>
             <p className="dim">去過的地方會記在這裡。公會在霧港有五個診間，一章換一個；出診的委託，會帶你到公會以外的地方。</p>
             <div className="album">{placesOf(save).map((e) => <Card key={e.id} e={e} wide />)}</div>
           </>}
           {tab === 'shadow' && <>
-          <p className="dim">檔案室淹水之後，圖鑑只剩症影的外形。底下的字，要靠你在一張一張委託裡寫回來。</p>
+          <p className="dim">檔案室淹水之後，圖鑑只剩劫影的外形。底下的字，要靠你在一張一張委託裡寫回來。</p>
           {COMPLAINTS.map((m) => {
             const page = codexOf(m, save);
             return (
               <div key={m.id} className="codex">
-                <div className="codex-top"><b>{m.shadow.name}</b><span>{m.name}的症影</span><em>寫回 {page.percent}%</em></div>
+                <div className="codex-top"><b>{m.shadow.name}</b><span>{m.name}的劫影</span><em>寫回 {page.percent}%</em></div>
                 <i className="bar"><b style={{ width: page.percent + '%' }} /></i>
                 <p>{m.shadow.lore}</p>
+                {PERILS[m.id] && <p className="dim">{PERILS[m.id].name}：{PERILS[m.id].trap}{perilsPassed(m.id, save) ? '（過了 ' + perilsPassed(m.id, save) + ' 位）' : ''}</p>}
                 <h3>四個診斷</h3>
                 {page.forms.map(({ form, seenIn, reads, known }) => (
                   <div key={form.id} className={'form-card' + (known ? '' : ' unknown')}>
@@ -342,7 +385,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
       {story && (
         <Sheet title={story.title} onClose={() => setStory(null)}>
           {story.lines.map((l, i) => (l.who === 'sys' ? <p key={i} className="dim">{toYou(l.text, save.hero)}</p>
-            : <p key={i}><b className="name">{l.who === 'you' ? '你' : l.who === 'mo' ? '眠墨' : l.who === 'doctor' ? '沈渡' : '岑禾'}</b>「{toYou(l.text, save.hero)}」</p>))}
+            : <p key={i}><b className="name">{l.who === 'you' ? '你' : l.who === 'mo' ? '斐米歐' : l.who === 'doctor' ? '馬卡翁' : l.who === 'guest' ? l.name : '蒙托拉'}</b>「{toYou(l.text, save.hero)}」</p>))}
         </Sheet>
       )}
     </div>

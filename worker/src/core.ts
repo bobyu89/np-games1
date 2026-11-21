@@ -20,7 +20,7 @@ export const SCHEMA = [
   'CREATE INDEX IF NOT EXISTS reports_day ON reports (day)',
 ];
 
-/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉那一張。done：結案並看完回顧。trial：考完一場資格試煉 */
+/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉那一張。done：結案並看完回顧。trial：考完一場試弓 */
 export const TYPES = ['open', 'start', 'leave', 'drop', 'done', 'trial'] as const;
 const PLATFORMS = ['ios', 'android', 'desktop', 'other'];
 const SAFETY = ['met', 'late', 'review'];
