@@ -409,12 +409,15 @@ function drawProps(g, who) {
   }
 }
 
+/** 外島的診間借哪一間的畫 */
+const ROOM_ART = { wind: 'market', sun: 'archive', boar: 'yard', whirl: 'yard', lotus: 'quiet', circe: 'quiet', shade: 'quiet' };
 export function createWard(canvas, opts = {}) {
   // 病人長什麼樣子：一張表，一位病人一行。新的病人加一行就好
   const who = PATIENTS[opts.patient] ? opts.patient : 'lin', LOOK = PATIENTS[who];
   const calm = !!LOOK.calm, woman = !!LOOK.woman, pony = !!LOOK.pony, fast = !!LOOK.fast;
   // 在哪裡：地方（ward 公會的病室、dock 碼頭的貨棧，其他見 rooms.js），後面加 -rain 是下雨天
-  const asked = String(opts.scene || 'ward'), rain = asked.endsWith('-rain'), named = asked.replace('-rain', '');
+  // 外島的診間還沒有自己的畫：先借同一章大島那一間（ROOM_ART）
+  const asked = String(opts.scene || 'ward'), rain = asked.endsWith('-rain'), named = ROOM_ART[asked.replace('-rain', '')] ?? asked.replace('-rain', '');
   const place = named === 'dock' || ROOMS[named] ? named : 'ward', dock = place === 'dock', room = ROOMS[place] || null;
   // 公會的診間都掛公會的旗子；窗台上有沒有貓、吊燈旁邊有沒有螢火蟲，看地方
   const guild = !dock && place !== 'tower', cat = ['ward', 'market', 'archive', 'quiet'].includes(place), flies = place === 'ward' || place === 'quiet';

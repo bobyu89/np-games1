@@ -497,3 +497,20 @@ html.admin #app:has(.prose) { padding-inline: 4px; }
 #app .title-head h1 small { display: block; font-size: 0.42em; letter-spacing: 0.5em; text-indent: 0.5em; color: var(--ochre); margin-top: 2px; }
 .axes-card { padding: 8px 10px; border: 2px solid var(--ink); border-radius: var(--r-a); }
 .axes-card p { margin: 4px 0 0; }
+.chart .isle .name.small { font-size: 21px; }
+
+/* 前導片 */
+.trailer { position: fixed; inset: 0; z-index: 50; background: #0f1714; display: flex; align-items: center; justify-content: center; }
+.trailer video { width: 100%; height: 100%; object-fit: contain; }
+.trailer .skip { position: absolute; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); color: var(--paper); border: 2px solid var(--paper); border-radius: 999px; padding: 6px 16px; background: rgba(15, 23, 20, 0.6); }
+
+/* 下一步：大廳最上面那一張 */
+.next { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 12px; border: 3px solid var(--ink); border-radius: var(--r-a); box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.25); }
+.next .next-label { font-size: 0.78em; letter-spacing: 0.2em; color: var(--rust); font-weight: 700; }
+.next b { font-size: 1.12em; color: var(--ink); }
+.next p { margin: 0 0 6px; line-height: 1.5; font-size: 0.95em; }
+.next .act { align-self: stretch; }
+.side { display: flex; align-items: center; gap: 8px; color: var(--paper); font-size: 0.9em; line-height: 1.45; padding: 2px 4px; }
+.side span { flex: 1; }
+.side .pick { flex: none; }
+.side .pick { color: var(--ink); background: var(--paper); border: 2px solid var(--ink); border-radius: 999px; padding: 4px 12px; }

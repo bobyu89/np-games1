@@ -6,10 +6,11 @@ import { NIGHT, NIGHT_REFS, NIGHT_TOTAL } from '../data/night.ts';
 import { PLACES, placeOf, sceneName, whereOf } from '../data/places.ts';
 import { ISLANDS } from '../data/islands.ts';
 import { TIDES } from '../data/tides.ts';
-import { AFTER, echoOf, eldersFor, homeOf, BEATS, CHAPTER_PLACE, NIGHT_DONE, QUESTS, codexOf, finaleDone, finaleOpen, nextBeat, nightDone, peopleOf, pickTrial, placesOf, questName, towerOpen } from './progress.ts';
+import { AFTER, echoOf, eldersFor, homeOf, islandOf, BEATS, NIGHT_DONE, QUESTS, codexOf, finaleDone, finaleOpen, nextBeat, nightDone, peopleOf, pickTrial, placesOf, questName, towerOpen } from './progress.ts';
 import type { Save } from './store.ts';
 import { AXE, PASSED, axesLit, bardOf, cantoOpen, record, recordTrial } from './progress.ts';
 import { CANTOS } from '../data/odyssey.ts';
+import * as PROGRESS from './progress.ts';
 import { idealActions, run } from '../core/autoplay.ts';
 import { scoreSession } from '../core/scoring.ts';
 
@@ -17,16 +18,19 @@ const rec = { best: 90, safety: 'met' as const, plays: 1, seconds: 500, found: t
 const save = (cases: string[], beats: string[] = []): Save => ({ v: 3, beats, cases: Object.fromEntries(cases.map((id) => [id, rec])), takeaways: [], hero: 'cheng', trials: [] });
 const BOARD = QUESTS.map((q) => q.caseId), STORY = BEATS.map((b) => b.id).filter((id) => !id.startsWith('finale-'));
 
-test('每一章的委託都在那一章的地方，除了出診', () => {
+test('一劫一座島：每一張委託在它的主訴那座島的診間，除了出診；十二座島各一種劫影', () => {
   for (const q of QUESTS) {
     const c = CASES.find((k) => k.id === q.caseId)!, at = placeOf(c.scene);
-    assert.ok(at === CHAPTER_PLACE[q.chapter as 1 | 2 | 3 | 4 | 5] || at === 'dock', c.id + ' 在 ' + at);
+    assert.ok(at === homeOf(c) || at === 'dock', c.id + ' 在 ' + at);
+    assert.equal(ISLANDS[islandOf(c)].chapter, q.chapter, c.id + ' 的島跟章對不上');
   }
+  const isles = COMPLAINTS.map((m) => islandOf({ complaint: m.id }));
+  assert.equal(new Set(isles).size, 12); assert.equal(Object.keys(ISLANDS).length, 12);
   assert.equal(sceneName('market-rain'), '魚市口的診間（下雨天）'); assert.equal(sceneName('dock'), '碼頭的貨棧（出診）'); assert.equal(sceneName('tower'), '燈塔的值夜房');
   assert.ok(PLACES.ward.enter && PLACES.market.enter && PLACES.tower.enter);
   // 每一章在一座島；出診的貨棧，算在那一章的島
   for (const q of QUESTS) {
-    const c = CASES.find((k) => k.id === q.caseId)!, isle = Object.values(ISLANDS).find((i) => i.chapter === q.chapter)!;
+    const c = CASES.find((k) => k.id === q.caseId)!, isle = ISLANDS[islandOf(c)];
     assert.ok(whereOf(c.scene, homeOf(c)).startsWith(isle.name), c.id + '：' + whereOf(c.scene, homeOf(c)));
   }
 });
@@ -94,13 +98,13 @@ test('終章的病人不會被試煉抽到，遇到之前也不占圖鑑的分�
   assert.equal(patients.length, 48); assert.ok(guild.some((e) => e.id === 'dong' && e.shot.scene === 'tower'));
 });
 
-test('場景：公會的五個診間一章開一個；燈塔要到終章走完', () => {
+test('場景：每座島的診間，在那座島結過一張才打開；燈塔要到終章走完', () => {
   const open = (s: Save) => placesOf(s).filter((e) => e.open).map((e) => e.id);
   assert.deepEqual(open(save([])), ['hall']);
   assert.deepEqual(open(save(['c01a'])), ['hall', 'ward']);
-  assert.deepEqual(open(save(['c01a', 'c01b', 'c01c', 'c01d', 'c02a'])), ['hall', 'ward', 'dock', 'market']);
-  assert.deepEqual(open(save([...BOARD, FINALE_ID])), ['hall', 'ward', 'dock', 'market', 'archive', 'yard', 'quiet', 'tower']);
-  assert.equal(placesOf(save(BOARD)).length, 8);
+  assert.deepEqual(open(save(['c01a', 'c01b', 'c01c', 'c01d', 'c02a'])), ['hall', 'ward', 'dock', 'wind']);
+  assert.deepEqual(open(save([...BOARD, FINALE_ID])), ['hall', 'ward', 'dock', 'wind', 'market', 'sun', 'archive', 'yard', 'boar', 'whirl', 'lotus', 'circe', 'quiet', 'shade', 'tower']);
+  assert.equal(placesOf(save(BOARD)).length, 15);
 });
 
 test('值班夜的三輪：每一輪剛好一位該先看、剛好一句對的，回饋和文獻都對得上', () => {
@@ -175,5 +179,34 @@ test('篇章：每一章的開場由斐米歐先唸那一篇的開場；英雄�
   assert.equal(cantoOpen('main', save([])), true);
   assert.equal(cantoOpen('tide', save([])), false);
   assert.equal(cantoOpen('home', done), true);
-  assert.equal(CANTOS.length, 7);
+  assert.equal(CANTOS.length, 14);
+  for (const id of Object.keys(ISLANDS)) assert.equal(CANTOS.filter((k) => k.island === id).length, 1, id + ' 要剛好一篇');
+});
+
+test('下一步：每一個階段都只指一件事，而且按下去帶得到那裡', () => {
+  const { nextStep, sideStep } = PROGRESS;
+  // 第一次：接林秋那一張，說明一張委託要做什麼
+  let n = nextStep(save([]), null);
+  assert.deepEqual(n.action, { kind: 'quest', caseId: 'c01a', island: 'main' });
+  assert.ok(n.title.includes('第一張') && n.why.includes('問診'));
+  // 做到一半：先接著做
+  assert.deepEqual(nextStep(save([]), { caseId: 'c01a', trial: false, closed: false }).action, { kind: 'resume' });
+  assert.ok(nextStep(save([]), { caseId: 'c01a', trial: false, closed: true }).title.includes('回顧'));
+  // 第一章走完：到下一座島，說明航海圖
+  n = nextStep(save(['c01a', 'c01b', 'c01c', 'c01d']), null);
+  assert.equal(n.action.kind, 'quest'); assert.ok(n.title.includes('巡診船') && n.why.includes('航海圖'));
+  // 同一座島還有沒結的：說還剩幾張
+  n = nextStep(save(['c01a']), null);
+  assert.ok(n.why.includes('還有 3 張'));
+  // 委託都結了 → 值班夜 → 燈塔 → 十二斧
+  assert.equal(nextStep(save(BOARD, STORY), null).action.kind, 'night');
+  assert.equal(nextStep(save(BOARD, [...STORY, NIGHT_DONE, 'finale-tower']), null).action.kind, 'tower');
+  const end = save([...BOARD, FINALE_ID], [...STORY, NIGHT_DONE, 'finale-tower']);
+  n = nextStep(end, null); assert.equal(n.action.kind, 'trial'); assert.ok(n.title.includes('12 把'));
+  assert.equal(nextStep({ ...end, beats: [...end.beats, ...COMPLAINTS.map((m) => AXE(m.id))] }, null).action.kind, 'codex');
+  // 選做的那一句：一章走完、風暴還沒推演，才提風暴；沒有就提試弓；都做過了就不說
+  const ch2 = [...['c01a', 'c01b', 'c01c', 'c01d'], 'c02a', 'c02b', 'c02c', 'c02d', 'c03a', 'c03b', 'c03c', 'c03d'];
+  assert.deepEqual(sideStep(save(ch2))?.action, { kind: 'tide', n: 2 });
+  assert.equal(sideStep(save(['c01a', 'c01b', 'c01c', 'c01d']))?.action.kind, 'trial');
+  assert.equal(sideStep(save([])), null);
 });

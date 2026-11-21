@@ -1,4 +1,4 @@
-// 大廳的航海圖：五座島、巡診船的航線、燈塔。點一座島，委託板只列那座島的委託。
+// 大廳的航海圖：十二座島（一劫一座）、巡診船的航線、燈塔。點一座島，委託板只列那座島的委託。
 // 還沒去過的島蓋在霧裡；去過的島寫上結了幾張案，島邊一劫一個小菱形（過了那一劫就塗滿）。
 // 終章走完，外海多一條回伊塔洛斯的歸航線。圖是用 SVG 畫的，沒有外部的圖檔。
 import { ISLANDS, type IslandId } from '../data/islands.ts';
@@ -46,10 +46,10 @@ export function SeaChart({ isles, picked, boat, home = false, onPick }: { isles:
         </g>
         <text x="880" y="215" textAnchor="middle" className="sea">霧　海</text>
         {SOUNDINGS.map(([x, y, t]) => <text key={x + '-' + y} x={x} y={y} className="depth">{t}</text>)}
-        {/* 巡診船的航線：從本島到每一座外島 */}
+        {/* 巡診船的航線：本島到每一章的大島，大島再到同一章的小島 */}
         {isles.filter((i) => i.id !== 'main').map((i) => {
-          const s = ISLANDS[i.id], mx = (main.x + s.x) / 2, my = (main.y + s.y) / 2 - 40;
-          return <path key={i.id} d={`M${main.x},${main.y} Q${mx},${my} ${s.x},${s.y}`} className={'route' + (i.open ? ' open' : '')} />;
+          const s = ISLANDS[i.id], o = ISLANDS[s.from ?? 'main'], mx = (o.x + s.x) / 2, my = (o.y + s.y) / 2 - 30;
+          return <path key={i.id} d={`M${o.x},${o.y} Q${mx},${my} ${s.x},${s.y}`} className={'route' + (i.open ? ' open' : '')} />;
         })}
         {/* 歸航線：終章走完，從外海繞回伊塔洛斯 */}
         {home && <path d={`M985,690 C900,640 760,660 ${main.x + 120},${main.y + 90} S${main.x + 40},${main.y + 30} ${main.x},${main.y}`} className="route home" />}
@@ -62,7 +62,7 @@ export function SeaChart({ isles, picked, boat, home = false, onPick }: { isles:
               <path d={coast(i.id, s.x, s.y, s.r * 1.22)} className="surf" />
               <path d={coast(i.id, s.x, s.y, s.r)} className="land" />
               {!i.open && <ellipse cx={s.x} cy={s.y} rx={s.r * 1.9} ry={s.r * 1.4} fill="url(#chart-fog)" />}
-              <text x={s.x} y={s.y - 4} textAnchor="middle" className="name">{i.open ? s.name : '？？？'}</text>
+              <text x={s.x} y={s.y - 4} textAnchor="middle" className={'name' + (s.r < 50 ? ' small' : '')}>{i.open ? s.name : '？？？'}</text>
               <text x={s.x} y={s.y + 26} textAnchor="middle" className="sub">{i.open ? (i.total ? i.done + '／' + i.total : '') : '霧'}</text>
               {i.open && i.marks.map((ok, n) => { const x = s.x - (i.marks.length - 1) * 9 + n * 18, y = s.y + s.r * 0.82 + 14; return <path key={n} d={`M${x},${y - 7} L${x + 6},${y} L${x},${y + 7} L${x - 6},${y}Z`} className={'peril' + (ok ? ' ok' : '')} />; })}
               {i.fresh && i.open && <circle cx={s.x + s.r * 0.9} cy={s.y - s.r * 0.6} r="11" className="seal" />}
