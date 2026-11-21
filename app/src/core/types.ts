@@ -84,7 +84,8 @@ export type SafetyRule =
   | { type: 'calm'; points: number };                           // 病人穩定，不需要敲值班鐘
 
 /** 霧港裡看診的地方。前五個是公會的診間，每個主訴平常在哪一間看，寫在主訴模組；dock 是出診，tower 是終章 */
-export type Home = 'ward' | 'market' | 'archive' | 'yard' | 'quiet';
+/** 前五個是每一章大島上的診間；後面七個是外島上的診間（畫面先沿用同一章那一間的畫，見 art/ward.js 的 ROOM_ART） */
+export type Home = 'ward' | 'market' | 'archive' | 'yard' | 'quiet' | 'wind' | 'sun' | 'boar' | 'whirl' | 'lotus' | 'circe' | 'shade';
 export type Place = Home | 'dock' | 'tower';
 export type Scene = Place | `${Home}-rain`;
 

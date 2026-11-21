@@ -1,13 +1,13 @@
 // 長期的推進：委託怎麼解鎖、故事什麼時候往下走、圖鑑怎麼被寫回來、階級怎麼升。
 // 全部從「玩過哪些病例、解讀對哪些線索」算出來，沒有另外的經驗值。
 import { eldersMet, elderChapter } from '../core/elders.ts';
-import { ELDERS, ISLANDS, RESIDENTS } from '../data/islands.ts';
+import { ELDERS, ISLANDS, ISLAND_OF, RESIDENTS, type IslandId } from '../data/islands.ts';
 import type { CaseDef, Score, Session } from '../core/types.ts';
 import type { ComplaintDef } from '../core/module.ts';
 import { harvest } from '../core/scoring.ts';
 import { perilOf } from '../core/perils.ts';
 import { CANTOS } from '../data/odyssey.ts';
-import { CASES, COMPLAINTS, FINALE_ID } from '../data/index.ts';
+import { CASES, COMPLAINTS, FINALE_ID, caseById } from '../data/index.ts';
 import { PLACES } from '../data/places.ts';
 import { AFTER_MORE } from '../data/extras.ts';
 import type { Line } from './Talk.tsx';
@@ -31,8 +31,6 @@ export const QUESTS: Quest[] = [{ caseId: 'c01a', chapter: 1 }, { caseId: 'c01b'
   { caseId: 'c10a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c10b', chapter: 5, needs: 'c10a' }, { caseId: 'c10c', chapter: 5, needs: 'c10b' }, { caseId: 'c10d', chapter: 5, needs: 'c10c' },
   { caseId: 'c11a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c11b', chapter: 5, needs: 'c11a' }, { caseId: 'c11c', chapter: 5, needs: 'c11b' }, { caseId: 'c11d', chapter: 5, needs: 'c11c' },
   { caseId: 'c12a', chapter: 5, needs: ['c06d', 'c07d', 'c08d'] }, { caseId: 'c12b', chapter: 5, needs: 'c12a' }, { caseId: 'c12c', chapter: 5, needs: 'c12b' }, { caseId: 'c12d', chapter: 5, needs: 'c12c' }];
-/** 每一章的委託平常在哪裡看。公會在霧港有五個診間；出診和下雨天是個別的委託自己寫的 */
-export const CHAPTER_PLACE = { 1: 'ward', 2: 'market', 3: 'archive', 4: 'yard', 5: 'quiet' } as const;
 export const unlocked = (q: Quest, s: Save) => [q.needs ?? []].flat().every((id) => !!s.cases[id]);
 
 /** 故事的一段。條件成立、而且還沒看過，回到公會的時候就會播 */
@@ -50,7 +48,7 @@ export const BEATS: Beat[] = [
   // 序章要交代四件事：這是哪裡、你是誰、出了什麼事、你要做什麼
   { id: 'prologue', title: '序章　遺失的一頁', when: () => true, lines: [
     { who: 'sys', text: '「說吧，記事的人，說那位見習的故事：在霧海上漂流，見過許多人的病，認出許多藏在霧裡的形狀。」' },
-    { who: 'sys', text: '霧港，在伊塔洛斯島上，是霧海群島的主港。本島之外，還有四座搭巡診船就到得了的外島。一年裡有大半的日子起霧。' },
+    { who: 'sys', text: '霧港，在伊塔洛斯島上，是霧海群島的主港。本島之外，還有十一座搭巡診船就到得了的外島：每一座島上，都有一種劫影在等。一年裡有大半的日子起霧。' },
     { who: 'sys', text: '霧裡住著一位海中老人。人在痛、在喘、說不清自己怎麼了的時候，他會化成一種形狀，浮在那個人身邊。港城的人叫這些形狀「劫影」：每一種，都是一段海上的試煉。' },
     { who: 'sys', text: '劫影誰都看得見，所以身邊一浮出來，人就知道該來公會了。可是它只描得出「哪裡不舒服」，描不出「為什麼」。要抓著它不放，一直問、一直看，它才會現出原形。' },
     { who: 'sys', text: '霧脈公會，是港城的人不舒服的時候會來的地方。你，{you}，是剛結束訓練的見習專科護理師，今天第一天來報到。' },
@@ -91,7 +89,7 @@ export const BEATS: Beat[] = [
     { who: 'sys', text: '蒙托拉沒有接話。她走到窗邊，看了一會兒燈塔。', fx: 'window' },
     { who: 'mentor', text: '第一章到這裡。下一頁是別的劫影，還在整理，好了會貼到委託板上。', fx: 'window' },
     { who: 'sys', text: '大廳的門開了。一位頭髮全白的老人走進來，蒙托拉站了起來。' },
-    { who: 'guest', name: '埃吉普提歐', text: '我是埃吉普提歐，公會的會首。四座外島，各有一位老醫生顧著分站；我們五個，就是五島長老會。' },
+    { who: 'guest', name: '埃吉普提歐', text: '我是埃吉普提歐，公會的會首。外島分成四片海，每一片最大的那座島有一位老醫生顧著分站；我們五個，就是五島長老會。' },
     { who: 'guest', name: '埃吉普提歐', text: '外島的人不肯爬坡，也不肯搭船來看病。巡診船明天出海，你跟著去。' },
     { who: 'sys', text: '你升為「巡診專科護理師」。' },
   ] },
@@ -105,7 +103,7 @@ export const BEATS: Beat[] = [
     { who: 'guest', name: '瑙西克拉', text: '我是瑙西克拉。這間分站的紀錄表，一格一格都是我畫的。數字不會騙人。' },
     { who: 'mentor', text: '從這一章起，卡住的時候，除了問我，也可以請教老醫生：會首埃吉普提歐，和你去過的島上的那一位。要打燈號請他們過來，會花時間。' },
     { who: 'mentor', text: '他們每一位都很會問，也都有不問的地方。他們沒提的，不代表你做完了。' },
-    { who: 'sys', text: '委託板上多了兩張新的。地點寫的是：斯克里亞，魚市口。' },
+    { who: 'sys', text: '委託板上多了兩張新的。一張在斯克里亞的魚市口；一張在更北邊的埃俄利亞，整座島都在縫帆。' },
   ] },
   { id: 'ch2-half', title: '第二章　三行', when: (s) => has(s, ['c02a', 'c02b', 'c03a', 'c03b']), lines: [
     { who: 'mo', text: '兩頁各寫回了一半。風袋蛙還有「肺部感染」和「突發急症」，斯庫拉蟹還有「胰臟與胃」和「大腸憩室」，底下都還沒有人名。' },
@@ -142,7 +140,7 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '這一疊要一張一張對，離不開檔案室。隔壁那間舊病室，是公會最早的一間診間，我清出來了。繩子上晾的是還沒乾的索引，別碰掉。' },
     { who: 'sys', text: '法羅斯的老醫生在舊病室門口等你們。' },
     { who: 'guest', name: '涅斯托', text: '涅斯托。這幾張索引上的人，我都記得。哪一年、什麼天氣，我都記得。' },
-    { who: 'sys', text: '委託板上多了兩張新的。地點寫的是：法羅斯，檔案室旁的舊病室。' },
+    { who: 'sys', text: '委託板上多了兩張新的。一張在法羅斯，檔案室旁的舊病室；一張在北邊放牛的特里納基亞。' },
   ] },
   { id: 'ch3-half', title: '第三章　落款', when: (s) => has(s, CH3_HALF), lines: [
     { who: 'mo', text: '四張舊索引，三張劃掉重寫，一張底下補了憑據。' },
@@ -170,7 +168,7 @@ export const BEATS: Beat[] = [
     { who: 'mentor', text: '拉莫斯的船塢在趕一艘船，沒有人肯放下手上的活走過來。公會跟船塢借了一間工寮，這一章我們過去看。' },
     { who: 'sys', text: '拉莫斯的碼頭上，一個站著不坐的人迎上來。' },
     { who: 'guest', name: '狄俄墨', text: '狄俄墨。船塢一出事，我先到。先看他等不等得了，其他的等一下。' },
-    { who: 'sys', text: '委託板上多了三張新的。地點寫的是：拉莫斯，船塢。' },
+    { who: 'sys', text: '委託板上多了三張新的。拉莫斯的船塢一張；東邊有山的帕納索一張；西邊漩渦旁的卡律布狄斯一張。' },
   ] },
   { id: 'ch4-half', title: '第四章　四十天', when: (s) => has(s, CH4_HALF), lines: [
     { who: 'sys', text: '值班鐘沒有響，馬卡翁卻自己走進了大廳。他看了一眼櫃台上那張名單。', fx: 'shen' },
@@ -202,7 +200,7 @@ export const BEATS: Beat[] = [
     { who: 'sys', text: '爬到半坡，一位老太太坐在竹籬邊縫衣服，等你們。' },
     { who: 'guest', name: '阿瑞忒', text: '我是阿瑞忒。讓他說完，你再說。' },
     { who: 'mentor', text: '說不出口的，不只是病人。那張勘誤，我們三個人十五年沒有提過一個字。' },
-    { who: 'sys', text: '委託板上多了四張新的。地點寫的是：歐吉吉亞，坡上的靜室。' },
+    { who: 'sys', text: '委託板上多了四張新的，四座島各一張：歐吉吉亞的坡頂、北邊果園的洛托法吉、東邊林子裡的埃埃亞，和最西邊終年起霧的辛梅里亞。' },
   ] },
   { id: 'ch5-half', title: '第五章　第十二行', when: (s) => has(s, CH5_HALF), lines: [
     { who: 'mo', text: '勘誤我重新抄了一份。原來那張有十二行：十一個名字，第十二行是空的。', fx: 'page page12' },
@@ -219,7 +217,7 @@ export const BEATS: Beat[] = [
     { who: 'mo', text: '還有一件事。那一頁要不要訂在第一頁，不是我說了算。' },
   ] },
   { id: 'council', title: '五島長老會', when: (s) => chapterDone(5, s), lines: [
-    { who: 'sys', text: '新的圖鑑裝訂好的那天，四座外島的老醫生都搭巡診船來了。五島長老會，在大廳開會。' },
+    { who: 'sys', text: '新的圖鑑裝訂好的那天，外島的老醫生都搭巡診船來了。五島長老會，在大廳開會。' },
     { who: 'guest', name: '埃吉普提歐', text: '十五年前那一頁，要不要訂在圖鑑的第一頁，今天重新表決。' },
     { who: 'guest', name: '涅斯托', text: '訂上去。' },
     { who: 'guest', name: '阿瑞忒', text: '訂上去。' },
@@ -492,26 +490,39 @@ export function peopleOf(save: Save): { guild: Entry[]; elders: Entry[]; patient
   return { guild, elders, patients };
 }
 
-/** 場景：去過的地方。公會在霧港有五個診間，一章換一個；出診到碼頭；終章上燈塔 */
+/** 場景：去過的地方。一劫一座島，每座島一間公會的診間；出診到碼頭；終章上燈塔 */
 export function placesOf(save: Save): Entry[] {
   const any = Object.keys(save.cases).length > 0;
-  const been = (ch: number) => QUESTS.some((q) => q.chapter === ch && save.cases[q.caseId]);
-  const isle = (ch: number) => Object.values(ISLANDS).find((i) => i.chapter === ch)!;
-  const who = (ch: number) => { const r = RESIDENTS[isle(ch).resident]; return been(ch) ? [r.name + '（' + r.tag + '）：' + r.habit, ...r.lines] : []; };
-  const room = (id: 'market' | 'archive' | 'yard' | 'quiet', ch: number, _patient: string, lines: string[]): Entry => (
-    { id, name: PLACES[id].name, tag: isle(ch).name + '・' + CHAPTERS_ZH[ch], lines: [...lines, ...who(ch)], shot: { kind: 'ward', patient: RESIDENTS[isle(ch).resident].look, scene: id }, open: been(ch), hint: '完成' + CHAPTERS_ZH[ch] + '的第一張委託之後' });
+  const been = (id: IslandId) => questsOn(id).some((q) => save.cases[q.caseId]);
+  const who = (id: IslandId) => { const k = ISLANDS[id].resident; if (!k || !been(id)) return []; const r = RESIDENTS[k]; return [r.name + '（' + r.tag + '）：' + r.habit, ...r.lines]; };
+  const room = (id: IslandId, lines: string[]): Entry => {
+    const i = ISLANDS[id], place = i.places[0], first = caseById(questsOn(id)[0].caseId);
+    return { id: place, name: PLACES[place].name, tag: i.name + '・' + CHAPTERS_ZH[i.chapter], lines: [...lines, ...i.lines.slice(-1), ...who(id)],
+      shot: { kind: 'ward', patient: i.resident ? RESIDENTS[i.resident].look : first.patient.look, scene: place }, open: been(id), hint: '在' + i.name + '完成第一張委託之後' };
+  };
   return [
     { id: 'hall', name: '公會大廳', tag: '伊塔洛斯', lines: ['委託板、斐米歐的櫃台、看得到燈塔的拱窗。每一張委託從這裡開始，也回到這裡。'], shot: { kind: 'hall' }, open: true, hint: '' },
-    { id: 'ward', name: PLACES.ward.name, tag: '伊塔洛斯・第一章', lines: ['大廳旁邊那扇門。一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。', ...who(1)], shot: { kind: 'ward', patient: 'r-lan' }, open: any, hint: '完成第一張委託之後' },
+    { id: 'ward', name: PLACES.ward.name, tag: '伊塔洛斯・第一章', lines: ['大廳旁邊那扇門。一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。', ...who('main')], shot: { kind: 'ward', patient: 'r-lan' }, open: any, hint: '完成第一張委託之後' },
     { id: 'dock', name: PLACES.dock.name, tag: '每一座島都有・出診', lines: ['船一靠岸，走不到公會的人就先扶進這裡。每一座島的碼頭邊，都有這樣一間。', '出診的時候，蒙托拉會把值班鐘一起帶來，掛在樑上。'], shot: { kind: 'ward', patient: 'zhou', scene: 'dock' }, open: !!save.cases.c01d, hint: '完成「靠岸的那天早上」之後' },
-    room('market', 2, 'song', ['斯克里亞的魚市天沒亮就開，不舒服的人也不肯搭船。公會在魚市口留了一間診間。', '窗外就是魚市的棚子。那隻貓，在這裡待得最久。']),
-    room('archive', 3, 'he', ['法羅斯的檔案室隔壁，公會最早的一間診間，很久沒有人用。牆上那一道線，是大潮那一夜的水痕。', '繩子上晾著一張一張舊索引。墨暈開的那幾張，斐米歐說還認得出來。']),
-    room('yard', 4, 'c06a', ['公會跟拉莫斯的船塢借的工寮。門外的船台上，有一艘造到一半的船。', '來這裡的人，多半是放下手上的活、撐著走過來的。']),
-    room('quiet', 5, 'c09d', ['歐吉吉亞坡頂的一間。門關得起來，屏風拉得上。圓窗看出去是整片海，遠遠的是本島的燈塔。', '有些話，要在這樣的地方才問得出來。']),
+    room('wind', ['借的是斯克里亞魚市診間的格局：帆坊的人沒空過海，公會就在帆坊旁邊擺了一張床。']),
+    room('tide', ['斯克里亞的魚市天沒亮就開，不舒服的人也不肯搭船。公會在魚市口留了一間診間。', '窗外就是魚市的棚子。那隻貓，在這裡待得最久。']),
+    room('sun', ['藥舍的繩子上晾的是藥草的標籤，跟法羅斯晾舊索引的樣子很像。']),
+    room('book', ['法羅斯的檔案室隔壁，公會最早的一間診間，很久沒有人用。牆上那一道線，是大潮那一夜的水痕。', '繩子上晾著一張一張舊索引。墨暈開的那幾張，斐米歐說還認得出來。']),
+    room('keel', ['公會跟拉莫斯的船塢借的工寮。門外的船台上，有一艘造到一半的船。', '來這裡的人，多半是放下手上的活、撐著走過來的。']),
+    room('boar', ['山腳的木工棚，劈柴和修獵具的聲音從早響到晚。']),
+    room('whirl', ['潮閘旁的工寮。地板底下就是水道，漲潮和退潮聽得一清二楚。']),
+    room('lotus', ['果園邊的一間靜室。門一關，外面摘果子的人就聽不到裡面說話。']),
+    room('circe', ['林子深處的一間靜室。來這裡的人，多半是因為身上的樣子變了。']),
+    room('bamboo', ['歐吉吉亞坡頂的一間。門關得起來，屏風拉得上。圓窗看出去是整片海，遠遠的是本島的燈塔。', '有些話，要在這樣的地方才問得出來。']),
+    room('shade', ['霧岸上的一間靜室，白天也點著燈。']),
     { id: 'tower', name: PLACES.tower.name, tag: finaleDone(save) ? '終章' : '還沒去過', lines: finaleDone(save) ? ['燈室底下的一間圓房間。架上一排值夜日誌，一年一本，十五本。', '大霧的那一夜，燈熄過一次。天亮之前，有人把它點回來了。'] : [],
       shot: { kind: 'ward', patient: 'dong', scene: 'tower', lit: true }, open: finaleDone(save), hint: finaleOpen(save) ? '終章：大霧值班夜' : '第五章走完之後' },
   ];
 }
+/** 一張委託（病例）在哪一座島：看它的主訴平常在哪一間 */
+export const islandOf = (c: { complaint: string }): IslandId => ISLAND_OF[homeOf(c)] ?? 'main';
+/** 這座島上的委託（終章那一張不算，它在燈塔） */
+export const questsOn = (id: IslandId) => QUESTS.filter((q) => islandOf(caseById(q.caseId)) === id);
 const CHAPTERS_ZH: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
 /** 劫影那一頁整體寫回了多少：每隻劫影的百分比平均 */

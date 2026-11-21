@@ -497,3 +497,4 @@ html.admin #app:has(.prose) { padding-inline: 4px; }
 #app .title-head h1 small { display: block; font-size: 0.42em; letter-spacing: 0.5em; text-indent: 0.5em; color: var(--ochre); margin-top: 2px; }
 .axes-card { padding: 8px 10px; border: 2px solid var(--ink); border-radius: var(--r-a); }
 .axes-card p { margin: 4px 0 0; }
+.chart .isle .name.small { font-size: 21px; }

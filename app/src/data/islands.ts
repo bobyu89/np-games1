@@ -1,8 +1,9 @@
-// 霧海群島：五座島、每座島的長老（五島長老會的五位老醫生）、每間診間的常駐的人。
+// 霧海群島：十二座島（一劫一座）、五位長老（五島長老會，在每一章最大的那座島上）、每間大島診間的常駐的人。
 // 這裡只放世界的資料。病例不認得這裡的任何東西：病例的內容不跟著島變，島只決定畫面、故事，和「請教」的時候有誰可以問。
 import type { Place } from '../core/types.ts';
 
-export type IslandId = 'main' | 'tide' | 'book' | 'keel' | 'bamboo';
+/** 一劫一座島：伊塔洛斯（家，第一章的獨眼巨人之劫也在這裡）和十一座外島。每一章有一座有長老和常駐的人的島（hub） */
+export type IslandId = 'main' | 'tide' | 'book' | 'keel' | 'bamboo' | 'wind' | 'sun' | 'boar' | 'whirl' | 'lotus' | 'circe' | 'shade';
 
 /** 「請教」的時候，老醫生會看的缺口。全部只看玩家這一場做了什麼、還沒做什麼，不看這位病人的答案 */
 export type Gap =
@@ -47,7 +48,10 @@ export interface Island {
   id: IslandId; name: string; tag: string; lines: string[];
   /** 這座島上公會的診間（第幾章在這裡）。本島另外有大廳和燈塔 */
   places: Place[]; chapter: number;
-  elder: string; resident: string;
+  /** 長老和常駐的人只在每一章的那一座大島（hub）上 */
+  elder?: string; resident?: string;
+  /** 巡診船從哪一座島過來（航海圖上的航線）。沒寫是從伊塔洛斯 */
+  from?: IslandId;
   /** 航海圖上的位置（0～1000 × 0～700）和輪廓的大小 */
   x: number; y: number; r: number;
 }
@@ -56,32 +60,67 @@ export const ISLANDS: Record<IslandId, Island> = {
   main: {
     id: 'main', name: '伊塔洛斯', tag: '公會本館・第一章', chapter: 1, places: ['ward', 'tower'], elder: 'nie', resident: 'lan',
     lines: ['群島的主港。公會的大廳、委託板和最早的一間病室都在這裡；岬角上是燈塔。', '每一張委託從這裡的大廳開始。外島的委託，搭巡診船去，結案回港。'],
-    x: 470, y: 380, r: 120,
+    x: 470, y: 380, r: 100,
   },
   tide: {
     id: 'tide', name: '斯克里亞', tag: '魚市口的診間・第二章', chapter: 2, places: ['market'], elder: 'lu', resident: 'xi',
     lines: ['退潮的時候，灘上會露出一整片市集。群島的魚，天沒亮就在這裡喊價。', '魚市的人不肯爬坡、也不肯搭船過來看病，公會就在魚市口開了一間診間。'],
-    x: 170, y: 230, r: 70,
+    x: 185, y: 235, r: 60,
   },
   book: {
     id: 'book', name: '法羅斯', tag: '檔案室旁的舊病室・第三章', chapter: 3, places: ['archive'], elder: 'guan', resident: 'luan',
     lines: ['本島東邊一座低低的小島，退潮的時候走得過去。公會的檔案庫在這裡：紙要離人多的地方遠一點。', '公會最早就是在這座島上開的。檔案室隔壁那間舊病室，是第一間診間。', '地勢低，大潮常淹到門口。淹進櫃子裡的那種潮，十五年才來一次。'],
-    x: 700, y: 300, r: 48,
+    x: 730, y: 300, r: 46,
   },
   keel: {
     id: 'keel', name: '拉莫斯', tag: '船塢的工寮・第四章', chapter: 4, places: ['yard'], elder: 'chu', resident: 'duo',
     lines: ['群島的船，大多在這裡的船塢造。島上整天都是鋸木頭和敲鉚釘的聲音。', '船塢趕工的時候，沒有人肯放下手上的活。公會跟船塢借了一間工寮。'],
-    x: 760, y: 560, r: 78,
+    x: 770, y: 565, r: 64,
   },
   bamboo: {
     id: 'bamboo', name: '歐吉吉亞', tag: '坡上的靜室・第五章', chapter: 5, places: ['quiet'], elder: 'ge', resident: 'lu2',
     lines: ['竹林一直長到海邊，坡很陡，屋子一間比一間高。', '坡頂上那間靜室，門關得起來，屏風拉得上。說不出口的話，公會帶到這裡來問。'],
-    x: 220, y: 560, r: 74,
+    x: 215, y: 560, r: 60,
+  },
+  wind: {
+    id: 'wind', name: '埃俄利亞', tag: '帆坊旁的診間・第二章', chapter: 2, places: ['wind'], from: 'tide',
+    lines: ['斯克里亞北邊一座小島，四面都是峭壁，整座島的帆都在這裡縫。', '史詩裡，風神住在這樣的浮島上，把逆風收進一只皮袋，送給要回家的人。'],
+    x: 330, y: 105, r: 40,
+  },
+  sun: {
+    id: 'sun', name: '特里納基亞', tag: '藥舍改成的診間・第三章', chapter: 3, places: ['sun'], from: 'book',
+    lines: ['法羅斯北邊的島，整片坡地放著牛。島上的人說，那些牛一頭都不能碰。', '島上的藥舍晾著一串一串的藥草；公會借了其中一間看病。'],
+    x: 600, y: 110, r: 46,
+  },
+  boar: {
+    id: 'boar', name: '帕納索', tag: '山腳的木工棚・第四章', chapter: 4, places: ['boar'], from: 'keel',
+    lines: ['拉莫斯東邊一座有山的島。獵人和伐木的人住在山腳。', '史詩裡，主人少年時在這樣的山上獵野豬，膝蓋留下一道疤。'],
+    x: 915, y: 420, r: 42,
+  },
+  whirl: {
+    id: 'whirl', name: '卡律布狄斯', tag: '潮閘旁的工寮・第四章', chapter: 4, places: ['whirl'], from: 'keel',
+    lines: ['拉莫斯西邊的窄海峽旁。一天三次，外海的漩渦把水吞進去、再吐出來。', '潮閘旁有一間工寮，公會在那裡看病。'],
+    x: 590, y: 635, r: 38,
+  },
+  lotus: {
+    id: 'lotus', name: '洛托法吉', tag: '果園邊的靜室・第五章', chapter: 5, places: ['lotus'], from: 'bamboo',
+    lines: ['歐吉吉亞北邊的低島，長滿結甜果子的樹。', '史詩裡，吃了這種果子的人，忘了要回家，也不想說話。'],
+    x: 85, y: 395, r: 38,
+  },
+  circe: {
+    id: 'circe', name: '埃埃亞', tag: '林中的靜室・第五章', chapter: 5, places: ['circe'], from: 'bamboo',
+    lines: ['歐吉吉亞東邊的林島。林子很深，只有一條路通到那間靜室。', '史詩裡，女巫喀耳刻住在這裡，把來的人變了樣子。'],
+    x: 380, y: 640, r: 40,
+  },
+  shade: {
+    id: 'shade', name: '辛梅里亞', tag: '霧岸的靜室・第五章', chapter: 5, places: ['shade'], from: 'bamboo',
+    lines: ['群島最西邊的岸，終年起霧，太陽很少照到。', '史詩裡，從這片岸再往前，就是亡魂住的地方。'],
+    x: 62, y: 600, r: 34,
   },
 };
 
 /** 每間診間在哪一座島。出診的貨棧，在那一章的那座島（看病例的主訴在哪一間） */
-export const ISLAND_OF: Partial<Record<Place, IslandId>> = { ward: 'main', tower: 'main', market: 'tide', archive: 'book', yard: 'keel', quiet: 'bamboo' };
+export const ISLAND_OF: Partial<Record<Place, IslandId>> = { ward: 'main', tower: 'main', market: 'tide', archive: 'book', yard: 'keel', quiet: 'bamboo', wind: 'wind', sun: 'sun', boar: 'boar', whirl: 'whirl', lotus: 'lotus', circe: 'circe', shade: 'shade' };
 
 export const ELDERS: Elder[] = [
   {

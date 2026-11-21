@@ -355,15 +355,15 @@ test('十二隻劫影的四個診斷，每一個都有一位病人', () => {
 
 test('地點：每個主訴有自己平常的診間；下雨天和出診是病例自己寫的；終章在燈塔', () => {
   const at = (id: string) => caseById(id).scene;
-  assert.deepEqual(['c01a', 'c02a', 'c04a', 'c06a', 'c09a'].map(at), ['ward', 'market', 'archive', 'yard', 'quiet']);
-  assert.deepEqual(['c01c', 'c02c', 'c04c', 'c06b', 'c09b'].map(at), ['ward-rain', 'market-rain', 'archive-rain', 'yard-rain', 'quiet-rain']);
+  assert.deepEqual(['c01a', 'c02a', 'c03a', 'c04a', 'c05a', 'c06a', 'c09a'].map(at), ['ward', 'wind', 'market', 'sun', 'archive', 'yard', 'lotus']);
+  assert.deepEqual(['c01c', 'c02c', 'c04c', 'c06b', 'c09b'].map(at), ['ward-rain', 'wind-rain', 'sun-rain', 'yard-rain', 'lotus-rain']);
   assert.deepEqual(['c01d', 'c02d', 'c05c', 'c10b'].map(at), ['dock', 'dock', 'dock', 'dock']);
   const end = caseById(FINALE_ID);
   assert.equal(end.scene, 'tower'); assert.equal(end.answer.truth, 'cardiac'); assert.equal(end.complaint, 'chest-pain');
-  // 同一章的主訴在同一個地方
+  // 一劫一座島：每個主訴一間診間
   const home = (m: string) => COMPLAINTS.find((k) => k.id === m)!.place ?? 'ward';
   assert.deepEqual(['dyspnea', 'abdomen', 'fever', 'headache', 'back-pain', 'leg-pain', 'swelling', 'excreta', 'rash', 'weight-loss', 'paresthesia'].map(home),
-    ['market', 'market', 'archive', 'archive', 'yard', 'yard', 'yard', 'quiet', 'quiet', 'quiet', 'quiet']);
+    ['wind', 'market', 'sun', 'archive', 'yard', 'boar', 'whirl', 'lotus', 'circe', 'quiet', 'shade']);
 });
 
 test('第三章：三位不穩定、五位穩定；頭痛的評估有神經學檢查', () => {

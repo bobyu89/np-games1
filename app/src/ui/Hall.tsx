@@ -15,7 +15,7 @@ import type { Run, Save } from './store.ts';
 import { Settings, StatsFacts } from './Settings.tsx';
 import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
-import { AXE, axesLit, cantoOpen, perilsPassed, PASSED, chapterDone, chapterOpen, homeOf, ARCHIVE, BEATS, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, questName, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
+import { AXE, axesLit, cantoOpen, islandOf, questsOn, perilsPassed, PASSED, chapterDone, chapterOpen, homeOf, ARCHIVE, BEATS, HEROES, QUESTS, TRIAL_PASS, finaleDone, finaleOpen, nightDone, towerOpen, pickTrial, trialOpen, albumCount, codexOf, codexPercent, heroOf, heroShots, nextBeat, questName, peopleOf, placesOf, rankOf, toYou, unlocked, type Beat, type Entry } from './progress.ts';
 import { WELCOME, WORLD } from './world.ts';
 import { CANTOS, PERILS, type Canto } from '../data/odyssey.ts';
 import { Portrait } from './Portrait.tsx';
@@ -80,8 +80,8 @@ function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(i
 export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, onNight, onTide, onResume, onDropRun, onImport, onReset }: Props) {
   // 航海圖：哪幾座島去過了、每座島結了幾張。巡診船停在現在走到的那一章的島
   const isles: ChartIsle[] = (Object.keys(ISLANDS) as IslandId[]).map((id) => {
-    const ch = ISLANDS[id].chapter, qs = QUESTS.filter((q) => q.chapter === ch);
-    const marks = COMPLAINTS.filter((m) => QUESTS.some((q) => q.chapter === ch && caseById(q.caseId).complaint === m.id)).map((m) => perilsPassed(m.id, save) > 0);
+    const ch = ISLANDS[id].chapter, qs = questsOn(id);
+    const marks = COMPLAINTS.filter((m) => islandOf({ complaint: m.id }) === id).map((m) => perilsPassed(m.id, save) > 0);
     return { id, open: chapterOpen(ch, save), done: qs.filter((q) => save.cases[q.caseId]).length, total: qs.length, fresh: qs.some((q) => unlocked(q, save) && !save.cases[q.caseId]), marks };
   });
   const boat = ([...isles].reverse().find((i) => i.open && i.done < i.total) ?? isles[0]).id;
@@ -175,7 +175,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               ))}
               {COMPLAINTS.map((m) => {
                 const mine = QUESTS.filter((q) => caseById(q.caseId).complaint === m.id);
-                if (!mine.length || mine[0].chapter !== ISLANDS[isle].chapter) return null;
+                if (!mine.length || islandOf({ complaint: m.id }) !== isle) return null;
                 const seen = mine.some((q) => unlocked(q, save));
                 return (
                   <Fragment key={m.id}>
@@ -196,10 +196,12 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 );
               })}
               {(() => {
+                // 海神的風暴：一章一場，放在那一章有長老的那座島
                 const n = ISLANDS[isle].chapter, done = chapterDone(n, save), seen = save.beats.includes(TIDE_DONE(n));
+                if (!ISLANDS[isle].elder) return null;
                 return done
                   ? <button type="button" className={'quest paper' + (seen ? '' : ' hint')} onClick={() => { sfx.page(); onTide(n); }}><i className="seal" aria-hidden="true" /><b>{TIDES[n].title}</b><span>推演：這一章的兩位同一刻到門口，先看誰、怎麼交代</span><em>{seen ? '走過了・可以再走' : '選讀'}</em></button>
-                  : <div className="quest paper locked" aria-disabled="true"><b>海神的風暴</b><span>這座島的委託都結案之後，才有這一場推演</span><em>還沒出現</em></div>;
+                  : <div className="quest paper locked" aria-disabled="true"><b>海神的風暴</b><span>{CHAPTERS[n]}的委託都結案之後，才有這一場推演</span><em>還沒出現</em></div>;
               })()}
               {isle === 'main' && <>
               <div className="quest-head">終章　大霧值班夜</div>
@@ -322,7 +324,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               <h3>公會的人</h3>
               <div className="album">{guild.map((e) => <Card key={e.id} e={e} />)}</div>
               <h3>五島長老會</h3>
-              <p className="dim">五座島各一位老醫生。病室裡卡住的時候可以請教他們（第二章起），但每一位都有不提的地方。</p>
+              <p className="dim">本島和四片海最大的那座島，各一位老醫生。病室裡卡住的時候可以請教他們（第二章起），但每一位都有不提的地方。</p>
               <div className="album">{elders.map((e) => <Card key={e.id} e={e} />)}</div>
               <h3>照顧過的人</h3>
               <div className="album">{patients.map((e) => <Card key={e.id} e={e} />)}</div>
@@ -351,7 +353,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <p className="dim">劫的陷阱是依臨床推理常見的錯誤寫的，跟病例一樣，還沒有經過臨床老師審查。</p>
           </>}
           {tab === 'places' && <>
-            <p className="dim">去過的地方會記在這裡。公會在霧港有五個診間，一章換一個；出診的委託，會帶你到公會以外的地方。</p>
+            <p className="dim">去過的地方會記在這裡。一座島一間公會的診間，在那座島結過一張委託才會打開；出診的委託，會帶你到公會以外的地方。</p>
             <div className="album">{placesOf(save).map((e) => <Card key={e.id} e={e} wide />)}</div>
           </>}
           {tab === 'shadow' && <>
