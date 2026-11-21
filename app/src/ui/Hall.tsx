@@ -19,6 +19,7 @@ import { AXE, axesLit, cantoOpen, islandOf, questsOn, perilsPassed, PASSED, chap
 import { WELCOME, WORLD } from './world.ts';
 import { CANTOS, PERILS, type Canto } from '../data/odyssey.ts';
 import { Portrait } from './Portrait.tsx';
+import { Trailer, TRAILER_SEEN } from './Trailer.tsx';
 import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
@@ -89,7 +90,9 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [pendingBeat, setBeat] = useState<Beat | null>(() => nextBeat(save) ?? null);
   // 先知道自己是誰，故事才開始：還沒選主角之前，序章先等著
   const beat = save.hero === null ? null : pendingBeat;
-  const [welcomed, setWelcomed] = useState(() => save.hero !== null || save.beats.length > 0);
+  const [welcomed, setWelcomed] = useState(() => save.hero !== null || save.beats.some((b) => b !== TRAILER_SEEN));
+  // 前導片：第一次打開還沒看過的時候先播；圖鑑裡可以重看
+  const [film, setFilm] = useState(() => save.hero === null && !save.beats.includes(TRAILER_SEEN));
   const [step, setStep] = useState(0);
   const [reading, setReading] = useState<CaseDef | null>(null);
   const [codex, setCodex] = useState(false);
@@ -341,6 +344,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               : <div key={l.id} className="leaf locked"><b>？？？</b><p className="dim">{l.hint}</p></div>))}
             <h3>這裡的東西，對到現實的什麼</h3>
             <dl className="pairs">{WORLD.map.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+            <button type="button" className="pick" onClick={() => { sfx.page(); setCodex(false); setFilm(true); }}>看前導片（52 秒）</button>
             <h3>這是什麼</h3>
             <p>{WELCOME.what}</p>
             <p className="dim">{WELCOME.note}</p>
@@ -384,6 +388,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
           </>}
         </Sheet>
       )}
+      {film && <Trailer onDone={() => { setFilm(false); if (!save.beats.includes(TRAILER_SEEN)) onBeatSeen(TRAILER_SEEN); }} />}
       {story && (
         <Sheet title={story.title} onClose={() => setStory(null)}>
           {story.lines.map((l, i) => (l.who === 'sys' ? <p key={i} className="dim">{toYou(l.text, save.hero)}</p>

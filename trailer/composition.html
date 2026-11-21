@@ -1,0 +1,126 @@
+<!doctype html>
+<!-- 霧脈公會：歸航記 的前導片。make.mjs 把寬、高、網址換掉，橫式（遊戲裡播）和直式（Threads）用同一份。 -->
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=__W__, height=__H__" />
+<script src="assets/gsap.min.js"></script>
+<style>
+@font-face { font-family: 'WenKai'; src: url(assets/wenkai.woff2) format('woff2'); font-weight: 700; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: __W__px; height: __H__px; overflow: hidden; background: #0f1714; }
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: 'WenKai', serif; color: #f3ead7; }
+.shot { position: absolute; inset: 0; overflow: hidden; }
+.shot img.bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform-origin: 50% 50%; }
+.cap { position: absolute; left: 6%; right: 6%; bottom: 9%; text-align: center; font-size: calc(min(__W__px, __H__px) * 0.058); line-height: 1.45; letter-spacing: 0.06em;
+  text-shadow: 0 0 calc(min(__W__px, __H__px) * 0.02) #0f1714, 0 0.06em 0.12em #0f1714; }
+.cap.top { bottom: auto; top: 9%; }
+.cap small { display: block; font-size: 0.62em; opacity: 0.85; margin-top: 0.3em; }
+.shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,20,.85), rgba(15,23,20,0) 45%); }
+.tag { position: absolute; left: 0; right: 0; margin: 0 auto; width: fit-content; top: 8%; background: #efe3c8; color: #2a2520; border: 0.12em solid #1d1a16; border-radius: 0.4em;
+  padding: 0.2em 0.9em; font-size: calc(min(__W__px, __H__px) * 0.05); white-space: nowrap; }
+.tag small { font-size: 0.6em; color: #8a4b2c; margin-left: 0.5em; }
+.row { position: absolute; left: 3%; right: 3%; top: 10%; display: flex; gap: 1.5%; justify-content: center; flex-wrap: wrap; row-gap: 2%; }
+.row figure { width: 18.5%; text-align: center; font-size: calc(min(__W__px, __H__px) * 0.034); }
+.row img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border: calc(min(__W__px, __H__px) * 0.004) solid #1d1a16; border-radius: calc(min(__W__px, __H__px) * 0.012); background: #efe3c8; }
+.row figcaption { margin-top: 0.3em; }
+.portrait .row figure { width: 30%; }
+.end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: #0f1714; }
+.end h1 { font-size: calc(min(__W__px, __H__px) * 0.15); letter-spacing: 0.16em; }
+.end h2 { font-size: calc(min(__W__px, __H__px) * 0.06); letter-spacing: 0.5em; color: #e7b65a; margin-top: 0.2em; }
+.end p { font-size: calc(min(__W__px, __H__px) * 0.038); margin-top: 1.2em; opacity: 0.9; }
+.end .note { font-size: calc(min(__W__px, __H__px) * 0.026); opacity: 0.65; margin-top: 2.2em; }
+/* 直式：每一鏡要留住的主角不一定在正中間 */
+.portrait #s1 .bg { object-position: 24% 50%; }
+.portrait #s4 .bg { object-position: 58% 50%; }
+.portrait #s5 .bg { object-position: 38% 50%; }
+.portrait #s7 .bg { object-position: 34% 50%; }
+.fade, .dark { position: absolute; inset: 0; background: #0f1714; }
+#fade { z-index: 10; }
+</style>
+</head>
+<body>
+<div id="root" class="__ORIENT__" data-composition-id="main" data-start="0" data-duration="52" data-width="__W__" data-height="__H__">
+
+  <section id="s1" class="clip shot" data-start="0" data-duration="6" data-track-index="0">
+    <img class="bg" src="assets/title.jpg" alt="" /><div class="shade"></div>
+    <p class="cap" id="s1a">說吧，記事的人，</p>
+    <p class="cap" id="s1b">說那位見習的故事。</p>
+  </section>
+
+  <section id="s2" class="clip shot" data-start="6" data-duration="6" data-track-index="0">
+    <img class="bg" src="assets/chart.jpg" alt="" /><div class="shade"></div>
+    <p class="cap" id="s2a">霧海群島，十二座島。</p>
+    <p class="cap" id="s2b">人不舒服的時候，霧裡的海中老人<br />會化成一種形狀，浮在他身邊。</p>
+  </section>
+
+  __CREATURES__
+
+  <section id="s4" class="clip shot" data-start="24" data-duration="6" data-track-index="0">
+    <img class="bg" src="assets/hall.jpg" alt="" /><div class="shade"></div>
+    <p class="cap" id="s4a">你是剛出師的見習專科護理師。</p>
+    <p class="cap" id="s4b">一張委託，就是一位病人。</p>
+  </section>
+
+  <section id="s5" class="clip shot" data-start="30" data-duration="6" data-track-index="0">
+    <img class="bg" src="assets/ward.jpg" alt="" /><div class="shade"></div>
+    <p class="cap" id="s5a">劫影只告訴你哪裡不舒服，<br />不告訴你為什麼。</p>
+    <p class="cap" id="s5b">問、看、量，抓著它不放，<br />它才會現出原形。</p>
+  </section>
+
+  <section id="s6" class="clip shot" data-start="36" data-duration="5" data-track-index="0" style="background:#2f4038">
+    <div class="row">__ELDERS__</div>
+    <p class="cap" id="s6a">五島長老會：每一位都很會問，<br />也都有不問的地方。</p>
+  </section>
+
+  <section id="s7" class="clip shot" data-start="41" data-duration="5" data-track-index="0">
+    <img class="bg" id="tower" src="assets/tower.jpg" alt="" /><div class="dark" id="dark"></div><div class="shade"></div>
+    <p class="cap" id="s7a">十五年前，燈塔熄過一次。</p>
+    <p class="cap" id="s7b">這一次，換你把燈點亮。</p>
+  </section>
+
+  <section id="s8" class="clip shot" data-start="46" data-duration="6" data-track-index="0">
+    <div class="end">
+      <h1 id="t1">霧脈公會</h1>
+      <h2 id="t2">歸航記</h2>
+      <p id="t3">專科護理師口試的練習・十二種主訴</p>
+      <p class="note" id="t4">病例是草稿，還沒經過臨床老師審查，不能當教材<br />__URL__</p>
+    </div>
+  </section>
+
+  <div id="fade" class="clip fade" data-start="0" data-duration="52" data-track-index="1"></div>
+</div>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused: true });
+  const say = (a, at, out) => { tl.fromTo(a, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, at); if (out) tl.to(a, { opacity: 0, duration: 0.4 }, out); };
+  // 開場從黑淡入；每一鏡慢慢推近
+  tl.fromTo('#fade', { opacity: 1 }, { opacity: 0, duration: 1.4, ease: 'power1.out' }, 0);
+  tl.fromTo('#s1 .bg', { scale: 1.04 }, { scale: 1.16, duration: 6, ease: 'none' }, 0);
+  say('#s1a', 1.0, 3.0); say('#s1b', 3.2);
+  tl.fromTo('#s2 .bg', { scale: 1.2, xPercent: -3 }, { scale: 1.05, xPercent: 2, duration: 6, ease: 'power1.inOut' }, 6);
+  say('#s2a', 6.4, 8.6); say('#s2b', 8.8);
+  // 十二劫影：一秒一隻
+  for (let i = 0; i < 12; i++) {
+    const t = 12 + i;
+    tl.fromTo('#c' + i + ' .bg', { scale: 1.12 }, { scale: 1.0, duration: 1, ease: 'power2.out' }, t);
+    tl.fromTo('#c' + i + ' .tag', { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.3 }, t + 0.1);
+  }
+  tl.fromTo('#s4 .bg', { scale: 1.0 }, { scale: 1.1, duration: 6, ease: 'none' }, 24);
+  say('#s4a', 24.4, 26.8); say('#s4b', 27.0);
+  tl.fromTo('#s5 .bg', { scale: 1.12, yPercent: 3 }, { scale: 1.0, yPercent: 0, duration: 6, ease: 'power1.inOut' }, 30);
+  say('#s5a', 30.4, 32.8); say('#s5b', 33.0);
+  tl.fromTo('#s6 .row figure', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.35, ease: 'power2.out' }, 36.2);
+  say('#s6a', 37.6);
+  // 燈塔：先暗，後半亮起來
+  tl.fromTo('#dark', { opacity: 0.7 }, { opacity: 0, duration: 2.2, ease: 'power2.inOut' }, 43);
+  tl.fromTo('#tower', { scale: 1.08 }, { scale: 1.0, duration: 5, ease: 'none' }, 41);
+  say('#s7a', 41.3, 43.3); say('#s7b', 43.6);
+  tl.fromTo('#t1', { opacity: 0, letterSpacing: '0.4em' }, { opacity: 1, letterSpacing: '0.16em', duration: 1.2, ease: 'power2.out' }, 46.2);
+  say('#t2', 47.2); say('#t3', 48.2); say('#t4', 49.0);
+  tl.to('#fade', { opacity: 1, duration: 0.8 }, 51.2);
+  window.__timelines.main = tl;
+  tl.seek(0);
+</script>
+</body>
+</html>

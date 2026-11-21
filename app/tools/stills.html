@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>前導片的靜態圖</title>
+<style>html,body{margin:0;background:#1d2a25;overflow:hidden}canvas{display:block;width:100vw;height:100vh}</style></head>
+<body><canvas id="c"></canvas>
+<!-- 前導片用的靜態圖：一個網址畫一張（?shot=名字），trailer/make.mjs 逐張截圖。只在開發的時候用，不進遊戲的建置。 -->
+<script type="module">
+import { createWard } from '../src/art/ward.js';
+import { createHall } from '../src/art/hall.js';
+import { createTitle } from '../src/art/title.js';
+const c = document.getElementById('c'), shot = new URLSearchParams(location.search).get('shot') || 'title';
+const zoom = { w: 170, h: 128, cx: 183, cy: 80 }, face = (cx, cy, w = 120) => ({ w: w * 1.33, h: w, cx, cy });
+const CREATURES = ['moth', 'frog', 'crab', 'newt', 'bird', 'tortoise', 'heron', 'puffer', 'otter', 'squid', 'mouse', 'eel'];
+const ELDERS = ['e-nie', 'e-lu', 'e-guan', 'e-chu', 'e-ge'];
+let s, tweak = () => {}, steps = 60;
+if (shot === 'title') { s = createTitle(c, {}); steps = 140; }
+else if (shot === 'hall') { s = createHall(c, { hero: 'zhi' }); tweak = (st) => { st.talker = 'cen'; }; }
+else if (shot === 'ward') { s = createWard(c, { patient: 'lin', hero: 'zhi' }); tweak = (st) => { st.veil = 0.75; st.veilShown = 0.75; }; }
+else if (shot === 'exam') { s = createWard(c, { patient: 'lin', hero: 'zhi' }); tweak = (st) => { st.veil = 0.2; st.veilShown = 0.2; st.talker = 'hero'; }; }
+else if (shot.startsWith('c-')) { const look = shot.slice(2); s = createWard(c, { patient: 'lin', shadow: look, view: zoom }); tweak = (st) => { st.veil = 0; st.veilShown = 0; }; if (!CREATURES.includes(look)) throw new Error(look); }
+else if (shot.startsWith('e-')) { if (!ELDERS.includes(shot)) throw new Error(shot); s = createWard(c, { patient: shot, view: face(92, 170) }); tweak = (st) => { st.hide = true; }; }
+else if (shot === 'tower-dark' || shot === 'tower-lit') { s = createWard(c, { patient: 'dong', scene: 'tower' }); tweak = (st) => { st.hide = true; st.beam = shot === 'tower-lit' ? 1 : 0; }; }
+else { s = createWard(c, { patient: { market: 'r-xi', archive: 'r-luan', yard: 'r-duo', quiet: 'r-lu', dock: 'zhou' }[shot], scene: shot }); tweak = (st) => { st.hide = true; }; }
+s.state.glow = 0; tweak(s.state);
+s.resize(c.clientWidth, c.clientHeight);
+for (let i = 0; i < steps; i++) s.update(i / 20, 1 / 20);
+s.render();
+document.body.dataset.ready = '1';
+</script></body></html>
