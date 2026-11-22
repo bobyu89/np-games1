@@ -5,7 +5,7 @@
 // 要先在 trailer/ 裡 npm install（hyperframes、gsap；playwright 用環境裡已經有的那一份）。
 // 輸出：app/public/trailer/trailer.mp4（橫式 720p）和 trailer-vertical.mp4（直式 720p），遊戲序章前播；
 //      app/public/social/trailer-vertical.mp4（直式 1080p），Threads 用。
-// 畫面全部是遊戲本身的程式美術（app/src/art）：場景照目標比例一格一格錄（不裁切），劫影單獨畫在透明背景上做成動畫。
+// 畫面全部是遊戲本身的程式美術（app/src/art）：場景照目標比例一格一格錄（不裁切），劫影單獨畫在透明背景上做成動畫。不出現任何病人。
 import { spawn, execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -16,9 +16,8 @@ import { compose } from './composition.mjs';
 const here = dirname(fileURLToPath(import.meta.url)), app = join(here, '..', 'app'), build = join(here, 'build');
 const require = createRequire(import.meta.url);
 const URL = 'mist-guild.shiftguard-navicare.workers.dev', PORT = 5181, FPS = 30;
-const CREATURES = [['moth', 'chest-pain'], ['frog', 'dyspnea'], ['crab', 'abdomen'], ['newt', 'fever'], ['bird', 'headache'], ['tortoise', 'back-pain'],
-  ['heron', 'leg-pain'], ['puffer', 'swelling'], ['otter', 'excreta'], ['squid', 'rash'], ['mouse', 'weight-loss'], ['eel', 'paresthesia']];
-const ELDERS = [['e-nie', '埃吉普提歐'], ['e-lu', '瑙西克拉'], ['e-guan', '涅斯托'], ['e-chu', '狄俄墨'], ['e-ge', '阿瑞忒']];
+// 航行的順序：本島，然後每一章先到那片海最大的島，再到同一章的小島（跟航線一樣）
+const VOYAGE = ['main', 'tide', 'wind', 'book', 'sun', 'keel', 'boar', 'whirl', 'bamboo', 'lotus', 'circe', 'shade'];
 const quiet = { ...process.env, HYPERFRAMES_NO_TELEMETRY: '1', DO_NOT_TRACK: '1' };
 const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7), reuse = process.argv.includes('--reuse');
 const CUTS = [['landscape', 1920, 1080], ['portrait', 1080, 1920]].filter(([n]) => !only || n === only);
@@ -27,16 +26,18 @@ const CUTS = [['landscape', 1920, 1080], ['portrait', 1080, 1920]].filter(([n]) 
 const { ISLANDS, ISLAND_OF } = await import(join(app, 'src/data/islands.ts'));
 const { COMPLAINTS } = await import(join(app, 'src/data/index.ts'));
 const { PERILS } = await import(join(app, 'src/data/odyssey.ts'));
-const complaintOf = (id) => COMPLAINTS.find((m) => m.id === id);
-const isles = Object.values(ISLANDS).map((i) => ({ ...i, tag: COMPLAINTS.filter((m) => ISLAND_OF[m.place ?? 'ward'] === i.id).map((m) => m.name).join('、') }));
-const creatures = CREATURES.map(([look, id]) => ({ look, name: complaintOf(id).shadow.name, complaint: complaintOf(id).name, peril: PERILS[id].name }));
-const elders = ELDERS.map(([look, name]) => ({ look, name }));
+// 每座島剛好一種症狀（一劫一座島）
+const isles = VOYAGE.map((id) => {
+  const i = ISLANDS[id], c = COMPLAINTS.find((m) => ISLAND_OF[m.place ?? 'ward'] === id);
+  return { id, name: i.name, x: i.x, y: i.y, r: i.r, from: i.from, look: c.shadow.look, complaint: c.name, shadow: c.shadow.name, peril: PERILS[c.id].name };
+});
 
 /** 一段場景：照目標比例錄 frames 格，at(秒) 可以在某些時間改場景狀態（例如霧散開、燈亮起來） */
-async function clip(page, shot, seconds, out, at = () => null) {
+async function clip(page, shot, seconds, out, at = () => null, pre = 0) {
   const dir = out + '.frames'; rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
   await page.goto('http://localhost:' + PORT + '/tools/stills.html?shot=' + shot);
   await page.waitForSelector('body[data-ready]', { timeout: 20000 });
+  if (pre) await page.evaluate((s) => window.adv(s), pre);   // 先往前走一段，跟開場不是同一個畫面
   const n = Math.round(seconds * FPS);
   for (let i = 0; i < n; i++) {
     const set = at(i / FPS); if (set) await page.evaluate(([k, v]) => window.set(k, v), set);
@@ -56,24 +57,22 @@ async function capture() {
     const shared = join(build, 'shared'); mkdirSync(shared, { recursive: true });
     // 劫影：單獨畫、背景透明，42 格動畫排成 7×6 的一張圖
     const sp = await b.newPage({ viewport: { width: 400, height: 400 } });
-    for (const [look] of CREATURES) {
+    for (const { look } of isles) {
+      if (existsSync(join(shared, 'sprite-' + look + '.png'))) continue;   // 錄過了就不再錄
       const dir = join(shared, 'solo-' + look); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
       await sp.goto('http://localhost:' + PORT + '/tools/stills.html?shot=solo-' + look); await sp.waitForSelector('body[data-ready]');
       for (let i = 0; i < 42; i++) { await sp.evaluate(() => window.adv(1 / 30)); await sp.screenshot({ path: join(dir, String(i).padStart(4, '0') + '.png'), omitBackground: true }); }
       execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', join(dir, '%04d.png'), '-vf', 'tile=7x6', '-frames:v', '1', join(shared, 'sprite-' + look + '.png')]);
       rmSync(dir, { recursive: true, force: true });
     }
-    // 長老：靜態的頭像
-    const ep = await b.newPage({ viewport: { width: 900, height: 1200 } });
-    for (const [look] of ELDERS) { await ep.goto('http://localhost:' + PORT + '/tools/stills.html?shot=' + look); await ep.waitForSelector('body[data-ready]'); await ep.screenshot({ path: join(shared, look + '.jpg'), type: 'jpeg', quality: 90 }); }
     // 場景：每個比例各錄一次，畫面本來就會延伸到兩邊，不用裁
     for (const [name, w, h] of CUTS) {
       const dir = join(build, name, 'assets'); mkdirSync(dir, { recursive: true });
       const p = await b.newPage({ viewport: { width: w, height: h } });
-      await clip(p, 'title', 6.2, join(dir, 'title.mp4'));
-      await clip(p, 'hall', 6.2, join(dir, 'hall.mp4'));
-      await clip(p, 'ward', 6.2, join(dir, 'ward.mp4'), (t) => (t === 0 ? ['veil', 1] : Math.abs(t - 2.6) < 0.01 ? ['veil', 0.12] : null));   // 第 33 秒，霧散開
-      await clip(p, 'tower-dark', 5.2, join(dir, 'tower.mp4'), (t) => (Math.abs(t - 1.9) < 0.01 ? ['beam', 1] : null));                  // 第 43 秒，燈亮起來
+      // 不錄任何病人：霧港（你在碼頭）、公會大廳（蒙托拉、你、斐米歐），最後回到霧港
+      await clip(p, 'title', 5.2, join(dir, 'title.mp4'));
+      await clip(p, 'hall', 5.2, join(dir, 'hall.mp4'));
+      await clip(p, 'title', 13.2, join(dir, 'home.mp4'), () => null, 9);
       await p.close();
       console.log('錄好了：' + name);
     }
@@ -100,10 +99,10 @@ const OUT = { landscape: [[join(app, 'public/trailer/trailer.mp4'), ['-vf', 'sca
 for (const [name, w, h] of CUTS) {
   const dir = join(build, name), assets = join(dir, 'assets'), raw = join(build, name + '.mp4');
   if (!(reuse && existsSync(raw))) {
-    const html = compose({ w, h, isles, creatures, elders, url: URL });
+    const html = compose({ w, h, isles, url: URL });
     writeFileSync(join(dir, 'index.html'), html);
     writeFileSync(join(dir, 'hyperframes.json'), JSON.stringify({ paths: { assets: 'assets' } }, null, 2));
-    for (const f of [...CREATURES.map(([k]) => 'sprite-' + k + '.png'), ...ELDERS.map(([k]) => k + '.jpg')]) copyFileSync(join(build, 'shared', f), join(assets, f));
+    for (const { look } of isles) copyFileSync(join(build, 'shared', 'sprite-' + look + '.png'), join(assets, 'sprite-' + look + '.png'));
     copyFileSync(require.resolve('gsap/dist/gsap.min.js', { paths: [here] }), join(assets, 'gsap.min.js'));
     await font(assets, html);
     execFileSync('npx', ['hyperframes', 'render', dir, '-o', raw, '--fps', String(FPS), '--quality', 'delivery', '--quiet'], { cwd: here, env: quiet, stdio: 'inherit' });
