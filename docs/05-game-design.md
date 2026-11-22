@@ -670,6 +670,8 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 
 - **島名看不出要做什麼**（研究主持人回饋）：航海圖上每座島的名字底下寫症狀和進度（「胸痛 1/4」）；島嶼頁的標題先寫症狀，再一句白話說這裡的病人和一張委託要做什麼，接著是「提示・這個症狀最容易犯的錯」（劫的陷阱），神話島名放小字；「下一步」也帶上症狀。前導片在地圖頁和首頁的「關於・前導片」都看得到。
 
+- **前導片的配樂**：海浪和鐘聲，`trailer/music.mjs` 合成，對著分鏡下鐘。遊戲裡播的時候跟著「聲音：開／關」；瀏覽器不讓網頁自己出聲時先靜音播，給一顆「開聲音」。
+
 ## References
 
 甄審規定（衛生福利部護理及健康照護司，2026）：
@@ -708,3 +710,13 @@ Codex 的設計和你之前定的玩法有三處不同。你決定照下面的�
 - Wells, P. S., Anderson, D. R., Rodger, M., Stiell, I., Dreyer, J. F., Barnes, D., Forgie, M., Kovacs, G., Ward, J., & Kovacs, M. J. (2001). Excluding pulmonary embolism at the bedside without diagnostic imaging: Management of patients with suspected pulmonary embolism presenting to the emergency department by using a simple clinical model and D-dimer. *Annals of Internal Medicine, 135*(2), 98–107. https://doi.org/10.7326/0003-4819-135-2-200107170-00010
 - Wang, C. S., FitzGerald, J. M., Schulzer, M., Mak, E., & Ayas, N. T. (2005). Does this dyspneic patient in the emergency department have congestive heart failure? *JAMA, 294*(15), 1944–1956. https://doi.org/10.1001/jama.294.15.1944
 - Yokoe, M., Hata, J., Takada, T., Strasberg, S. M., Asbun, H. J., Wakabayashi, G., Kozaka, K., Endo, I., Deziel, D. J., Miura, F., Okamoto, K., Hwang, T.-L., Huang, W. S.-W., Ker, C.-G., Chen, M.-F., Han, H.-S., Yoon, Y.-S., Choi, I.-S., Yoon, D.-S., … Yamamoto, M. (2018). Tokyo Guidelines 2018: Diagnostic criteria and severity grading of acute cholecystitis (with videos). *Journal of Hepato-Biliary-Pancreatic Sciences, 25*(1), 41–54. https://doi.org/10.1002/jhbp.515
+
+## 30. Threads 改成「歸航記」（2026-11-22）
+
+研究主持人：先在 Threads 發一次這一版的更新、附前導片；之後照這條英雄旅程發文，不用管口試了。
+
+- 公告一則（附直式前導片），手動發一次（`social/README.md`）。
+- 2026-11-23 起每天一則「歸航記」：十二劫照《奧德賽》的順序（忘憂果 → 獨眼巨人 → 風袋 → 擲石巨人 → 喀耳刻 → 冥府 → 賽蓮 → 斯庫拉 → 卡律布狄斯 → 日神之牛 → 卡呂普索 → 野豬之疤），每一劫先一則介紹、再發那座島的病人；已經發過的每日一案 01–10 不重發。共五十天。
+- 貼文不再有口試倒數。遊戲裡的倒數（第 24 節）不動。
+- 跟之前一樣：只放進門之前看得到的內容、不公布診斷，每一則都寫「還沒經過臨床老師審查」。
+

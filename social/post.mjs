@@ -5,6 +5,7 @@
 //   THREADS_ACCESS_TOKEN  Threads 的長期權杖（帳號主人授權來的）。沒有設定就什麼都不發，這不算錯
 //   DRY_RUN=1             試跑：做到發布的前一步（圖和文字交給 Threads 收下），不真的發。沒發布的那一份二十四小時後自己過期
 //   POST_DATE=YYYY-MM-DD  要發哪一天的（預設是臺灣時間的今天）
+//   POST_ID=…             指定發哪一則（日程裡的 id，例如 launch-guihang）。有給就不看日期，用來發沒有日期的公告
 //   SITE_URL、THREADS_API 圖放在哪個網站、API 的網址（有預設值，一般不用改）
 // 權杖只放在環境變數裡，這支程式不會把它印出來。
 import { readFileSync } from 'node:fs';
@@ -12,7 +13,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { run } from './core.mjs';
 
-export { alreadyPosted, checkToken, headOf, pick, run, taipeiDate } from './core.mjs';
+export { alreadyPosted, checkToken, headOf, lastDate, pick, pickId, run, taipeiDate } from './core.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -21,6 +22,7 @@ export async function main(env = process.env, log = console.log) {
     schedule: JSON.parse(readFileSync(join(here, 'schedule.json'), 'utf8')),
     token: env.THREADS_ACCESS_TOKEN || '',
     date: env.POST_DATE || undefined,
+    id: env.POST_ID || '',
     dry: ['1', 'true'].includes(String(env.DRY_RUN || '').toLowerCase()),
     api: env.THREADS_API || undefined,
     site: env.SITE_URL || undefined,

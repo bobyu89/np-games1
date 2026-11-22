@@ -1,12 +1,14 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><title>前導片的靜態圖</title>
-<style>html,body{margin:0;background:#1d2a25;overflow:hidden}canvas{display:block;width:100vw;height:100vh}</style></head>
+<style>html,body{margin:0;background:#1d2a25;overflow:hidden}html.clear,html.clear body{background:transparent}canvas{display:block;width:100vw;height:100vh}</style></head>
 <body><canvas id="c"></canvas>
-<!-- 前導片用的靜態圖：一個網址畫一張（?shot=名字），trailer/make.mjs 逐張截圖。只在開發的時候用，不進遊戲的建置。 -->
+<!-- 前導片用的畫面：一個網址畫一個鏡頭（?shot=名字）。trailer/make.mjs 截靜態圖，或用 window.adv(秒) 一格一格往前走、逐格截圖做成動畫。
+     solo-劫影：只畫那一隻、背景透明。只在開發的時候用，不進遊戲的建置。 -->
 <script type="module">
 import { createWard } from '../src/art/ward.js';
 import { createHall } from '../src/art/hall.js';
 import { createTitle } from '../src/art/title.js';
+import { drawCen, drawShen, drawMo, drawHero } from '../src/art/cast.js';
 const c = document.getElementById('c'), shot = new URLSearchParams(location.search).get('shot') || 'title';
 const zoom = { w: 170, h: 128, cx: 183, cy: 80 }, face = (cx, cy, w = 120) => ({ w: w * 1.33, h: w, cx, cy });
 const CREATURES = ['moth', 'frog', 'crab', 'newt', 'bird', 'tortoise', 'heron', 'puffer', 'otter', 'squid', 'mouse', 'eel'];
@@ -16,13 +18,33 @@ if (shot === 'title') { s = createTitle(c, {}); steps = 140; }
 else if (shot === 'hall') { s = createHall(c, { hero: 'zhi' }); tweak = (st) => { st.talker = 'cen'; }; }
 else if (shot === 'ward') { s = createWard(c, { patient: 'lin', hero: 'zhi' }); tweak = (st) => { st.veil = 0.75; st.veilShown = 0.75; }; }
 else if (shot === 'exam') { s = createWard(c, { patient: 'lin', hero: 'zhi' }); tweak = (st) => { st.veil = 0.2; st.veilShown = 0.2; st.talker = 'hero'; }; }
+else if (shot.startsWith('solo-')) { const look = shot.slice(5); if (!CREATURES.includes(look)) throw new Error(look); document.documentElement.classList.add('clear'); s = createWard(c, { patient: 'lin', shadow: look, solo: true, view: { w: 150, h: 150, cx: 178, cy: 82 } }); }
+else if (shot.startsWith('person-')) { document.documentElement.classList.add('clear'); s = createWard(c, { patient: shot.slice(7), person: true, view: { w: 118, h: 118, cx: 92, cy: 168 } }); }
+else if (shot.startsWith('cast-')) {
+  // 公會的人和主角：直接用 cast.js 畫在透明的畫布上（站著的全身；斐米歐是坐在櫃台後面的上半身）
+  document.documentElement.classList.add('clear');
+  const who = shot.slice(5), g = c.getContext('2d');
+  let T = 0, W = 0, H = 0;
+  const draw = () => {
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height);
+    const k = Math.min(W, H) / (who === 'mo' ? 95 : who.startsWith('hero') ? 128 : 160);
+    g.setTransform(k, 0, 0, k, W / 2, who === 'mo' ? H * 0.98 : H * 0.96);
+    if (who === 'cen') drawCen(g, T, { x: 0, y: 0 }); else if (who === 'shen') drawShen(g, T, { x: 0, y: 0 }); else if (who === 'mo') drawMo(g, T, { x: 0, y: 0 });
+    else drawHero(g, T, { x: 0, y: 0, look: who.replace('hero-', '') });
+  };
+  s = { state: {}, resize: (w, h) => { W = c.width = w; H = c.height = h; }, update: (t) => { T = t; }, render: draw };
+}
 else if (shot.startsWith('c-')) { const look = shot.slice(2); s = createWard(c, { patient: 'lin', shadow: look, view: zoom }); tweak = (st) => { st.veil = 0; st.veilShown = 0; }; if (!CREATURES.includes(look)) throw new Error(look); }
 else if (shot.startsWith('e-')) { if (!ELDERS.includes(shot)) throw new Error(shot); s = createWard(c, { patient: shot, view: face(92, 170) }); tweak = (st) => { st.hide = true; }; }
 else if (shot === 'tower-dark' || shot === 'tower-lit') { s = createWard(c, { patient: 'dong', scene: 'tower' }); tweak = (st) => { st.hide = true; st.beam = shot === 'tower-lit' ? 1 : 0; }; }
 else { s = createWard(c, { patient: { market: 'r-xi', archive: 'r-luan', yard: 'r-duo', quiet: 'r-lu', dock: 'zhou' }[shot], scene: shot }); tweak = (st) => { st.hide = true; }; }
 s.state.glow = 0; tweak(s.state);
 s.resize(c.clientWidth, c.clientHeight);
-for (let i = 0; i < steps; i++) s.update(i / 20, 1 / 20);
+let clock = 0;
+for (let i = 0; i < steps; i++) { clock += 1 / 20; s.update(clock, 1 / 20); }
 s.render();
+// 動畫：每呼叫一次往前走 dt 秒再畫一次；set 改場景的狀態（例如霧慢慢散開）
+window.adv = (dt) => { clock += dt; s.update(clock, dt); s.render(); };
+window.set = (k, v) => { s.state[k] = v; };
 document.body.dataset.ready = '1';
 </script></body></html>

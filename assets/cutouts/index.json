@@ -1,0 +1,274 @@
+{
+  "patient-c01a.png": {
+    "name": "林秋",
+    "role": "病人・58 歲・港口的燈匠・胸痛"
+  },
+  "patient-c01b.png": {
+    "name": "簡晴",
+    "role": "病人・42 歲・碼頭的搬運工・胸痛"
+  },
+  "patient-c01c.png": {
+    "name": "莫桐",
+    "role": "病人・67 歲・退休的船塢填縫工・胸痛"
+  },
+  "patient-c01d.png": {
+    "name": "阮舟",
+    "role": "病人・35 歲・遠洋貨船的帳房・胸痛"
+  },
+  "patient-c02a.png": {
+    "name": "駱松",
+    "role": "病人・70 歲・退休的老船長・喘"
+  },
+  "patient-c02b.png": {
+    "name": "霍樟",
+    "role": "病人・66 歲・燻魚坊的師傅・喘"
+  },
+  "patient-c02c.png": {
+    "name": "柯蒲",
+    "role": "病人・52 歲・漁市的拍賣人・喘"
+  },
+  "patient-c02d.png": {
+    "name": "岳楊",
+    "role": "病人・24 歲・修桅杆的索具工・喘"
+  },
+  "patient-c03a.png": {
+    "name": "方苓",
+    "role": "病人・46 歲・港邊炸魚攤的老闆娘・腹痛"
+  },
+  "patient-c03b.png": {
+    "name": "邵棠",
+    "role": "病人・19 歲・船塢的學徒・腹痛"
+  },
+  "patient-c03c.png": {
+    "name": "龔椿",
+    "role": "病人・48 歲・酒坊的釀酒師・腹痛"
+  },
+  "patient-c03d.png": {
+    "name": "鄔桃",
+    "role": "病人・63 歲・麵包坊的老闆娘・腹痛"
+  },
+  "patient-c04a.png": {
+    "name": "溫荷",
+    "role": "病人・34 歲・碼頭補網的女工・發燒"
+  },
+  "patient-c04b.png": {
+    "name": "涂柏",
+    "role": "病人・71 歲・退休的老漁夫・發燒"
+  },
+  "patient-c04c.png": {
+    "name": "池榆",
+    "role": "病人・47 歲・遠洋貨船上的廚子・發燒"
+  },
+  "patient-c04d.png": {
+    "name": "尤杉",
+    "role": "病人・45 歲・船塢的修船木匠・發燒"
+  },
+  "patient-c05a.png": {
+    "name": "喬芸",
+    "role": "病人・29 歲・公會帳房的書記・頭痛"
+  },
+  "patient-c05b.png": {
+    "name": "魏葵",
+    "role": "病人・52 歲・魚市的秤手・頭痛"
+  },
+  "patient-c05c.png": {
+    "name": "賀楓",
+    "role": "病人・24 歲・貨船上的甲板水手・頭痛"
+  },
+  "patient-c05d.png": {
+    "name": "季蘭",
+    "role": "病人・58 歲・染坊的老闆娘・頭痛"
+  },
+  "patient-c06a.png": {
+    "name": "石竹",
+    "role": "病人・38 歲・碼頭的搬運工・背痛"
+  },
+  "patient-c06b.png": {
+    "name": "甘棗",
+    "role": "病人・45 歲・鹽倉的帳房・背痛"
+  },
+  "patient-c06c.png": {
+    "name": "藍桂",
+    "role": "病人・44 歲・織帆的女工・背痛"
+  },
+  "patient-c06d.png": {
+    "name": "辛桑",
+    "role": "病人・72 歲・退休的船東・背痛"
+  },
+  "patient-c07a.png": {
+    "name": "戚杏",
+    "role": "病人・52 歲・港邊酒館的老闆・腳痛"
+  },
+  "patient-c07b.png": {
+    "name": "樂梧",
+    "role": "病人・68 歲・退休的領港人・腳痛"
+  },
+  "patient-c07c.png": {
+    "name": "孟榛",
+    "role": "病人・27 歲・船塢的鉚工・腳痛"
+  },
+  "patient-c07d.png": {
+    "name": "祁柳",
+    "role": "病人・58 歲・魚市的攤販・腳痛"
+  },
+  "patient-c08a.png": {
+    "name": "紀蓮",
+    "role": "病人・34 歲・染坊的女工・腫脹"
+  },
+  "patient-c08b.png": {
+    "name": "穆槐",
+    "role": "病人・76 歲・退休的鐘匠・腫脹"
+  },
+  "patient-c08c.png": {
+    "name": "譚菊",
+    "role": "病人・57 歲・醬園的老闆娘・腫脹"
+  },
+  "patient-c08d.png": {
+    "name": "包梨",
+    "role": "病人・41 歲・遠洋商船的管事・腫脹"
+  },
+  "patient-c09a.png": {
+    "name": "寧樺",
+    "role": "病人・63 歲・箍木桶的木桶匠・排泄物異常"
+  },
+  "patient-c09b.png": {
+    "name": "聞檀",
+    "role": "病人・56 歲・香料鋪的掌櫃・排泄物異常"
+  },
+  "patient-c09c.png": {
+    "name": "厲芹",
+    "role": "病人・60 歲・調漆上漆的漆匠・排泄物異常"
+  },
+  "patient-c09d.png": {
+    "name": "雷榕",
+    "role": "病人・69 歲・乾貨行的老闆娘・排泄物異常"
+  },
+  "patient-c10a.png": {
+    "name": "鄒薇",
+    "role": "病人・67 歲・茶館的老闆娘・皮膚疹子"
+  },
+  "patient-c10b.png": {
+    "name": "韋茜",
+    "role": "病人・31 歲・海產攤的幫手・皮膚疹子"
+  },
+  "patient-c10c.png": {
+    "name": "麥萱",
+    "role": "病人・26 歲・繡坊的繡娘・皮膚疹子"
+  },
+  "patient-c10d.png": {
+    "name": "申蓉",
+    "role": "病人・35 歲・藥鋪的夥計・皮膚疹子"
+  },
+  "patient-c11a.png": {
+    "name": "晏梅",
+    "role": "病人・33 歲・帆廠畫帆的畫工・體重減輕"
+  },
+  "patient-c11b.png": {
+    "name": "屠楠",
+    "role": "病人・64 歲・市場肉鋪的老闆・體重減輕"
+  },
+  "patient-c11c.png": {
+    "name": "席橘",
+    "role": "病人・29 歲・跑霧港和鄰鎮的信差・體重減輕"
+  },
+  "patient-c11d.png": {
+    "name": "裴柚",
+    "role": "病人・78 歲・退休的老船匠・體重減輕"
+  },
+  "patient-c12a.png": {
+    "name": "汪茗",
+    "role": "病人・54 歲・茶商・感覺異常"
+  },
+  "patient-c12b.png": {
+    "name": "焦菱",
+    "role": "病人・66 歲・當鋪的掌櫃・感覺異常"
+  },
+  "patient-c12c.png": {
+    "name": "鮑藤",
+    "role": "病人・62 歲・退休的廚子・感覺異常"
+  },
+  "patient-c12d.png": {
+    "name": "祝葦",
+    "role": "病人・28 歲・歌樓的歌手・感覺異常"
+  },
+  "patient-c01e.png": {
+    "name": "歐律克勒亞",
+    "role": "病人・71 歲・燈塔的守燈人・胸痛"
+  },
+  "elder-nie.png": {
+    "name": "埃吉普提歐",
+    "role": "五島長老會・72 歲・手粗的會首・五島長老會"
+  },
+  "elder-lu.png": {
+    "name": "瑙西克拉",
+    "role": "五島長老會・66 歲・數潮的・斯克里亞的老醫生"
+  },
+  "elder-guan.png": {
+    "name": "涅斯托",
+    "role": "五島長老會・77 歲・話長的・法羅斯的老醫生"
+  },
+  "elder-chu.png": {
+    "name": "狄俄墨",
+    "role": "五島長老會・63 歲・快腳的・拉莫斯的老醫生"
+  },
+  "elder-ge.png": {
+    "name": "阿瑞忒",
+    "role": "五島長老會・81 歲・聽完的・歐吉吉亞的老醫生"
+  },
+  "resident-lan.png": {
+    "name": "歐邁雅",
+    "role": "常駐的人・本島病室的助理"
+  },
+  "resident-xi.png": {
+    "name": "瑙希卡",
+    "role": "常駐的人・斯克里亞診間的接待"
+  },
+  "resident-luan.png": {
+    "name": "埃多忒",
+    "role": "常駐的人・法羅斯修紙的工匠"
+  },
+  "resident-duo.png": {
+    "name": "門特斯",
+    "role": "常駐的人・拉莫斯工寮的管事"
+  },
+  "resident-lu2.png": {
+    "name": "瑪伊拉",
+    "role": "常駐的人・歐吉吉亞靜室的房務"
+  },
+  "guild-mentor.png": {
+    "name": "蒙托拉",
+    "role": "公會・資深專科護理師"
+  },
+  "guild-doctor.png": {
+    "name": "馬卡翁",
+    "role": "公會・值班醫師"
+  },
+  "guild-archivist.png": {
+    "name": "斐米歐",
+    "role": "公會・檔案員"
+  },
+  "hero-cheng.png": {
+    "name": "伊安忒",
+    "role": "主角・善記的・內科病房出身"
+  },
+  "hero-yuan.png": {
+    "name": "阿克西翁",
+    "role": "主角・快腳的・急診出身"
+  },
+  "hero-zhi.png": {
+    "name": "帕西婭",
+    "role": "主角・善聽的・社區巡診出身"
+  },
+  "hero-heng.png": {
+    "name": "帕特羅",
+    "role": "主角・手穩的・外科病房出身"
+  },
+  "hero-mu.png": {
+    "name": "歐芙羅",
+    "role": "主角・溫言的・兒科病房出身"
+  },
+  "hero-qiao.png": {
+    "name": "克呂提婭",
+    "role": "主角・數息的・加護病房出身"
+  }
+}
