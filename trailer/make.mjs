@@ -1,4 +1,4 @@
-// 前導片：錄遊戲的畫面 → 用 HyperFrames 排成動畫 → 配上合成的海浪和鐘聲 → 輸出 MP4。
+// 前導片「歸航記」：用《奧德賽》的整趟旅程當故事。錄遊戲的畫面 → 用 HyperFrames 排成動畫 → 配上合成的海浪和鐘聲 → 輸出 MP4。
 //   node trailer/make.mjs              全部重做
 //   node trailer/make.mjs --reuse      已經錄過畫面、輸出過的話，只重新壓縮配上聲音（改配樂的時候用）
 //   node trailer/make.mjs --only=portrait   只做直式（landscape 同理）
@@ -11,13 +11,12 @@ import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSyn
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compose } from './composition.mjs';
+import { compose, ODYSSEY } from './composition.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), app = join(here, '..', 'app'), build = join(here, 'build');
 const require = createRequire(import.meta.url);
 const URL = 'mist-guild.shiftguard-navicare.workers.dev', PORT = 5181, FPS = 30;
-// 航行的順序：本島，然後每一章先到那片海最大的島，再到同一章的小島（跟航線一樣）
-const VOYAGE = ['main', 'tide', 'wind', 'book', 'sun', 'keel', 'boar', 'whirl', 'bamboo', 'lotus', 'circe', 'shade'];
+
 const quiet = { ...process.env, HYPERFRAMES_NO_TELEMETRY: '1', DO_NOT_TRACK: '1' };
 const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7), reuse = process.argv.includes('--reuse');
 const CUTS = [['landscape', 1920, 1080], ['portrait', 1080, 1920]].filter(([n]) => !only || n === only);
@@ -26,11 +25,12 @@ const CUTS = [['landscape', 1920, 1080], ['portrait', 1080, 1920]].filter(([n]) 
 const { ISLANDS, ISLAND_OF } = await import(join(app, 'src/data/islands.ts'));
 const { CASES, COMPLAINTS, FINALE_ID } = await import(join(app, 'src/data/index.ts'));
 const { PERILS } = await import(join(app, 'src/data/odyssey.ts'));
-// 每座島剛好一種症狀（一劫一座島）
-const isles = VOYAGE.map((id) => {
+// 照《奧德賽》的順序走十二劫；每座島剛好一種症狀（一劫一座島）
+const chart = Object.values(ISLANDS).map((i) => ({ id: i.id, name: i.name, x: i.x, y: i.y, r: i.r, from: i.from }));
+const isles = ODYSSEY.map(([id, myth]) => {
   const i = ISLANDS[id], c = COMPLAINTS.find((m) => ISLAND_OF[m.place ?? 'ward'] === id);
   const patients = CASES.filter((k) => k.complaint === c.id && k.id !== FINALE_ID).map((k) => ({ id: k.id, name: k.patient.name }));
-  return { id, name: i.name, x: i.x, y: i.y, r: i.r, from: i.from, look: c.shadow.look, complaint: c.name, shadow: c.shadow.name, peril: PERILS[c.id].name, patients };
+  return { id, name: i.name, look: c.shadow.look, complaint: c.name, shadow: c.shadow.name, peril: PERILS[c.id].name, myth, patients };
 });
 
 /** 一段場景：照目標比例錄 frames 格，at(秒) 可以在某些時間改場景狀態（例如霧散開、燈亮起來） */
@@ -100,7 +100,7 @@ const OUT = { landscape: [[join(app, 'public/trailer/trailer.mp4'), ['-vf', 'sca
 for (const [name, w, h] of CUTS) {
   const dir = join(build, name), assets = join(dir, 'assets'), raw = join(build, name + '.mp4');
   if (!(reuse && existsSync(raw))) {
-    const html = compose({ w, h, isles, url: URL });
+    const html = compose({ w, h, isles, chart, url: URL });
     writeFileSync(join(dir, 'index.html'), html);
     writeFileSync(join(dir, 'hyperframes.json'), JSON.stringify({ paths: { assets: 'assets' } }, null, 2));
     for (const { look } of isles) copyFileSync(join(build, 'shared', 'sprite-' + look + '.png'), join(assets, 'sprite-' + look + '.png'));
