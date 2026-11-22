@@ -2,6 +2,7 @@
 //   node trailer/make.mjs            兩個版本都做
 //   node trailer/make.mjs --stills   只重截靜態圖
 //   node trailer/make.mjs --only=portrait   只做直式（landscape 同理）
+//   node trailer/make.mjs --reuse    已經輸出過畫面的話，不重新逐格輸出，只重新壓縮、配上聲音（改配樂的時候用）
 // 要先在 trailer/ 裡 npm install（hyperframes、gsap、playwright 用環境裡已經有的那一份）。
 // 輸出：app/public/trailer/trailer.mp4（橫式）和 trailer-vertical.mp4（直式 720p，手機直向的時候播），都是遊戲序章前播；
 //      app/public/social/trailer-vertical.mp4（直式 1080p，Threads 用）。
@@ -67,6 +68,10 @@ function compose(w, h) {
     .replace('__ORIENT__', w > h ? 'landscape' : 'portrait').replace('__CREATURES__', creatures).replace('__ELDERS__', elders).replaceAll('__URL__', URL);
 }
 
+// 配樂：海浪和鐘聲，music.mjs 用程式合成
+const music = join(build, 'music.wav');
+execFileSync('node', [join(here, 'music.mjs'), music], { stdio: 'inherit' });
+const audio = ['-i', music, '-map', '0:v', '-map', '1:a', '-af', 'loudnorm=I=-18:TP=-1.5', '-c:a', 'aac', '-b:a', '96k', '-shortest'];
 const assets = join(build, 'assets');
 if (!existsSync(join(assets, 'title.jpg')) || process.argv.includes('--stills')) await stills(assets);
 if (process.argv.includes('--stills')) process.exit(0);
@@ -82,14 +87,14 @@ for (const [name, w, h, out, enc] of cuts) {
   writeFileSync(join(dir, 'hyperframes.json'), JSON.stringify({ paths: { assets: 'assets' } }, null, 2));
   execFileSync('cp', ['-r', assets, join(dir, 'assets')]);
   const raw = join(build, name + '.mp4');
-  execFileSync('npx', ['hyperframes', 'render', dir, '-o', raw, '--fps', '30', '--quality', 'delivery', '--quiet'], { cwd: here, env: quiet, stdio: 'inherit' });
+  if (!(process.argv.includes('--reuse') && existsSync(raw))) execFileSync('npx', ['hyperframes', 'render', dir, '-o', raw, '--fps', '30', '--quality', 'delivery', '--quiet'], { cwd: here, env: quiet, stdio: 'inherit' });
   mkdirSync(dirname(out), { recursive: true });
   // 再壓一次：遊戲裡的那一份要小，手機上也能很快開始播；加 faststart 讓它邊下載邊播
-  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', raw, ...enc, '-c:v', 'libx264', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', out]);
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', raw, ...audio, ...enc, '-c:v', 'libx264', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out]);
   console.log(name + '：' + out);
   if (name === 'portrait') {
     const small = join(app, 'public/trailer/trailer-vertical.mp4');
-    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', raw, '-vf', 'scale=720:1280', '-crf', '28', '-c:v', 'libx264', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', small]);
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', raw, ...audio, '-vf', 'scale=720:1280', '-crf', '28', '-c:v', 'libx264', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', small]);
     console.log('portrait（遊戲用）：' + small);
   }
 }
