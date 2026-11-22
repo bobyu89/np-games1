@@ -1,53 +1,82 @@
-// 前導片：截靜態圖 → 排成 HyperFrames 的組成 → 輸出 MP4。
-//   node trailer/make.mjs            兩個版本都做
-//   node trailer/make.mjs --stills   只重截靜態圖
+// 前導片：錄遊戲的畫面 → 用 HyperFrames 排成動畫 → 配上合成的海浪和鐘聲 → 輸出 MP4。
+//   node trailer/make.mjs              全部重做
+//   node trailer/make.mjs --reuse      已經錄過畫面、輸出過的話，只重新壓縮配上聲音（改配樂的時候用）
 //   node trailer/make.mjs --only=portrait   只做直式（landscape 同理）
-//   node trailer/make.mjs --reuse    已經輸出過畫面的話，不重新逐格輸出，只重新壓縮、配上聲音（改配樂的時候用）
-// 要先在 trailer/ 裡 npm install（hyperframes、gsap、playwright 用環境裡已經有的那一份）。
-// 輸出：app/public/trailer/trailer.mp4（橫式）和 trailer-vertical.mp4（直式 720p，手機直向的時候播），都是遊戲序章前播；
-//      app/public/social/trailer-vertical.mp4（直式 1080p，Threads 用）。
-// 美術都是遊戲本身用程式畫的（app/src/art）；這裡只截圖、排鏡頭、上字。
+// 要先在 trailer/ 裡 npm install（hyperframes、gsap；playwright 用環境裡已經有的那一份）。
+// 輸出：app/public/trailer/trailer.mp4（橫式 720p）和 trailer-vertical.mp4（直式 720p），遊戲序章前播；
+//      app/public/social/trailer-vertical.mp4（直式 1080p），Threads 用。
+// 畫面全部是遊戲本身的程式美術（app/src/art）：場景照目標比例一格一格錄（不裁切），劫影單獨畫在透明背景上做成動畫。
 import { spawn, execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compose } from './composition.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), app = join(here, '..', 'app'), build = join(here, 'build');
 const require = createRequire(import.meta.url);
-const URL = 'mist-guild.shiftguard-navicare.workers.dev';
-const PORT = 5181;
-const CREATURES = [['moth', '獨眼蛾', '獨眼巨人之劫'], ['frog', '風袋蛙', '風袋之劫'], ['crab', '斯庫拉蟹', '斯庫拉之劫'], ['newt', '日神蜥', '日神之牛'], ['bird', '賽蓮鳥', '賽蓮之劫'], ['tortoise', '擲石龜', '擲石巨人之劫'],
-  ['heron', '疤腿鷺', '野豬之疤'], ['puffer', '漩渦豚', '卡律布狄斯之劫'], ['otter', '忘憂獺', '忘憂果之劫'], ['squid', '喀耳刻魷', '喀耳刻之劫'], ['mouse', '藏洞鼠', '卡呂普索之劫'], ['eel', '冥河鰻', '冥府之劫']];
-const ELDERS = ['e-nie', 'e-lu', 'e-guan', 'e-chu', 'e-ge'], ELDER_NAMES = ['埃吉普提歐', '瑙西克拉', '涅斯托', '狄俄墨', '阿瑞忒'];
+const URL = 'mist-guild.shiftguard-navicare.workers.dev', PORT = 5181, FPS = 30;
+const CREATURES = [['moth', 'chest-pain'], ['frog', 'dyspnea'], ['crab', 'abdomen'], ['newt', 'fever'], ['bird', 'headache'], ['tortoise', 'back-pain'],
+  ['heron', 'leg-pain'], ['puffer', 'swelling'], ['otter', 'excreta'], ['squid', 'rash'], ['mouse', 'weight-loss'], ['eel', 'paresthesia']];
+const ELDERS = [['e-nie', '埃吉普提歐'], ['e-lu', '瑙西克拉'], ['e-guan', '涅斯托'], ['e-chu', '狄俄墨'], ['e-ge', '阿瑞忒']];
 const quiet = { ...process.env, HYPERFRAMES_NO_TELEMETRY: '1', DO_NOT_TRACK: '1' };
+const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7), reuse = process.argv.includes('--reuse');
+const CUTS = [['landscape', 1920, 1080], ['portrait', 1080, 1920]].filter(([n]) => !only || n === only);
 
-async function stills(dir) {
-  mkdirSync(dir, { recursive: true });
+// 遊戲的資料：島、症狀、劫的名字（直接讀遊戲的檔，名字改了這裡跟著改）
+const { ISLANDS, ISLAND_OF } = await import(join(app, 'src/data/islands.ts'));
+const { COMPLAINTS } = await import(join(app, 'src/data/index.ts'));
+const { PERILS } = await import(join(app, 'src/data/odyssey.ts'));
+const complaintOf = (id) => COMPLAINTS.find((m) => m.id === id);
+const isles = Object.values(ISLANDS).map((i) => ({ ...i, tag: COMPLAINTS.filter((m) => ISLAND_OF[m.place ?? 'ward'] === i.id).map((m) => m.name).join('、') }));
+const creatures = CREATURES.map(([look, id]) => ({ look, name: complaintOf(id).shadow.name, complaint: complaintOf(id).name, peril: PERILS[id].name }));
+const elders = ELDERS.map(([look, name]) => ({ look, name }));
+
+/** 一段場景：照目標比例錄 frames 格，at(秒) 可以在某些時間改場景狀態（例如霧散開、燈亮起來） */
+async function clip(page, shot, seconds, out, at = () => null) {
+  const dir = out + '.frames'; rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
+  await page.goto('http://localhost:' + PORT + '/tools/stills.html?shot=' + shot);
+  await page.waitForSelector('body[data-ready]', { timeout: 20000 });
+  const n = Math.round(seconds * FPS);
+  for (let i = 0; i < n; i++) {
+    const set = at(i / FPS); if (set) await page.evaluate(([k, v]) => window.set(k, v), set);
+    await page.evaluate((dt) => window.adv(dt), 1 / FPS);
+    await page.screenshot({ path: join(dir, String(i).padStart(4, '0') + '.jpg'), type: 'jpeg', quality: 92 });
+  }
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(FPS), '-i', join(dir, '%04d.jpg'), '-c:v', 'libx264', '-crf', '16', '-pix_fmt', 'yuv420p', out]);
+  rmSync(dir, { recursive: true, force: true });
+}
+
+async function capture() {
   const vite = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], { cwd: app, stdio: 'ignore' });
   try {
     for (let i = 0; i < 60; i++) { try { await fetch('http://localhost:' + PORT + '/'); break; } catch { await new Promise((r) => setTimeout(r, 500)); } }
     const { chromium } = require(require.resolve('playwright', { paths: [here, app, '/usr/local/lib/node_modules', '/usr/lib/node_modules'] }));
-    const b = await chromium.launch(), p = await b.newPage({ viewport: { width: 1600, height: 1200 } });
-    const shots = ['title', 'hall', 'ward', 'tower-lit', ...CREATURES.map(([k]) => 'c-' + k), ...ELDERS];
-    for (const s of shots) {
-      await p.goto('http://localhost:' + PORT + '/tools/stills.html?shot=' + s);
-      await p.waitForSelector('body[data-ready]', { timeout: 20000 });
-      await p.screenshot({ path: join(dir, (s === 'tower-lit' ? 'tower' : s) + '.jpg'), quality: 88, type: 'jpeg' });
+    const b = await chromium.launch();
+    const shared = join(build, 'shared'); mkdirSync(shared, { recursive: true });
+    // 劫影：單獨畫、背景透明，42 格動畫排成 7×6 的一張圖
+    const sp = await b.newPage({ viewport: { width: 400, height: 400 } });
+    for (const [look] of CREATURES) {
+      const dir = join(shared, 'solo-' + look); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
+      await sp.goto('http://localhost:' + PORT + '/tools/stills.html?shot=solo-' + look); await sp.waitForSelector('body[data-ready]');
+      for (let i = 0; i < 42; i++) { await sp.evaluate(() => window.adv(1 / 30)); await sp.screenshot({ path: join(dir, String(i).padStart(4, '0') + '.png'), omitBackground: true }); }
+      execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', join(dir, '%04d.png'), '-vf', 'tile=7x6', '-frames:v', '1', join(shared, 'sprite-' + look + '.png')]);
+      rmSync(dir, { recursive: true, force: true });
     }
-    // 航海圖：照遊戲裡的樣子，十二座島都去過、終章走完（有歸航線）
-    const save = { v: 3, beats: ['prologue', 'night-done'], cases: {}, takeaways: [], hero: 'zhi', trials: [] };
-    const { CASES } = await import(join(app, 'src/data/index.ts'));
-    const { BEATS } = await import(join(app, 'src/ui/progress.ts'));
-    for (const c of CASES) save.cases[c.id] = { best: 90, safety: 'met', plays: 1, seconds: 500, found: true, concern: true, reads: [] };
-    save.beats.push(...BEATS.map((x) => x.id), ...CASES.map((c) => 'passed:' + c.id));
-    const m = await b.newPage({ viewport: { width: 1400, height: 1000 }, deviceScaleFactor: 2 });
-    await m.goto('http://localhost:' + PORT + '/');
-    await m.evaluate((s) => { localStorage.setItem('mist-guild.v1', JSON.stringify(s)); localStorage.setItem('mist-guild.stats', '"no"'); }, save);
-    await m.reload(); await m.waitForTimeout(1500);
-    await m.getByRole('button', { name: /委託板|繼續|公會/ }).first().click().catch(() => {});
-    await m.waitForTimeout(1500);
-    await m.locator('.chart').screenshot({ path: join(dir, 'chart.jpg'), quality: 90, type: 'jpeg' });
+    // 長老：靜態的頭像
+    const ep = await b.newPage({ viewport: { width: 900, height: 1200 } });
+    for (const [look] of ELDERS) { await ep.goto('http://localhost:' + PORT + '/tools/stills.html?shot=' + look); await ep.waitForSelector('body[data-ready]'); await ep.screenshot({ path: join(shared, look + '.jpg'), type: 'jpeg', quality: 90 }); }
+    // 場景：每個比例各錄一次，畫面本來就會延伸到兩邊，不用裁
+    for (const [name, w, h] of CUTS) {
+      const dir = join(build, name, 'assets'); mkdirSync(dir, { recursive: true });
+      const p = await b.newPage({ viewport: { width: w, height: h } });
+      await clip(p, 'title', 6.2, join(dir, 'title.mp4'));
+      await clip(p, 'hall', 6.2, join(dir, 'hall.mp4'));
+      await clip(p, 'ward', 6.2, join(dir, 'ward.mp4'), (t) => (t === 0 ? ['veil', 1] : Math.abs(t - 2.6) < 0.01 ? ['veil', 0.12] : null));   // 第 33 秒，霧散開
+      await clip(p, 'tower-dark', 5.2, join(dir, 'tower.mp4'), (t) => (Math.abs(t - 1.9) < 0.01 ? ['beam', 1] : null));                  // 第 43 秒，燈亮起來
+      await p.close();
+      console.log('錄好了：' + name);
+    }
     await b.close();
   } finally { vite.kill(); }
 }
@@ -61,40 +90,28 @@ async function font(dir, html) {
   copyFileSync(join(app, 'node_modules/@expo-google-fonts/lxgw-wenkai-tc/LICENSE_FONT'), join(dir, 'OFL.txt'));
 }
 
-function compose(w, h) {
-  const creatures = CREATURES.map(([k, n, p], i) => `<section id="c${i}" class="clip shot" data-start="${12 + i}" data-duration="1" data-track-index="0"><img class="bg" src="assets/c-${k}.jpg" alt="" /><p class="tag">${n}<small>${p}</small></p></section>`).join('\n  ');
-  const elders = ELDERS.map((k, i) => `<figure><img src="assets/${k}.jpg" alt="" /><figcaption>${ELDER_NAMES[i]}</figcaption></figure>`).join('');
-  return readFileSync(join(here, 'composition.html'), 'utf8').replaceAll('__W__', String(w)).replaceAll('__H__', String(h))
-    .replace('__ORIENT__', w > h ? 'landscape' : 'portrait').replace('__CREATURES__', creatures).replace('__ELDERS__', elders).replaceAll('__URL__', URL);
-}
-
+if (!reuse) await capture();
 // 配樂：海浪和鐘聲，music.mjs 用程式合成
 const music = join(build, 'music.wav');
 execFileSync('node', [join(here, 'music.mjs'), music], { stdio: 'inherit' });
 const audio = ['-i', music, '-map', '0:v', '-map', '1:a', '-af', 'loudnorm=I=-18:TP=-1.5', '-c:a', 'aac', '-b:a', '96k', '-shortest'];
-const assets = join(build, 'assets');
-if (!existsSync(join(assets, 'title.jpg')) || process.argv.includes('--stills')) await stills(assets);
-if (process.argv.includes('--stills')) process.exit(0);
-copyFileSync(require.resolve('gsap/dist/gsap.min.js', { paths: [here] }), join(assets, 'gsap.min.js'));
-const cuts = [['landscape', 1920, 1080, join(app, 'public/trailer/trailer.mp4'), ['-vf', 'scale=1280:720', '-crf', '27']], ['portrait', 1080, 1920, join(app, 'public/social/trailer-vertical.mp4'), ['-crf', '27']]];
-await font(assets, cuts.map(([, w, h]) => compose(w, h)).join(''));
-const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
-for (const [name, w, h, out, enc] of cuts) {
-  if (only && only !== name) continue;
-  const dir = join(build, name);
-  rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'index.html'), compose(w, h));
-  writeFileSync(join(dir, 'hyperframes.json'), JSON.stringify({ paths: { assets: 'assets' } }, null, 2));
-  execFileSync('cp', ['-r', assets, join(dir, 'assets')]);
-  const raw = join(build, name + '.mp4');
-  if (!(process.argv.includes('--reuse') && existsSync(raw))) execFileSync('npx', ['hyperframes', 'render', dir, '-o', raw, '--fps', '30', '--quality', 'delivery', '--quiet'], { cwd: here, env: quiet, stdio: 'inherit' });
-  mkdirSync(dirname(out), { recursive: true });
-  // 再壓一次：遊戲裡的那一份要小，手機上也能很快開始播；加 faststart 讓它邊下載邊播
-  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', raw, ...audio, ...enc, '-c:v', 'libx264', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out]);
-  console.log(name + '：' + out);
-  if (name === 'portrait') {
-    const small = join(app, 'public/trailer/trailer-vertical.mp4');
-    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', raw, ...audio, '-vf', 'scale=720:1280', '-crf', '28', '-c:v', 'libx264', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', small]);
-    console.log('portrait（遊戲用）：' + small);
+const OUT = { landscape: [[join(app, 'public/trailer/trailer.mp4'), ['-vf', 'scale=1280:720', '-crf', '27']]],
+  portrait: [[join(app, 'public/social/trailer-vertical.mp4'), ['-crf', '27']], [join(app, 'public/trailer/trailer-vertical.mp4'), ['-vf', 'scale=720:1280', '-crf', '28']]] };
+for (const [name, w, h] of CUTS) {
+  const dir = join(build, name), assets = join(dir, 'assets'), raw = join(build, name + '.mp4');
+  if (!(reuse && existsSync(raw))) {
+    const html = compose({ w, h, isles, creatures, elders, url: URL });
+    writeFileSync(join(dir, 'index.html'), html);
+    writeFileSync(join(dir, 'hyperframes.json'), JSON.stringify({ paths: { assets: 'assets' } }, null, 2));
+    for (const f of [...CREATURES.map(([k]) => 'sprite-' + k + '.png'), ...ELDERS.map(([k]) => k + '.jpg')]) copyFileSync(join(build, 'shared', f), join(assets, f));
+    copyFileSync(require.resolve('gsap/dist/gsap.min.js', { paths: [here] }), join(assets, 'gsap.min.js'));
+    await font(assets, html);
+    execFileSync('npx', ['hyperframes', 'render', dir, '-o', raw, '--fps', String(FPS), '--quality', 'delivery', '--quiet'], { cwd: here, env: quiet, stdio: 'inherit' });
+  }
+  for (const [out, enc] of OUT[name]) {
+    mkdirSync(dirname(out), { recursive: true });
+    // 再壓一次：遊戲裡的那一份要小；faststart 讓它邊下載邊播
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', raw, ...audio, ...enc, '-c:v', 'libx264', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out]);
+    console.log(name + '：' + out);
   }
 }

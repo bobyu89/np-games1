@@ -422,7 +422,7 @@ export function createWard(canvas, opts = {}) {
   // 公會的診間都掛公會的旗子；窗台上有沒有貓、吊燈旁邊有沒有螢火蟲，看地方
   const guild = !dock && place !== 'tower', cat = ['ward', 'market', 'archive', 'quiet'].includes(place), flies = place === 'ward' || place === 'quiet';
   const base = createBase(canvas, { back: (g) => drawBack(g, who, place, rain), mid: drawMid }, opts.view), ctx = base.ctx;
-  // hero：主角是哪一位（沒有就不畫）；hide：不畫劫影、霧和燈（圖鑑的頭像用）
+  // hero：主角是哪一位（沒有就不畫）；hide：不畫劫影、霧和燈（圖鑑的頭像用）；opts.solo：只畫劫影（前導片用）
   // beam：燈塔的燈亮了沒（只有燈塔那一間用得到）
   const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [], hero: opts.hero || null, hide: false, beam: 0, beamShown: 0 };
   let T = 0, dustClock = 0;
@@ -877,8 +877,8 @@ export function createWard(canvas, opts = {}) {
     K.seed = 2000;
     const flinch = state.flinch, agit = state.slumpShown;
     const x = MOTH.x + Math.sin(t * 0.7) * 3 + flinch * (8 + Math.sin(t * 60) * 2), y = MOTH.y + Math.sin(t * 1.3) * 3.2 - flinch * 7;
-    // 連到林秋胸口的那條霧線
-    g.globalAlpha = 0.35 + 0.25 * Math.sin(t * 2.5);
+    // 連到林秋胸口的那條霧線（只畫劫影的時候不畫）
+    g.globalAlpha = opts.solo ? 0 : 0.35 + 0.25 * Math.sin(t * 2.5);
     const tx = LIN.x + 7, ty = LIN.y - 34;
     for (let i = 1; i < 9; i++) { const k = i / 9, px = x + (tx - x) * k + Math.sin(k * 9 + t * 2) * 4, py = y + 14 + (ty - y - 14) * k; dot(g, px, py, 1.5 - k * 0.5, C.cream); }
     g.globalAlpha = 1;
@@ -1014,6 +1014,8 @@ export function createWard(canvas, opts = {}) {
   function render() {
     if (!base.img) return;
     const t = state.still ? 0 : T, g = ctx;
+    // solo：只畫劫影，背景透明（前導片用，trailer/make.mjs）
+    if (opts.solo) { base.begin(); ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); base.world(); drawMoth(g, t); return; }
     const sx = state.still ? 0 : (hash(K.boil, Math.floor(T * 30)) - 0.5) * state.shake * 10, sy = state.still ? 0 : (hash(K.boil + 9, Math.floor(T * 30)) - 0.5) * state.shake * 10;
     base.begin(); base.paste('back', sx, sy); base.world(sx, sy);
     K.seed = 50; drawWindowLife(g, t);
