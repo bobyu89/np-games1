@@ -1,10 +1,10 @@
 // 前導片的分鏡「出航：一座島一種症狀」：產生 HyperFrames 的 index.html。橫式和直式用同一份，寬高不同。
-// 不出現任何病人。時間點對著 music.mjs 的鐘聲（改這裡的時間，要一起改配樂的 CUES）。
+// 病人用去背的素材（assets/cutouts，床上的上半身）。時間點對著 music.mjs 的鐘聲（改這裡的時間，要一起改配樂）。
 //   0–5   夜裡的霧港（燈塔掃光、霧飄）             「說吧，記事的人，說那位見習的故事。」
 //   5–10  公會大廳（蒙托拉、你、斐米歐）            「你是剛出師的見習專科護理師。蒙托拉帶你出海巡診。」
 //   10–14 航海圖全景，十二座島還在霧裡，船出港      「霧海群島，十二座島。一座島，一種症狀。」
-//   14–38 航行：一座島兩秒。航線畫出來、島亮起來、寫上症狀，那裡的劫影從霧裡浮出來
-//   38–42 十二隻劫影排成一片                        「它只告訴你哪裡不舒服，不告訴你為什麼。」
+//   14–38 航行：一座島兩秒。航線畫出來、島亮起來、寫上症狀，那裡的劫影從霧裡浮出來，那座島的四位病人一個一個出現
+//   38–42 四十八位病人排滿畫面                      「同一個症狀，背後可能是四種不同的病。」
 //   42–47 回到霧港，燈塔從暗到亮                    「問、看、量，抓著它不放。燈亮了，船就回得了家。」
 //   47–55 十二把斧頭一把一把亮起來，片名
 // 畫面：assets/<鏡頭>.mp4 是遊戲的場景一格一格錄下來的；assets/sprite-<劫影>.png 是一隻劫影會動的樣子（42 格，7×6）；航海圖用 SVG 在這裡畫。
@@ -36,7 +36,7 @@ const chars = (text) => [...text].map((c) => (c === '\n' ? '<br />' : `<span cla
 const AXE = '<svg viewBox="0 0 60 90"><path class="haft" d="M28 14 L32 14 L33 86 L27 86Z" /><path class="blade" d="M31 10 C46 6 56 16 56 30 C56 42 46 50 31 46 C36 36 36 22 31 10Z" /><path class="blade" d="M29 10 C18 8 8 16 8 28 C8 38 18 44 29 42 C25 34 25 20 29 10Z" /></svg>';
 
 /**
- * w, h：畫面大小。isles：照航行的順序 [{ id, name, x, y, r, from, look, complaint, shadow, peril }]。url：網址
+ * w, h：畫面大小。isles：照航行的順序 [{ id, name, x, y, r, from, look, complaint, shadow, peril, patients: [{ id, name }] }]。url：網址
  */
 export function compose({ w, h, isles, url }) {
   const tall = h > w, m = Math.min(w, h);
@@ -70,8 +70,9 @@ export function compose({ w, h, isles, url }) {
   <div class="clip card" id="k${n}" data-start="${VOYAGE + n * LEG}" data-duration="${LEG}" data-track-index="2">
     <div class="glow"></div><div class="sprite" id="sp${n}" style="background-image:url(assets/sprite-${i.look}.png)"></div>
     <p class="tag"><b>${i.complaint}</b><small>${i.shadow}・${i.peril}</small></p>
+    <div class="pts">${i.patients.map((q, j) => `<figure id="p${n}-${j}"><img src="assets/p-${q.id}.png" alt="" /><figcaption>${q.name}</figcaption></figure>`).join('')}</div>
   </div>`).join('');
-  const lineup = isles.map((i, n) => `<figure><div class="mini" id="m${n}" style="background-image:url(assets/sprite-${i.look}.png)"></div><figcaption>${i.complaint}</figcaption></figure>`).join('');
+  const wall = isles.flatMap((i) => i.patients).map((q) => `<img src="assets/p-${q.id}.png" alt="" />`).join('');
   const axes = isles.map((i, n) => `<figure class="axe" id="a${n}">${AXE}<figcaption>${i.complaint}</figcaption></figure>`).join('');
 
   // 換場的霧：一團一團從左邊推到右邊
@@ -109,10 +110,15 @@ video.clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit
 #chart .sub { font-size: 22px; font-weight: 700; fill: #b5532f; text-anchor: middle; paint-order: stroke; stroke: #efe3c8; stroke-width: 5px; opacity: 0; }
 #chart .boat path { fill: #8a5a3b; stroke: #2a2520; stroke-width: 2.5; stroke-linejoin: round; } #chart .boat .sail { fill: #f3ead7; }
 .card { position: absolute; inset: 0; pointer-events: none; }
-.card .glow { position: absolute; left: ${tall ? '50%' : '74%'}; top: ${tall ? '72%' : '54%'}; width: ${px(m * 0.7)}; height: ${px(m * 0.7)}; margin: -${px(m * 0.35)} 0 0 -${px(m * 0.35)}; border-radius: 50%; background: radial-gradient(closest-side, rgba(239,227,200,.55), rgba(239,227,200,0)); }
-.card .sprite { position: absolute; left: ${tall ? '50%' : '74%'}; top: ${tall ? '72%' : '54%'}; width: ${px(m * 0.78)}; height: ${px(m * 0.78)}; margin: -${px(m * 0.39)} 0 0 -${px(m * 0.39)}; background-size: 700% 600%; background-repeat: no-repeat; }
-.card .tag { position: absolute; left: ${tall ? '50%' : '74%'}; top: ${tall ? '53%' : '14%'}; width: ${px(tall ? m * 0.8 : m * 0.62)}; margin-left: -${px(tall ? m * 0.4 : m * 0.31)}; text-align: center; background: #efe3c8; color: #2a2520; border: ${px(m * 0.005)} solid #1d1a16; border-radius: ${px(m * 0.02)}; padding: .1em .5em .2em; font-size: ${px(m * 0.08)}; }
+.card .glow { position: absolute; left: ${tall ? '50%' : '74%'}; top: ${tall ? '64%' : '44%'}; width: ${px(m * 0.7)}; height: ${px(m * 0.7)}; margin: -${px(m * 0.35)} 0 0 -${px(m * 0.35)}; border-radius: 50%; background: radial-gradient(closest-side, rgba(239,227,200,.55), rgba(239,227,200,0)); }
+.card .sprite { position: absolute; left: ${tall ? '50%' : '74%'}; top: ${tall ? '64%' : '44%'}; width: ${px(m * 0.62)}; height: ${px(m * 0.62)}; margin: -${px(m * 0.31)} 0 0 -${px(m * 0.31)}; background-size: 700% 600%; background-repeat: no-repeat; }
+.card .tag { position: absolute; left: ${tall ? '50%' : '74%'}; top: ${tall ? '47%' : '6%'}; width: ${px(tall ? m * 0.8 : m * 0.62)}; margin-left: -${px(tall ? m * 0.4 : m * 0.31)}; text-align: center; background: #efe3c8; color: #2a2520; border: ${px(m * 0.005)} solid #1d1a16; border-radius: ${px(m * 0.02)}; padding: .1em .5em .2em; font-size: ${px(m * 0.08)}; }
 .card .tag small { display: block; font-size: .36em; color: #8a4b2c; }
+.card .pts { position: absolute; left: ${tall ? '4%' : '52%'}; right: ${tall ? '4%' : '2%'}; top: ${tall ? '76%' : '66%'}; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2%; }
+.card .pts figure { text-align: center; font-size: ${px(m * 0.032)}; text-shadow: 0 2px 6px #0f1714; }
+.card .pts img { display: block; width: 100%; aspect-ratio: 1; margin-bottom: -.3em; }
+.wall { position: absolute; left: 2%; right: 2%; top: ${tall ? 8 : 4}%; display: grid; grid-template-columns: repeat(${tall ? 6 : 12}, 1fr); gap: 0; }
+.wall img { display: block; width: 100%; aspect-ratio: 1; }
 .fog i, .wipe i { position: absolute; display: block; aspect-ratio: 2 / 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(239,227,200,.9), rgba(239,227,200,0)); }
 .wipe { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
 .grid12 { position: absolute; left: 4%; right: 4%; top: ${tall ? 22 : 12}%; display: grid; grid-template-columns: repeat(${tall ? 3 : 6}, 1fr); gap: ${tall ? 1.5 : 1}%; }
@@ -149,8 +155,8 @@ video.clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit
 
   <div class="clip layer" id="s4" data-start="38" data-duration="4" data-track-index="1"><div class="sea-bg"></div>
     <div class="fog">${[0, 1, 2, 3].map((j) => `<i id="f${j}" style="top:${10 + j * 22}%;left:${-25 + (j * 31) % 50}%;width:${60 + (j * 11) % 30}%;opacity:.14"></i>`).join('')}</div>
-    <div class="grid12">${lineup}</div>
-    ${cap('s4a', tall ? '它只告訴你哪裡不舒服，\n不告訴你為什麼。' : '它只告訴你哪裡不舒服，不告訴你為什麼。')}</div>
+    <div class="wall">${wall}</div><div class="shade"></div>
+    ${cap('s4a', tall ? '四十八位病人。\n同一個症狀，背後可能是四種不同的病。' : '四十八位病人。同一個症狀，背後可能是四種不同的病。')}</div>
 
   <div class="clip layer" id="s5" data-start="42" data-duration="5" data-track-index="1"><div class="dark" id="dark"></div><div class="shade"></div>
     ${cap('s5a', '問、看、量，抓著它不放。')}${cap('s5b', '燈亮了，船就回得了家。')}</div>
@@ -201,14 +207,14 @@ video.clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit
     tl.fromTo('#k' + n + ' .sprite', { opacity: 0, y: ${Math.round(m * 0.1)}, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'back.out(1.6)' }, t + 0.3);
     tl.fromTo('#k' + n + ' .glow', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5 }, t + 0.25);
     tl.fromTo('#k' + n + ' .tag', { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.3 }, t + 0.35);
-    tl.to('#k' + n + ' .sprite, #k' + n + ' .glow, #k' + n + ' .tag', { opacity: 0, duration: 0.25 }, t + ${LEG} - 0.3);
+    tl.fromTo('#k' + n + ' .pts figure', { opacity: 0, y: 24, scale: 0.85 }, { opacity: 1, y: 0, scale: 1, duration: 0.3, stagger: 0.12, ease: 'back.out(1.5)' }, t + 0.55);
+    tl.to('#k' + n + ' .sprite, #k' + n + ' .glow, #k' + n + ' .tag, #k' + n + ' .pts', { opacity: 0, duration: 0.25 }, t + ${LEG} - 0.3);
     play(document.getElementById('sp' + n), t, ${LEG});
   });
   tl.to('#chart', { x: 0, y: 0, scale: 1, duration: 1, ease: 'power2.inOut' }, ${VOYAGE + 12 * LEG - 0.4});
 
-  // 十二隻劫影排成一片，每一隻都在動
-  ISLES.forEach((_, n) => play(document.getElementById('m' + n), 38, 4));
-  tl.fromTo('.grid12 figure', { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.06, ease: 'back.out(1.5)' }, 38.1);
+  // 四十八位病人排滿畫面
+  tl.fromTo('.wall img', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, stagger: 0.035, ease: 'back.out(1.5)' }, 38.05);
   [0, 1, 2, 3].forEach((j) => tl.fromTo('#f' + j, { xPercent: -10 }, { xPercent: 20 + j * 8, duration: 4, ease: 'none' }, 38));
   say('#s4a', 38.9);
 

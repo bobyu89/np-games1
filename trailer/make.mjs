@@ -5,7 +5,7 @@
 // 要先在 trailer/ 裡 npm install（hyperframes、gsap；playwright 用環境裡已經有的那一份）。
 // 輸出：app/public/trailer/trailer.mp4（橫式 720p）和 trailer-vertical.mp4（直式 720p），遊戲序章前播；
 //      app/public/social/trailer-vertical.mp4（直式 1080p），Threads 用。
-// 畫面全部是遊戲本身的程式美術（app/src/art）：場景照目標比例一格一格錄（不裁切），劫影單獨畫在透明背景上做成動畫。不出現任何病人。
+// 畫面全部是遊戲本身的程式美術（app/src/art）：場景照目標比例一格一格錄（不裁切），劫影單獨畫在透明背景上做成動畫，病人用 assets/cutouts 的去背素材。
 import { spawn, execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -24,12 +24,13 @@ const CUTS = [['landscape', 1920, 1080], ['portrait', 1080, 1920]].filter(([n]) 
 
 // 遊戲的資料：島、症狀、劫的名字（直接讀遊戲的檔，名字改了這裡跟著改）
 const { ISLANDS, ISLAND_OF } = await import(join(app, 'src/data/islands.ts'));
-const { COMPLAINTS } = await import(join(app, 'src/data/index.ts'));
+const { CASES, COMPLAINTS, FINALE_ID } = await import(join(app, 'src/data/index.ts'));
 const { PERILS } = await import(join(app, 'src/data/odyssey.ts'));
 // 每座島剛好一種症狀（一劫一座島）
 const isles = VOYAGE.map((id) => {
   const i = ISLANDS[id], c = COMPLAINTS.find((m) => ISLAND_OF[m.place ?? 'ward'] === id);
-  return { id, name: i.name, x: i.x, y: i.y, r: i.r, from: i.from, look: c.shadow.look, complaint: c.name, shadow: c.shadow.name, peril: PERILS[c.id].name };
+  const patients = CASES.filter((k) => k.complaint === c.id && k.id !== FINALE_ID).map((k) => ({ id: k.id, name: k.patient.name }));
+  return { id, name: i.name, x: i.x, y: i.y, r: i.r, from: i.from, look: c.shadow.look, complaint: c.name, shadow: c.shadow.name, peril: PERILS[c.id].name, patients };
 });
 
 /** 一段場景：照目標比例錄 frames 格，at(秒) 可以在某些時間改場景狀態（例如霧散開、燈亮起來） */
@@ -103,6 +104,8 @@ for (const [name, w, h] of CUTS) {
     writeFileSync(join(dir, 'index.html'), html);
     writeFileSync(join(dir, 'hyperframes.json'), JSON.stringify({ paths: { assets: 'assets' } }, null, 2));
     for (const { look } of isles) copyFileSync(join(build, 'shared', 'sprite-' + look + '.png'), join(assets, 'sprite-' + look + '.png'));
+    // 病人：去背的素材（node trailer/cutouts.mjs 產生的 assets/cutouts）
+    for (const { patients } of isles) for (const q of patients) copyFileSync(join(here, '..', 'assets', 'cutouts', 'patient-' + q.id + '.png'), join(assets, 'p-' + q.id + '.png'));
     copyFileSync(require.resolve('gsap/dist/gsap.min.js', { paths: [here] }), join(assets, 'gsap.min.js'));
     await font(assets, html);
     execFileSync('npx', ['hyperframes', 'render', dir, '-o', raw, '--fps', String(FPS), '--quality', 'delivery', '--quiet'], { cwd: here, env: quiet, stdio: 'inherit' });
