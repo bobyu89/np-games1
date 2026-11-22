@@ -136,11 +136,11 @@ video.clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit
 .peril .reveal b { display: inline-block; margin: .1em 0; padding: .05em .5em .12em; font-size: ${px(m * 0.1)}; background: #efe3c8; color: #2a2520; border: ${px(m * 0.005)} solid #1d1a16; border-radius: ${px(m * 0.02)}; }
 .peril .pts { position: absolute; ${tall ? 'left: 4%; right: 4%;' : 'left: 51%; right: 3%;'} top: ${POS.pts}%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2%; }
 .peril .pts figure { text-align: center; font-size: ${px(m * 0.032)}; text-shadow: 0 2px 6px #0f1714; }
-.peril .pts img { display: block; width: 100%; aspect-ratio: 1; margin-bottom: -.3em; }
+.peril .pts img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; object-position: 50% 100%; margin-bottom: .1em; }
 .fog i, .wipe i { position: absolute; display: block; aspect-ratio: 2 / 1; border-radius: 50%; background: radial-gradient(closest-side, rgba(239,227,200,.9), rgba(239,227,200,0)); }
 .wipe { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
 .wall { position: absolute; left: 2%; right: 2%; top: ${tall ? 6 : 3}%; display: grid; grid-template-columns: repeat(${tall ? 6 : 12}, 1fr); }
-.wall img { display: block; width: 100%; aspect-ratio: 1; }
+.wall img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; padding: 4%; }
 .axes { position: absolute; left: 6%; right: 6%; top: ${tall ? 30 : 22}%; display: grid; grid-template-columns: repeat(${tall ? 4 : 6}, 1fr); gap: ${tall ? 3 : 2}% 2%; }
 .axe { text-align: center; font-size: ${px(m * 0.034)}; color: rgba(243,234,215,.5); text-shadow: 0 2px 6px #0f1714; }
 .axe svg { display: block; width: 46%; margin: 0 auto .2em; overflow: visible; }
