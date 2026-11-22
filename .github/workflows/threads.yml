@@ -17,6 +17,9 @@ on:
       date:
         description: 要發哪一天的（YYYY-MM-DD）。空白是臺灣時間的今天
         required: false
+      id:
+        description: 指定發哪一則（日程裡的 id，例如 launch-guihang）。有填就不看日期
+        required: false
   pull_request:
     paths: ['social/**', 'app/public/social/**', '.github/workflows/threads.yml']
 
@@ -56,4 +59,5 @@ jobs:
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
           POST_DATE: ${{ github.event_name == 'workflow_dispatch' && inputs.date || '' }}
+          POST_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.id || '' }}
         run: node social/post.mjs
