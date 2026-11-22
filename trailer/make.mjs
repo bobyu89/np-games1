@@ -2,6 +2,7 @@
 //   node trailer/make.mjs              全部重做
 //   node trailer/make.mjs --reuse      已經錄過畫面、輸出過的話，只重新壓縮配上聲音（改配樂的時候用）
 //   node trailer/make.mjs --only=portrait   只做直式（landscape 同理）
+//   node trailer/make.mjs --keep     不重錄畫面，只重新排版、輸出（改了 composition.mjs 的時候用）
 // 要先在 trailer/ 裡 npm install（hyperframes、gsap；playwright 用環境裡已經有的那一份）。
 // 輸出：app/public/trailer/trailer.mp4（橫式 720p）和 trailer-vertical.mp4（直式 720p），遊戲序章前播；
 //      app/public/social/trailer-vertical.mp4（直式 1080p），Threads 用。
@@ -90,7 +91,7 @@ async function font(dir, html) {
   copyFileSync(join(app, 'node_modules/@expo-google-fonts/lxgw-wenkai-tc/LICENSE_FONT'), join(dir, 'OFL.txt'));
 }
 
-if (!reuse) await capture();
+if (!reuse && !process.argv.includes('--keep')) await capture();   // --keep：不重錄場景和劫影，只重新排版輸出
 // 配樂：海浪和鐘聲，music.mjs 用程式合成
 const music = join(build, 'music.wav');
 execFileSync('node', [join(here, 'music.mjs'), music], { stdio: 'inherit' });

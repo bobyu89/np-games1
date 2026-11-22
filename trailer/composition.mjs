@@ -81,8 +81,8 @@ export function compose({ w, h, isles, chart, url }) {
 
   // ── 十二劫：一劫一張 ──
   const POS = tall
-    ? { label: 8, myth: 13.5, beast: [50, 38], size: 0.58, reveal: 58, pts: 69 }
-    : { label: 7, myth: 15, beast: [27, 58], size: 0.6, reveal: 31, pts: 49 };
+    ? { label: 8, myth: 13.5, beast: [50, 37], size: 0.56, reveal: 56, pts: 70 }
+    : { label: 7, myth: 15, beast: [27, 58], size: 0.6, reveal: 27, pts: 52 };
   const perils = isles.map((i, n) => `
   <div class="clip peril" id="e${n}" data-start="${EPIC + n * STEP}" data-duration="${STEP}" data-track-index="2">
     <p class="isle-name">${i.name}</p>
@@ -128,7 +128,7 @@ video.clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit
 .peril { position: absolute; inset: 0; background: radial-gradient(ellipse at ${POS.beast[0]}% ${POS.beast[1]}%, #3d5a51 0%, #1c2925 70%); }
 .peril .isle-name { position: absolute; right: 4%; bottom: 3%; font-size: ${px(m * 0.2)}; opacity: .07; letter-spacing: .1em; white-space: nowrap; }
 .peril .label { position: absolute; left: 0; right: 0; top: ${POS.label}%; text-align: center; font-size: ${px(m * 0.05)}; color: #e7b65a; letter-spacing: .2em; }
-.peril .myth { position: absolute; left: 6%; right: 6%; top: ${POS.myth}%; text-align: center; font-size: ${px(m * (tall ? 0.05 : 0.046))}; line-height: 1.45; }
+.peril .myth { position: absolute; left: 4%; right: 4%; top: ${POS.myth}%; text-align: center; font-size: ${px(m * (tall ? 0.044 : 0.046))}; line-height: 1.45; }
 .peril .glow { position: absolute; left: ${POS.beast[0]}%; top: ${POS.beast[1]}%; width: ${px(m * POS.size)}; height: ${px(m * POS.size)}; margin: -${px(m * POS.size / 2)} 0 0 -${px(m * POS.size / 2)}; border-radius: 50%; background: radial-gradient(closest-side, rgba(239,227,200,.5), rgba(239,227,200,0)); }
 .peril .sprite { position: absolute; left: ${POS.beast[0]}%; top: ${POS.beast[1]}%; width: ${px(m * POS.size)}; height: ${px(m * POS.size)}; margin: -${px(m * POS.size / 2)} 0 0 -${px(m * POS.size / 2)}; background-size: 700% 600%; background-repeat: no-repeat; }
 .peril .reveal { position: absolute; ${tall ? 'left: 0; right: 0;' : 'left: 50%; right: 4%;'} top: ${POS.reveal}%; text-align: center; }
