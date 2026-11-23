@@ -1,6 +1,8 @@
 // 產生 Threads 的日程（social/schedule.json）和圖（app/public/social/）。日程有三段：
 //   1. 每日一案 01–10：2026-11-13 到 11-22 已經發過的，原樣留著（圖 01.jpg–10.jpg 不動）
 //   2. 公告：《霧脈公會：歸航記》的更新，附前導片（app/public/social/trailer-vertical.mp4）。沒有日期，手動發（POST_ID=launch-guihang）
+//      另一則「跟 AI 一起做的」（POST_ID=ai-build），掛 AI 的主題標籤
+//   主題標籤（tag）：Threads 一則只能一個。歸航記每天掛「護理」；01–10 和公告已經發過，不加
 //   3. 歸航記：照《奧德賽》的順序走十二劫。每一劫先一則介紹（劫影、神話、在霧海裡是哪個症狀、最容易掉進的陷阱、那座島的四位病人），
 //      接著那座島還沒發過的病人一天一位（閱題卡：病人是誰、三行情境、進門前想的三件事）。圖是 gNN.jpg。
 // 內容只用閱題卡上本來就給玩家看的，不含診斷。口試倒數拿掉了（研究主持人 2026-11-22：之後用英雄旅程發文，不用管口試）。
@@ -145,12 +147,34 @@ export const LAUNCH = {
   ].join('\n'),
 };
 
+// 用 AI 做遊戲的角度，掛 AI 標籤，給看 AI 的人
+export const AI_BUILD = {
+  no: 0, date: null, id: 'ai-build', name: '跟 AI 一起做的', head: '【霧脈公會：跟 AI 一起做的臨床推理遊戲】', video: 'social/trailer-vertical.mp4', tag: 'AI',
+  text: [
+    '【霧脈公會：跟 AI 一起做的臨床推理遊戲】',
+    '這是給專科護理師練臨床推理的遊戲：病人進門，你問診、找線索、排鑑別診斷，最後說出判斷和理由。',
+    '',
+    '大部分的程式和畫面，是跟 AI（Claude Code）一起寫出來的：',
+    '・四十多位病人、十二隻劫影、整片霧海，都是用程式畫的，不是生成圖',
+    '・前導片用 HyperFrames 把遊戲畫面一格一格錄成影片，海浪和鐘聲也是程式合成的',
+    '・故事借《奧德賽》：十二劫，各是一種最容易掉進去的推理陷阱',
+    '',
+    'AI 很會寫程式、做畫面；但病例寫得對不對，還是要臨床老師來看。所以每一則都標著還沒審查。',
+    '',
+    '手機直接玩：',
+    LINK,
+    '',
+    '＊病例是草稿，還沒經過臨床老師審查，不能當教材。',
+  ].join('\n'),
+};
+export const TAG = '護理';
+
 let chromium;
 try { ({ chromium } = createRequire(import.meta.url)('playwright')); } catch { console.error('找不到 playwright。請先安裝（例如 npm i -g playwright），再跑一次。'); process.exit(1); }
 mkdirSync(OUT, { recursive: true });
 // 歸航記的排法：一劫一則介紹，接著那座島還沒發過的病人
 const PLAN = PERIL_DATA.flatMap((p) => [{ intro: p }, ...p.patients.map((c, j) => ({ c, label: '第' + numZh(p.n) + '劫・' + p.peril + ' ' + (j + 1) + '／' + p.patients.length })).filter((x) => !POSTED.has(x.c.id))]);
-const browser = await chromium.launch(), schedule = [...OLD, LAUNCH];
+const browser = await chromium.launch(), schedule = [...OLD, LAUNCH, AI_BUILD];
 for (let i = 0; i < PLAN.length; i++) {
   const no = i + 1, x = PLAN[i], date = dayOf(i), file = 'g' + pad(no) + '.jpg';
   const page = await browser.newPage({ viewport: { width: 540, height: 675 }, deviceScaleFactor: 2 });
@@ -171,10 +195,10 @@ for (let i = 0; i < PLAN.length; i++) {
   const text = x.intro ? introCaption(x.intro, no) : caption(x.c, no, x.label);
   if (text.length > 500) { console.error('歸航記 ' + no + ' 的貼文超過 500 字元（' + text.length + '）'); process.exitCode = 1; }
   schedule.push(x.intro
-    ? { no, date: iso(date), id: 'peril-' + x.intro.n, head: HEAD(no), name: x.intro.peril, complaint: x.intro.complaint, image: 'social/' + file, text }
-    : { no, date: iso(date), id: x.c.id, head: HEAD(no), name: x.c.name, complaint: x.c.complaint, image: 'social/' + file, text });
+    ? { no, date: iso(date), id: 'peril-' + x.intro.n, head: HEAD(no), name: x.intro.peril, complaint: x.intro.complaint, image: 'social/' + file, tag: TAG, text }
+    : { no, date: iso(date), id: x.c.id, head: HEAD(no), name: x.c.name, complaint: x.c.complaint, image: 'social/' + file, tag: TAG, text });
 }
 await browser.close();
 writeFileSync(join(here, 'schedule.json'), JSON.stringify(schedule, null, 1) + '\n');
 const days = schedule.filter((d) => d.head?.startsWith('【歸航記'));
-console.log('歸航記 ' + days.length + ' 天：' + days[0].date + ' 到 ' + days.at(-1).date + '；另有公告一則（' + LAUNCH.id + '）');
+console.log('歸航記 ' + days.length + ' 天：' + days[0].date + ' 到 ' + days.at(-1).date + '；另有手動發的兩則（' + LAUNCH.id + '、' + AI_BUILD.id + '）');
