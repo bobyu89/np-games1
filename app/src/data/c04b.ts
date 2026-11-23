@@ -102,7 +102,7 @@ export const C04B: CaseSpec = {
     { id: 'e-blame', text: '傷口都化膿了還穿著毛襪藏起來，再拖下去就要截肢了，你們家人怎麼現在才帶他來？', ok: false, note: '責備和恐嚇不會讓他更配合，只會讓他下次更不敢說。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-blood', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -113,7 +113,7 @@ export const C04B: CaseSpec = {
     watchWorse: '涂柏叫了沒有反應，要搖肩膀才睜眼。手腳摸起來更涼了，膝蓋上浮出一塊一塊的花紋。',
     worsen: '……（他沒有回答，只皺了一下眉頭。）',
     stepIn: '我先敲鐘了。意識、血壓、尿量，三樣都在往下掉。這個不能等。',
-    called: '鐘響了。馬卡翁醫師馬上到。你把管路和監測先準備好。',
+    called: '鐘響了。馬凱醫師馬上到。你把管路和監測先準備好。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。培養留完就給藥，點滴我來開。邊界你畫了，很好；一個鐘頭後再看一次。',
     reportWeak: '「發燒、精神差」我聽不出有多急。血壓多少？意識怎麼樣？火在哪裡？下次照這個順序講。',

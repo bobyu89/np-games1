@@ -6,7 +6,7 @@ export function PrivacyPage({ onClose }: { onClose(): void }) {
   useEffect(() => { document.documentElement.classList.add('admin'); return () => document.documentElement.classList.remove('admin'); }, []);
   return (
     <div className="admin-page prose">
-      <div className="admin-top"><h1>霧脈公會｜隱私說明</h1><button type="button" className="pick" onClick={onClose}>回到遊戲</button></div>
+      <div className="admin-top"><h1>歸航記｜隱私說明</h1><button type="button" className="pick" onClick={onClose}>回到遊戲</button></div>
       <p className="dim">最後更新：{PRIVACY_UPDATED}</p>
       {PRIVACY.map((s) => (
         <section key={s.title}>

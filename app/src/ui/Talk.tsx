@@ -8,9 +8,9 @@ export type Who = 'you' | 'patient' | 'mentor' | 'doctor' | 'mo' | 'sys' | 'gues
 export interface Line { who: Who; text: string; bad?: boolean; fx?: string; name?: string }
 export interface TalkHandle { say(lines: Line[], done?: () => void): void; finish(): void; busy(): boolean }
 
-const NAMES: Partial<Record<Who, string>> = { mentor: '蒙托拉', doctor: '馬卡翁', mo: '斐米歐' };
+const NAMES: Partial<Record<Who, string>> = { mentor: '孟拓', doctor: '馬凱', mo: '費民' };
 
-interface Props { onSpeaker(who: Who | null): void; onTap?: () => void; more?: boolean; patient?: string; /** 蒙托拉那個位置的人叫什麼。試弓的時候是口試委員 */ mentor?: string }
+interface Props { onSpeaker(who: Who | null): void; onTap?: () => void; more?: boolean; patient?: string; /** 孟拓那個位置的人叫什麼。試弓的時候是口試委員 */ mentor?: string }
 
 export const Talk = forwardRef<TalkHandle, Props>(function Talk({ onSpeaker, onTap, more, patient, mentor }, ref) {
   const st = useRef({ lines: [] as Line[], li: 0, ci: 0, over: true, done: undefined as undefined | (() => void), timer: 0 });

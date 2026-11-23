@@ -162,8 +162,8 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   return (
     <div className={'screen hall' + (!beat && save.hero !== null ? ' mapview' : '')}>
       <div className="left">
-        <div className="top"><span className="who"><button type="button" className="home" onClick={() => { sfx.page(); onHome(); }}>‹ 首頁</button>霧脈公會</span><span className="clock">{save.hero ? heroOf(save.hero).name + '・' : ''}{rankOf(save)}</span></div>
-        <Stage kind="hall" hero={save.hero} stage={stage} onFrame={onFrame} label="霧脈公會的大廳：牆上是委託板，斐米歐坐在櫃台後面寫字，蒙托拉站在委託板旁邊，窗外是霧港和燈塔">
+        <div className="top"><span className="who"><button type="button" className="home" onClick={() => { sfx.page(); onHome(); }}>‹ 首頁</button>公會大廳</span><span className="clock">{save.hero ? heroOf(save.hero).name + '・' : ''}{rankOf(save)}</span></div>
+        <Stage kind="hall" hero={save.hero} stage={stage} onFrame={onFrame} label="公會的大廳：牆上是委託板，費民坐在櫃台後面寫字，孟拓站在委託板旁邊，窗外是霧港和燈塔">
           <div className="bubble" ref={bubble} hidden>…</div>
           {beat && <div className="chapter">{beat.title}</div>}
         </Stage>
@@ -271,12 +271,12 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
           <h3>病人</h3>
           {reading.reading.lines.map((l, i) => <p key={i}>{l}</p>)}
           <h3>你的角色和任務</h3>
-          <p>你是霧脈公會的{rankOf(save)}。這位病人由你先看；蒙托拉（資深專科護理師）在旁邊，馬卡翁醫師值班。</p>
+          <p>你是公會的{rankOf(save)}。這位病人由你先看；孟拓（資深專科護理師）在旁邊，馬凱醫師值班。</p>
           <ol>
             <li>問診：主訴、病史、系統回顧。</li>
             <li>身體評估：先量生命徵象；每一項動手之前先向病人說明。</li>
             <li>說出最可能的診斷，和還要排除的診斷。</li>
-            <li>提出需要的檢查，向馬卡翁醫師回報（檢查和用藥由醫師決定）。</li>
+            <li>提出需要的檢查，向馬凱醫師回報（檢查和用藥由醫師決定）。</li>
             <li>用病人聽得懂的話向病人說明，然後結案。</li>
           </ol>
           <h3>進門之前，先想三件事</h3>
@@ -289,7 +289,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <li>畫面上的四盞燈，是這個主訴的四個鑑別診斷。問到或檢查到重要的線索，遊戲會停下來問你：這條線索讓哪一個診斷更像，或是比較不像。答對了，那一盞燈會變亮或變暗。</li>
             <li>「穩定度」是病人現在的狀況，會跟著時間和你做的事變化。「未釐清」是離診斷還有多遠：線索判斷對了，數字就往下掉，畫面上的霧也會散一點。</li>
             <li>時間只在你做事（問一題、做一項檢查）的時候走。看字、想事情、下診斷都不算時間。</li>
-            <li>病人等不了的時候，按「緊急通報」（敲值班鐘），醫師會馬上過來；病人穩定就不用按，照順序做到最後再「向醫師回報」。不知道下一步的時候，按「要提示」，蒙托拉會告訴你。</li>
+            <li>病人等不了的時候，按「緊急通報」（敲值班鐘），醫師會馬上過來；病人穩定就不用按，照順序做到最後再「向醫師回報」。不知道下一步的時候，按「要提示」，孟拓會告訴你。</li>
             <li>一張委託大約 10 到 12 分鐘。</li>
           </ul>
           </details>
@@ -302,7 +302,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
           <ul>
             <li><b>用抽的。</b>四十八位病人都可能出，包括你還沒遇過的。抽了就不能重抽。</li>
             <li><b>站內 15 分鐘，照真的時間倒數。</b>看字、想事情的時間也算。剩 3 分鐘會提醒；時間到，手上有什麼就交什麼。</li>
-            <li><b>沒有提示。</b>蒙托拉不在；線索判讀得對不對，當下不會告訴你；劫影和四盞燈都收起來。</li>
+            <li><b>沒有提示。</b>孟拓不在；線索判讀得對不對，當下不會告訴你；劫影和四盞燈都收起來。</li>
             <li><b>交卷之後才有成績和回顧。</b>{TRIAL_PASS} 分及格（115 年度甄審的規定）。</li>
             <li>不會寫進圖鑑，也不算完成委託。之後在委託板遇到同一位病人，會覺得眼熟，這沒有關係。</li>
             {finaleDone(save) && <li><b>十二斧之試。</b>在一種劫影的試弓裡及格一次，那一把斧頭就亮；還沒亮的那幾種，比較容易抽到。現在亮了 {axesLit(save).length}／12 把。</li>}
@@ -335,7 +335,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
         </Sheet>
       )}
       {save.hero === null && !welcomed && !settings && (
-        <Sheet title="霧脈公會" onClose={() => setWelcomed(true)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setWelcomed(true); }}>開始</button>}>
+        <Sheet title="歸航記" onClose={() => setWelcomed(true)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setWelcomed(true); }}>開始</button>}>
           <p>{WELCOME.what}</p>
           <dl className="pairs">{WELCOME.points.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
           <p className="dim">{WELCOME.note}</p>
@@ -343,7 +343,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
       )}
       {save.hero === null && welcomed && !settings && (
         <Sheet title="你是哪一位？" onClose={() => onHero(HEROES[0].id)}>
-          <p>你剛結束訓練，今天第一天到霧脈公會報到。選一位當你自己。</p>
+          <p>你剛結束訓練，今天第一天到公會報到。選一位當你自己。</p>
           <p className="dim">六位都是見習專科護理師。只有來歷、外表和帶的東西不同，能做的事一模一樣；之後可以在圖鑑的「人物」裡換。</p>
           <HeroCards picked={null} onPick={onHero} action="就是這一位" />
         </Sheet>
@@ -375,7 +375,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <h3>看過的故事</h3>
             {save.beats.length ? <div className="stack">{BEATS.filter((b) => save.beats.includes(b.id)).map((b) => <button key={b.id} type="button" className="pick" onClick={() => { sfx.page(); setStory(b); }}>{b.title}</button>)}</div> : <p className="dim">還沒有。</p>}
             <h3>舊檔案</h3>
-            <p className="dim">斐米歐從淹過水的櫃子裡，一頁一頁晾乾的值班日誌。是誰寫的、寫的是哪一年，故事走到了才知道。不讀也不影響委託。</p>
+            <p className="dim">費民從淹過水的櫃子裡，一頁一頁晾乾的值班日誌。是誰寫的、寫的是哪一年，故事走到了才知道。不讀也不影響委託。</p>
             {ARCHIVE.map((l) => (l.when(save)
               ? <div key={l.id} className="leaf"><b>{l.day}</b>{l.lines.map((t) => <p key={t}>{t}</p>)}</div>
               : <div key={l.id} className="leaf locked"><b>？？？</b><p className="dim">{l.hint}</p></div>))}
@@ -387,7 +387,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <p className="dim">{WELCOME.note}</p>
           </>}
           {tab === 'epic' && <>
-            <p className="dim">霧脈公會的故事，借的是荷馬史詩《奧德賽》：一個人在海上漂流很久，一關一關認出眼前的危險，最後回到家。每一座島是一篇；每一種劫影，是一段海上的試煉。病室裡不講這些，回顧的時候才會告訴你，這一劫你有沒有被困住。</p>
+            <p className="dim">這個遊戲的故事，借的是荷馬史詩《奧德賽》：一個人在海上漂流很久，一關一關認出眼前的危險，最後回到家。每一座島是一篇；每一種劫影，是一段海上的試煉。病室裡不講這些，回顧的時候才會告訴你，這一劫你有沒有被困住。</p>
             {CANTOS.map((k) => cantoOpen(k.id, save)
               ? <details key={k.id} className="canto paper"><summary><b>{k.no}　{k.title}</b><span>{k.perils.length ? k.perils.map((id) => PERILS[id].name).join('、') : k.id === 'axes' ? '亮了 ' + axesLit(save).length + '／12 把' : '終章'}</span></summary><CantoBody k={k} save={save} /></details>
               : <div key={k.id} className="leaf locked"><b>{k.no}　？？？</b><p className="dim">{k.island ? CHAPTERS[ISLANDS[k.island].chapter] + '開始之後' : '終章走完之後'}</p></div>)}
@@ -430,7 +430,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
       {story && (
         <Sheet title={story.title} onClose={() => setStory(null)}>
           {story.lines.map((l, i) => (l.who === 'sys' ? <p key={i} className="dim">{toYou(l.text, save.hero)}</p>
-            : <p key={i}><b className="name">{l.who === 'you' ? '你' : l.who === 'mo' ? '斐米歐' : l.who === 'doctor' ? '馬卡翁' : l.who === 'guest' ? l.name : '蒙托拉'}</b>「{toYou(l.text, save.hero)}」</p>))}
+            : <p key={i}><b className="name">{l.who === 'you' ? '你' : l.who === 'mo' ? '費民' : l.who === 'doctor' ? '馬凱' : l.who === 'guest' ? l.name : '孟拓'}</b>「{toYou(l.text, save.hero)}」</p>))}
         </Sheet>
       )}
     </div>

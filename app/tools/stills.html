@@ -21,7 +21,7 @@ else if (shot === 'exam') { s = createWard(c, { patient: 'lin', hero: 'zhi' }); 
 else if (shot.startsWith('solo-')) { const look = shot.slice(5); if (!CREATURES.includes(look)) throw new Error(look); document.documentElement.classList.add('clear'); s = createWard(c, { patient: 'lin', shadow: look, solo: true, view: { w: 150, h: 150, cx: 178, cy: 82 } }); }
 else if (shot.startsWith('person-')) { document.documentElement.classList.add('clear'); s = createWard(c, { patient: shot.slice(7), person: true, view: { w: 118, h: 118, cx: 92, cy: 168 } }); }
 else if (shot.startsWith('cast-')) {
-  // 公會的人和主角：直接用 cast.js 畫在透明的畫布上（站著的全身；斐米歐是坐在櫃台後面的上半身）
+  // 公會的人和主角：直接用 cast.js 畫在透明的畫布上（站著的全身；費民是坐在櫃台後面的上半身）
   document.documentElement.classList.add('clear');
   const who = shot.slice(5), g = c.getContext('2d');
   let T = 0, W = 0, H = 0;

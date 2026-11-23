@@ -1,4 +1,4 @@
-// 病室：林秋的床、蒙托拉、劫影「獨眼蛾」和霧。
+// 病室：林秋的床、孟拓、劫影「獨眼蛾」和霧。
 // 不會動的背景只畫一次存起來，每一格直接貼上；會動的東西每一格重畫。
 import { C, K, TAU, hash, clamp, smooth, ell, rect, rrect, prep, trace, shape, oval, wline, limb, dot, leaf, fillRect, star, createBase } from './sketch.js';
 import { eye, drawCat, drawCen, drawShen, drawHero } from './cast.js';
@@ -119,7 +119,7 @@ function drawDockRoom(g) {
   // 掛在牆上的一捆纜繩
   dot(g, 232, 64, 2, C.wood2);
   [13, 10, 7].forEach((r) => oval(g, 232, 80, r, r * 1.25, { stroke: C.mustard, lw: 2.2, n: 14, double: false }));
-  // 值班鐘的架子（蒙托拉把鐘帶來，掛在樑上）
+  // 值班鐘的架子（孟拓把鐘帶來，掛在樑上）
   shape(g, rect(306, 4, 5, 20), { fill: C.wood2, lw: 1.2 }); wline(g, [[310, 15], [320, 15]], C.ink, 2);
   // 掛信號旗的繩子
   wline(g, [[112, 6], [150, 20], [196, 22], [246, 8]], C.wood2, 1.2);
@@ -1031,7 +1031,7 @@ export function createWard(canvas, opts = {}) {
       drawFog(g, t, m);
       drawLights(g, t, m);
     }
-    // 值班醫師到了，蒙托拉往旁邊讓一步
+    // 值班醫師到了，孟拓往旁邊讓一步
     const d = state.doctorShown;
     drawCen(g, t, { x: CEN.x - 34 * d, y: CEN.y, talking: state.talker === 'cen', nod: state.nod });
     if (d > 0.02) drawShen(g, t, { x: SHEN.x + (1 - d) * 70, y: SHEN.y, talking: state.talker === 'shen', walk: d < 0.97 ? 1 : 0 });
@@ -1062,7 +1062,7 @@ export function createWard(canvas, opts = {}) {
       const p = who === 'lin' ? [LIN.x + 1, LIN.y - 84 * BIG] : who === 'cen' ? [CEN.x - 1 - 34 * d, CEN.y - 128 * BIG] : who === 'shen' ? [SHEN.x - 1, SHEN.y - 150] : who === 'hero' && state.hero ? [HERO.x - 1, HERO.y - 124] : null;
       return p && base.css(p[0], p[1]);
     },
-    /** 拿到一條線索：劫影往後縮、蒙托拉點頭、星星散開 */
+    /** 拿到一條線索：劫影往後縮、孟拓點頭、星星散開 */
     clue(key) { state.flinch = 1; state.nod = 1; burst(key ? 12 : 7, key); },
     /** 四盞燈：[{ mark, level }]，level 從 -1（比較不像）到 1（更像） */
     setLights(list) { state.lights = list.map((it, i) => ({ ...it, shown: state.lights[i]?.shown ?? 0 })); },

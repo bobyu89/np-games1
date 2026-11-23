@@ -1,6 +1,6 @@
 # 前導片（HyperFrames）
 
-《霧脈公會：歸航記》的前導片，52 秒。配樂是海浪和鐘聲，用 `music.mjs` 程式合成（固定種子，每次輸出都一樣；沒有音檔、沒有版權問題），鐘聲對著分鏡：開場低鐘、十二劫影一隻一聲、燈塔亮起的和弦、片名的大鐘。用 [HyperFrames](https://github.com/heygen-com/hyperframes)（Apache-2.0）把 HTML 逐格輸出成影片。
+《歸航記：專科護理師的臨床推理之旅》的前導片，60 秒。配樂是海浪和鐘聲，用 `music.mjs` 程式合成（固定種子，每次輸出都一樣；沒有音檔、沒有版權問題），鐘聲對著分鏡：開場低鐘、十二劫影一隻一聲、燈塔亮起的和弦、片名的大鐘。用 [HyperFrames](https://github.com/heygen-com/hyperframes)（Apache-2.0）把 HTML 逐格輸出成影片。
 
 - `composition.html`：分鏡、字幕和運鏡（GSAP 時間軸）。橫式和直式共用這一份，寬高由 `make.mjs` 換上。
 - `make.mjs`：一次做完。

@@ -59,7 +59,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
   const t = data?.totals, maxDay = Math.max(1, ...(data?.days ?? []).map((d) => d.devices));
   return (
     <div className="admin-page">
-      <div className="admin-top"><h1>霧脈公會｜使用統計</h1><button type="button" className="pick" onClick={onClose}>回到遊戲</button></div>
+      <div className="admin-top"><h1>歸航記｜使用統計</h1><button type="button" className="pick" onClick={onClose}>回到遊戲</button></div>
       {!statsBuilt ? <p className="note bad">這一版建置的時候沒有設定統計的端點，所以遊戲不會回傳任何資料，這裡也沒有東西可以看。</p> : <>
         <form className="admin-bar" onSubmit={(e) => { e.preventDefault(); void load(); }}>
           <label>管理密碼 <input type="password" value={key} autoComplete="current-password" onChange={(e) => setKey(e.target.value)} /></label>
@@ -90,7 +90,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
 
         <h2>每一關</h2>
         <div className="tw"><table>
-          <thead><tr><th>委託</th><th>接過的裝置</th><th>結案的裝置</th><th>結案的比例</th><th>第一次的平均分</th><th>安全行動：達成／部分／複核</th><th>診斷正確</th><th>平均花多久</th><th>平均問蒙托拉</th><th>離開時停在</th></tr></thead>
+          <thead><tr><th>委託</th><th>接過的裝置</th><th>結案的裝置</th><th>結案的比例</th><th>第一次的平均分</th><th>安全行動：達成／部分／複核</th><th>診斷正確</th><th>平均花多久</th><th>平均問孟拓</th><th>離開時停在</th></tr></thead>
           <tbody>{data.cases.map((c) => (
             <tr key={c.case_id}><td>{nameOf(c.case_id)}</td><td>{c.starters}</td><td>{c.finishers}</td><td>{pct(c.finishers, c.starters)}</td><td>{c.firstScore ?? '—'}</td><td>{c.met}／{c.late}／{c.review}</td><td>{pct(c.found, c.dones)}</td><td>{mins(c.secs)}</td><td>{c.hints ?? '—'}</td>
               <td>{c.stuck.some((n) => n > 0) ? c.stuck.map((n, i) => (n ? PHASE[i] + ' ' + n : '')).filter(Boolean).join('、') : '—'}</td></tr>

@@ -127,7 +127,7 @@ test('提示拿掉一層：線索是更像還是比較不像要自己選，方�
   for (const c of CASES) assert.equal(scoreSession(c, run(c, idealActions(c), false, 1)).total, scoreSession(c, run(c, idealActions(c))).total, c.id);
 });
 
-test('提示拿掉一層：蒙托拉一張委託只回答三次', () => {
+test('提示拿掉一層：孟拓一張委託只回答三次', () => {
   let s = createSession(A, 1);
   for (let i = 0; i < HINT_LIMIT; i++) s = perform(A, s, { type: 'hint' }).session;
   const more = perform(A, s, { type: 'hint' });
@@ -139,7 +139,7 @@ test('提示拿掉一層：蒙托拉一張委託只回答三次', () => {
   assert.equal(easy.hints, HINT_LIMIT + 2);
 });
 
-test('解讀到第三條，蒙托拉會問你最擔心哪一個；回答之前不能做別的', () => {
+test('解讀到第三條，孟拓會問你最擔心哪一個；回答之前不能做別的', () => {
   let s = createSession(A);
   for (const id of ['q-onset', 'q-character', 'q-assoc']) { s = perform(A, s, ask(id)).session; s = perform(A, s, { type: 'read', clue: s.pending[0], form: 'cardiac' }).session; }
   assert.equal(s.reads.length, COMMIT_AFTER);
@@ -207,7 +207,7 @@ test('下了診斷卻拖著不通報：2 分鐘後變差，要重測才看得到
   assert.equal(scoreSession(A, run(A, [...toDx(A), ...times(watch, 4), { type: 'call' }, { type: 'test', id: 't-ecg' }, { type: 'close' }])).safety, 'late');
 });
 
-test('一直不通報：下診斷 5 分鐘後蒙托拉接手，安全狀態是需要複核', () => {
+test('一直不通報：下診斷 5 分鐘後孟拓接手，安全狀態是需要複核', () => {
   const s = run(A, [...toDx(A), ...times(watch, 10)]);
   assert.equal(s.calledBy, 'mentor');
   assert.equal(scoreSession(A, run(A, [...toDx(A), ...times(watch, 10), { type: 'close' }])).safety, 'review');
@@ -250,7 +250,7 @@ test('肺栓塞那一位：下了診斷不通報一樣會變差；X 光乾淨反
 });
 
 // ── 穩定的病人（C01B、C01C）──
-test('穩定的病人不會變差，蒙托拉也不會接手', () => {
+test('穩定的病人不會變差，孟拓也不會接手', () => {
   for (const c of [B, C]) {
     const s = run(c, [...toDx(c), ...times(watch, 14)]);
     assert.equal(s.worsenedAt, null);

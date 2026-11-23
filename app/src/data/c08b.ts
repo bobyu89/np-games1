@@ -104,7 +104,7 @@ export const C08B: CaseSpec = {
     { id: 'e-scare', text: '您的肺已經積水了，這樣下去很危險。您要是再不配合，等一下喘不過來，就只能插管了，到時候就不是您能決定的。', ok: false, note: '他最怕的就是這兩個字。拿它來催他，只會讓他更喘。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-cxr', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -115,7 +115,7 @@ export const C08B: CaseSpec = {
     watchWorse: '穆槐的嘴唇更紫了，額頭上都是冷汗。他咳出一口粉紅色的泡沫，話已經講不成句。',
     worsen: '……喘……吸不到……',
     stepIn: '我先敲鐘了。你看他的嘴唇，還有他咳出來的東西。水已經滿上來了。',
-    called: '鐘響了。馬卡翁醫師馬上到。讓他坐直，腳垂著，不要讓他躺下。',
+    called: '鐘響了。馬凱醫師馬上到。讓他坐直，腳垂著，不要讓他躺下。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。坐直是對的。片子馬上照，藥我來開。停藥一個月這件事你有問到，原因就在這裡。',
     reportWeak: '「腳腫、有點喘」我聽不出多急。血氧多少？能不能躺？肺聽起來怎樣？下次先講這三樣。',

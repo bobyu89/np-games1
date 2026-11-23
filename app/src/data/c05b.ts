@@ -102,7 +102,7 @@ export const C05B: CaseSpec = {
     { id: 'e-jargon', text: '妳是腦動脈瘤破裂造成的蜘蛛膜下腔出血，要先做腦血管攝影找出破口，再開刀把動脈瘤夾起來。', ok: false, note: '診斷還沒有確認；怎麼治療，也不是現在能說的。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，她會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，她會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-ct', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -113,7 +113,7 @@ export const C05B: CaseSpec = {
     watchWorse: '魏葵要叫好幾聲才睜眼，回答的話開始對不上。左邊的瞳孔，比右邊大了一點。',
     worsen: '……我……好想睡……',
     stepIn: '我先敲鐘了。你看她的眼睛，再叫她一次。她在往下掉。',
-    called: '鐘響了。馬卡翁醫師馬上到。你繼續看她的意識和瞳孔。',
+    called: '鐘響了。馬凱醫師馬上到。你繼續看她的意識和瞳孔。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。斷層馬上做。意識和瞳孔你繼續盯，幾分鐘看一次；血壓我來處理。',
     reportWeak: '「頭痛比較嚴重」我聽不出急在哪裡。怎麼開始的？脖子硬不硬？現在意識怎麼樣？',

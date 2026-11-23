@@ -40,7 +40,7 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
       <div className="paper page">
         {step === 0 && (
           <>
-            <p><b className="name">蒙托拉</b>「先不看分數。哪一刻最影響你的判斷？」</p>
+            <p><b className="name">孟拓</b>「先不看分數。哪一刻最影響你的判斷？」</p>
             <div className="stack">
               {ms.map((k) => <button key={k.id} type="button" className={'pick' + (pick === k.id ? ' on' : '')} aria-pressed={pick === k.id} onClick={() => { sfx.tap(); setPick(k.id); }}><b>{mmss(k.t)}</b>　{k.name}</button>)}
               {!ms.length && <p className="dim">這一場沒有留下可以回看的時間點。</p>}
@@ -68,7 +68,7 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
             </div>
             <p className="quote">{sc.safetyNote}</p>
             <h3>你的想法怎麼變</h3>
-            {tr.steps.length ? <ol className="path">{tr.steps.map((k, i) => <li key={i} className={k.right ? 'up' : 'down'}><b>{mmss(k.t)}</b>　{i === tr.steps.length - 1 && session.board.likely ? (trial ? '交卷時' : '結案時') : (trial ? '口試委員問你時' : '蒙托拉問你時')}：{k.name}</li>)}<li><b>實際上</b>　{tr.truth}</li></ol> : <p className="dim">這一場沒有留下你的判斷。實際上是{tr.truth}。</p>}
+            {tr.steps.length ? <ol className="path">{tr.steps.map((k, i) => <li key={i} className={k.right ? 'up' : 'down'}><b>{mmss(k.t)}</b>　{i === tr.steps.length - 1 && session.board.likely ? (trial ? '交卷時' : '結案時') : (trial ? '口試委員問你時' : '孟拓問你時')}：{k.name}</li>)}<li><b>實際上</b>　{tr.truth}</li></ol> : <p className="dim">這一場沒有留下你的判斷。實際上是{tr.truth}。</p>}
             <p className="quote">{tr.verdict}</p>
             {sc.rows.map((r) => (
               <div key={r.id} className="row">
@@ -121,9 +121,9 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
             {echo && (echo.got
               ? <div className="leaf"><b>{echo.before ? '歸鄉的消息' : '歸鄉的消息（新的）'}</b><p>{echo.text}</p></div>
               : <div className="leaf"><b>歸鄉的消息</b><p className="dim">這一次，{c.patient.name}由公會的前輩接手安頓。重接這一張，診斷對、也回應{c.patient.pronoun}擔心的事，才會收到{c.patient.pronoun}的近況。</p></div>)}
-            <p><b className="name">蒙托拉</b>「選一件下次要做到的事，帶進下一張委託。」</p>
+            <p><b className="name">孟拓</b>「選一件下次要做到的事，帶進下一張委託。」</p>
             <div className="stack">{tk.map((t) => <button key={t} type="button" className={'pick' + (mine === t ? ' on' : '')} aria-pressed={mine === t} onClick={() => { sfx.tap(); setMine(t); }}>{t}</button>)}</div>
-            <p className="dim">下一次進病室的時候，蒙托拉會提醒你這一句。</p>
+            <p className="dim">下一次進病室的時候，孟拓會提醒你這一句。</p>
             {trial ? <p className="dim">試弓不會寫進圖鑑，也不算完成這一張委託；成績會記在大廳的「試弓」裡。</p> : <>
               <h3>這一關寫回圖鑑的</h3>
               {fresh.length ? <ul className="path">{fresh.map((r, i) => <li key={i} className={r.dir > 0 ? 'up' : 'down'}>{r.dir > 0 ? '＋' : '－'} {r.text} → {formOf(c, r.form)!.name}</li>)}</ul> : <p className="dim">這一次沒有新的線索寫回去。解讀對的線索才會留下來。</p>}

@@ -35,8 +35,8 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
     <div className="screen title">
       <div className="left">
         <header className="title-head">
-          <h1>霧脈公會<small>歸航記</small></h1>
-          <p>專科護理師口試的練習</p>
+          <h1>歸航記<small><span>專科護理師的</span><span>臨床推理之旅</span></small></h1>
+          <p>甄審口試的練習</p>
           {exam && <p className="exam" role="note"><b>{exam}</b><span>{EXAM.label}</span></p>}
         </header>
         <Stage kind="title" hero={save.hero} stage={stage} label="入夜的霧港：燈塔的光掃過海面，霧一團一團飄過去，其中一團長出了眼睛；碼頭上掛著四盞燈" />

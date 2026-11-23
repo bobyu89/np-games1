@@ -106,7 +106,7 @@ export const C07C: CaseSpec = {
     { id: 'e-tough', text: '年輕人，這點痛忍一下就過去了。止痛藥已經吃了兩包，再吃對身體不好，不要一直討。咬著牙撐一撐，明天就會好很多。', ok: false, note: '他已經忍了四個時辰。這個病的第一個訊號，就是「痛得不合理」。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'explain', id: 'e-loosen', points: 2, what: '把纏緊的布條鬆開、把腳放到和心臟一樣高' }, { type: 'order', test: 't-xray', within: 180, points: 1 }],
   readsNeeded: 6,
@@ -117,7 +117,7 @@ export const C07C: CaseSpec = {
     watchWorse: '孟榛說腳背整片都麻了。請他把腳板往上勾，勾不起來。小腿比剛才更硬。',
     worsen: '腳……腳板抬不起來了……',
     stepIn: '我先敲鐘了。腳背整片麻了、腳板勾不起來，裡面的肌肉和神經已經在缺血。這個不能再等。',
-    called: '鐘響了，整個碼頭都聽得到。馬卡翁醫師馬上到。布條全部鬆開，腳放到跟心臟一樣高。',
+    called: '鐘響了，整個碼頭都聽得到。馬凱醫師馬上到。布條全部鬆開，腳放到跟心臟一樣高。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。布條你鬆了、腳也放下來了，很好。我看過就聯絡外科。感覺和腳板的力氣，你每幾分鐘看一次。',
     reportWeak: '「壓傷很痛」，每個壓傷都痛。痛有沒有越來越重？被動拉腳趾呢？小腿硬不硬？腳背麻不麻？',

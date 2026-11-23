@@ -8,7 +8,7 @@ import { Portrait } from './Portrait.tsx';
 import { ConfirmSheet } from './Sheets.tsx';
 import { sfx, buzz } from './sound.ts';
 
-/** intro 旁白 → first 先看誰 → noted 蒙托拉的回饋 → then 一句話 → after 這一輪的結果 → end 整理 */
+/** intro 旁白 → first 先看誰 → noted 孟拓的回饋 → then 一句話 → after 這一輪的結果 → end 整理 */
 type Phase = 'intro' | 'first' | 'noted' | 'then' | 'after' | 'end';
 interface Mark { round: string; first: boolean; then: boolean; said: string }
 
@@ -31,7 +31,7 @@ export function Night({ hero, onDone, onQuit, rounds = NIGHT, title = '值班夜
   const onFrame = (s: StageHandle) => {
     const who = speaker.current, key = who === 'mentor' ? 'cen' : who === 'doctor' ? 'shen' : null;
     s.state.talker = key; s.state.glow = 0;
-    s.state.fx = 'dusk dark fog' + (phase === 'after' || who === 'doctor' ? ' shen' : '');   // 夜裡，燈塔的燈熄著，霧漫進大廳；鐘響了馬卡翁才走進來
+    s.state.fx = 'dusk dark fog' + (phase === 'after' || who === 'doctor' ? ' shen' : '');   // 夜裡，燈塔的燈熄著，霧漫進大廳；鐘響了馬凱才走進來
     const at = key ? s.anchor(key) : null, b = bubble.current;
     if (b) { b.hidden = !at; if (at) { b.style.left = Math.round(at.x) + 'px'; b.style.top = Math.round(at.y) + 'px'; } }
   };
@@ -62,7 +62,7 @@ export function Night({ hero, onDone, onQuit, rounds = NIGHT, title = '值班夜
     <div className="screen hall night">
       <div className="left">
         <div className="top"><span className="who"><button type="button" className="home" onClick={() => { sfx.page(); if (phase === 'end') onDone(right); else setQuit(true); }}>‹ 公會</button>{title}</span><span className="clock">{phase === 'end' ? '走完了' : round.title}</span></div>
-        <Stage kind="hall" hero={hero} stage={stage} onFrame={onFrame} label="夜裡的公會大廳：窗外的燈塔沒有亮，霧貼著窗。蒙托拉站在委託板旁邊，斐米歐在櫃台後面">
+        <Stage kind="hall" hero={hero} stage={stage} onFrame={onFrame} label="夜裡的公會大廳：窗外的燈塔沒有亮，霧貼著窗。孟拓站在委託板旁邊，費民在櫃台後面">
           <div className="bubble" ref={bubble} hidden>…</div>
           <div className="chapter">{banner}</div>
         </Stage>
