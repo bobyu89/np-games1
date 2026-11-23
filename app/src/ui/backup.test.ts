@@ -122,25 +122,30 @@ test('試弓的紀錄：匯出匯入帶得走，兩台併起來不會重複；�
   assert.ok(r.ok && r.save.trials.length === 1);
 });
 
-test('打卡和陷阱紀錄：結案就記，匯出匯入帶得走，兩台併起來不重複；第 4 版的照樣讀得進來', () => {
+test('打卡、每一場的紀錄和航海日誌：結案就記，匯出匯入帶得走，兩台併起來不重複；第 4 版的照樣讀得進來', () => {
   const c = caseById('c01a'), s = run(c, idealActions(c)), at = new Date(2026, 10, 23, 9, 0).getTime();
-  const a = record(blank(), c, s, scoreSession(c, s), 600, null, at);
+  const a = record(blank(), c, s, scoreSession(c, s), 600, '下次先量生命徵象', at);
   assert.deepEqual(a.days, ['2026-11-23']);
-  assert.equal(a.traps?.length, 1); assert.equal(a.traps?.[0].caseId, 'c01a'); assert.equal(a.traps?.[0].trapped, false, '理想打法不會掉進陷阱');
-  const b = record(a, c, s, scoreSession(c, s), 600, null, at + 3_600_000);
+  assert.equal(a.plays?.length, 1);
+  assert.deepEqual({ ...a.plays![0], score: 0 }, { at, caseId: 'c01a', score: 0, trial: false, found: true, trapped: false, takeaway: '下次先量生命徵象' }, '理想打法：診斷對、沒掉進陷阱');
+  const b = { ...record(a, c, s, scoreSession(c, s), 600, null, at + 3_600_000), notes: { '2026-11-23': { text: '今天胸痛終於排了四個方向', at: at + 7_200_000 } } };
   assert.deepEqual(b.days, ['2026-11-23'], '同一天只算一次');
-  assert.equal(b.traps?.length, 2);
+  assert.equal(b.plays?.length, 2);
   const back = readBackup(packSave(b, 'test'), CASES);
-  assert.ok(back.ok); assert.deepEqual(back.save.days, b.days); assert.deepEqual(back.save.traps, b.traps);
-  const other = record(blank(), c, s, scoreSession(c, s), 600, null, new Date(2026, 10, 24, 9, 0).getTime());
+  assert.ok(back.ok); assert.deepEqual(back.save.days, b.days); assert.deepEqual(back.save.plays, b.plays); assert.deepEqual(back.save.notes, b.notes);
+  // 另一台：隔天也玩了，同一天的日誌比較早寫
+  const other = { ...record(blank(), c, s, scoreSession(c, s), 600, null, new Date(2026, 10, 24, 9, 0).getTime()), notes: { '2026-11-23': { text: '舊的', at: at + 1 } } };
   const m = mergeSaves(b, other);
-  assert.deepEqual(m.days, ['2026-11-23', '2026-11-24']); assert.equal(m.traps?.length, 3);
+  assert.deepEqual(m.days, ['2026-11-23', '2026-11-24']); assert.equal(m.plays?.length, 3);
+  assert.equal(m.notes?.['2026-11-23'].text, '今天胸痛終於排了四個方向', '留後寫的那一句');
+  assert.equal(mergeSaves(other, b).notes?.['2026-11-23'].text, '今天胸痛終於排了四個方向', '哪一台先併都一樣');
   assert.ok(sameSave(mergeSaves(m, m), m), '併兩次還是一樣');
-  assert.ok(!sameSave(a, b), '多了一場要看得出來');
-  const v4 = JSON.parse(packSave(b, 'test')); v4.v = 4; delete v4.days; delete v4.traps;
+  assert.ok(!sameSave(a, b), '多了一場、多了一句要看得出來');
+  const v4 = JSON.parse(packSave(b, 'test')); v4.v = 4; delete v4.days; delete v4.plays; delete v4.notes;
   const old = readBackup(JSON.stringify(v4), CASES);
-  assert.ok(old.ok && old.save.days?.length === 0 && old.save.traps?.length === 0);
-  const junk = JSON.parse(packSave(b, 'test')); junk.days.push('not-a-day', 7); junk.traps.push([1, 'c99z', 1], 'x');
+  assert.ok(old.ok && old.save.days?.length === 0 && old.save.plays?.length === 0 && Object.keys(old.save.notes ?? {}).length === 0);
+  const junk = JSON.parse(packSave(b, 'test'));
+  junk.days.push('not-a-day', 7); junk.plays.push([1, 'c99z', 50, 0, 1, 0, 0], 'x'); junk.notes.push(['bad', 1, 'x'], ['2026-11-25', 1, 'x'.repeat(501)], ['2026-11-26', 'x', 'y']);
   const cleaned = readBackup(JSON.stringify(junk), CASES);
-  assert.ok(cleaned.ok); assert.deepEqual(cleaned.save.days, b.days); assert.equal(cleaned.save.traps?.length, 2);
+  assert.ok(cleaned.ok); assert.deepEqual(cleaned.save.days, b.days); assert.equal(cleaned.save.plays?.length, 2); assert.deepEqual(Object.keys(cleaned.save.notes ?? {}), ['2026-11-23']);
 });

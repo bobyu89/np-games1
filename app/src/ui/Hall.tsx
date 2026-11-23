@@ -22,12 +22,13 @@ import { Portrait } from './Portrait.tsx';
 import { Trailer, TRAILER_SEEN } from './Trailer.tsx';
 import { Journey } from './Journey.tsx';
 import { CheckInBody, CheckInStrip, TrapRecordCard } from './CheckIn.tsx';
+import { DiaryBody } from './Diary.tsx';
 import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
 /** run：上次沒結案的那一張委託 */
-interface Props { save: Save; run: Run | null; onHome(): void; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onTrial(c: CaseDef): void; /** 終章的值班夜 */ onNight(): void; onTide(n: number): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void }
+interface Props { save: Save; run: Run | null; onHome(): void; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onTrial(c: CaseDef): void; /** 終章的值班夜 */ onNight(): void; onTide(n: number): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void; /** 航海日誌：某一天自己寫的一句 */ onNote(day: string, text: string): void }
 
 /** 圖鑑裡的一張卡：遇到了、去過了才看得到 */
 function Card({ e, wide }: { e: Entry; wide?: boolean }) {
@@ -80,7 +81,7 @@ function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(i
   );
 }
 
-export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, onNight, onTide, onResume, onDropRun, onImport, onReset }: Props) {
+export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, onNight, onTide, onResume, onDropRun, onImport, onReset, onNote }: Props) {
   // 航海圖：哪幾座島去過了、每座島結了幾張。巡診船停在現在走到的那一章的島
   const isles: ChartIsle[] = (Object.keys(ISLANDS) as IslandId[]).map((id) => {
     const ch = ISLANDS[id].chapter, qs = questsOn(id);
@@ -101,6 +102,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [reading, setReading] = useState<CaseDef | null>(null);
   const [codex, setCodex] = useState(false);
   const [cal, setCal] = useState(false);   // 打卡日曆
+  const [diary, setDiary] = useState(false);   // 航海日誌
   const [tab, setTab] = useState<'shadow' | 'epic' | 'people' | 'places' | 'world'>('shadow');
   const [soundOn, setSoundOn] = useState(sound.on);
   const [settings, setSettings] = useState(false);
@@ -257,6 +259,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
         </div>
         <div className="foot">
           <button type="button" onClick={() => { sfx.page(); setCodex(true); }}>圖鑑 {codexPercent(COMPLAINTS, save)}%</button>
+          <button type="button" onClick={() => { sfx.page(); setDiary(true); }}>日誌</button>
           <button type="button" onClick={() => { sound.on = !sound.on; setSoundOn(sound.on); }}>聲音：{soundOn ? '開' : '關'}</button>
           <button type="button" onClick={() => { sfx.page(); setSettings(true); }}>設定{pwa.update ? '・有新版' : ''}</button>
         </div>
@@ -345,7 +348,8 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
           <HeroCards picked={null} onPick={onHero} action="就是這一位" />
         </Sheet>
       )}
-      {cal && <Sheet title="打卡" onClose={() => setCal(false)}><CheckInBody save={save} /></Sheet>}
+      {cal && <Sheet title="打卡" onClose={() => setCal(false)}><CheckInBody save={save} /><button type="button" className="pick" onClick={() => { sfx.page(); setCal(false); setDiary(true); }}>看航海日誌：每一天做了什麼</button></Sheet>}
+      {diary && <Sheet title="航海日誌" onClose={() => setDiary(false)}><DiaryBody save={save} onNote={onNote} /></Sheet>}
       {codex && (
         <Sheet title="圖鑑" onClose={() => setCodex(false)}>
           <div className="steps five" role="tablist">

@@ -10,6 +10,7 @@ import { Debrief } from './Debrief.tsx';
 import { Night } from './Night.tsx';
 import { load, loadRun, store, storeRun, wipe, type Run, type Save } from './store.ts';
 import { validRun } from './backup.ts';
+import { withNote } from './diary.ts';
 import { keepStorage } from './pwa.ts';
 import { AFTER, echoed, eldersFor, finaleDone, NIGHT_DONE, TRIAL_SECONDS, newReads, record, recordTrial, tierOf } from './progress.ts';
 import { track, trackOpen } from './stats.ts';
@@ -69,7 +70,7 @@ export function App() {
       if (trial) {
         // 試弓：不寫圖鑑、不算完成委託，只留一筆成績
         track({ t: 'trial', c: c.id, sc: Math.round(score.total), sf: score.safety, sec: seconds, gt: session.time, f: harvest(c, session).found ? 1 : 0, n: save.trials.length + 1 });
-        const next = recordTrial(save, c, session, score, seconds, timeUp, Date.now());
+        const next = recordTrial(save, c, session, score, seconds, timeUp, Date.now(), takeaway);
         keep({ ...next, takeaways: takeaway ? [takeaway, ...next.takeaways.filter((t) => t !== takeaway)].slice(0, 5) : next.takeaways });
       } else {
         track({ t: 'done', c: c.id, tier: session.tier, ph: session.phase, sc: Math.round(score.total), sf: score.safety, sec: seconds, gt: session.time, h: session.hints, f: harvest(c, session).found ? 1 : 0, n: (save.cases[c.id]?.plays ?? 0) + 1 });
@@ -97,5 +98,6 @@ export function App() {
     }}
     onDropRun={() => { if (run && !run.trial) track({ t: 'drop', c: run.caseId, tier: run.session.tier, ph: run.session.phase, gt: run.session.time, h: run.session.hints }); keepRun(null); }}
     onImport={(s) => { keepRun(null); keep(s); }}
+    onNote={(day, text) => keep(withNote(latest.current, day, text))}
     onReset={() => { setRun(null); latest.current = wipe(); setSave(latest.current); }} />;
 }

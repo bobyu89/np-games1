@@ -13,11 +13,14 @@ export interface CaseRecord {
 }
 /** 一場試弓的結果。試煉不寫圖鑑、不算完成委託，只留這一筆 */
 export interface TrialRecord { at: number; caseId: string; score: number; safety: Safety; seconds: number; timeUp: boolean; found: boolean }
-/** 一場結束（委託或試弓）有沒有掉進那個主訴的陷阱。回顧裡「你的陷阱紀錄」用它算 */
-export interface TrapRecord { at: number; caseId: string; trapped: boolean }
+/** 一場（委託或試弓）結束時留的一筆。陷阱紀錄和航海日誌都從這裡算。
+ *  trapped：有沒有掉進那個主訴的陷阱（不認得的主訴是 null）；takeaway：回顧最後選的那一句 */
+export interface PlayRecord { at: number; caseId: string; score: number; trial: boolean; found: boolean; trapped: boolean | null; takeaway: string | null }
+/** 航海日誌裡自己寫的一句話。at 是最後改的時間：兩台裝置同一天都寫了，留後寫的那一句。寫空的就是刪掉 */
+export interface DiaryNote { text: string; at: number }
 /** hero：選了哪一位主角。還沒選是 null。trials：試弓的紀錄，新的在前面。
- *  days：打卡的日子（streak.ts）。traps：最近幾場有沒有掉進陷阱，新的在前面。這兩項是後來加的，舊的存檔沒有 */
-export interface Save { v: 3; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[]; hero: string | null; trials: TrialRecord[]; days?: string[]; traps?: TrapRecord[] }
+ *  後來加的（舊的存檔沒有）：days 是打卡的日子（streak.ts）；plays 是最近幾場，新的在前面；notes 是航海日誌裡自己寫的話，用日期當鍵 */
+export interface Save { v: 3; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[]; hero: string | null; trials: TrialRecord[]; days?: string[]; plays?: PlayRecord[]; notes?: Record<string, DiaryNote> }
 
 const KEY = 'mist-guild.v1';
 const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [], hero: null, trials: [] });

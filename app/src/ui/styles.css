@@ -580,3 +580,11 @@ button.checkin { cursor: pointer; }
 .traps li em { font-style: normal; opacity: 0.75; }
 .bias-name { border-left: 3px solid var(--rust); padding-left: 8px; }
 .traps .bar b { background: var(--rust); }
+
+/* 航海日誌 */
+.diary-page { padding: 10px 12px; margin: 10px 0; display: flex; flex-direction: column; gap: 6px; }
+.diary-page h3 { margin: 0; }
+.diary-page ul { margin: 0; padding-left: 1.2em; line-height: 1.55; }
+.diary-note p { margin: 0 0 4px; font-style: italic; }
+.diary-edit { display: flex; flex-direction: column; gap: 6px; }
+.diary-edit textarea { font: inherit; padding: 8px; border: 2px solid var(--ink); border-radius: var(--r-a); background: rgba(255, 255, 255, 0.6); resize: vertical; min-height: 4.5em; }

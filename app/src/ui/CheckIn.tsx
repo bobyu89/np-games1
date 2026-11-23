@@ -55,7 +55,7 @@ export function CheckInBody({ save, now = Date.now() }: { save: Save; now?: numb
 
 /** 你的陷阱紀錄：最近幾場，每一種陷阱掉進去幾次 */
 export function TrapRecordCard({ save }: { save: Save }) {
-  const rows = trapProfile(save), n = (save.traps ?? []).length;
+  const rows = trapProfile(save), n = rows.reduce((k, r) => k + r.trapped + r.passed, 0);
   if (!rows.length) return <div className="paper traps-card"><b>你的陷阱紀錄</b><p className="dim">結案一張委託或交一次試弓之後，這裡會記下你掉進了哪一種陷阱。</p></div>;
   const worst = rows[0].trapped > 0 ? rows[0] : null;
   return (
