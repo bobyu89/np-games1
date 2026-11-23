@@ -16,11 +16,20 @@ export interface Peril {
   pass: string;
   /** 掉進去了，下一次怎麼過 */
   next: string;
+  /** 這個陷阱叫什麼。kind 是 bias：認知偏誤（照 Croskerry, 2003 的名稱）；habit：不是偏誤，是常漏掉的一個習慣 */
+  bias: { name: string; en: string; kind: 'bias' | 'habit'; what: string };
 }
+
+/** 陷阱名稱的出處。認知偏誤照 Croskerry（2003）；「沒說出口的擔心」照 Barry et al.（2000） */
+export const BIAS_REFS = [
+  { text: 'Croskerry, P. (2003). The importance of cognitive errors in diagnosis and strategies to minimize them. Academic Medicine, 78(8), 775–780.', doi: '10.1097/00001888-200308000-00003' },
+  { text: 'Barry, C. A., Bradley, C. P., Britten, N., Stevenson, F. A., & Barber, N. (2000). Patients\' unvoiced agendas in general practice consultations. BMJ, 320(7244), 1246–1250.', doi: '10.1136/bmj.320.7244.1246' },
+];
 
 export const PERILS: Record<string, Peril> = {
   'chest-pain': {
     complaint: 'chest-pain', name: '獨眼巨人之劫',
+    bias: { name: '過早結束', en: 'premature closure', kind: 'bias', what: '想到一個說得通的答案，就停止考慮其他可能。' },
     myth: '獨眼巨人把旅人關在洞裡。他只有一隻眼睛，一次只看得到一樣東西。',
     trap: '胸痛最容易只想到一個答案：不是「一定是心臟」，就是「只是肌肉拉傷」。四個方向沒有一個一個排過，就是只用一隻眼睛在看。',
     pass: '你寫下了最可能的，也留了要排除的方向。兩隻眼睛都張開了。',
@@ -28,6 +37,7 @@ export const PERILS: Record<string, Peril> = {
   },
   dyspnea: {
     complaint: 'dyspnea', name: '風袋之劫',
+    bias: { name: '作為偏誤', en: 'commission bias', kind: 'bias', what: '覺得「先做點什麼」總比不做好，還沒判斷清楚就先處置。' },
     myth: '風神送了一只皮袋，把逆風全收在裡面。快到家的時候，船員以為袋裡是金子，趁船長睡著打開了。風全跑出來，船被吹回原點。',
     trap: '喘的人看起來很急，最容易一開口就要一堆處置。還沒分清是哪一種喘就把袋子打開，有些處置會把人吹回原點。',
     pass: '你提的處置，每一項都對得上你判斷的那一種喘。袋子沒有亂開。',
@@ -35,6 +45,7 @@ export const PERILS: Record<string, Peril> = {
   },
   abdomen: {
     complaint: 'abdomen', name: '斯庫拉之劫',
+    bias: { name: '錨定', en: 'anchoring', kind: 'bias', what: '抓住最先、最顯眼的那一點，後來的資訊沒有拿來修正。' },
     myth: '窄窄的海峽，一邊是六個頭的斯庫拉，一邊是會吞船的漩渦。只顧著看一邊的船，會被另一邊吃掉。',
     trap: '腹痛的人會指著最痛的那一點。只盯著那一點，就漏了痛從哪裡開始、怎麼移動、吃了什麼之後才痛。',
     pass: '你把痛的來龍去脈問完了，沒有只盯著痛的那一點。',
@@ -42,6 +53,7 @@ export const PERILS: Record<string, Peril> = {
   },
   fever: {
     complaint: 'fever', name: '日神之牛',
+    bias: { name: '過度自信', en: 'overconfidence', kind: 'bias', what: '資訊還不完整，就憑感覺先行動。' },
     myth: '船停在太陽神的島上，船長交代：島上的牛一頭都不能碰。風停了一個月，船員餓得受不了，趁船長睡著殺了牛。再出海的時候，雷打下來，船碎了。',
     trap: '燒一直不退，最容易忍不住先動手：再加一種藥、換一種藥。火從哪裡燒起來還沒找到，就先碰了不該碰的。',
     pass: '你先去找火從哪裡燒起來，沒有先去碰那群牛。',
@@ -49,6 +61,7 @@ export const PERILS: Record<string, Peril> = {
   },
   headache: {
     complaint: 'headache', name: '賽蓮之劫',
+    bias: { name: '事後機率錯誤', en: 'posterior probability error', kind: 'bias', what: '這個人以前都是同一個原因，就認定這一次也一樣。' },
     myth: '賽蓮的歌聲很好聽，唱的都是水手最想聽的話。聽了的人，把船往礁石上開。船長叫人把自己綁在桅杆上：歌聽完了，船還在航道上。',
     trap: '「老毛病了」「跟以前一樣」，這種話最好聽。熟悉的說法會讓人不再查紅旗：這一次的痛，真的跟以前一樣嗎？',
     pass: '你的摘要寫出了這一次真正的樣子。歌聽完了，船沒有偏。',
@@ -56,6 +69,7 @@ export const PERILS: Record<string, Peril> = {
   },
   'back-pain': {
     complaint: 'back-pain', name: '擲石巨人之劫',
+    bias: { name: '不作為偏誤', en: 'omission bias', kind: 'bias', what: '傾向先不做、再看看，結果錯過該行動的時間。' },
     myth: '拉莫斯的巨人站在崖上，把整塊大石往港裡砸。港裡的船一艘一艘沉下去；只有停在港外、早一步看見崖上有人的那一艘，逃了出來。',
     trap: '背痛的人常常是扛著重量、撐著走進來的。他說「還撐得住」，你就信了；等石頭砸下來，才去叫人。',
     pass: '你沒有只聽「還撐得住」：該量的量了，該叫人的時候，在石頭落下之前就叫了。',
@@ -63,6 +77,7 @@ export const PERILS: Record<string, Peril> = {
   },
   'leg-pain': {
     complaint: 'leg-pain', name: '野豬之疤',
+    bias: { name: '沒有親手檢查', en: 'skipped examination', kind: 'habit', what: '沒有脫掉、摸過、左右比過，就下判斷。' },
     myth: '主人喬裝成乞丐回家，沒有人認得他。老乳母替他洗腳，手摸到膝蓋上那道少年時被野豬劃開的疤，才認出他是誰。',
     trap: '腳痛要把鞋襪脫掉、兩邊比較，才看得到那道「疤」：顏色、溫度、脈搏、腫的範圍。不碰那隻腳，就認不出來。',
     pass: '你把鞋襪脫了、兩邊比了，動手之前也先說了。你像老乳母一樣，摸到了那道疤。',
@@ -70,6 +85,7 @@ export const PERILS: Record<string, Peril> = {
   },
   swelling: {
     complaint: 'swelling', name: '卡律布狄斯之劫',
+    bias: { name: '沒有拆開來看', en: 'unpacking principle', kind: 'bias', what: '沒有把每一個可能的來源一一拆開來問、來看，重要的方向就漏了。' },
     myth: '海峽的另一邊是卡律布狄斯：一天三次，把海水全吞下去，再全吐出來。船要過，得先知道水從哪裡來、往哪裡去。',
     trap: '腫起來的水有三條路：心、腎、肝。只看到腳腫就停，就不知道水是從哪一條路來的。',
     pass: '心、肚子、兩隻腳，你都看過了。你知道水從哪裡來。',
@@ -77,6 +93,7 @@ export const PERILS: Record<string, Peril> = {
   },
   excreta: {
     complaint: 'excreta', name: '忘憂果之劫',
+    bias: { name: '沒說出口的擔心', en: 'unvoiced patient agenda', kind: 'habit', what: '病人最在意的事沒有說出口，整場看診都繞著它打轉。' },
     myth: '有一座島上的人吃一種果子，吃了就忘了要回家，也不想說話。去探路的船員吃了，就坐在海邊不肯走。',
     trap: '大小便的事，病人不好意思說。你不問他最擔心什麼，他就不說，你也就不知道他為什麼今天才來。',
     pass: '你問了他最擔心的事。他說出口了。',
@@ -84,6 +101,7 @@ export const PERILS: Record<string, Peril> = {
   },
   rash: {
     complaint: 'rash', name: '喀耳刻之劫',
+    bias: { name: '分診暗示', en: 'triage cueing', kind: 'bias', what: '被貼上「皮膚的問題」，就只往那一科想。' },
     myth: '女巫喀耳刻把來的人變成豬。外表變了，裡面還是原來那個人，還記得自己是誰。',
     trap: '疹子會讓人以為「皮膚的事就是皮膚的事」。疹子底下的那個人，可能在發燒、血壓在掉、關節在痛。',
     pass: '你量了生命徵象，也看了疹子以外的地方。外表變了，你還認得出裡面的人。',
@@ -91,6 +109,7 @@ export const PERILS: Record<string, Peril> = {
   },
   'weight-loss': {
     complaint: 'weight-loss', name: '卡呂普索之劫',
+    bias: { name: '框架效應', en: 'framing effect', kind: 'bias', what: '「年紀大了、吃得少」的說法，框住了你往下問的方向。' },
     myth: '卡呂普索把漂來的人留在她的島上七年。島上什麼都有，他卻一天比一天瘦，每天坐在海邊，看著家的方向。',
     trap: '瘦了，最容易一句「年紀大了、吃得少」就帶過。他一個人怎麼吃飯、心情怎麼樣、在吃什麼藥，不問就不知道。',
     pass: '你問到了他的生活、用藥和過去的病，沒有只看體重。',
@@ -98,6 +117,7 @@ export const PERILS: Record<string, Peril> = {
   },
   paresthesia: {
     complaint: 'paresthesia', name: '冥府之劫',
+    bias: { name: '搜尋滿足', en: 'search satisficing', kind: 'bias', what: '找到一個說得通的就停止搜尋，沒有把危險的方向都找過。' },
     myth: '冥府裡的亡魂沒有知覺，也不會先開口。旅人要先倒一碗祭品，問一個問題，亡魂才說一句話。問得不對，只聽得到含糊的低語。',
     trap: '「麻麻的」說不清楚在哪裡。不請他畫出範圍、不問最後一次正常是什麼時候，就分不出是腦、脊髓、神經，還是血裡的東西。',
     pass: '你問對了問題，每一個危險的方向都有一條線索回答你。',

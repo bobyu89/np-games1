@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { consultQuestion } from '../core/elders.ts';
 import { perilOf } from '../core/perils.ts';
 import { GAP_NAME } from '../data/islands.ts';
+import { BIAS_REFS } from '../data/odyssey.ts';
 import { heroOf } from './progress.ts';
 import type { CaseDef, Session } from '../core/types.ts';
 import { SAFETY_LABEL, moments, scoreSession, takeaways, trajectory } from '../core/scoring.ts';
@@ -94,10 +95,11 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
                 <b>{pr.peril.name}：{pr.trapped ? '這一劫，你被困住了' : '你過了這一劫'}</b>
                 <p className="dim">{pr.peril.myth}</p>
                 <p>{pr.peril.trap}</p>
+                <p className="bias-name"><b>{pr.peril.bias.kind === 'bias' ? '這個陷阱的名字' : '這個陷阱'}：{pr.peril.bias.name}</b>（{pr.peril.bias.en}）。{pr.peril.bias.what}{pr.peril.bias.kind === 'habit' ? '它不是一種認知偏誤，是常漏掉的一個習慣。' : ''}</p>
                 <p className={pr.trapped ? 'down' : 'up'}>{pr.why}</p>
                 {pr.trapped && <p>{pr.peril.next}</p>}
                 {trial?.axes && sc.total >= TRIAL_PASS && <p className="up">十二斧之試：{c.shadow.name}的那一把斧頭亮了。</p>}
-                <p className="dim">這一段不計分。病室裡不會出現劫的名字；它是讓你把這個主訴最容易掉進去的陷阱記住。</p>
+                <p className="dim">這一段不計分。病室裡不會出現劫的名字；它是讓你把這個主訴最容易掉進去的陷阱記住。陷阱的名字依 {pr.peril.bias.kind === 'bias' ? 'Croskerry（2003）' : pr.peril.complaint === 'excreta' ? 'Barry 等人（2000）' : '常見的身體評估疏漏'}整理，跟病例一樣還沒經過臨床老師審查。{pr.peril.bias.kind === 'bias' ? <> <a href={'https://doi.org/' + BIAS_REFS[0].doi} target="_blank" rel="noreferrer">出處</a></> : pr.peril.complaint === 'excreta' ? <> <a href={'https://doi.org/' + BIAS_REFS[1].doi} target="_blank" rel="noreferrer">出處</a></> : null}</p>
               </div>
             )}
             {cq && (

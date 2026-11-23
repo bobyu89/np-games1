@@ -7,6 +7,7 @@ import { AccountPanel } from './Account.tsx';
 import { sfx, sound } from './sound.ts';
 import type { Run, Save } from './store.ts';
 import { nextStep } from './progress.ts';
+import { CheckInStrip } from './CheckIn.tsx';
 import { Journey } from './Journey.tsx';
 import { Trailer } from './Trailer.tsx';
 import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
@@ -47,7 +48,7 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
             {started ? '繼續遊戲' : '開始遊戲'}
             <small>{!started ? '第一次來，從報到開始' : '下一步：' + nextStep(save, run ? { caseId: run.caseId, trial: !!run.trial, closed: run.session.closedAt !== null } : null).title}</small>
           </button>
-          {started && <div className="journey-card"><Journey save={save} /></div>}
+          {started && <div className="journey-card"><Journey save={save} /><CheckInStrip save={save} /></div>}
           {/* 其他都是小按鈕：帳號與同步放在設定裡 */}
           <div className="small-row">
             <button type="button" onClick={() => open('settings')}>設定{pwa.update ? '・有新版' : acct.account ? '・已登入' : ''}</button>
@@ -65,7 +66,7 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
       {sheet === 'about' && (
         <Sheet title="關於這個遊戲" onClose={() => setSheet(null)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setSheet(null); onPlay(); }}>{started ? '繼續遊戲' : '開始遊戲'}</button>}>
           <p>{WELCOME.what}</p>
-          <button type="button" className="pick" onClick={() => { sfx.page(); setSheet(null); setFilm(true); }}>看前導片（52 秒）</button>
+          <button type="button" className="pick" onClick={() => { sfx.page(); setSheet(null); setFilm(true); }}>看前導片（60 秒）</button>
           <dl className="pairs">{WELCOME.points.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
           <h3>要注意的事</h3>
           <ul>

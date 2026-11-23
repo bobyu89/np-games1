@@ -13,8 +13,11 @@ export interface CaseRecord {
 }
 /** 一場試弓的結果。試煉不寫圖鑑、不算完成委託，只留這一筆 */
 export interface TrialRecord { at: number; caseId: string; score: number; safety: Safety; seconds: number; timeUp: boolean; found: boolean }
-/** hero：選了哪一位主角。還沒選是 null。trials：試弓的紀錄，新的在前面 */
-export interface Save { v: 3; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[]; hero: string | null; trials: TrialRecord[] }
+/** 一場結束（委託或試弓）有沒有掉進那個主訴的陷阱。回顧裡「你的陷阱紀錄」用它算 */
+export interface TrapRecord { at: number; caseId: string; trapped: boolean }
+/** hero：選了哪一位主角。還沒選是 null。trials：試弓的紀錄，新的在前面。
+ *  days：打卡的日子（streak.ts）。traps：最近幾場有沒有掉進陷阱，新的在前面。這兩項是後來加的，舊的存檔沒有 */
+export interface Save { v: 3; beats: string[]; cases: Record<string, CaseRecord>; takeaways: string[]; hero: string | null; trials: TrialRecord[]; days?: string[]; traps?: TrapRecord[] }
 
 const KEY = 'mist-guild.v1';
 const blank = (): Save => ({ v: 3, beats: [], cases: {}, takeaways: [], hero: null, trials: [] });

@@ -55,3 +55,12 @@ test('劫的名字不會跑進病室：病例的文字裡沒有任何一劫的�
     for (const n of names) assert.ok(!text.includes(n), c.id + ' 出現了 ' + n);
   }
 });
+
+test('每一劫都有陷阱的名字：認知偏誤照 Croskerry（2003）的英文名，不是偏誤的標成習慣；名字不重複', () => {
+  const names = Object.values(PERILS).map((p) => p.bias.name);
+  assert.equal(new Set(names).size, names.length);
+  for (const p of Object.values(PERILS)) {
+    assert.ok(p.bias.name && p.bias.en && p.bias.what.endsWith('。'), p.complaint);
+    assert.ok(p.bias.kind === 'bias' || p.bias.kind === 'habit', p.complaint);
+  }
+});

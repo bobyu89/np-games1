@@ -31,7 +31,7 @@ test('不是進度的東西讀不進來，而且說得出原因', () => {
     assert.equal(r.ok, false, junk);
     assert.ok(!r.ok && r.why.length > 0);
   }
-  const newer = readBackup(JSON.stringify({ app: 'mist-guild', kind: 'save', v: 5, cases: {} }), CASES);   // 現在的格式是第 4 版
+  const newer = readBackup(JSON.stringify({ app: 'mist-guild', kind: 'save', v: 6, cases: {} }), CASES);   // 現在的格式是第 5 版
   assert.ok(!newer.ok && newer.why.includes('更新'));
 });
 
@@ -114,10 +114,33 @@ test('試弓的紀錄：匯出匯入帶得走，兩台併起來不會重複；�
   const v3 = readBackup(JSON.stringify(old), CASES);
   assert.ok(v3.ok && v3.save.trials.length === 0 && !!v3.save.cases.c01a);
   // 比這一版新的：不讀，免得把看不懂的東西丟掉
-  const newer = JSON.parse(packSave(a, 'test')); newer.v = 5;
+  const newer = JSON.parse(packSave(a, 'test')); newer.v = 6;
   assert.equal(readBackup(JSON.stringify(newer), CASES).ok, false);
   // 這一版沒有的病例的試煉紀錄會略過
   const odd = JSON.parse(packSave(a, 'test')); odd.trials.push([1_800_000_900_000, 'c99z', 50, 0, 600, 0, 1], 'junk', [0, 'c01a', 50, 0, 600, 0, 1]);
   const r = readBackup(JSON.stringify(odd), CASES);
   assert.ok(r.ok && r.save.trials.length === 1);
+});
+
+test('打卡和陷阱紀錄：結案就記，匯出匯入帶得走，兩台併起來不重複；第 4 版的照樣讀得進來', () => {
+  const c = caseById('c01a'), s = run(c, idealActions(c)), at = new Date(2026, 10, 23, 9, 0).getTime();
+  const a = record(blank(), c, s, scoreSession(c, s), 600, null, at);
+  assert.deepEqual(a.days, ['2026-11-23']);
+  assert.equal(a.traps?.length, 1); assert.equal(a.traps?.[0].caseId, 'c01a'); assert.equal(a.traps?.[0].trapped, false, '理想打法不會掉進陷阱');
+  const b = record(a, c, s, scoreSession(c, s), 600, null, at + 3_600_000);
+  assert.deepEqual(b.days, ['2026-11-23'], '同一天只算一次');
+  assert.equal(b.traps?.length, 2);
+  const back = readBackup(packSave(b, 'test'), CASES);
+  assert.ok(back.ok); assert.deepEqual(back.save.days, b.days); assert.deepEqual(back.save.traps, b.traps);
+  const other = record(blank(), c, s, scoreSession(c, s), 600, null, new Date(2026, 10, 24, 9, 0).getTime());
+  const m = mergeSaves(b, other);
+  assert.deepEqual(m.days, ['2026-11-23', '2026-11-24']); assert.equal(m.traps?.length, 3);
+  assert.ok(sameSave(mergeSaves(m, m), m), '併兩次還是一樣');
+  assert.ok(!sameSave(a, b), '多了一場要看得出來');
+  const v4 = JSON.parse(packSave(b, 'test')); v4.v = 4; delete v4.days; delete v4.traps;
+  const old = readBackup(JSON.stringify(v4), CASES);
+  assert.ok(old.ok && old.save.days?.length === 0 && old.save.traps?.length === 0);
+  const junk = JSON.parse(packSave(b, 'test')); junk.days.push('not-a-day', 7); junk.traps.push([1, 'c99z', 1], 'x');
+  const cleaned = readBackup(JSON.stringify(junk), CASES);
+  assert.ok(cleaned.ok); assert.deepEqual(cleaned.save.days, b.days); assert.equal(cleaned.save.traps?.length, 2);
 });

@@ -21,6 +21,7 @@ import { CANTOS, PERILS, type Canto } from '../data/odyssey.ts';
 import { Portrait } from './Portrait.tsx';
 import { Trailer, TRAILER_SEEN } from './Trailer.tsx';
 import { Journey } from './Journey.tsx';
+import { CheckInBody, CheckInStrip, TrapRecordCard } from './CheckIn.tsx';
 import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
@@ -99,6 +100,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [step, setStep] = useState(0);
   const [reading, setReading] = useState<CaseDef | null>(null);
   const [codex, setCodex] = useState(false);
+  const [cal, setCal] = useState(false);   // 打卡日曆
   const [tab, setTab] = useState<'shadow' | 'epic' | 'people' | 'places' | 'world'>('shadow');
   const [soundOn, setSoundOn] = useState(sound.on);
   const [settings, setSettings] = useState(false);
@@ -223,6 +225,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               {/* 地圖頁：先看進度和下一步，再點一座島 */}
               <div className="next paper" role="region" aria-label="下一步">
                 <Journey save={save} compact />
+                <CheckInStrip save={save} onOpen={() => setCal(true)} />
                 <span className="next-label">下一步</span>
                 <b>{todo.title}</b>
                 <p>{todo.why}</p>
@@ -232,7 +235,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               {side && <div className="side"><span>{side.text}</span><button type="button" className="pick" onClick={() => { sfx.page(); go(side.action); }}>{side.button}</button></div>}
               <div className="map-help">
                 <p><b>地圖：一座島一種症狀。</b>島名是故事裡的地名，底下寫的是那裡的病人來看什麼（例如「胸痛 1/4」）。點有名字的島，看那裡的委託。</p>
-                <button type="button" className="pick" onClick={() => { sfx.page(); setFilm(true); }}>看前導片（52 秒）</button>
+                <button type="button" className="pick" onClick={() => { sfx.page(); setFilm(true); }}>看前導片（60 秒）</button>
               </div>
               <SeaChart isles={isles} picked={boat} boat={boat} home={finaleDone(save)} onPick={(id) => { setIsle(id); setView(id); }} />
               {finaleOpen(save) && <>
@@ -342,6 +345,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
           <HeroCards picked={null} onPick={onHero} action="就是這一位" />
         </Sheet>
       )}
+      {cal && <Sheet title="打卡" onClose={() => setCal(false)}><CheckInBody save={save} /></Sheet>}
       {codex && (
         <Sheet title="圖鑑" onClose={() => setCodex(false)}>
           <div className="steps five" role="tablist">
@@ -373,7 +377,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               : <div key={l.id} className="leaf locked"><b>？？？</b><p className="dim">{l.hint}</p></div>))}
             <h3>這裡的東西，對到現實的什麼</h3>
             <dl className="pairs">{WORLD.map.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
-            <button type="button" className="pick" onClick={() => { sfx.page(); setCodex(false); setFilm(true); }}>看前導片（52 秒）</button>
+            <button type="button" className="pick" onClick={() => { sfx.page(); setCodex(false); setFilm(true); }}>看前導片（60 秒）</button>
             <h3>這是什麼</h3>
             <p>{WELCOME.what}</p>
             <p className="dim">{WELCOME.note}</p>
@@ -390,6 +394,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <div className="album">{placesOf(save).map((e) => <Card key={e.id} e={e} wide />)}</div>
           </>}
           {tab === 'shadow' && <>
+            <TrapRecordCard save={save} />
           <p className="dim">檔案室淹水之後，圖鑑只剩劫影的外形。底下的字，要靠你在一張一張委託裡寫回來。</p>
           {COMPLAINTS.map((m) => {
             const page = codexOf(m, save);
