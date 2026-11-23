@@ -221,3 +221,22 @@ test('你在哪裡：五章加終章，現在在哪一段、這一段做了幾�
   j = journey(save(BOARD, STORY));
   assert.equal(j.now.key, 'end'); assert.equal(j.legs.filter((l) => l.state === 'done').length, 5);
 });
+
+test('你的陷阱紀錄：委託和試弓都記；掉進去最多的排前面；只看最近一百場，紀錄留三百場', () => {
+  const c = CASES.find((k) => k.complaint === 'chest-pain')!, good = run(c, idealActions(c));
+  const bad = run(c, []);   // 什麼都沒做就結案：沒有下診斷，掉進獨眼巨人之劫
+  const blank: Save = { v: 3, beats: [], cases: {}, takeaways: [], hero: 'cheng', trials: [] };
+  let s = record(blank, c, bad, scoreSession(c, bad), 60, null, 1_800_000_000_000);
+  s = recordTrial(s, c, good, scoreSession(c, good), 600, false, 1_800_000_100_000);
+  s = record(s, c, bad, scoreSession(c, bad), 60, null, 1_800_000_200_000);
+  const rows = PROGRESS.trapProfile(s);
+  assert.equal(rows.length, 1);
+  assert.deepEqual([rows[0].peril.complaint, rows[0].trapped, rows[0].passed, rows[0].last], ['chest-pain', 2, 1, true]);
+  assert.equal(s.days?.length, 1, '同一天');
+  assert.equal(s.plays?.[1].trial, true, '試弓也記');
+  for (let i = 0; i < 320; i++) s = record(s, c, good, scoreSession(c, good), 60, null, 1_800_001_000_000 + i);
+  assert.equal(s.plays?.length, PROGRESS.PLAYS_KEPT);
+  const after = PROGRESS.trapProfile(s);
+  assert.equal(after[0].trapped + after[0].passed, PROGRESS.TRAPS_SHOWN);
+  assert.equal(after[0].trapped, 0, '最近一百場都過了');
+});

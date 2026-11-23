@@ -555,3 +555,36 @@ html.admin #app:has(.prose) { padding-inline: 4px; }
 .map-help p { margin: 0; }
 .map-help .pick { align-self: flex-start; color: var(--ink); background: var(--paper); border: 2px solid var(--ink); border-radius: 999px; padding: 4px 12px; }
 .trailer .unmute { position: absolute; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); color: var(--ink); border: 2px solid var(--ink); border-radius: 999px; padding: 6px 16px; background: var(--paper); }
+
+/* 打卡 */
+.checkin { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin: 2px 0 4px; padding: 6px 8px; border: 2px dashed rgba(0, 0, 0, 0.25); border-radius: var(--r-a); background: transparent; color: var(--ink); font: inherit; text-align: left; min-height: 44px; }
+button.checkin { cursor: pointer; }
+.checkin b { font-size: 0.95em; color: var(--ink); }
+.checkin span { font-size: 0.85em; opacity: 0.75; }
+.checkin-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); flex: none; }
+.checkin-dot.on { background: var(--rust); border-color: var(--rust); }
+.journey-card .checkin { color: var(--paper); border-color: rgba(255, 255, 255, 0.3); margin-top: 8px; }
+.journey-card .checkin b { color: var(--paper); }
+.journey-card .checkin-dot { border-color: var(--paper); }
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin: 10px 0 6px; }
+.cal-head .pick { min-width: 44px; min-height: 44px; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.cal-w { font-size: 0.8em; opacity: 0.6; }
+.cal-d { padding: 6px 0; border-radius: 6px; font-variant-numeric: tabular-nums; }
+.cal-d.on { background: var(--rust); color: var(--paper); font-weight: 700; }
+.cal-d.today { outline: 2px solid var(--ink); outline-offset: -2px; }
+.traps-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; margin-bottom: 12px; }
+.traps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.traps li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 0.9em; }
+.traps li .bar { grid-column: 1 / -1; }
+.traps li em { font-style: normal; opacity: 0.75; }
+.bias-name { border-left: 3px solid var(--rust); padding-left: 8px; }
+.traps .bar b { background: var(--rust); }
+
+/* 航海日誌 */
+.diary-page { padding: 10px 12px; margin: 10px 0; display: flex; flex-direction: column; gap: 6px; }
+.diary-page h3 { margin: 0; }
+.diary-page ul { margin: 0; padding-left: 1.2em; line-height: 1.55; }
+.diary-note p { margin: 0 0 4px; font-style: italic; }
+.diary-edit { display: flex; flex-direction: column; gap: 6px; }
+.diary-edit textarea { font: inherit; padding: 8px; border: 2px solid var(--ink); border-radius: var(--r-a); background: rgba(255, 255, 255, 0.6); resize: vertical; min-height: 4.5em; }

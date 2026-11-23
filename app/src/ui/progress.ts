@@ -6,13 +6,14 @@ import type { CaseDef, Score, Session } from '../core/types.ts';
 import type { ComplaintDef } from '../core/module.ts';
 import { harvest } from '../core/scoring.ts';
 import { perilOf } from '../core/perils.ts';
-import { CANTOS } from '../data/odyssey.ts';
+import { CANTOS, PERILS, type Peril } from '../data/odyssey.ts';
 import { TIDE_DONE } from '../data/tides.ts';
 import { CASES, COMPLAINTS, FINALE_ID, caseById } from '../data/index.ts';
 import { PLACES } from '../data/places.ts';
 import { AFTER_MORE } from '../data/extras.ts';
 import type { Line } from './Talk.tsx';
 import type { CaseRecord, Save, TrialRecord } from './store.ts';
+import { addDay, dayKey } from './streak.ts';
 import type { Shot } from './Portrait.tsx';
 
 /** 委託板上的一張委託。needs：要先完成哪一張才會出現 */
@@ -325,14 +326,21 @@ export const rankOf = (s: Save) => (!chapterDone(1, s) ? '見習專科護理師'
 export const tierOf = (s: Save): 0 | 1 => (chapterDone(1, s) && chapterDone(2, s) ? 1 : 0);
 
 /** 把一場對局的結果併進存檔 */
-export function record(save: Save, c: CaseDef, session: Session, score: Score, seconds: number, takeaway: string | null): Save {
+/** 結束一場：打卡（今天），留一筆紀錄。委託和試弓都算 */
+export const PLAYS_KEPT = 300, TRAPS_SHOWN = 100;
+function checkIn(save: Save, c: CaseDef, session: Session, at: number, score: Score, trial: boolean, takeaway: string | null): Pick<Save, 'days' | 'plays'> {
+  const p = perilOf(c, session), play = { at, caseId: c.id, score: Math.round(score.total), trial, found: harvest(c, session).found, trapped: p ? p.trapped : null, takeaway };
+  return { days: addDay(save.days, dayKey(at)), plays: [play, ...(save.plays ?? [])].slice(0, PLAYS_KEPT) };
+}
+
+export function record(save: Save, c: CaseDef, session: Session, score: Score, seconds: number, takeaway: string | null, at = Date.now()): Save {
   const old = save.cases[c.id], h = harvest(c, session), total = Math.round(score.total), better = !old || total > old.best;
   const reads = [...(old?.reads ?? [])];
   h.reads.forEach((r) => { if (!reads.some((k) => k.clue === r.clue)) reads.push(r); });
   const rec: CaseRecord = { best: better ? total : old.best, safety: better ? score.safety : old.safety, plays: (old?.plays ?? 0) + 1, seconds, found: !!old?.found || h.found, concern: !!old?.concern || h.concern, reads };
   const takeaways = takeaway ? [takeaway, ...save.takeaways.filter((t) => t !== takeaway)].slice(0, 5) : save.takeaways;
   const passed = perilOf(c, session)?.trapped === false && !save.beats.includes(PASSED(c.id));
-  return { ...save, cases: { ...save.cases, [c.id]: rec }, takeaways, beats: passed ? [...save.beats, PASSED(c.id)] : save.beats };
+  return { ...save, ...checkIn(save, c, session, at, score, false, takeaway), cases: { ...save.cases, [c.id]: rec }, takeaways, beats: passed ? [...save.beats, PASSED(c.id)] : save.beats };
 }
 
 // ── 試弓 ──
@@ -369,10 +377,23 @@ export const cantoOpen = (id: string, s: Save) => {
 };
 
 /** 把一場試煉的結果記進存檔（新的在前面，最多留 30 筆） */
-export function recordTrial(save: Save, c: CaseDef, session: Session, score: Score, seconds: number, timeUp: boolean, at: number): Save {
+export function recordTrial(save: Save, c: CaseDef, session: Session, score: Score, seconds: number, timeUp: boolean, at: number, takeaway: string | null = null): Save {
   const rec: TrialRecord = { at, caseId: c.id, score: Math.round(score.total), safety: score.safety, seconds, timeUp, found: harvest(c, session).found };
   const lit = rec.score >= TRIAL_PASS && !save.beats.includes(AXE(c.complaint));
-  return { ...save, trials: [rec, ...save.trials].slice(0, 30), beats: lit ? [...save.beats, AXE(c.complaint)] : save.beats };
+  return { ...save, ...checkIn(save, c, session, at, score, true, takeaway), trials: [rec, ...save.trials].slice(0, 30), beats: lit ? [...save.beats, AXE(c.complaint)] : save.beats };
+}
+
+/** 你的陷阱紀錄：最近 TRAPS_SHOWN 場裡，每一種陷阱掉進去幾次、過了幾次。掉進去最多的排前面 */
+export function trapProfile(save: Save): { peril: Peril; trapped: number; passed: number; last: boolean }[] {
+  const rows = new Map<string, { peril: Peril; trapped: number; passed: number; last: boolean }>();
+  for (const t of (save.plays ?? []).slice(0, TRAPS_SHOWN)) {   // 新的在前面，所以第一次碰到的就是最近那一場
+    const c = CASES.find((k) => k.id === t.caseId), peril = c && PERILS[c.complaint];
+    if (!peril || t.trapped === null) continue;
+    const r = rows.get(peril.complaint) ?? { peril, trapped: 0, passed: 0, last: t.trapped };
+    if (t.trapped) r.trapped++; else r.passed++;
+    rows.set(peril.complaint, r);
+  }
+  return [...rows.values()].sort((a, b) => b.trapped - a.trapped || b.trapped / (b.trapped + b.passed) - a.trapped / (a.trapped + a.passed));
 }
 
 /** 這一場新寫進圖鑑的線索（之前沒有解讀對過的） */
