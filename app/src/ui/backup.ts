@@ -42,7 +42,7 @@ export function readBackup(text: string, cases: CaseDef[]): Read {
   if (text.length > 400_000) return { ok: false, why: '這份內容太長，不像是進度。' };
   let raw: Partial<Packed>;
   try { raw = JSON.parse(text.trim()) as Partial<Packed>; } catch { return { ok: false, why: '讀不懂這份內容。請確認是從「匯出進度」拿到的，而且整段都貼上了。' }; }
-  if (!raw || typeof raw !== 'object' || raw.app !== 'mist-guild' || raw.kind !== 'save') return { ok: false, why: '這不是霧脈公會的進度。' };
+  if (!raw || typeof raw !== 'object' || raw.app !== 'mist-guild' || raw.kind !== 'save') return { ok: false, why: '這不是歸航記的進度。' };
   if (typeof raw.v !== 'number' || raw.v > VERSION) return { ok: false, why: '這份進度是比較新的版本存的。請先把遊戲更新到新版，再匯入。' };
   if (raw.v < 3) return { ok: false, why: '這份進度是舊版的格式，現在讀不了。' };
   const out: Record<string, CaseRecord> = {};

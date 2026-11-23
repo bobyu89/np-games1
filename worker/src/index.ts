@@ -1,4 +1,4 @@
-// 霧脈公會放在 Cloudflare 的那一個 Worker。遊戲和後端在同一個網址底下：
+// 歸航記放在 Cloudflare 的那一個 Worker。遊戲和後端在同一個網址底下：
 //   遊戲本身                        靜態檔（app/dist），Cloudflare 直接給，不經過這個檔
 //   匿名的使用統計
 //     POST /api/e                   遊戲回傳事件（不用密碼；只收認得的欄位）

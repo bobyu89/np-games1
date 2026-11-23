@@ -8,9 +8,9 @@ import { elderOf } from '../data/islands.ts';
 /** 每種行動花掉的模擬時間（秒）。看字、解讀線索、排推理板都不扣時間 */
 // 問診加評估整套做完大約 15 分鐘，和考站的時間差不多
 export const COST = { ask: 20, vitals: 40, exam: 20, explainExam: 10, watch: 30, call: 5, report: 30, explain: 40 } as const;
-/** 解讀到第幾條線索的時候，蒙托拉會停下來問「你最擔心哪一個」 */
+/** 解讀到第幾條線索的時候，孟拓會停下來問「你最擔心哪一個」 */
 export const COMMIT_AFTER = 3;
-/** 提示拿掉一層之後，蒙托拉一張委託回答幾次 */
+/** 提示拿掉一層之後，孟拓一張委託回答幾次 */
 export const HINT_LIMIT = 3;
 
 export const emptyBoard = (): Board => ({ summary: null, likely: null, exclude: [] });
@@ -74,7 +74,7 @@ const hit = (k: Clue, form: string) => [k.tell, ...(k.alsoOk ?? [])].some((t) =>
 const vitalsAfterChange = (s: Session) => s.worsenedAt === null || s.vitalsLog.some((t) => t >= s.worsenedAt!);
 
 /**
- * 蒙托拉現在會給的提示。只看「玩家做了什麼、還沒做什麼」，不看這位病人的答案：
+ * 孟拓現在會給的提示。只看「玩家做了什麼、還沒做什麼」，不看這位病人的答案：
  * 不點名該做哪一項檢查、不點名玩家自己沒寫上去的診斷，也不會只對急的病人多問一句。
  * 同樣的操作，換一位病人，聽到的是同一句（病人的名字和玩家自己寫的診斷除外）。
  */
@@ -143,7 +143,7 @@ function advance(x: Ctx) {
     note(x, 'worsen');
     ev.push({ type: 'worsen' }, { type: 'say', who: 'patient', text: c.lines.worsen ?? '……' }, { type: 'say', who: 'sys', text: c.patient.name + '的狀況變了。現在通報還來得及。', bad: true });
   }
-  // 再拖下去：蒙托拉接手敲鐘
+  // 再拖下去：孟拓接手敲鐘
   if (tl.stepInAfter !== undefined && s.dxAt !== null && s.calledAt === null && s.time >= s.dxAt + tl.stepInAfter) {
     summon(x, 'mentor', 'step-in'); s.bell = true;
     ev.push({ type: 'bell', by: 'mentor' }, { type: 'say', who: 'mentor', text: c.lines.stepIn ?? '我先敲鐘了。' });
@@ -172,7 +172,7 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
   // 線索拿到手要先想一下它代表什麼，才能做下一件事。解讀不扣時間
   if (a.type !== 'read' && a.type !== 'commit') {
     if (prev.pending.length) return reject('先想一下手上這條線索代表什麼。');
-    if (prev.needCommit) return reject('先回答蒙托拉：你現在最擔心哪一個？');
+    if (prev.needCommit) return reject('先回答孟拓：你現在最擔心哪一個？');
   }
 
   // 照順序：先問診，再評估，然後診斷，最後才是檢查和處置。可以回頭補做，不能跳到後面
@@ -259,7 +259,7 @@ export function perform(c: CaseDef, prev: Session, a: Action): { session: Sessio
       break;
     }
     case 'commit': {
-      if (!s.needCommit) return reject('蒙托拉現在沒有問你。');
+      if (!s.needCommit) return reject('孟拓現在沒有問你。');
       if (!formOf(c, a.form)) return reject('沒有這個診斷。');
       s.needCommit = false;
       s.commits = [...s.commits, { t: s.time, form: a.form }];

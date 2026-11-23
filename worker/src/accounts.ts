@@ -82,7 +82,7 @@ export function checkSave(text: string): { ok: true; build: string } | { ok: fal
   let raw: unknown;
   try { raw = JSON.parse(text); } catch { return { ok: false, why: '看不懂。' }; }
   const r = raw as Record<string, unknown> | null;
-  if (!r || typeof r !== 'object' || r.app !== 'mist-guild' || r.kind !== 'save' || typeof r.v !== 'number' || !r.cases || typeof r.cases !== 'object') return { ok: false, why: '這不是霧脈公會的進度。' };
+  if (!r || typeof r !== 'object' || r.app !== 'mist-guild' || r.kind !== 'save' || typeof r.v !== 'number' || !r.cases || typeof r.cases !== 'object') return { ok: false, why: '這不是歸航記的進度。' };
   return { ok: true, build: typeof r.build === 'string' ? r.build.slice(0, 40) : '' };
 }
 export function readSave(exec: Exec, id: string): { save: string | null; at: number | null } {

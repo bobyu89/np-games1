@@ -101,7 +101,7 @@ export const C01A: CaseSpec = {
     { id: 'e-jargon', text: '您是下壁 ST 段上升型心肌梗塞，要馬上做緊急心導管。', ok: false, note: '用了病人聽不懂的詞，而且診斷和處置要由醫師確認之後才說。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-ecg', within: 120, points: 3 }],
   readsNeeded: 6,
@@ -112,7 +112,7 @@ export const C01A: CaseSpec = {
     watchWorse: '林秋閉著眼睛，呼吸又淺又快。',
     worsen: '頭……有點暈。',
     stepIn: '我先敲鐘了。你已經知道他是什麼問題，就不能再等。',
-    called: '值班鐘響了。馬卡翁醫師馬上到，你繼續。',
+    called: '值班鐘響了。馬凱醫師馬上到，你繼續。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。心電圖我來判讀，你接著監測，五分鐘後重測血壓。',
     reportWeak: '我聽不出來有多急。下次先講你最擔心什麼、要我做什麼。我先看病人。',

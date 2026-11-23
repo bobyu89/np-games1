@@ -105,7 +105,7 @@ export const C06D: CaseSpec = {
     { id: 'e-scare', text: '你不去就是等死，跟你大哥一樣。肚子裡那條血管隨時都會爆開，到時候誰也救不了你，你自己要想清楚，不要拖累家人。', ok: false, note: '用他最怕的事逼他，他只會更不肯。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-us', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -116,7 +116,7 @@ export const C06D: CaseSpec = {
     watchWorse: '辛桑的臉更白了，嘴唇沒有血色。叫他，他慢了一拍才應。手摸起來又濕又冷，肚子比剛才鼓。',
     worsen: '……有點……喘不上來……眼前黑黑的……',
     stepIn: '我先敲鐘了。你再量一次他的血壓。這不是閃到腰，是血管在漏。',
-    called: '鐘響了，整個碼頭都聽得到。馬卡翁醫師馬上到。讓他平躺，不要再碰他的肚子。',
+    called: '鐘響了，整個碼頭都聽得到。馬凱醫師馬上到。讓他平躺，不要再碰他的肚子。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。超音波我自己過去看，車先備著。吃東西的時間和用藥你都問了，很好，那邊一定會問。',
     reportWeak: '「腰痛、血壓低」，然後呢？他幾歲？肚子你摸了沒有？摸到什麼？這三句要先講。',

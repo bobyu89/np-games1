@@ -23,7 +23,7 @@ export function drawCat(g, t, x, y) {
   g.restore();
 }
 
-/** 蒙托拉，資深專科護理師。o：{ x, y, talking, nod, scale } */
+/** 孟拓，資深專科護理師。o：{ x, y, talking, nod, scale } */
 export function drawCen(g, t, o) {
   K.seed = o.seed || 4000;
   const talking = !!o.talking, blink = (t * 0.9 + 2.1) % 4.1 < 0.13, nod = Math.sin(clamp(o.nod || 0) * Math.PI), big = o.scale || 1.14;
@@ -81,7 +81,7 @@ export function drawCen(g, t, o) {
 }
 
 
-/** 馬卡翁，值班醫師。o：{ x, y, talking, walk, scale } */
+/** 馬凱，值班醫師。o：{ x, y, talking, walk, scale } */
 export function drawShen(g, t, o) {
   K.seed = o.seed || 4500;
   const talking = !!o.talking, blink = (t * 0.9 + 0.7) % 3.9 < 0.13, big = o.scale || 1.2;
@@ -127,7 +127,7 @@ export function drawShen(g, t, o) {
   g.restore();
 }
 
-/** 斐米歐，公會的檔案員。坐在櫃台後面，只看得到上半身。o：{ x, y, talking } */
+/** 費民，公會的檔案員。坐在櫃台後面，只看得到上半身。o：{ x, y, talking } */
 export function drawMo(g, t, o) {
   K.seed = o.seed || 4800;
   const talking = !!o.talking, blink = (t * 0.9 + 3.1) % 4.6 < 0.13;
@@ -170,7 +170,7 @@ export const HERO_LOOKS = {
   qiao: { cape: C.slate, cape2: C.slate2, hair: C.hairDark, style: 'bun', item: 'watch' },
 };
 
-/** o：{ x, y, look, talking, scale }。面向左邊，和蒙托拉一樣看著病人 */
+/** o：{ x, y, look, talking, scale }。面向左邊，和孟拓一樣看著病人 */
 export function drawHero(g, t, o) {
   const L = HERO_LOOKS[o.look] || HERO_LOOKS.cheng, skin = L.skin || C.skin;
   K.seed = o.seed || 5200;

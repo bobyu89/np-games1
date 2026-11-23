@@ -1,7 +1,7 @@
 // 前導片的分鏡「歸航記」：用《奧德賽》的整趟旅程當故事，照史詩的順序走十二劫，每一劫揭曉它在霧海裡是哪一個症狀、哪一隻劫影、哪四位病人。
 // 產生 HyperFrames 的 index.html。橫式和直式用同一份，寬高不同。時間點對著 music.mjs 的鐘聲（改這裡的時間，要一起改配樂）。
 //   0–6   夜裡的霧港                         「說吧，記事的人，說那位漂流的人：他在海上走了十年，一關一關認出眼前的危險，才回到家。」
-//   6–11  公會大廳（蒙托拉、你、斐米歐）      「現在換你出海。你是剛出師的見習專科護理師。」
+//   6–11  公會大廳（孟拓、你、費民）      「現在換你出海。你是剛出師的見習專科護理師。」
 //   11–15 航海圖，島一座一座從霧裡浮出來     「霧海群島就是那片海：十二座島，十二段試煉。」
 //   15–45 十二劫，一劫 2.5 秒：一句神話 → 劫影從霧裡浮出來 → 揭曉症狀 → 那座島的四位病人一個一個出現
 //   45–49 四十八位病人排滿畫面               「每一劫，都是一種主訴最容易掉進去的陷阱。」
@@ -147,7 +147,7 @@ video.clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit
 .axe .haft { fill: #6b5236; } .axe .blade { fill: #55625d; stroke: #1d1a16; stroke-width: 2; }
 .veil { position: absolute; inset: 0; background: rgba(10,16,14,.55); }
 .end { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: rgba(15,23,20,.88); }
-.end h1 { font-size: ${px(m * 0.15)}; letter-spacing: .16em; } .end h2 { font-size: ${px(m * 0.06)}; letter-spacing: .5em; color: #e7b65a; margin-top: .2em; }
+.end h1 { font-size: ${px(m * 0.15)}; letter-spacing: .16em; } .end h2 { font-size: ${px(m * 0.05)}; letter-spacing: .15em; color: #e7b65a; margin-top: .3em; }
 .end p { font-size: ${px(m * 0.038)}; margin-top: 1.2em; } .end .note { font-size: ${px(m * 0.026)}; opacity: .65; margin-top: 2.2em; }
 .dark { position: absolute; inset: 0; background: #0a100e; }
 #fade { position: absolute; inset: 0; background: #0f1714; z-index: 30; }
@@ -179,7 +179,7 @@ video.clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit
     ${cap('s5a', tall ? '歸航：拉開那張弓，\n一箭穿過十二把斧頭。' : '歸航：拉開那張弓，一箭穿過十二把斧頭。')}</div>
 
   <div class="clip layer" id="s6" data-start="54" data-duration="6" data-track-index="1">
-    <div class="end"><h1 id="t1">${chars('霧脈公會')}</h1><h2 id="t2">歸航記</h2>
+    <div class="end"><h1 id="t1">${chars('歸航記')}</h1><h2 id="t2">專科護理師的臨床推理之旅</h2>
       <p id="t3">專科護理師口試的練習・十二種主訴</p>
       <p class="note" id="t4">病例是草稿，還沒經過臨床老師審查，不能當教材<br />${url}</p></div></div>
 
@@ -236,7 +236,7 @@ video.clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit
   say('#s5a', 49.6);
   // 片名
   tl.fromTo('#t1 .ch', { opacity: 0, y: 30, scale: 1.3 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.12, ease: 'power3.out' }, 54.4);
-  tl.fromTo('#t2', { opacity: 0, letterSpacing: '1em' }, { opacity: 1, letterSpacing: '0.5em', duration: 0.9 }, 55.2);
+  tl.fromTo('#t2', { opacity: 0, letterSpacing: '0.45em' }, { opacity: 1, letterSpacing: '0.15em', duration: 0.9 }, 55.2);
   tl.fromTo('#t3', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.6 }, 56.0);
   tl.fromTo('#t4', { opacity: 0 }, { opacity: 0.65, duration: 0.6 }, 56.6);
   tl.to('#fade', { opacity: 1, duration: 0.8 }, ${LENGTH - 0.9});

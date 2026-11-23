@@ -13,7 +13,7 @@ export function DiaryBody({ save, onNote }: { save: Save; onNote(day: string, te
   const keep = (day: string, had: string) => { if (draft.trim() || had) { sfx.done(); onNote(day, draft); } setEditing(null); };
   return (
     <>
-      <p className="dim">斐米歐照你每天做了什麼，一天寫一頁。底下可以自己補一句：今天卡在哪裡、想通了什麼、下次要記得的事。寫的話跟著進度存；有登入就同步到其他裝置。</p>
+      <p className="dim">費民照你每天做了什麼，一天寫一頁。底下可以自己補一句：今天卡在哪裡、想通了什麼、下次要記得的事。寫的話跟著進度存；有登入就同步到其他裝置。</p>
       {pages.slice(0, shown).map((p) => (
         <article key={p.day} className="paper diary-page" aria-label={p.title}>
           <h3>{p.title}</h3>

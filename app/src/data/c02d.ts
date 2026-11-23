@@ -103,7 +103,7 @@ export const C02D: CaseSpec = {
     { id: 'e-jargon', text: '你是右側原發性自發性氣胸復發，肺部塌陷，等一下要放胸管做引流，之後可能還要開刀。', ok: false, note: '用了病人聽不懂的詞，而且診斷還沒有確認，要怎麼處理也是醫師看完片子才決定的。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-cxr', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -114,7 +114,7 @@ export const C02D: CaseSpec = {
     watchWorse: '岳楊脖子兩邊的血管鼓了起來，喉結看起來往左邊偏。他張著嘴，卻吸不進氣。',
     worsen: '……壓住了……吸不進來……',
     stepIn: '我先敲鐘了。你看他的脖子和氣管。這個樣子，不是等片子的時候。',
-    called: '鐘響了，整個碼頭都聽得到。馬卡翁醫師馬上到，你繼續盯著他。',
+    called: '鐘響了，整個碼頭都聽得到。馬凱醫師馬上到，你繼續盯著他。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。片子馬上照，我過去看。氣管和頸靜脈你繼續盯著，一偏、一鼓就叫我，那時候不等片子。',
     reportWeak: '我聽不出你擔心什麼。兩邊的呼吸音一樣嗎？氣管在哪裡？下次先講這兩樣。我先看病人。',

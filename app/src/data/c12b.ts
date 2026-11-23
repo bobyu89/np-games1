@@ -104,7 +104,7 @@ export const C12B: CaseSpec = {
     { id: 'e-jargon', text: '您這是急性缺血性腦中風，左側中大腦動脈的範圍，等一下要打血栓溶解劑，把血塊溶掉。', ok: false, note: '片子還沒照。能不能用那種藥，也只有醫師能決定。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，她會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，她會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-ct', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -115,7 +115,7 @@ export const C12B: CaseSpec = {
     watchWorse: '焦菱的右手整隻垂了下來，抬不起來了。她想說話，說出來的字連不成句。',
     worsen: '……我……手……（她說不下去了。）',
     stepIn: '我先敲鐘了。你看她的右手，比剛才更沒力。腦是用分鐘在算的。',
-    called: '鐘響了。馬卡翁醫師馬上到。你把時間記下來：幾時發作，幾時到這裡。',
+    called: '鐘響了。馬凱醫師馬上到。你把時間記下來：幾時發作，幾時到這裡。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '時間你問到了，而且有人看見，很好。血糖正常、沒有外傷和出血，片子馬上照。她現在是在搶時間。',
     reportWeak: '「手麻」我聽不出急在哪裡。哪一邊？臉呢？講話呢？什麼時候開始的？這四樣，你要一口氣講完。',

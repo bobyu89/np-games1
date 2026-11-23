@@ -46,7 +46,7 @@ export function consult(e: Elder, c: CaseDef, s: Session): { text: string; recor
 /** 有哪幾位老醫生可以請教：已經去過那座島的那幾位（第幾章開了，就見過那一章的長老） */
 export const eldersMet = (chapterOpen: (n: number) => boolean) => ELDERS.filter((e) => chapterOpen(elderChapter(e.id))).map((e) => e.id);
 const CHAPTER: Record<string, number> = { nie: 2, lu: 2, guan: 3, chu: 4, ge: 5 };
-/** 第幾章開了之後，病室裡才請得到這一位（會首埃吉普提歐是第一章走完，跟著巡診船一起出海之後） */
+/** 第幾章開了之後，病室裡才請得到這一位（會首埃普是第一章走完，跟著巡診船一起出海之後） */
 export const elderChapter = (id: string) => CHAPTER[id];
 
 export interface ConsultQuestion { by: string; name: string; t: number; answer: Gap; options: Gap[]; blind: string; pronoun: string }

@@ -1,6 +1,6 @@
 // 產生 Threads 的日程（social/schedule.json）和圖（app/public/social/）。日程有三段：
 //   1. 每日一案 01–10：2026-11-13 到 11-22 已經發過的，原樣留著（圖 01.jpg–10.jpg 不動）
-//   2. 公告：《霧脈公會：歸航記》的更新，附前導片（app/public/social/trailer-vertical.mp4）。沒有日期，手動發（POST_ID=launch-guihang）
+//   2. 公告：《霧脈公會：歸航記》（2026-11-23 改名《歸航記》之前發的）的更新，附前導片（app/public/social/trailer-vertical.mp4）。沒有日期，手動發（POST_ID=launch-guihang）
 //      另一則「跟 AI 一起做的」（POST_ID=ai-build），掛 AI 的主題標籤
 //   主題標籤（tag）：Threads 一則只能一個。歸航記每天掛「護理」；01–10 和公告已經發過，不加
 //   3. 歸航記：照《奧德賽》的順序走十二劫。每一劫先一則介紹（劫影、神話、在霧海裡是哪個症狀、最容易掉進的陷阱、那座島的四位病人），
@@ -69,7 +69,7 @@ const html = (c, no, cd) => `<!doctype html><meta charset="utf-8"><style>${CSS}<
   <h1>${esc(c.lines[0].replace(/。$/, ''))}<small>主訴：${esc(c.complaint)}</small></h1>
   <div class="paper card">${c.lines.slice(1).map(esc).join('')}</div>
   <div class="ask"><b>進門之前，先想三件事</b><ol>${c.prompts.map((p) => '<li>' + esc(p) + '</li>').join('')}</ol></div>
-  <div class="foot"><span class="kick">完整的問診、評估和回顧在《霧脈公會：歸航記》</span><span class="url">${LINK.replace('https://', '')}</span><span class="note">病例是草稿，還沒有經過臨床老師審查，不能當教材</span></div>
+  <div class="foot"><span class="kick">完整的問診、評估和回顧在《歸航記》</span><span class="url">${LINK.replace('https://', '')}</span><span class="note">病例是草稿，還沒有經過臨床老師審查，不能當教材</span></div>
   <script type="module">
     import { createWard } from '/art/ward.js';
     await document.fonts.ready;
@@ -86,7 +86,7 @@ export const caption = (c, no, cd) => [
   ...c.prompts.map((p, i) => (i + 1) + '. ' + p),
   '',
   '你會先問哪一句？留言說說看。',
-  '完整的問診、評估和回顧在遊戲《霧脈公會：歸航記》裡，免費、手機直接玩：',
+  '完整的問診、評估和回顧在遊戲《歸航記》裡，免費、手機直接玩：',
   LINK,
   '',
   '＊病例是草稿，還沒經過臨床老師審查，不能當教材。',
@@ -106,7 +106,7 @@ const introHtml = (p, no) => `<!doctype html><meta charset="utf-8"><style>${CSS}
   <h1>在霧海裡，這一劫是 <b>${esc(p.complaint)}</b></h1>
   <div class="paper card"><b>最容易掉進去的陷阱：</b>${esc(p.trap)}</div>
   <div class="ask"><b>${esc(p.island)}的病人，接下來幾天一位一位來</b><div class="pts">${p.patients.map((c) => `<figure><img src="/cut/patient-${c.id}.png" /><figcaption>${esc(c.name)}</figcaption></figure>`).join('')}</div></div>
-  <div class="foot"><span class="kick">《霧脈公會：歸航記》：專科護理師的臨床推理遊戲</span><span class="url">${LINK.replace('https://', '')}</span><span class="note">病例是草稿，還沒有經過臨床老師審查，不能當教材</span></div>
+  <div class="foot"><span class="kick">《歸航記》：專科護理師的臨床推理之旅</span><span class="url">${LINK.replace('https://', '')}</span><span class="note">病例是草稿，還沒有經過臨床老師審查，不能當教材</span></div>
   <script type="module">
     import { createWard } from '/art/ward.js';
     await document.fonts.ready; await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
@@ -118,7 +118,7 @@ export const introCaption = (p, no) => [
   HEAD(no) + '｜第' + numZh(p.n) + '劫・' + p.peril + '】',
   '《奧德賽》裡，' + p.myth,
   '',
-  '在《霧脈公會》的霧海裡，這一劫是「' + p.complaint + '」。',
+  '在《歸航記》的霧海裡，這一劫是「' + p.complaint + '」。',
   p.trap,
   '',
   '接下來幾天，' + p.island + '的病人會一位一位來。你被這一劫困住過嗎？留言說說看。',

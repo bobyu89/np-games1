@@ -24,7 +24,7 @@ export function Trailer({ onDone }: { onDone(): void }) {
   return (
     <div className="trailer" role="dialog" aria-modal="true" aria-label="前導片">
       <video ref={video} src={tall ? 'trailer/trailer-vertical.mp4' : 'trailer/trailer.mp4'} playsInline preload="auto" controls={still} onEnded={onDone} onError={onDone}
-        aria-label="霧脈公會：歸航記 的前導片。霧海群島十二座島，每一種劫影是一段海上的試煉；你是剛出師的見習專科護理師。" />
+        aria-label="《歸航記：專科護理師的臨床推理之旅》的前導片。霧海群島十二座島，每一種劫影是一段海上的試煉；你是剛出師的見習專科護理師。" />
       {quiet && <button type="button" className="unmute" onClick={unmute}>開聲音</button>}
       <button type="button" className="skip" onClick={() => { sfx.page(); onDone(); }}>跳過</button>
     </div>

@@ -131,7 +131,7 @@ test('進門之前不先給方向：標題結案才出現、值班鐘那一句�
   const BELL = '值班鐘我帶來了，用不用由你決定。';
   for (const k of CASES) {
     const opening = k.lines.opening.join(''), dock = placeOf(k.scene) === 'dock';
-    // 以前只有緊急的那幾張，蒙托拉才會提值班鐘；提了，就等於先說了這一張要敲
+    // 以前只有緊急的那幾張，孟拓才會提值班鐘；提了，就等於先說了這一張要敲
     assert.equal(opening.includes('值班鐘'), dock, k.id + '：只有出診會提值班鐘，而且每一張出診都提');
     if (dock) assert.ok(opening.includes(BELL), k.id + '：出診提值班鐘的那一句要一樣');
     assert.equal(k.reading.prompts.length, 3, k.id);
@@ -166,7 +166,7 @@ test('十二斧之試：試弓及格才亮那一種劫影的斧頭；終章走�
   assert.ok(share(save(BOARD, lit)) < 0.15, '終章走完之前不偏');
 });
 
-test('篇章：每一章的開場由斐米歐先唸那一篇的開場；英雄歸來要十二把斧頭都亮', () => {
+test('篇章：每一章的開場由費民先唸那一篇的開場；英雄歸來要十二把斧頭都亮', () => {
   for (const [beat, canto] of [['ch2-open', 'tide'], ['ch3-open', 'book'], ['ch4-open', 'keel'], ['ch5-open', 'bamboo'], ['finale-open', 'home']]) {
     const b = BEATS.find((x) => x.id === beat)!;
     assert.equal(b.lines[0].who, 'mo', beat);

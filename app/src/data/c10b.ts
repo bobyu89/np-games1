@@ -104,7 +104,7 @@ export const C10B: CaseSpec = {
     { id: 'e-scare', text: '這個叫過敏性休克，幾分鐘就會死人的。妳怎麼不早一點來？剛才還在那裡喝水等。', ok: false, note: '嚇她、怪她，只會讓她更喘。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，她會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，她會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-blood', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -115,7 +115,7 @@ export const C10B: CaseSpec = {
     watchWorse: '韋茜的嘴唇發紫，抓脖子的手慢了下來。她想說話，只發得出氣音，身體往旁邊倒。',
     worsen: '……吸……不到……',
     stepIn: '我先敲鐘了。你聽她的聲音，已經出不來了。這不是等疹子退的時候。',
-    called: '鐘響了，整個碼頭都聽得到。馬卡翁醫師馬上到。藥和氧氣先備好。',
+    called: '鐘響了，整個碼頭都聽得到。馬凱醫師馬上到。藥和氧氣先備好。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。藥現在給。你有先備好、先給氧，這幾分鐘就差在這裡。繼續看她的聲音和血壓。',
     reportWeak: '「起疹子、不舒服」，我聽不出急在哪裡。喉嚨呢？呼吸呢？血壓多少？下次先講這三樣。',

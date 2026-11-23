@@ -124,7 +124,7 @@ export const ISLAND_OF: Partial<Record<Place, IslandId>> = { ward: 'main', tower
 
 export const ELDERS: Elder[] = [
   {
-    id: 'nie', name: '埃吉普提歐', island: 'main', pronoun: '他', voted: false,
+    id: 'nie', name: '埃普', island: 'main', pronoun: '他', voted: false,
     tag: '72 歲・手粗的會首・五島長老會', bio: ['年輕的時候跟著巡診船跑外島三十年。那些地方沒有檢查可做，只能靠眼睛和手。', '現在是公會的會首，長老會開會的時候坐在最上面。'],
     knack: '身體評估：先量，再一個部位一個部位摸，兩邊比。', blind: '太相信自己摸得到的。摸不到的就當作沒有，病史常常跳過。',
     motto: '手放上去再說。', sec: 20,
@@ -138,7 +138,7 @@ export const ELDERS: Elder[] = [
     none: '該摸的你都摸了。去下一步。',
   },
   {
-    id: 'lu', name: '瑙西克拉', island: 'tide', pronoun: '她', voted: false,
+    id: 'lu', name: '諾可', island: 'tide', pronoun: '她', voted: false,
     tag: '66 歲・數潮的・斯克里亞的老醫生', bio: ['年輕的時候在斯克里亞的潮汐站抄潮位，每兩個時辰記一筆。三十歲才到公會學。', '分站的紀錄表，全是她畫的。'],
     knack: '數字和時間：哪個數字是什麼時候量的、開了的檢查回來了沒、從下診斷到現在過了多久。', blind: '只看數字，不聽人。數字在範圍裡就放心，不再追問。',
     motto: '數字不會騙人。', sec: 20,
@@ -152,7 +152,7 @@ export const ELDERS: Elder[] = [
     none: '數字我看過了，都對得上。',
   },
   {
-    id: 'guan', name: '涅斯托', island: 'book', pronoun: '他', voted: true,
+    id: 'guan', name: '聶思', island: 'book', pronoun: '他', voted: true,
     tag: '77 歲・話長的・法羅斯的老醫生', bio: ['法羅斯土生土長，島上第一個去公會學又回來的人。看了五十年，記得每一位病人的名字和那一年的天氣。', '十五年前的勘誤上那十一個名字，他每一個都認得。'],
     knack: '時間線：從哪一天開始、先有什麼後有什麼、在什麼事之後。', blind: '錨定在自己看過的舊案例；相信一開始的經過，不回頭看現在。',
     motto: '我年輕的時候也看過一個……', sec: 40,
@@ -166,7 +166,7 @@ export const ELDERS: Elder[] = [
     none: '經過你都問齊了。跟我當年看過的那一個，很像。',
   },
   {
-    id: 'chu', name: '狄俄墨', island: 'keel', pronoun: '他', voted: false,
+    id: 'chu', name: '狄墨', island: 'keel', pronoun: '他', voted: false,
     tag: '63 歲・快腳的・拉莫斯的老醫生', bio: ['外地人。年輕的時候在別的港口守夜裡的救護棚，十年前搬來拉莫斯，船塢一出事就是他先到。', '說話短，站著不坐。'],
     knack: '危險徵象：一進門先看呼吸、意識、生命徵象，先問等不等得了、要不要叫人。', blind: '太急。每一位都當成最壞的那一種，病史和說明都跳過。',
     motto: '先看他等不等得了。', sec: 10,
@@ -179,7 +179,7 @@ export const ELDERS: Elder[] = [
     none: '要命的地方你都看過了。',
   },
   {
-    id: 'ge', name: '阿瑞忒', island: 'bamboo', pronoun: '她', voted: true,
+    id: 'ge', name: '雅蕾', island: 'bamboo', pronoun: '她', voted: true,
     tag: '81 歲・聽完的・歐吉吉亞的老醫生', bio: ['歐吉吉亞人。在坡頂那間靜室看了四十多年，島上一半的人是她看著長大的。', '一邊縫衣服一邊聽，一句一句問，從來不催。'],
     knack: '隱私和生活：吃什麼藥、家裡有誰、做什麼工作、自己最擔心什麼。', blind: '太相信病人自己的說法，順著他的話問下去，遲遲不去驗證。',
     motto: '讓他說完。', sec: 60,
@@ -196,17 +196,17 @@ export const ELDERS: Elder[] = [
 export const elderOf = (id: string) => ELDERS.find((e) => e.id === id)!;
 
 export const RESIDENTS: Record<string, Resident> = {
-  lan: { id: 'lan', name: '歐邁雅', tag: '本島病室的助理', look: 'r-lan', habit: '每一位病人進門，她都在床尾掛一塊新的紀錄板，上面三格是空的。',
+  lan: { id: 'lan', name: '歐雅', tag: '本島病室的助理', look: 'r-lan', habit: '每一位病人進門，她都在床尾掛一塊新的紀錄板，上面三格是空的。',
     lines: ['她不看病。床單、水壺、紀錄板，都是她在顧。', '「三格都空著，是給你寫的，不是給我。」'] },
-  xi: { id: 'xi', name: '瑙希卡', tag: '斯克里亞診間的接待', look: 'r-xi', habit: '魚市太吵，她聽不清楚的時候，一定請人再說一遍，照原話寫在門口的竹板上。',
+  xi: { id: 'xi', name: '娜希', tag: '斯克里亞診間的接待', look: 'r-xi', habit: '魚市太吵，她聽不清楚的時候，一定請人再說一遍，照原話寫在門口的竹板上。',
     lines: ['魚販的女兒，天沒亮就把診間的門打開。', '「我寫的是他說的，不是我聽到的。這兩個不一樣。」'] },
-  luan: { id: 'luan', name: '埃多忒', tag: '法羅斯修紙的工匠', look: 'r-luan', habit: '泡過水的紙，他晾乾之後，看得清的字照抄，看不清的地方留白，寫上「這裡缺」。',
-    lines: ['淹水之後，是他陪斐米歐把一張一張索引晾在繩子上。', '「看不清的地方不能猜。猜了，下一個人就以為那是真的。」'] },
-  duo: { id: 'duo', name: '門特斯', tag: '拉莫斯工寮的管事', look: 'r-duo', habit: '工寮借出去的每一樣東西，交給誰、什麼時候回來清點，他都寫在門上的板子上。交班的時候一樣一樣念。',
+  luan: { id: 'luan', name: '朵蒂', tag: '法羅斯修紙的工匠', look: 'r-luan', habit: '泡過水的紙，他晾乾之後，看得清的字照抄，看不清的地方留白，寫上「這裡缺」。',
+    lines: ['淹水之後，是他陪費民把一張一張索引晾在繩子上。', '「看不清的地方不能猜。猜了，下一個人就以為那是真的。」'] },
+  duo: { id: 'duo', name: '門特', tag: '拉莫斯工寮的管事', look: 'r-duo', habit: '工寮借出去的每一樣東西，交給誰、什麼時候回來清點，他都寫在門上的板子上。交班的時候一樣一樣念。',
     lines: ['退休的船匠，把工寮讓給公會用，自己顧著門。', '「交出去的東西，沒有說什麼時候回來看，就等於丟了。」'] },
-  lu2: { id: 'lu2', name: '瑪伊拉', tag: '歐吉吉亞靜室的房務', look: 'r-lu', habit: '每一次收房，她都試一次屏風拉不拉得攏、門關不關得緊；關不緊的，交代下一班修好才能用。',
+  lu2: { id: 'lu2', name: '瑪拉', tag: '歐吉吉亞靜室的房務', look: 'r-lu', habit: '每一次收房，她都試一次屏風拉不拉得攏、門關不關得緊；關不緊的，交代下一班修好才能用。',
     lines: ['靜室的屏風和門，是她在顧。', '「屏風拉不攏，人家就不會說。這不是小事。」'] },
 };
 
-/** 某一章的長老（第一章是會首埃吉普提歐） */
+/** 某一章的長老（第一章是會首埃普） */
 export const elderOfChapter = (ch: number) => ELDERS.find((e) => ISLANDS[e.island].chapter === ch)!;

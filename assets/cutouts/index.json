@@ -196,79 +196,79 @@
     "role": "病人・71 歲・燈塔的守燈人・胸痛"
   },
   "elder-nie.png": {
-    "name": "埃吉普提歐",
+    "name": "埃普",
     "role": "五島長老會・72 歲・手粗的會首・五島長老會"
   },
   "elder-lu.png": {
-    "name": "瑙西克拉",
+    "name": "諾可",
     "role": "五島長老會・66 歲・數潮的・斯克里亞的老醫生"
   },
   "elder-guan.png": {
-    "name": "涅斯托",
+    "name": "聶思",
     "role": "五島長老會・77 歲・話長的・法羅斯的老醫生"
   },
   "elder-chu.png": {
-    "name": "狄俄墨",
+    "name": "狄墨",
     "role": "五島長老會・63 歲・快腳的・拉莫斯的老醫生"
   },
   "elder-ge.png": {
-    "name": "阿瑞忒",
+    "name": "雅蕾",
     "role": "五島長老會・81 歲・聽完的・歐吉吉亞的老醫生"
   },
   "resident-lan.png": {
-    "name": "歐邁雅",
+    "name": "歐雅",
     "role": "常駐的人・本島病室的助理"
   },
   "resident-xi.png": {
-    "name": "瑙希卡",
+    "name": "娜希",
     "role": "常駐的人・斯克里亞診間的接待"
   },
   "resident-luan.png": {
-    "name": "埃多忒",
+    "name": "朵蒂",
     "role": "常駐的人・法羅斯修紙的工匠"
   },
   "resident-duo.png": {
-    "name": "門特斯",
+    "name": "門特",
     "role": "常駐的人・拉莫斯工寮的管事"
   },
   "resident-lu2.png": {
-    "name": "瑪伊拉",
+    "name": "瑪拉",
     "role": "常駐的人・歐吉吉亞靜室的房務"
   },
   "guild-mentor.png": {
-    "name": "蒙托拉",
+    "name": "孟拓",
     "role": "公會・資深專科護理師"
   },
   "guild-doctor.png": {
-    "name": "馬卡翁",
+    "name": "馬凱",
     "role": "公會・值班醫師"
   },
   "guild-archivist.png": {
-    "name": "斐米歐",
+    "name": "費民",
     "role": "公會・檔案員"
   },
   "hero-cheng.png": {
-    "name": "伊安忒",
+    "name": "伊安",
     "role": "主角・善記的・內科病房出身"
   },
   "hero-yuan.png": {
-    "name": "阿克西翁",
+    "name": "艾克",
     "role": "主角・快腳的・急診出身"
   },
   "hero-zhi.png": {
-    "name": "帕西婭",
+    "name": "帕希",
     "role": "主角・善聽的・社區巡診出身"
   },
   "hero-heng.png": {
-    "name": "帕特羅",
+    "name": "柏卓",
     "role": "主角・手穩的・外科病房出身"
   },
   "hero-mu.png": {
-    "name": "歐芙羅",
+    "name": "芙蘿",
     "role": "主角・溫言的・兒科病房出身"
   },
   "hero-qiao.png": {
-    "name": "克呂提婭",
+    "name": "克莉",
     "role": "主角・數息的・加護病房出身"
   }
 }

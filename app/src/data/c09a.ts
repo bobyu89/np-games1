@@ -103,7 +103,7 @@ export const C09A: CaseSpec = {
     { id: 'e-blame', text: '止痛藥粉怎麼可以空著肚子、一天吃兩三包？這樣吃，胃當然會出血。下次不舒服要先來問，不要自己亂買藥吃。', ok: false, note: '責備只會讓他下次更不敢說。藥的事，等他穩定了再好好談。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-blood', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -114,7 +114,7 @@ export const C09A: CaseSpec = {
     watchWorse: '寧樺突然側過身，吐出一大口暗紅色的血。他的嘴唇發白；叫他，回得很慢。',
     worsen: '……好暈……眼前都是黑的……',
     stepIn: '我先敲鐘了。他又吐血了，血壓在掉。這個不能等。',
-    called: '鐘響了。馬卡翁醫師馬上到。管路和監測先準備好。',
+    called: '鐘響了。馬凱醫師馬上到。管路和監測先準備好。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。血先備，點滴我來開，內視鏡我來聯絡。你有量站起來的血壓，我就知道他流了多少。',
     reportWeak: '「頭暈、拉肚子」我聽不出有多急。大便什麼顏色？血壓和心跳多少？站起來呢？下次先講這三樣。',

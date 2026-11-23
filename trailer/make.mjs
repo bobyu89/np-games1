@@ -71,7 +71,7 @@ async function capture() {
     for (const [name, w, h] of CUTS) {
       const dir = join(build, name, 'assets'); mkdirSync(dir, { recursive: true });
       const p = await b.newPage({ viewport: { width: w, height: h } });
-      // 不錄任何病人：霧港（你在碼頭）、公會大廳（蒙托拉、你、斐米歐），最後回到霧港
+      // 不錄任何病人：霧港（你在碼頭）、公會大廳（孟拓、你、費民），最後回到霧港
       await clip(p, 'title', 5.2, join(dir, 'title.mp4'));
       await clip(p, 'hall', 5.2, join(dir, 'hall.mp4'));
       await clip(p, 'title', 13.2, join(dir, 'home.mp4'), () => null, 9);

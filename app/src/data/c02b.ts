@@ -101,7 +101,7 @@ export const C02B: CaseSpec = {
     { id: 'e-blame', text: '這都是抽菸抽出來的，在煙裡做了四十年又一直不戒，現在才會喘成這樣。', ok: false, note: '責備不會讓他現在好一點，還會讓他之後不敢說實話。戒菸要談，但不是現在，也不是這樣談。' },
   ],
 
-  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，蒙托拉接手
+  // 下了診斷之後：兩分鐘內沒有人知道，他會變差；五分鐘還沒有，孟拓接手
   timeline: { worsenAfter: 120, stepInAfter: 300, doctorDelay: 90 },
   safety: [{ type: 'call', points: 6 }, { type: 'order', test: 't-cxr', within: 180, points: 3 }],
   readsNeeded: 6,
@@ -112,7 +112,7 @@ export const C02B: CaseSpec = {
     watchWorse: '霍樟的頭越垂越低，叫他要叫兩聲才抬頭。',
     worsen: '……頭……好重……',
     stepIn: '我先敲鐘了。血氧 86% 的人，不能等你把話想完。',
-    called: '值班鐘響了。馬卡翁醫師馬上到，你繼續。',
+    called: '值班鐘響了。馬凱醫師馬上到，你繼續。',
     doctorArrives: '我到了。告訴我重點。',
     reportGood: '收到。氧氣照你說的調著給，不要衝高。片子和血氣我來看，藥我來開。你留在他旁邊，注意他有沒有變得想睡。',
     reportWeak: '我聽不出是哪一種喘，也不知道血氧多少。下次先講這兩樣。我先看病人。',

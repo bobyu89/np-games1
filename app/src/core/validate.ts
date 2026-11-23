@@ -37,12 +37,12 @@ export function validateCase(c: CaseDef): string[] {
 
   // 安全行動
   const tl = c.timeline;
-  if (tl.worsenAfter !== undefined && tl.stepInAfter !== undefined && !(tl.worsenAfter < tl.stepInAfter)) errs.push('病況變差的時間要早於蒙托拉接手的時間');
+  if (tl.worsenAfter !== undefined && tl.stepInAfter !== undefined && !(tl.worsenAfter < tl.stepInAfter)) errs.push('病況變差的時間要早於孟拓接手的時間');
   if (!c.safety.length) errs.push('沒有宣告任何安全行動');
   if (Math.abs(c.safety.reduce((n, r) => n + r.points, 0) - 9) > 0.001) errs.push('安全行動的分數加起來要是 9 分');
   c.safety.forEach((r) => {
     if (r.type === 'call' && tl.worsenAfter === undefined) errs.push('要求在變差之前通報，卻沒有寫變差的時間');
-    if (r.type === 'call' && (!c.vitals.worse || !c.lines.worsen || !c.lines.stepIn)) errs.push('會變差的病例要寫變差後的生命徵象、病人的話和蒙托拉接手的話');
+    if (r.type === 'call' && (!c.vitals.worse || !c.lines.worsen || !c.lines.stepIn)) errs.push('會變差的病例要寫變差後的生命徵象、病人的話和孟拓接手的話');
     if (r.type === 'order' && !test.has(r.test)) errs.push('安全行動指到不存在的檢查：' + r.test);
     if (r.type === 'exclude') r.forms.forEach((f) => {
       if (!form.has(f)) errs.push('安全行動要排除不存在的診斷：' + f);
