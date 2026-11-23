@@ -79,7 +79,9 @@ export async function run({ schedule, token = '', date = taipeiDate(), id = '', 
   if (alreadyPosted(recent.data ?? [], entry)) { log('@' + me.username + ' 上面已經有這一則，不重複發。'); return 'exists'; }
   // 兩步：先交出圖和文字，等 Threads 處理好，再發布。試跑做完第一步就停：
   // 發文的權限對不對、Threads 抓不抓得到圖，都是第一步才知道的
-  const box = await call('POST', '/' + me.id + '/threads', video ? { media_type: 'VIDEO', video_url: media, text: entry.text } : { media_type: 'IMAGE', image_url: media, text: entry.text });
+  const params = video ? { media_type: 'VIDEO', video_url: media, text: entry.text } : { media_type: 'IMAGE', image_url: media, text: entry.text };
+  if (entry.tag) params.topic_tag = entry.tag; // 主題標籤：一則只能一個
+  const box = await call('POST', '/' + me.id + '/threads', params);
   let ready = false;
   // 圖通常幾秒就好；影片要轉檔，最多等五分鐘
   for (let i = 0; i < (video ? 30 : 12) && !ready; i++) {

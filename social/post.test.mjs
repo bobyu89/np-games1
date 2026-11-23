@@ -31,6 +31,10 @@ test('日程：每日一案 01–10 照舊，接著歸航記一天一則、日�
 
 test('歸航記：拿掉口試倒數；公告沒有日期、附前導片，只能指定發', () => {
   for (const d of schedule.filter((x) => x.head)) assert.doesNotMatch(d.text, /口試倒數|口試就是今天/);
+  for (const d of schedule.filter((x) => x.head?.startsWith('【歸航記'))) assert.equal(d.tag, '護理', headOf(d) + ' 沒有掛「護理」');
+  for (const d of schedule.filter((x) => x.tag)) assert.ok(d.tag.length <= 50 && !/[.&]/.test(d.tag), '主題標籤不合 Threads 的規定：' + d.tag);
+  const ai = pickId(schedule, 'ai-build');
+  assert.ok(ai && ai.date === null && ai.tag === 'AI' && ai.video === 'social/trailer-vertical.mp4');
   const launch = pickId(schedule, 'launch-guihang');
   assert.ok(launch && launch.date === null && launch.video === 'social/trailer-vertical.mp4');
   assert.equal(pick(schedule, '2026-11-23').id, 'peril-1');
@@ -83,7 +87,13 @@ test('整段流程（假的 Threads）：試跑做到發布的前一步；真的
     if (u.pathname.endsWith('/debug_token')) { assert.equal(params.get('input_token'), 'secret-token'); return json({ data: { type: 'USER', is_valid: true, issued_at: 1794567600, expires_at: 1799751600, scopes: ['threads_basic', 'threads_content_publish'] } }); }
     if (u.pathname.endsWith('/42/threads') && method === 'GET') return json({ data: posts });
     if (u.pathname.endsWith('/42/threads') && method === 'POST') {
-      if (params.get('media_type') === 'VIDEO') { assert.match(params.get('video_url'), /\/social\/trailer-vertical\.mp4$/); assert.match(params.get('text'), /^【霧脈公會：歸航記】/); return json({ id: 'box1' }); }
+      if (params.get('media_type') === 'VIDEO') {
+        assert.match(params.get('video_url'), /\/social\/trailer-vertical\.mp4$/);
+        if (params.get('text').startsWith('【霧脈公會：跟 AI')) assert.equal(params.get('topic_tag'), 'AI');
+        else { assert.match(params.get('text'), /^【霧脈公會：歸航記】/); assert.equal(params.get('topic_tag'), null, '公告沒有標籤'); }
+        return json({ id: 'box1' });
+      }
+      assert.equal(params.get('topic_tag'), null, '每日一案 02 沒有標籤');
       assert.equal(params.get('media_type'), 'IMAGE'); assert.match(params.get('image_url'), /\/social\/02\.jpg$/); return json({ id: 'box1' });
     }
     if (u.pathname.endsWith('/box1')) return json({ status: boxStatus, error_message: boxStatus === 'ERROR' ? 'FAILED_DOWNLOADING_IMAGE' : undefined });
@@ -112,6 +122,8 @@ test('整段流程（假的 Threads）：試跑做到發布的前一步；真的
     assert.deepEqual(calls.filter((c) => c.startsWith('POST')), ['POST /v1.0/42/threads', 'POST /v1.0/42/threads_publish']);
     posts = [{ text: pickId(schedule, 'launch-guihang').text }];
     assert.equal(await main({ THREADS_ACCESS_TOKEN: 'secret-token', POST_ID: 'launch-guihang' }, quiet), 'exists', '公告發過就不再發');
+    posts = [];
+    assert.equal(await main({ THREADS_ACCESS_TOKEN: 'secret-token', POST_ID: 'ai-build' }, quiet), 'posted');
     assert.equal(await main({ THREADS_ACCESS_TOKEN: 'secret-token', POST_ID: 'nope' }, quiet), 'none');
     fail = true;
     await assert.rejects(main(env, quiet), (e) => !String(e.message).includes('secret-token') && String(e.message).includes('***'));
