@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CASES, COMPLAINTS } from '../data/index.ts';
-import { PERILS, CANTOS } from '../data/odyssey.ts';
+import { BIAS_REFS, PERILS, CANTOS } from '../data/odyssey.ts';
 import { idealActions, run } from './autoplay.ts';
 import { perilOf } from './perils.ts';
 import type { CaseDef, Session } from './types.ts';
@@ -62,5 +62,12 @@ test('每一劫都有陷阱的名字：認知偏誤照 Croskerry（2003）的英
   for (const p of Object.values(PERILS)) {
     assert.ok(p.bias.name && p.bias.en && p.bias.what.endsWith('。'), p.complaint);
     assert.ok(p.bias.kind === 'bias' || p.bias.kind === 'habit', p.complaint);
+  }
+});
+
+test('每一劫的陷阱名字都有出處（有 DOI 的文獻）', () => {
+  for (const p of Object.values(PERILS)) {
+    const r = BIAS_REFS[p.bias.ref];
+    assert.ok(r && r.doi && r.short && r.text, p.complaint + ' 沒有出處');
   }
 });

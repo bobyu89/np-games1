@@ -1,5 +1,5 @@
 // 病例 C03D：鄔桃，腹痛，診斷是大腸憩室（急性憩室炎）。
-// 虛構的教學病例，依文末的文獻撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的文獻撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：左下腹痛了好幾天、排便改變的年長者。診斷之外，還要聽見她真正在怕什麼。
 import type { CaseSpec } from '../core/module.ts';
 import { PEERY_2021, REVIEW_NOTE, TEXT_RESULT } from './shared.ts';

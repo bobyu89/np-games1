@@ -1,5 +1,5 @@
 // 病例 C02C：柯蒲，喘，診斷是肺部感染（社區型肺炎）。
-// 虛構的教學病例，依文末的文獻撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的文獻撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：發燒加上「只有一邊」的發現。兩邊對稱的是水或氣，只有一邊的要想感染。
 import type { CaseSpec } from '../core/module.ts';
 import { METLAY_2019, REVIEW_NOTE, TEXT_RESULT, WANG_2005 } from './shared.ts';

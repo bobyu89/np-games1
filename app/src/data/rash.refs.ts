@@ -1,13 +1,13 @@
 // 皮膚疹子（c10）用到的文獻，和要交給目錄整合的資料。書目資料用 PubMed 核對過。
-export const SAMPSON_2006 = { id: 'sampson2006', text: 'Sampson, H. A., et al. (2006). Second symposium on the definition and management of anaphylaxis: Summary report—Second National Institute of Allergy and Infectious Disease/Food Allergy and Anaphylaxis Network symposium. Journal of Allergy and Clinical Immunology, 117(2), 391–397.', doi: '10.1016/j.jaci.2005.12.1303' };
-export const DWORKIN_2007 = { id: 'dworkin2007', text: 'Dworkin, R. H., et al. (2007). Recommendations for the management of herpes zoster. Clinical Infectious Diseases, 44(Suppl. 1), S1–S26.', doi: '10.1086/510206' };
+export const CARDONA_2020 = { id: 'cardona2020', text: 'Cardona, V., Ansotegui, I. J., Ebisawa, M., El-Gamal, Y., Fernandez Rivas, M., Fineman, S., Geller, M., Gonzalez-Estrada, A., Greenberger, P. A., Sanchez Borges, M., Senna, G., Sheikh, A., Tanno, L. K., Thong, B. Y., Turner, P. J., & Worm, M. (2020). World Allergy Organization anaphylaxis guidance 2020. World Allergy Organization Journal, 13(10), 100472.', doi: '10.1016/j.waojou.2020.100472' };
+export const WERNER_2017 = { id: 'werner2017', text: 'Werner, R. N., et al. (2017). European consensus-based (S2k) guideline on the management of herpes zoster, Part 2: Treatment. Journal of the European Academy of Dermatology and Venereology, 31(1), 20–29.', doi: '10.1111/jdv.13957' };
 export const NEUNERT_2019 = { id: 'neunert2019', text: 'Neunert, C., et al. (2019). American Society of Hematology 2019 guidelines for immune thrombocytopenia. Blood Advances, 3(23), 3829–3866.', doi: '10.1182/bloodadvances.2019000966' };
 export const ARINGER_2019 = { id: 'aringer2019', text: 'Aringer, M., et al. (2019). 2019 European League Against Rheumatism/American College of Rheumatology classification criteria for systemic lupus erythematosus. Annals of the Rheumatic Diseases, 78(9), 1151–1159.', doi: '10.1136/annrheumdis-2018-214819' };
 
 /** 教學重點對過摘要的文獻 */
 export const REF_CHECK_ADD: Record<string, { level: 'abstract'; note?: string }> = {
-  sampson2006: { level: 'abstract', note: '摘要只說明會議訂了臨床的判斷準則；準則的內容沒有對到原文，遊戲裡寫在回顧的文字、不掛在這篇文獻上' },
-  dworkin2007: { level: 'abstract', note: '摘要支持「抗病毒藥是第一線」；幾小時之內要開始用藥沒有對到原文，遊戲裡沒有寫死時間' },
+  cardona2020: { level: 'abstract', note: '摘要支持「肌肉注射腎上腺素是第一線治療」「發作過的人要轉給專科，找原因、學預防和自我處理」；2026-11-24 取代 Sampson 2006' },
+  werner2017: { level: 'abstract', note: '摘要支持「抗病毒藥、止痛和局部治療，目的是縮短病程、減輕疼痛、減少帶狀疱疹後神經痛」；幾小時之內要開始用藥沒有寫死；2026-11-24 取代 Dworkin 2007' },
   neunert2019: { level: 'abstract' },
   aringer2019: { level: 'abstract' },
 };

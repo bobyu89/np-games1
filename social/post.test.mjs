@@ -21,7 +21,10 @@ test('日程：每日一案 01–10 照舊，接著歸航記一天一則、日�
   for (const d of schedule) {
     assert.ok(d.text.length <= 500, headOf(d) + ' 超過 500 字元');
     assert.ok(d.text.startsWith(headOf(d)), headOf(d) + ' 的開頭不對');
-    assert.ok(d.text.includes('還沒經過臨床老師審查'), headOf(d) + ' 少了還沒審查的說明');
+    // 2026-11-25 起改成依文獻的說法；之前已經發出去的照當時的文字留著
+    const posted = (d.date && d.date <= '2026-11-24') || d.id === 'launch-guihang' || d.id === 'ai-build';
+    assert.ok(d.text.includes(posted ? '還沒經過臨床老師審查' : '依文獻與臨床指引撰寫'), headOf(d) + ' 少了內容來源的說明');
+    assert.ok(d.text.includes('不能'), headOf(d) + ' 少了不能取代臨床判斷（或不能當教材）的提醒');
     const file = join(here, '../app/public', d.image ?? d.video);
     assert.ok(existsSync(file), '少了檔：' + (d.image ?? d.video));
     assert.ok(statSync(file).size < (d.video ? 1024 : 8) * 1024 * 1024, file + ' 太大');

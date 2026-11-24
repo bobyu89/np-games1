@@ -1,5 +1,5 @@
 // 病例 C03A：方苓，腹痛，診斷是膽囊與膽道（急性膽囊炎）。
-// 虛構的教學病例，依文末的文獻撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的文獻撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：上腹痛不能只看位置。用「怎麼開始、痛到哪裡、摸起來怎樣」把膽、胰臟、胃分開。
 import type { CaseSpec } from '../core/module.ts';
 import { GULATI_2021, REVIEW_NOTE, TEXT_RESULT, YOKOE_2018 } from './shared.ts';

@@ -99,7 +99,7 @@ export function Night({ hero, onDone, onQuit, rounds = NIGHT, title = '值班夜
                   {n.teach.map((t) => <p key={t.text} className="dim">{t.text}<sup>{NIGHT_REFS.findIndex((x) => x.id === t.ref) + 1}</sup></p>)}
                 </div>
               ))}
-              <p className="dim">情境和數字是設計出來的，還沒有經過臨床老師審查。文獻：</p>
+              <p className="dim">情境和數字是依文獻設計的練習題，不能取代臨床判斷。文獻：</p>
               <ol className="refs">{NIGHT_REFS.map((x) => <li key={x.id}>{x.text} <a href={'https://doi.org/' + x.doi} target="_blank" rel="noreferrer">https://doi.org/{x.doi}</a></li>)}</ol>
               <button type="button" className="act demo" onClick={() => onDone(right)}>回公會</button>
             </div>

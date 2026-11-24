@@ -1,5 +1,5 @@
 // 病例 C03C：龔椿，腹痛，診斷是胰臟與胃（急性胰臟炎）。
-// 虛構的教學病例，依文末的文獻撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的文獻撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：腹痛的人也會不穩定。一直吐、心跳快、血壓偏低，表示水分已經不夠了。
 import type { CaseSpec } from '../core/module.ts';
 import { BANKS_2013, GULATI_2021, REVIEW_NOTE, TEXT_RESULT } from './shared.ts';

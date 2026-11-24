@@ -99,7 +99,7 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
                 <p className={pr.trapped ? 'down' : 'up'}>{pr.why}</p>
                 {pr.trapped && <p>{pr.peril.next}</p>}
                 {trial?.axes && sc.total >= TRIAL_PASS && <p className="up">十二斧之試：{c.shadow.name}的那一把斧頭亮了。</p>}
-                <p className="dim">這一段不計分。病室裡不會出現劫的名字；它是讓你把這個主訴最容易掉進去的陷阱記住。陷阱的名字依 {pr.peril.bias.kind === 'bias' ? 'Croskerry（2003）' : pr.peril.complaint === 'excreta' ? 'Barry 等人（2000）' : '常見的身體評估疏漏'}整理，跟病例一樣還沒經過臨床老師審查。{pr.peril.bias.kind === 'bias' ? <> <a href={'https://doi.org/' + BIAS_REFS[0].doi} target="_blank" rel="noreferrer">出處</a></> : pr.peril.complaint === 'excreta' ? <> <a href={'https://doi.org/' + BIAS_REFS[1].doi} target="_blank" rel="noreferrer">出處</a></> : null}</p>
+                <p className="dim">這一段不計分。病室裡不會出現劫的名字；它是讓你把這個主訴最容易掉進去的陷阱記住。陷阱的名字依{' '}<a href={'https://doi.org/' + BIAS_REFS[pr.peril.bias.ref].doi} target="_blank" rel="noreferrer">{BIAS_REFS[pr.peril.bias.ref].short}</a>整理。</p>
               </div>
             )}
             {cq && (

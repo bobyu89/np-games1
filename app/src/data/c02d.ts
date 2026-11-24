@@ -1,9 +1,9 @@
 // 病例 C02D：岳楊，喘，診斷是突發急症（自發性氣胸）。
-// 虛構的教學病例，依文末的文獻撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的文獻撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：一下子就喘起來的年輕人。一邊敲起來特別響、卻聽不到呼吸音，是什麼意思；還有，什麼時候不能再等。
 // 地點不在公會：他在船上補帆的時候發作，下不了船，所以是出診到碼頭的貨棧。
 import type { CaseSpec } from '../core/module.ts';
-import { MACDUFF_2010, REVIEW_NOTE, TEXT_RESULT } from './shared.ts';
+import { REVIEW_NOTE, ROBERTS_2023, TEXT_RESULT } from './shared.ts';
 
 export const C02D: CaseSpec = {
   format: 3,
@@ -133,9 +133,9 @@ export const C02D: CaseSpec = {
       '戒菸很重要，他自己也知道。等他能好好呼吸的時候再談，他才聽得進去。',
     ],
     teaching: [
-      { text: '抽菸會增加自發性氣胸的風險；有過一次氣胸的人，也比較容易再發。', ref: 'macduff2010' },
-      { text: '氣胸如果開始壓迫（越來越喘、血壓掉、頸靜脈怒張、氣管偏到另一邊），是要馬上處理的急症，不等 X 光。', ref: 'macduff2010' },
+      { text: '抽菸會增加自發性氣胸的風險；有過一次氣胸的人，也比較容易再發。', ref: 'roberts2023' },
+      { text: '氣胸如果開始壓迫（越來越喘、血壓掉、頸靜脈怒張、氣管偏到另一邊），是要馬上處理的急症，不等 X 光。', ref: 'roberts2023' },
     ],
-    references: [MACDUFF_2010],
+    references: [ROBERTS_2023],
   },
 };

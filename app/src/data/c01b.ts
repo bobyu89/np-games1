@@ -1,5 +1,5 @@
 // 病例 C01B：簡晴，胸痛，診斷是肌肉骨骼（同一隻劫影、不同的診斷）。
-// 虛構的教學病例，依文末的指引撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的指引撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：病人穩定的時候，怎麼把危險的可能一個一個排除，再說「這次不是」。
 import type { CaseSpec } from '../core/module.ts';
 import { GULATI_2021, REVIEW_NOTE, TEXT_RESULT, WHY_ARMS_EQUAL, WHY_NO_IMMOB, WHY_NO_WEIGHT_LOSS } from './shared.ts';

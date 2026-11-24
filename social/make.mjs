@@ -69,7 +69,7 @@ const html = (c, no, cd) => `<!doctype html><meta charset="utf-8"><style>${CSS}<
   <h1>${esc(c.lines[0].replace(/。$/, ''))}<small>主訴：${esc(c.complaint)}</small></h1>
   <div class="paper card">${c.lines.slice(1).map(esc).join('')}</div>
   <div class="ask"><b>進門之前，先想三件事</b><ol>${c.prompts.map((p) => '<li>' + esc(p) + '</li>').join('')}</ol></div>
-  <div class="foot"><span class="kick">完整的問診、評估和回顧在《歸航記》</span><span class="url">${LINK.replace('https://', '')}</span><span class="note">病例是草稿，還沒有經過臨床老師審查，不能當教材</span></div>
+  <div class="foot"><span class="kick">完整的問診、評估和回顧在《歸航記》</span><span class="url">${LINK.replace('https://', '')}</span><span class="note">病例依文獻與臨床指引撰寫，僅供練習，不能取代臨床判斷</span></div>
   <script type="module">
     import { createWard } from '/art/ward.js';
     await document.fonts.ready;
@@ -89,7 +89,7 @@ export const caption = (c, no, cd) => [
   '完整的問診、評估和回顧在遊戲《歸航記》裡，免費、手機直接玩：',
   LINK,
   '',
-  '＊病例是草稿，還沒經過臨床老師審查，不能當教材。',
+  '＊病例依文獻與臨床指引撰寫，僅供練習，不能取代臨床判斷。',
 ].join('\n');
 
 // 每一劫的介紹：劫影、神話、在霧海裡是哪個症狀、陷阱、那座島的四位病人
@@ -106,7 +106,7 @@ const introHtml = (p, no) => `<!doctype html><meta charset="utf-8"><style>${CSS}
   <h1>在霧海裡，這一劫是 <b>${esc(p.complaint)}</b></h1>
   <div class="paper card"><b>最容易掉進去的陷阱：</b>${esc(p.trap)}</div>
   <div class="ask"><b>${esc(p.island)}的病人，接下來幾天一位一位來</b><div class="pts">${p.patients.map((c) => `<figure><img src="/cut/patient-${c.id}.png" /><figcaption>${esc(c.name)}</figcaption></figure>`).join('')}</div></div>
-  <div class="foot"><span class="kick">《歸航記》：專科護理師的臨床推理之旅</span><span class="url">${LINK.replace('https://', '')}</span><span class="note">病例是草稿，還沒有經過臨床老師審查，不能當教材</span></div>
+  <div class="foot"><span class="kick">《歸航記》：專科護理師的臨床推理之旅</span><span class="url">${LINK.replace('https://', '')}</span><span class="note">病例依文獻與臨床指引撰寫，僅供練習，不能取代臨床判斷</span></div>
   <script type="module">
     import { createWard } from '/art/ward.js';
     await document.fonts.ready; await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
@@ -125,7 +125,7 @@ export const introCaption = (p, no) => [
   '遊戲免費、手機直接玩：',
   LINK,
   '',
-  '＊病例是草稿，還沒經過臨床老師審查，不能當教材。',
+  '＊病例依文獻與臨床指引撰寫，僅供練習，不能取代臨床判斷。',
 ].join('\n');
 
 // 公告：這一次的更新，附前導片

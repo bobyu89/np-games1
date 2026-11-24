@@ -1,5 +1,5 @@
 // 病例 C02A：駱松，喘，診斷是心因性（心衰竭惡化）。
-// 虛構的教學病例，依文末的文獻撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的文獻撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：慢慢變喘的人，用病史和身體評估分出「水積在肺裡」和「氣吐不出去」。
 import type { CaseSpec } from '../core/module.ts';
 import { HEIDENREICH_2022, REVIEW_NOTE, TEXT_RESULT, WANG_2005 } from './shared.ts';
