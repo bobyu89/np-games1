@@ -120,7 +120,7 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
       <p>這一版：{__BUILD__}</p>
       {pwa.update ? <button type="button" className="pick on" onClick={() => { sfx.done(); applyUpdate(); }}>新版準備好了，現在換上</button>
         : pwa.supported && <button type="button" className="pick" disabled={checking} onClick={check}>{checking ? '檢查中……' : '檢查有沒有新版'}</button>}
-      <p className="dim">更新不會動到進度。病例都還是草稿，還沒有經過臨床老師審查。</p>
+      <p className="dim">更新不會動到進度。病例依文獻與臨床指引撰寫，僅供練習，不能取代臨床判斷。</p>
 
       <h3>使用統計</h3>
       {!statsBuilt ? <p className="dim">這一版不會回傳任何資料。</p> : <>

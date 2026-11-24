@@ -1,5 +1,5 @@
 // 病例 C02B：霍樟，喘，診斷是氣道阻塞（慢性阻塞性肺病急性惡化）。
-// 虛構的教學病例，依文末的文獻撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的文獻撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：同樣是喘，「吐不出去」和「吸不飽」不一樣；還有，氧氣不是給越多越好。
 import type { CaseSpec } from '../core/module.ts';
 import { AUSTIN_2010, REVIEW_NOTE, TEXT_RESULT, WANG_2005 } from './shared.ts';

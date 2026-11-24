@@ -1,5 +1,5 @@
 // 病例 C01A：林秋，胸痛，診斷是心因性（急性冠心症，危險的那一版）。
-// 虛構的教學病例，依文末的指引撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的指引撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：整套流程照順序做完，下了診斷就馬上通報、提出心電圖。
 import type { CaseSpec } from '../core/module.ts';
 import { GULATI_2021, RAO_2025, REVIEW_NOTE, TEXT_RESULT, WHY_ARMS_EQUAL, WHY_NO_IMMOB, WHY_NO_WEIGHT_LOSS } from './shared.ts';

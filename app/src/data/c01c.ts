@@ -1,5 +1,5 @@
 // 病例 C01C：莫桐，胸痛，診斷是胸腔腫瘤（沒看過的說法：不是幾十分鐘，是一個多月）。
-// 虛構的教學病例，依文末的文獻撰寫，還沒經過臨床老師審查，不能當教材。
+// 虛構的教學病例，依文末的文獻撰寫，僅供練習，不能取代臨床判斷。
 // 這一關要練的是：病人不急，但不能漏。把警訊一條一條收齊，回報清楚，說明的時候不搶著下結論。
 import type { CaseSpec } from '../core/module.ts';
 import { BAILE_2000, GULATI_2021, HAMILTON_2005, REVIEW_NOTE, TEXT_RESULT } from './shared.ts';

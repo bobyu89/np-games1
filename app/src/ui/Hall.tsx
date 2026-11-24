@@ -307,7 +307,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <li>不會寫進圖鑑，也不算完成委託。之後在委託板遇到同一位病人，會覺得眼熟，這沒有關係。</li>
             {finaleDone(save) && <li><b>十二斧之試。</b>在一種劫影的試弓裡及格一次，那一把斧頭就亮；還沒亮的那幾種，比較容易抽到。現在亮了 {axesLit(save).length}／12 把。</li>}
           </ul>
-          <p className="dim">遊戲的分數是訓練用的，不代表正式甄審的成績。病例都還是草稿，還沒有經過臨床老師審查。</p>
+          <p className="dim">遊戲的分數是訓練用的，不代表正式甄審的成績。病例依文獻與臨床指引撰寫，僅供練習，不能取代臨床判斷。</p>
           {save.trials.length > 0 && <>
             <h3>考過的</h3>
             <ul className="path">{save.trials.slice(0, 6).map((t) => <li key={t.at} className={t.score >= TRIAL_PASS ? 'up' : 'down'}><b>{new Date(t.at).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' })}</b>　{caseById(t.caseId).patient.name}（{caseById(t.caseId).complaintName}）：{t.score} 分，{t.timeUp ? '時間到' : '用了 ' + Math.floor(t.seconds / 60) + ' 分'}</li>)}</ul>
@@ -391,7 +391,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             {CANTOS.map((k) => cantoOpen(k.id, save)
               ? <details key={k.id} className="canto paper"><summary><b>{k.no}　{k.title}</b><span>{k.perils.length ? k.perils.map((id) => PERILS[id].name).join('、') : k.id === 'axes' ? '亮了 ' + axesLit(save).length + '／12 把' : '終章'}</span></summary><CantoBody k={k} save={save} /></details>
               : <div key={k.id} className="leaf locked"><b>{k.no}　？？？</b><p className="dim">{k.island ? CHAPTERS[ISLANDS[k.island].chapter] + '開始之後' : '終章走完之後'}</p></div>)}
-            <p className="dim">劫的陷阱是依臨床推理常見的錯誤寫的，跟病例一樣，還沒有經過臨床老師審查。</p>
+            <p className="dim">劫的陷阱是依臨床推理常見的錯誤寫的，陷阱的名字和出處在每一張委託的回顧裡。</p>
           </>}
           {tab === 'places' && <>
             <p className="dim">去過的地方會記在這裡。一座島一間公會的診間，在那座島結過一張委託才會打開；出診的委託，會帶你到公會以外的地方。</p>

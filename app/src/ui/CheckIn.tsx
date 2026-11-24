@@ -71,7 +71,7 @@ export function TrapRecordCard({ save }: { save: Save }) {
           </li>
         ))}
       </ul>
-      <p className="dim">只是給你自己看的，不計分。陷阱的名字依 Croskerry（2003）等文獻整理，跟病例一樣還沒經過臨床老師審查。</p>
+      <p className="dim">只是給你自己看的，不計分。陷阱的名字依 Croskerry（2003）等文獻整理。</p>
     </div>
   );
 }

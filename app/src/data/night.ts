@@ -1,7 +1,7 @@
 // 終章「大霧值班夜」的前半：三輪分流。
 // 每一輪有兩三位同時到。玩家只看得到站在門口那十秒鐘看得到的東西，要決定兩件事：先看誰；另一位怎麼交代。
 // 練的是考站以外、值班的時候真的會用到的三件事：排優先順序、交班、回頭重新評估。
-// 都是原則層級的題目，情境和數字是設計出來的，還沒經過臨床老師審查（要請老師看的地方寫在 shared.ts 的 REVIEW_ASKS）。
+// 都是原則層級的題目，情境和數字是依文獻設計的（出處在 NIGHT_REFS）。
 import { BULLARD_2017, MULLER_2018, NG_2011, SMITH_2019, STARMER_2014, THIM_2012 } from './shared.ts';
 
 export interface NightLine { who: 'sys' | 'mentor' | 'doctor' | 'guest'; text: string; name?: string }

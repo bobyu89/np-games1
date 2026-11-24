@@ -70,7 +70,7 @@ export function Title({ save, run, onPlay, onImport, onReset }: Props) {
           <dl className="pairs">{WELCOME.points.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
           <h3>要注意的事</h3>
           <ul>
-            <li><b>病例都還是草稿，還沒有經過臨床老師審查。</b>可以拿來練流程和思考的順序，不能當成教材或臨床的依據。</li>
+            <li><b>病例依文獻與臨床指引撰寫，每一個教學重點都標了出處。</b>可以拿來練流程和思考的順序，不能取代臨床判斷，也不能當成臨床的依據。</li>
             <li>地方和人物是虛構的；症狀、評估、診斷和檢查都照真的來。</li>
             <li>進度存在這台裝置上。想換裝置，可以登入同步，或是到「設定與進度」匯出一份。</li>
             <li>第一次打開要有網路；之後沒有網路也可以玩。</li>
