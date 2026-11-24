@@ -24,6 +24,10 @@ import { Journey } from './Journey.tsx';
 import { CheckInBody, CheckInStrip, TrapRecordCard } from './CheckIn.tsx';
 import { DiaryBody } from './Diary.tsx';
 import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
+import { DrillSheet } from './Drill.tsx';
+import { drillCases } from './drill.ts';
+import { reviewPlan } from './review.ts';
+import { dayKey } from './streak.ts';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
@@ -60,6 +64,22 @@ function CantoBody({ k, save }: { k: Canto; save: Save }) {
   </>;
 }
 /** 十二斧之試：一種劫影一把斧頭，在它的試弓裡及格一次就亮 */
+/** 試弓進場之前的閱題頁 */
+function TrialBrief({ c }: { c: CaseDef }) {
+  return (
+    <>
+      <p className="dim">正式考試在門口有 2 分鐘讀這一頁。這裡不計時：準備好了再進場，進場才開始倒數。</p>
+      <h3>病人</h3>
+      {c.reading.lines.map((l, i) => <p key={i}>{l}</p>)}
+      <h3>你的角色和任務</h3>
+      <p>你是考生，扮演專科護理師；病人由你獨立完成評估，口試委員在旁邊看，不給提示。</p>
+      <p>順序：開場 → 主訴 → 病史 → 系統回顧 → 身體評估 → 說出診斷和要排除的診斷 → 提出檢查、向醫師回報、向病人說明 → 交卷。動手檢查之前，記得先向病人說明。</p>
+      <h3>進門之前，先想三件事</h3>
+      <ul>{c.reading.prompts.map((p, i) => <li key={i}>{p}</li>)}</ul>
+    </>
+  );
+}
+
 function Axes({ save }: { save: Save }) {
   const lit = axesLit(save);
   return <>
@@ -109,6 +129,9 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [story, setStory] = useState<Beat | null>(null);   // 從圖鑑重看的那一段故事
   const [trialSheet, setTrialSheet] = useState(false);     // 試弓：先看規則，再抽題、閱題
   const [drawn, setDrawn] = useState<CaseDef | null>(null); // 抽到的那一位。抽了就不能重抽
+  const [redo, setRedo] = useState<CaseDef | null>(null);   // 錯題複習：用試弓重考的那一位（不是抽的，關掉就放回去）
+  const [drill, setDrill] = useState(false);   // 刻意練習
+  const today = dayKey(Date.now()), plan = reviewPlan(save), due = plan.filter((r) => r.due <= today), soon = plan.filter((r) => r.due > today);
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
   const exam = useSyncExternalStore(examSubscribe, examShown) ? countdownText(daysLeft()) : null;   // 真實的口試日還有幾天
@@ -249,6 +272,18 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 <div className="quest-head">驗收{exam ? '・' + exam : ''}</div>
                 <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>試弓</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
               </>}
+              {plan.length > 0 && <>
+                <div className="quest-head">錯題複習</div>
+                {due.map((r) => { const c = caseById(r.caseId); return (
+                  <button key={r.caseId} type="button" className="quest paper hint" onClick={() => { sfx.page(); if (r.trial) setRedo(c); else setReading(c); }}><i className="seal" aria-hidden="true" /><b>{c.patient.name}（{c.complaintName}）</b><span>{r.why.wrong ? '診斷沒有對到' : ''}{r.why.wrong && r.why.trapped ? '，也' : ''}{r.why.trapped ? '掉進了陷阱' : ''}・{r.trial ? '用試弓重考' : '重接這張委託'}</span><em>第 {r.round} 次複習</em></button>
+                ); })}
+                {!due.length && <div className="side"><span>今天沒有要複習的。下一次：{soon[0].due.slice(5).replace('-', '/')}，{soon.filter((r) => r.due === soon[0].due).length} 位。</span></div>}
+                {due.length > 0 && soon.length > 0 && <div className="side"><span>之後還有 {soon.length} 位，到期再出現。</span></div>}
+              </>}
+              {drillCases(save).length > 0 && <>
+                <div className="quest-head">刻意練習</div>
+                <button type="button" className="quest paper" onClick={() => { sfx.page(); setDrill(true); }}><i className="seal" aria-hidden="true" /><b>一次只練一個環節</b><span>線索解讀・問題摘要・回報的評估，每題馬上有回饋</span><em>不計分</em></button>
+              </>}
               {finaleDone(save) && <><div className="quest-head">十二斧之試</div><div className="paper axes-card"><Axes save={save} /></div></>}
               {CANTOS.filter((k) => !k.island && cantoOpen(k.id, save)).map((k) => (
                 <details key={k.id} className="canto paper"><summary><b>{k.no}　{k.title}</b><span>史詩的篇章・選讀</span></summary><CantoBody k={k} save={save} /></details>
@@ -316,16 +351,16 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
       )}
       {trialSheet && drawn && (
         <Sheet title="試弓：閱題" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { const c = drawn; setDrawn(null); setTrialSheet(false); onTrial(c); }}>進場，開始倒數</button>}>
-          <p className="dim">正式考試在門口有 2 分鐘讀這一頁。這裡不計時：準備好了再進場，進場才開始倒數。</p>
-          <h3>病人</h3>
-          {drawn.reading.lines.map((l, i) => <p key={i}>{l}</p>)}
-          <h3>你的角色和任務</h3>
-          <p>你是考生，扮演專科護理師；病人由你獨立完成評估，口試委員在旁邊看，不給提示。</p>
-          <p>順序：開場 → 主訴 → 病史 → 系統回顧 → 身體評估 → 說出診斷和要排除的診斷 → 提出檢查、向醫師回報、向病人說明 → 交卷。動手檢查之前，記得先向病人說明。</p>
-          <h3>進門之前，先想三件事</h3>
-          <ul>{drawn.reading.prompts.map((p, i) => <li key={i}>{p}</li>)}</ul>
+          <TrialBrief c={drawn} />
         </Sheet>
       )}
+      {redo && (
+        <Sheet title="錯題複習：閱題" onClose={() => setRedo(null)} footer={<button type="button" className="act demo" onClick={() => { const c = redo; setRedo(null); onTrial(c); }}>進場，開始倒數</button>}>
+          <p className="dim">上次這一位沒有過關。隔了幾天再考一次，規則和試弓一樣：15 分鐘、沒有提示。</p>
+          <TrialBrief c={redo} />
+        </Sheet>
+      )}
+      {drill && <DrillSheet save={save} onClose={() => setDrill(false)} />}
       {settings && <Settings save={save} onImport={onImport} onReset={onReset} onReplayIntro={() => { setSettings(false); setBeat(BEATS[0]); setStep(0); }} onClose={() => setSettings(false)} />}
       {statsBuilt && consent === 'ask' && !later && !beat && save.hero !== null && !settings && !reading && !codex && (
         <Sheet title="先問你一件事" onClose={() => setLater(true)} footer={<div className="two"><button type="button" className="act" onClick={() => { sfx.tap(); setConsent('no'); }}>不要回傳</button><button type="button" className="act demo" onClick={() => { sfx.done(); setConsent('yes'); }}>可以回傳</button></div>}>
