@@ -5,6 +5,7 @@ import { ISLANDS, elderOf } from '../data/islands.ts';
 import { shuffled } from '../core/order.ts';
 import type { Board, CaseDef, Clue, Session } from '../core/types.ts';
 import { sfx } from './sound.ts';
+import { WRITE_LEN, WRITE_MAX, formsWritten, matchWritten, splitGuesses } from './freetext.ts';
 
 export function Sheet({ title, onClose, children, footer }: { title: string; onClose(): void; children: ReactNode; footer?: ReactNode }) {
   return (
@@ -32,11 +33,36 @@ function Pick({ on, onClick, children, tone = '' }: { on: boolean; onClick(): vo
 /** 下診斷：一句問題摘要 → 最可能的診斷、還要排除的診斷。證據是你一路解讀下來的線索 */
 export function BoardSheet({ c, s, onSave, onClose }: { c: CaseDef; s: Session; onSave(b: Board): void; onClose(): void }) {
   const [b, setB] = useState<Board>(s.board);
+  // 第一次下診斷：先不看四盞燈，自己寫（可以跳過）。之後回來改，就直接看選項
+  const [writing, setWriting] = useState(!s.board.likely && !s.board.written);
+  const [text, setText] = useState('');
+  const written = b.written ? matchWritten(c.complaint, c.forms, b.written) : null;
+  const hitForms = written ? formsWritten(c.forms, written) : [];
+  if (writing) {
+    const guesses = splitGuesses(text);
+    return (
+      <Sheet title="下診斷：先自己想" onClose={onClose} footer={<div className="two"><button type="button" className="act" onClick={() => { sfx.page(); setWriting(false); }}>跳過，直接選</button><button type="button" className="act demo" disabled={!guesses.length} onClick={() => { sfx.page(); setB({ ...b, written: guesses }); setWriting(false); }}>對照四盞燈</button></div>}>
+        <p>先不看選項：手上這些線索，讓你想到哪些診斷？最可能的、不能漏掉的，都寫下來。</p>
+        <label className="write">
+          <span className="dim">寫病名就好，中文或英文都可以；一行一個，或用頓號分開（最多 {WRITE_MAX} 個）。</span>
+          <textarea rows={4} maxLength={WRITE_MAX * (WRITE_LEN + 1)} value={text} onChange={(e) => setText(e.target.value)} />
+        </label>
+        {guesses.length > 0 && <p className="dim">你寫了 {guesses.length} 個：{guesses.join('、')}。</p>}
+        <p className="dim">這一步不計分，也不會送出去。下一頁會告訴你，你寫的對到四盞燈的哪幾個方向；最後還是要在四盞燈裡選。</p>
+      </Sheet>
+    );
+  }
   const unasked = c.questions.filter((q) => q.weight > 0 && !s.asked.includes(q.id)).map((q) => q.label);
   const unexamined = c.exams.filter((e) => !s.examined.some((k) => k.id === e.id)).map((e) => e.label);
   const readsOf = (form: string) => s.reads.map((r) => ({ r, k: clueOf(c, r.clue) })).filter((x) => x.k.tell!.form === form);
   return (
     <Sheet title="下診斷" onClose={onClose} footer={<button type="button" className="act demo" disabled={!b.likely} onClick={() => onSave(b)}>{b.likely ? '這是我的診斷' : '先選一個最可能的'}</button>}>
+      {written && <>
+        <h3>你先寫的</h3>
+        <ul className="path">{written.map((w) => <li key={w.text} className={w.forms.length ? 'up' : 'none'}>{w.text} → {w.forms.length ? w.forms.map((id) => c.forms.find((f) => f.id === id)!.name).join('、') : '四盞燈都沒對到（可能是寫法不同，或不在這一隻劫影底下）'}</li>)}</ul>
+        <p className="dim">{hitForms.length === c.forms.length ? '四個方向你都想到了。' : '你沒想到的方向：' + c.forms.filter((f) => !hitForms.includes(f.id)).map((f) => f.name).join('、') + '。選之前，也替它們想一想。'}</p>
+      </>}
+
       <h3>一、用一句話說出問題</h3>
       <div className="stack">{shuffled(c.id, c.summaries).map((k) => <Pick key={k.id} on={b.summary === k.id} onClick={() => setB({ ...b, summary: k.id })}>{k.text}</Pick>)}</div>
 
@@ -45,7 +71,7 @@ export function BoardSheet({ c, s, onSave, onClose }: { c: CaseDef; s: Session; 
       <div className="hyps">
         {c.forms.map((f) => (
           <div key={f.id} className="hyp">
-            <span><i className="mark" aria-hidden="true">{f.mark}</i>{f.name}</span>
+            <span><i className="mark" aria-hidden="true">{f.mark}</i>{f.name}{hitForms.includes(f.id) && <small className="wrote">你寫到</small>}</span>
             <Pick tone="likely" on={b.likely === f.id} onClick={() => setB({ ...b, likely: b.likely === f.id ? null : f.id, exclude: b.exclude.filter((k) => k !== f.id) })}>最可能</Pick>
             <Pick tone="exclude" on={b.exclude.includes(f.id)} onClick={() => setB({ ...b, exclude: toggle(b.exclude, f.id, 3), likely: b.likely === f.id ? null : b.likely })}>要排除</Pick>
             <ul>{readsOf(f.id).map(({ k }) => <li key={k.id} className={k.tell!.dir > 0 ? 'up' : 'down'}>{k.tell!.dir > 0 ? '＋' : '－'} {k.text}</li>)}{!readsOf(f.id).length && <li className="none">還沒有線索談到它</li>}</ul>

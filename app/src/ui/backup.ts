@@ -100,6 +100,7 @@ export function validRun(c: CaseDef | undefined, run: Run | null): run is Run {
   if (!c || !run || run.caseId !== c.id) return false;
   const s = run.session as Partial<Session> | null;
   if (!s || s.caseId !== c.id || typeof s.time !== 'number' || ![1, 2, 3, 4].includes(s.phase as number) || !s.board || !Array.isArray(s.board.exclude)) return false;
+  if (s.board.written !== undefined && !(Array.isArray(s.board.written) && s.board.written.every((w) => typeof w === 'string'))) return false;
   const lists = [s.asked, s.examined, s.ordered, s.results, s.clues, s.pending, s.reads, s.commits, s.vitalsLog, s.log];
   if (lists.some((l) => !Array.isArray(l))) return false;
   const has = (ids: string[], pool: { id: string }[]) => ids.every((id) => pool.some((k) => k.id === id));

@@ -220,6 +220,9 @@ button.act.hint, .quest.hint, .opt.hint:not(.done) { animation: hint 1.8s ease-i
 .hyps { display: flex; flex-direction: column; gap: 5px; }
 .hyp { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 3px 6px; align-items: center; padding-bottom: 6px; border-bottom: 2px dashed var(--paper-2); }
 .hyp > span { display: flex; align-items: center; font-weight: 700; }
+.hyp .wrote { margin-left: 6px; font-size: 0.75em; font-weight: 700; color: var(--teal); border: 1.5px solid var(--teal); border-radius: 8px; padding: 0 5px; }
+.write { display: flex; flex-direction: column; gap: 4px; }
+.write textarea { font: inherit; width: 100%; box-sizing: border-box; padding: 6px 8px; border: 2px solid var(--ink-soft); border-radius: var(--r-b); background: var(--paper); color: var(--ink); resize: vertical; }
 .hyp ul { grid-column: 1 / -1; list-style: none; padding: 0 0 0 2.1em !important; font-size: 0.9em; }
 .up { color: #8a5a00; }
 .down { color: var(--teal); }
@@ -330,6 +333,10 @@ sup { font-size: 0.7em; }
 .note { margin: 8px 0; padding: 4px 10px; border-left: 4px solid var(--moss); background: var(--sage-2); border-radius: 0 8px 8px 0; }
 .note.bad { border-left-color: var(--rust); background: var(--rust-2); }
 .pick:disabled { opacity: 0.55; cursor: default; }
+/* 刻意練習：作答之後標出對的（綠底粗框）和選錯的（紅底），兩個都不淡掉 */
+.pick.correct, .pick.miss { opacity: 1; font-weight: 700; border-color: var(--ink); }
+.pick.correct { background: var(--grain), var(--sage); border-width: 3px; }
+.pick.miss { background: var(--grain), var(--rust-2); border-style: dashed; }
 .quests > .skip { align-self: flex-start; }
 
 /* 給管理者看的總表（網址後面加 #stats）：不是遊戲的畫面，用整個視窗的寬度 */

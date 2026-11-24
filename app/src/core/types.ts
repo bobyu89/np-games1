@@ -147,7 +147,8 @@ export interface CaseDef {
   };
 }
 
-export interface Board { summary: string | null; likely: string | null; exclude: string[] }
+/** written：下診斷之前，玩家先不看選項自己寫的診斷（自由作答，不計分；舊的對局沒有這一欄） */
+export interface Board { summary: string | null; likely: string | null; exclude: string[]; written?: string[] }
 
 export interface LogEntry { t: number; type: string; id?: string; note?: string; clue?: string }
 

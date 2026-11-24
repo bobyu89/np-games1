@@ -11,6 +11,8 @@ import { formOf } from '../core/engine.ts';
 import { TRIAL_PASS } from './progress.ts';
 import { ReportSheet, useCanReport } from './Report.tsx';
 import { sfx } from './sound.ts';
+import { formsWritten, matchWritten } from './freetext.ts';
+import { REVIEW_GAPS, missed } from './review.ts';
 
 const mmss = (t: number) => Math.floor(t / 60) + ' 分 ' + String(t % 60).padStart(2, '0') + ' 秒';
 const STEPS = ['蒐集', '分析', '摘要'];
@@ -27,6 +29,8 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
   const ms = useMemo(() => moments(c, session), [c, session]);
   const tk = useMemo(() => takeaways(c, session, sc), [c, session, sc]);
   const tr = useMemo(() => trajectory(c, session), [c, session]);
+  const written = useMemo(() => (session.board.written?.length ? matchWritten(c.complaint, c.forms, session.board.written) : null), [c, session]);
+  const again = missed({ found: session.board.likely === c.answer.truth, trapped: pr ? pr.trapped : null });
   const [step, setStep] = useState(0), [pick, setPick] = useState<string | null>(null), [mine, setMine] = useState<string | null>(null);
   const m = ms.find((k) => k.id === pick);
   const canReport = useCanReport(), [report, setReport] = useState(false);
@@ -70,6 +74,11 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
             <h3>你的想法怎麼變</h3>
             {tr.steps.length ? <ol className="path">{tr.steps.map((k, i) => <li key={i} className={k.right ? 'up' : 'down'}><b>{mmss(k.t)}</b>　{i === tr.steps.length - 1 && session.board.likely ? (trial ? '交卷時' : '結案時') : (trial ? '口試委員問你時' : '孟拓問你時')}：{k.name}</li>)}<li><b>實際上</b>　{tr.truth}</li></ol> : <p className="dim">這一場沒有留下你的判斷。實際上是{tr.truth}。</p>}
             <p className="quote">{tr.verdict}</p>
+            {written && <>
+              <h3>下診斷之前，你先寫的</h3>
+              <ul className="path">{written.map((w) => <li key={w.text} className={w.forms.includes(c.answer.truth) ? 'up' : 'none'}>{w.text}{w.forms.length ? ' → ' + w.forms.map((id) => formOf(c, id)!.name).join('、') : ''}</li>)}</ul>
+              <p className="dim">{formsWritten(c.forms, written).includes(c.answer.truth) ? '這一關的診斷方向「' + formOf(c, c.answer.truth)!.name + '」，你沒看選項就想到了。' : '這一關的診斷方向「' + formOf(c, c.answer.truth)!.name + '」，你自己寫的時候沒有想到。下一次遇到' + c.complaintName + '，先把它放進腦子裡的清單。'}（這一段不計分。）</p>
+            </>}
             {sc.rows.map((r) => (
               <div key={r.id} className="row">
                 <div className="row-top"><b>{r.name}</b><span>{r.got} / {r.max}</span></div>
@@ -128,6 +137,7 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
               <h3>這一關寫回圖鑑的</h3>
               {fresh.length ? <ul className="path">{fresh.map((r, i) => <li key={i} className={r.dir > 0 ? 'up' : 'down'}>{r.dir > 0 ? '＋' : '－'} {r.text} → {formOf(c, r.form)!.name}</li>)}</ul> : <p className="dim">這一次沒有新的線索寫回去。解讀對的線索才會留下來。</p>}
             </>}
+            {again && <p className="note">這一位{session.board.likely === c.answer.truth ? '你掉進了陷阱' : '的診斷沒有對到'}，大約 {REVIEW_GAPS[0]} 天後會出現在大廳的「錯題複習」，{trial ? '再考一次' : '再接一次'}。隔幾天再做，比馬上重來記得牢。</p>}
             <p className="dim">這一關你花了 {Math.floor(seconds / 60)} 分 {String(seconds % 60).padStart(2, '0')} 秒。</p>
           </>
         )}
