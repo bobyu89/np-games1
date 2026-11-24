@@ -4,7 +4,7 @@
 // 這一關要練的是：腫，先分一邊還是兩邊。兩邊都腫，水是從全身多出來的，再從心臟、腎臟、肝臟三條路一個一個查。
 import type { CaseSpec } from '../core/module.ts';
 import { REVIEW_NOTE, TEXT_RESULT } from './shared.ts';
-import { HULL_2008 } from './swelling.refs.ts';
+import { KDIGO_2021 } from './swelling.refs.ts';
 
 export const C08A: CaseSpec = {
   format: 3,
@@ -130,9 +130,9 @@ export const C08A: CaseSpec = {
       '腫的人每天量體重，比用眼睛看準。',
     ],
     teaching: [
-      { text: '成人的腎病症候群，是大量的蛋白尿、血中白蛋白偏低，加上水腫；常合併血脂偏高。', ref: 'hull2008' },
-      { text: '腎病症候群要留意的併發症，包括血栓、感染和急性腎損傷。', ref: 'hull2008' },
+      { text: '成人的腎病症候群，是大量的蛋白尿、血中白蛋白偏低，加上水腫；常合併血脂偏高。', ref: 'kdigo2021' },
+      { text: '腎病症候群要留意的併發症，包括血栓、感染和急性腎損傷。', ref: 'kdigo2021' },
     ],
-    references: [HULL_2008],
+    references: [KDIGO_2021],
   },
 };

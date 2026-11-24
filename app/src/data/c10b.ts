@@ -4,7 +4,7 @@
 // 地點不在公會：她在碼頭的攤子上發作，所以是出診到貨棧。
 import type { CaseSpec } from '../core/module.ts';
 import { REVIEW_NOTE, TEXT_RESULT } from './shared.ts';
-import { SAMPSON_2006 } from './rash.refs.ts';
+import { CARDONA_2020 } from './rash.refs.ts';
 
 export const C10B: CaseSpec = {
   format: 3,
@@ -135,8 +135,8 @@ export const C10B: CaseSpec = {
       '反應壓下來之後，幾個時辰內可能再來一次，所以要留下來觀察。以後要避開什麼、要不要隨身帶藥，由醫師跟她說。',
     ],
     teaching: [
-      { text: '過敏性休克一直沒有各方都同意的定義。2005 年的跨國會議訂出一套臨床的判斷準則，目的是讓第一線的人能準確地把它認出來，也整理了處置的證據。', ref: 'sampson2006' },
+      { text: '過敏性休克要靠臨床表現及早認出來。肌肉注射腎上腺素是第一線治療；發作過的人要轉給專科，找出原因、學會預防和自我處理。', ref: 'cardona2020' },
     ],
-    references: [SAMPSON_2006],
+    references: [CARDONA_2020],
   },
 };

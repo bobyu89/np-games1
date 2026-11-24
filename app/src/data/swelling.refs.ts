@@ -3,9 +3,9 @@
 
 export const WELLS_2003 = { id: 'wells2003', text: 'Wells, P. S., Anderson, D. R., Rodger, M., Forgie, M., Kearon, C., Dreyer, J., Kovacs, G., Mitchell, M., Lewandowski, B., & Kovacs, M. J. (2003). Evaluation of D-dimer in the diagnosis of suspected deep-vein thrombosis. New England Journal of Medicine, 349(13), 1227–1235.', doi: '10.1056/NEJMoa023153' };
 export const BIGGINS_2021 = { id: 'biggins2021', text: 'Biggins, S. W., Angeli, P., Garcia-Tsao, G., Ginès, P., Ling, S. C., Nadim, M. K., Wong, F., & Kim, W. R. (2021). Diagnosis, evaluation, and management of ascites, spontaneous bacterial peritonitis and hepatorenal syndrome: 2021 practice guidance by the American Association for the Study of Liver Diseases. Hepatology, 74(2), 1014–1048.', doi: '10.1002/hep.31884' };
-export const HULL_2008 = { id: 'hull2008', text: 'Hull, R. P., & Goldsmith, D. J. A. (2008). Nephrotic syndrome in adults. BMJ, 336(7654), 1185–1189.', doi: '10.1136/bmj.39576.709711.80' };
+export const KDIGO_2021 = { id: 'kdigo2021', text: 'Kidney Disease: Improving Global Outcomes (KDIGO) Glomerular Diseases Work Group. (2021). KDIGO 2021 clinical practice guideline for the management of glomerular diseases. Kidney International, 100(4S), S1–S276.', doi: '10.1016/j.kint.2021.05.021' };
 
-/** 教學重點對過摘要的文獻。沒列在這裡的（Biggins、Hull）只核對了書目：兩篇在 PubMed 都沒有摘要 */
+/** 教學重點對過摘要的文獻。沒列在這裡的（Biggins、KDIGO 2021）只核對了書目：兩篇在 PubMed 都沒有摘要。KDIGO 2021 在 2026-11-24 取代 Hull 2008（腎病症候群的定義和併發症在指引的腎病症候群章節） */
 export const REF_CHECK_ADD: Record<string, { level: 'abstract'; note?: string }> = {
   wells2003: { level: 'abstract', note: '摘要支持「評估起來不太可能、D-dimer 又陰性，可以不做超音波」；評估表的各個項目（例如小腿粗 3 公分）不在摘要裡' },
 };

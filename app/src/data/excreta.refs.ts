@@ -6,12 +6,14 @@ export const LAINE_2021 = { id: 'laine2021', text: 'Laine, L., Barkun, A. N., Sa
 export const HAMILTON_2005_CRC = { id: 'hamilton2005crc', text: 'Hamilton, W., Round, A., Sharp, D., & Peters, T. J. (2005). Clinical features of colorectal cancer before diagnosis: A population-based case-control study. British Journal of Cancer, 93(4), 399–405.', doi: '10.1038/sj.bjc.6602714' };
 export const BAROCAS_2020 = { id: 'barocas2020', text: 'Barocas, D. A., et al. (2020). Microhematuria: AUA/SUFU guideline. The Journal of Urology, 204(4), 778–786.', doi: '10.1097/JU.0000000000001297' };
 export const WINGER_2011 = { id: 'winger2011', text: 'Winger, J., & Michelfelder, A. (2011). Diagnostic approach to the patient with jaundice. Primary Care: Clinics in Office Practice, 38(3), 469–482.', doi: '10.1016/j.pop.2011.05.004' };
+export const KWO_2017 = { id: 'kwo2017', text: 'Kwo, P. Y., Cohen, S. M., & Lim, J. K. (2017). ACG clinical guideline: Evaluation of abnormal liver chemistries. American Journal of Gastroenterology, 112(1), 18–35.', doi: '10.1038/ajg.2016.517' };
 
 /** 教學重點對過摘要的文獻 */
 export const REF_CHECK_ADD: Record<string, { level: 'abstract'; note?: string }> = {
   laine2021: { level: 'abstract', note: '對過摘要的是：先評估風險、輸血門檻 7 g/dL、24 小時內做內視鏡。「尿素氮偏高」不在摘要裡，遊戲裡沒有掛在這篇上' },
   hamilton2005crc: { level: 'abstract', note: '摘要支持的是哪些線索和大腸直腸癌有關、單獨看機會都不高；「血混在便裡」「解不乾淨」這些和痔瘡分辨的說法不在摘要裡' },
   barocas2020: { level: 'abstract', note: '這是顯微血尿的指引；遊戲裡的病人是肉眼血尿' },
+  kwo2017: { level: 'abstract', note: '摘要支持「總膽紅素升高要分直接型和間接型；直接型升高多半是肝細胞疾病或膽道阻塞」；2026-11-24 加上，補 Winger 2011 的分類那一點' },
   winger2011: { level: 'abstract', note: '「摸得到脹大而不痛的膽囊」不在摘要裡，遊戲裡沒有掛在這篇上' },
 };
 

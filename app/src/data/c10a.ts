@@ -4,7 +4,7 @@
 // 還有：疹子長在胸口。看之前先說、簾子拉好、一次只露出要看的地方。
 import type { CaseSpec } from '../core/module.ts';
 import { REVIEW_NOTE, TEXT_RESULT } from './shared.ts';
-import { DWORKIN_2007 } from './rash.refs.ts';
+import { WERNER_2017 } from './rash.refs.ts';
 
 export const C10A: CaseSpec = {
   format: 3,
@@ -129,8 +129,8 @@ export const C10A: CaseSpec = {
       '民間說「皮蛇繞一圈會死」。不用跟她爭信不信，把它為什麼只長一邊講清楚就夠了。',
     ],
     teaching: [
-      { text: '帶狀疱疹的第一線治療是抗病毒藥；再配合其他的治療，可以進一步減輕疼痛和併發症。', ref: 'dworkin2007' },
+      { text: '帶狀疱疹的第一線治療是抗病毒藥；再配合其他的治療，可以進一步減輕疼痛和併發症。', ref: 'werner2017' },
     ],
-    references: [DWORKIN_2007],
+    references: [WERNER_2017],
   },
 };

@@ -5,7 +5,7 @@
 // 是什麼堵住的，影像出來之前不替她猜，也不替她說「不會是」。
 import type { CaseSpec } from '../core/module.ts';
 import { REVIEW_NOTE, TEXT_RESULT } from './shared.ts';
-import { WINGER_2011 } from './excreta.refs.ts';
+import { KWO_2017, WINGER_2011 } from './excreta.refs.ts';
 
 export const C09D: CaseSpec = {
   format: 3,
@@ -132,9 +132,9 @@ export const C09D: CaseSpec = {
     ],
     teaching: [
       { text: '黃疸的原因，從良性的到會致命的都有。病史和身體評估，仍然是找原因很重要的工具。', ref: 'winger2011' },
-      { text: '黃疸可以分成三類：肝前、肝內、肝後（阻塞）。膽紅素是直接型還是間接型，加上幾項選過的檢驗，可以指出是哪一類。', ref: 'winger2011' },
+      { text: '黃疸可以分成三類：肝前、肝內、肝後（阻塞）。膽紅素是直接型還是間接型，加上幾項選過的檢驗，可以指出是哪一類。', ref: 'kwo2017' },
       { text: '有可能是惡性腫瘤，或是需要處置的時候，要考慮轉給專科。', ref: 'winger2011' },
     ],
-    references: [WINGER_2011],
+    references: [WINGER_2011, KWO_2017],
   },
 };
