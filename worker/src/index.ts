@@ -19,7 +19,7 @@
 // 管理密碼是 Worker 的 secret：ADMIN_KEY。沒有設定的時候，總表一律不給看。
 // 登入要另外設定 GOOGLE_CLIENT_ID／GOOGLE_CLIENT_SECRET、LINE_CHANNEL_ID／LINE_CHANNEL_SECRET；哪一家沒設定，那一家就不會出現。
 import { DurableObject } from 'cloudflare:workers';
-import { SCHEMA, add, addReport, csv, listReports, parse, parseReport, summary, type Exec, type Report, type Row, type Value } from './core.ts';
+import { migrate, add, addReport, csv, listReports, parse, parseReport, summary, type Exec, type Report, type Row, type Value } from './core.ts';
 import { daily, type DailyEnv } from './daily.ts';
 import { ACCOUNT_SCHEMA, LIMIT, PROVIDERS, accountId, begin, checkClaims, checkSave, counts, finish, isProvider, pepperOf, random, readSave, remove, sha256, signIn, signOut, who, writeSave, type Provider } from './accounts.ts';
 
@@ -39,7 +39,7 @@ export class Stats extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     this.exec = sqlOf(ctx);
-    SCHEMA.forEach((s) => this.exec(s));
+    migrate(this.exec);
   }
   add(rows: Row[]) { return add(this.exec, rows, now()); }
   summary(days: number | null) { return summary(this.exec, days, now()); }

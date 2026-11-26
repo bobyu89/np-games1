@@ -5,6 +5,7 @@ import { DRILLS, buildDrill, drillCases, factsOf, readOk, stemOf, type DrillItem
 import { Sheet } from './Sheets.tsx';
 import type { Save } from './store.ts';
 import { sfx } from './sound.ts';
+import { track } from './stats.ts';
 
 type Answer = { ok: boolean; pick: string };
 
@@ -17,7 +18,14 @@ export function DrillSheet({ save, onClose }: { save: Save; onClose(): void }) {
   const pool = drillCases(save).length;
   const done = kind !== null && answers.length === items.length && items.length > 0;
   const item = items[i], answered = answers[i];
-  const answer = (a: Answer) => { if (answered) return; if (a.ok) sfx.done(); else sfx.miss(); setAnswers([...answers, a]); };
+  const answer = (a: Answer) => {
+    if (answered || !kind) return;
+    if (a.ok) sfx.done(); else sfx.miss();
+    const next = [...answers, a];
+    setAnswers(next);
+    // 一輪做完：匿名統計只記種類和對幾題（有同意才送）
+    if (next.length === items.length) track({ t: 'drill', dk: kind, ok: next.filter((x) => x.ok).length, of: items.length });
+  };
 
   if (!kind) return (
     <Sheet title="刻意練習" onClose={onClose}>

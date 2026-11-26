@@ -13,8 +13,9 @@ export const statsBuilt = STATS_URL !== '';
 
 /** ask：還沒問過。yes：可以回傳。no：不要 */
 export type Consent = 'ask' | 'yes' | 'no';
-/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉。done：結案並看完回顧。trial：考完一場試弓 */
-export interface StatEvent { t: 'open' | 'start' | 'leave' | 'drop' | 'done' | 'trial'; at: number; c?: string; tier?: number; ph?: number; sc?: number; sf?: Safety; sec?: number; gt?: number; h?: number; f?: 0 | 1; n?: number }
+/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉。done：結案並看完回顧。trial：考完一場試弓。drill：做完一輪刻意練習。
+ *  tr：掉進陷阱沒有。rv：這一場是錯題複習。w：下診斷前自己寫的有沒有想到正確方向（沒寫就不送）。dk、ok、of：刻意練習的種類、對幾題、一共幾題。都只送 0、1 或數字，不送任何文字 */
+export interface StatEvent { t: 'open' | 'start' | 'leave' | 'drop' | 'done' | 'trial' | 'drill'; at: number; c?: string; tier?: number; ph?: number; sc?: number; sf?: Safety; sec?: number; gt?: number; h?: number; f?: 0 | 1; n?: number; tr?: 0 | 1; rv?: 0 | 1; w?: 0 | 1; dk?: 'read' | 'summary' | 'sbar'; ok?: number; of?: number }
 interface Box { consent: Consent; device: string; queue: StatEvent[]; opened: string }
 
 const KEY = 'mist-guild.stats';

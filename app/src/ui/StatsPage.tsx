@@ -13,7 +13,11 @@ interface Summary {
   days: { day: string; devices: number; starts: number; dones: number }[]; cases: CaseRow[];
   accounts?: { accounts: number; saves: number; google: number; line: number };
   platforms: { pf: string; devices: number }[]; builds: { build: string; devices: number; last: string }[]; depth: { label: string; devices: number }[];
+  /** 舊版的端點沒有這一塊 */
+  learning?: { first: Played; retry: Played; recall: { n: number; hit: number; devices: number }; drills: { kind: string; rounds: number; devices: number; ok: number; total: number }[] };
 }
+interface Played { n: number; found: number; trapped: number }
+const DRILL_NAME: Record<string, string> = { read: '線索解讀', summary: '問題摘要', sbar: '回報的評估' };
 const PF: Record<string, string> = { ios: 'iPhone、iPad', android: 'Android', desktop: '電腦', other: '其他' };
 const PHASE = ['問診', '評估', '診斷', '檢查'];
 const RANGES: [string, string][] = [['7', '最近 7 天'], ['30', '最近 30 天'], ['90', '最近 90 天'], ['', '全部']];
@@ -77,6 +81,9 @@ export function StatsPage({ onClose }: { onClose(): void }) {
             .map(([name, n]) => <div key={name} className="tile"><b>{n}</b><span>{name}</span></div>)}
         </div>
 
+        <h2>練習有沒有在發揮作用</h2>
+        {!data.learning ? <p className="dim">端點還是舊版，還沒有這一塊。</p> : <Learning l={data.learning} />}
+
         <h2>玩家的回報</h2>
         {!reports ? <p className="dim">讀不到回報。</p> : !reports.length ? <p className="dim">這個範圍裡沒有回報。</p> : (
           <div className="tw"><table>
@@ -113,4 +120,22 @@ export function StatsPage({ onClose }: { onClose(): void }) {
       </>}
     </div>
   );
+}
+
+/** 錯題複習的重考 vs 一般的場次、自己先寫有沒有想到、刻意練習。只算新版遊戲送來的事件 */
+function Learning({ l }: { l: NonNullable<Summary['learning']> }) {
+  const row = (name: string, p: Played) => <tr key={name}><td>{name}</td><td>{p.n}</td><td>{pct(p.found, p.n)}</td><td>{pct(p.trapped, p.n)}</td></tr>;
+  return <>
+    <div className="tw"><table>
+      <thead><tr><th>場次（結案和試弓）</th><th>幾場</th><th>診斷正確</th><th>掉進陷阱</th></tr></thead>
+      <tbody>{row('一般', l.first)}{row('錯題複習的重考', l.retry)}</tbody>
+    </table></div>
+    <p className="dim">重考的是上次錯的那一位，隔 3 天或 7 天之後再做。重考的診斷正確比例比一般高、掉進陷阱比例比一般低，才表示間隔複習有在幫忙；場數太少（例如不到 20 場）先不要下結論。</p>
+    <div className="tiles">
+      <div className="tile"><b>{pct(l.recall.hit, l.recall.n)}</b><span>下診斷前自己寫，想到正確方向（{l.recall.hit}／{l.recall.n} 場，{l.recall.devices} 台裝置）</span></div>
+      {l.drills.map((d) => <div key={d.kind} className="tile"><b>{pct(d.ok, d.total)}</b><span>刻意練習・{DRILL_NAME[d.kind] ?? d.kind}答對（{d.rounds} 輪，{d.devices} 台裝置）</span></div>)}
+      {!l.drills.length && <div className="tile"><b>0</b><span>刻意練習的輪數</span></div>}
+    </div>
+    <p className="dim">只算 2026-11-26 之後的版本送來的；更早的事件沒有這幾欄，不算進來。這是看功能有沒有在用、方向對不對的內部指標：只有同意回傳的人、沒有對照組，不能當成研究的成效證據。</p>
+  </>;
 }
