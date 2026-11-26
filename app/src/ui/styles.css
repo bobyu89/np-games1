@@ -604,6 +604,23 @@ button.checkin { cursor: pointer; }
 .cal-d { padding: 6px 0; border-radius: 6px; font-variant-numeric: tabular-nums; }
 .cal-d.on { background: var(--rust); color: var(--paper); font-weight: 700; }
 .cal-d.today { outline: 2px solid var(--ink); outline-offset: -2px; }
+.sprint-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; }
+.sprint-card h4 { margin: 4px 0 0; color: var(--teal); font-size: 0.95em; }
+.sprint-days { list-style: none; margin: 2px 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 4px; }
+.sprint-days li { display: flex; flex-direction: column; align-items: center; padding: 2px 0; border: 2px solid var(--paper-2); border-radius: 8px; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.sprint-days li small { font-size: 0.7em; color: var(--ink-soft); }
+.sprint-days li.done { background: var(--grain), var(--sage); border-color: var(--moss); }
+.sprint-days li.today { border-color: var(--ink); font-weight: 700; }
+.sprint-days li.later { opacity: 0.6; }
+.sprint-days li.exam { background: var(--grain), var(--rust-2); border-color: var(--rust); font-weight: 700; }
+.sprint-card .todo { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.sprint-card .todo li { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sprint-card .todo li::before { content: '□'; margin-right: 4px; }
+.sprint-card .todo li.done::before { content: ''; margin: 0; }
+.sprint-card .todo li > span { flex: 1; }
+.sprint-card .todo li.done { color: var(--ink-soft); }
+ol.weak { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 2px; }
+ol.weak li span { margin-left: 8px; }
 .traps-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; margin-bottom: 12px; }
 .traps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .traps li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 0.9em; }
