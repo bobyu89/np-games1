@@ -27,6 +27,8 @@ import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 import { DrillSheet } from './Drill.tsx';
 import { drillCases } from './drill.ts';
 import { reviewPlan } from './review.ts';
+import { SprintCard } from './Sprint.tsx';
+import { pickSprint, sprintOf } from './sprint.ts';
 import { dayKey } from './streak.ts';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
@@ -132,9 +134,12 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [redo, setRedo] = useState<CaseDef | null>(null);   // 錯題複習：用試弓重考的那一位（不是抽的，關掉就放回去）
   const [drill, setDrill] = useState(false);   // 刻意練習
   const today = dayKey(Date.now()), plan = reviewPlan(save), due = plan.filter((r) => r.due <= today), soon = plan.filter((r) => r.due > today);
+  const examOn = useSyncExternalStore(examSubscribe, examShown);
+  // 考前衝刺：口試前兩週、試弓已經開放、沒有關掉口試倒數的時候才出現
+  const sprint = examOn && trialOpen(save) ? sprintOf(save) : null;
   const pwa = useSyncExternalStore(pwaSubscribe, pwaState);
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
-  const exam = useSyncExternalStore(examSubscribe, examShown) ? countdownText(daysLeft()) : null;   // 真實的口試日還有幾天
+  const exam = examOn ? countdownText(daysLeft()) : null;   // 真實的口試日還有幾天
   const [later, setLater] = useState(false);   // 按了關閉：這一次先不問，下次打開再問
   const pending = run ? caseById(run.caseId) : null;
   const stage = useRef<StageHandle | null>(null), talk = useRef<TalkHandle>(null), speaker = useRef<Who | null>(null), bubble = useRef<HTMLDivElement>(null);
@@ -257,6 +262,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 <button type="button" className="act demo" onClick={() => { sfx.page(); go(todo.action); }}>{todo.button}</button>
                 {pending && run && run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>{run.trial ? '不考了，放掉這一場' : '不接了，放掉這一張'}</button>}
               </div>
+              {sprint && <SprintCard save={save} sprint={sprint} due={due.length} onDraw={() => { if (!drawn) setDrawn(pickSprint(save, Math.random())); setTrialSheet(true); }} />}
               {side && <div className="side"><span>{side.text}</span><button type="button" className="pick" onClick={() => { sfx.page(); go(side.action); }}>{side.button}</button></div>}
               <div className="map-help">
                 <p><b>地圖：一座島一種症狀。</b>島名是故事裡的地名，底下寫的是那裡的病人來看什麼（例如「胸痛 1/4」）。點有名字的島，看那裡的委託。</p>

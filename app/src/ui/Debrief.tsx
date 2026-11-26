@@ -13,14 +13,15 @@ import { ReportSheet, useCanReport } from './Report.tsx';
 import { sfx } from './sound.ts';
 import { formsWritten, matchWritten } from './freetext.ts';
 import { REVIEW_GAPS, missed } from './review.ts';
+import { RECENT, whyWeak, type Weak } from './sprint.ts';
 
 const mmss = (t: number) => Math.floor(t / 60) + ' 分 ' + String(t % 60).padStart(2, '0') + ' 秒';
 const STEPS = ['蒐集', '分析', '摘要'];
 
 /** trial：這一場是試弓。timeUp：時間到自動交卷的 */
-interface Props { c: CaseDef; session: Session; seconds: number; hero?: string | null; echo?: { got: boolean; before: boolean; text: string } | null; trial?: { timeUp: boolean; axes?: boolean }; fresh: { text: string; form: string; dir: 1 | -1 }[]; onFinish(takeaway: string | null): void }
+interface Props { weak?: Weak[]; c: CaseDef; session: Session; seconds: number; hero?: string | null; echo?: { got: boolean; before: boolean; text: string } | null; trial?: { timeUp: boolean; axes?: boolean }; fresh: { text: string; form: string; dir: 1 | -1 }[]; onFinish(takeaway: string | null): void }
 
-export function Debrief({ c, session, seconds, hero = null, echo = null, trial, fresh, onFinish }: Props) {
+export function Debrief({ weak, c, session, seconds, hero = null, echo = null, trial, fresh, onFinish }: Props) {
   const cq = useMemo(() => (trial ? null : consultQuestion(session)), [session, trial]);
   const [cqPick, setCqPick] = useState<string | null>(null);
   const me = heroOf(hero);
@@ -137,6 +138,13 @@ export function Debrief({ c, session, seconds, hero = null, echo = null, trial, 
               <h3>這一關寫回圖鑑的</h3>
               {fresh.length ? <ul className="path">{fresh.map((r, i) => <li key={i} className={r.dir > 0 ? 'up' : 'down'}>{r.dir > 0 ? '＋' : '－'} {r.text} → {formOf(c, r.form)!.name}</li>)}</ul> : <p className="dim">這一次沒有新的線索寫回去。解讀對的線索才會留下來。</p>}
             </>}
+            {weak && weak.length > 0 && (
+              <div className="leaf">
+                <b>算進這一場之後，你最弱的三種主訴</b>
+                <ol className="weak">{weak.map((w) => <li key={w.complaint}><b>{w.name}</b><span className="dim">{whyWeak(w)}</span></li>)}</ol>
+                <p className="dim">每一種只看最近 {RECENT} 場。口試前兩週的「考前衝刺」會從這三種抽題；還沒練過的排在最前面。</p>
+              </div>
+            )}
             {again && <p className="note">這一位{session.board.likely === c.answer.truth ? '你掉進了陷阱' : '的診斷沒有對到'}，大約 {REVIEW_GAPS[0]} 天後會出現在大廳的「錯題複習」，{trial ? '再考一次' : '再接一次'}。隔幾天再做，比馬上重來記得牢。</p>}
             <p className="dim">這一關你花了 {Math.floor(seconds / 60)} 分 {String(seconds % 60).padStart(2, '0')} 秒。</p>
           </>

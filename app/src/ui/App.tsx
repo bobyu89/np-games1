@@ -18,6 +18,7 @@ import { perilOf } from '../core/perils.ts';
 import { reviewDue } from './review.ts';
 import { dayKey } from './streak.ts';
 import { formsWritten, matchWritten } from './freetext.ts';
+import { weakness } from './sprint.ts';
 import { StatsPage } from './StatsPage.tsx';
 import { bindSave, startAccount, syncSoon } from './account.ts';
 import { PrivacyPage } from './PrivacyPage.tsx';
@@ -69,7 +70,9 @@ export function App() {
     const { c, session, seconds, trial, timeUp } = screen;
     const prev = save.cases[c.id], now = harvest(c, session);
     const echo = trial ? null : { got: echoed({ found: !!prev?.found || now.found, concern: !!prev?.concern || now.concern }), before: echoed(prev), text: AFTER[c.id] ?? '' };
-    return <Debrief c={c} session={session} seconds={seconds} hero={save.hero} echo={echo} trial={trial ? { timeUp, axes: finaleDone(save) } : undefined} fresh={trial ? [] : newReads(save, c, session)} onFinish={(takeaway) => {
+    // 試弓交卷：把這一場也算進去，告訴玩家現在最弱的三種主訴
+    const weak = trial ? weakness({ cases: save.cases, plays: [{ at: Date.now(), caseId: c.id, score: Math.round(scoreSession(c, session).total), trial: true, found: now.found, trapped: perilOf(c, session)?.trapped ?? null, takeaway: null }, ...(save.plays ?? [])] }).slice(0, 3) : undefined;
+    return <Debrief c={c} session={session} seconds={seconds} hero={save.hero} echo={echo} weak={weak} trial={trial ? { timeUp, axes: finaleDone(save) } : undefined} fresh={trial ? [] : newReads(save, c, session)} onFinish={(takeaway) => {
       const score = scoreSession(c, session);
       // 練習有沒有在發揮作用：掉進陷阱沒有、這一場是不是錯題複習（記之前算）、自己先寫的有沒有想到正確方向。只送 0 和 1
       const peril = perilOf(c, session), written = session.board.written?.length ? formsWritten(c.forms, matchWritten(c.complaint, c.forms, session.board.written)) : null;
