@@ -25,6 +25,7 @@ import { CheckInBody, CheckInStrip, TrapRecordCard } from './CheckIn.tsx';
 import { DiaryBody } from './Diary.tsx';
 import { countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 import { DrillSheet } from './Drill.tsx';
+import { openNotes } from './notes.ts';
 import { drillCases } from './drill.ts';
 import { reviewPlan } from './review.ts';
 import { SprintCard } from './Sprint.tsx';
@@ -289,6 +290,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               {drillCases(save).length > 0 && <>
                 <div className="quest-head">刻意練習</div>
                 <button type="button" className="quest paper" onClick={() => { sfx.page(); setDrill(true); }}><i className="seal" aria-hidden="true" /><b>一次只練一個環節</b><span>線索解讀・問題摘要・回報的評估，每題馬上有回饋</span><em>不計分</em></button>
+                <button type="button" className="quest paper" onClick={() => { sfx.page(); openNotes(); }}><i className="seal" aria-hidden="true" /><b>考前速記頁</b><span>十二種主訴：鑑別方向、重點評估、陷阱、每位病人的教學重點</span><em>可列印</em></button>
               </>}
               {finaleDone(save) && <><div className="quest-head">十二斧之試</div><div className="paper axes-card"><Axes save={save} /></div></>}
               {CANTOS.filter((k) => !k.island && cantoOpen(k.id, save)).map((k) => (
