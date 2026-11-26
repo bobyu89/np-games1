@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { CAP, REPORT_CAP, SCHEMA, add, addReport, csv, dayOf, listReports, parse, parseReport, summary, type Exec, type Value } from './core.ts';
+import { CAP, EXTRA_COLUMNS, REPORT_CAP, SCHEMA, add, migrate, addReport, csv, dayOf, listReports, parse, parseReport, summary, type Exec, type Value } from './core.ts';
 
 const NOW = Date.UTC(2026, 10, 12, 4, 0, 0) / 1000;   // 台北時間 2026-11-12 中午
 function fresh(): Exec {
   const db = new DatabaseSync(':memory:');
   const exec: Exec = (sql, ...p) => db.prepare(sql).all(...p) as Record<string, Value>[];
-  SCHEMA.forEach((s) => exec(s));
+  migrate(exec);
   return exec;
 }
 const dev = (n: number) => n.toString(16).padStart(16, '0');
@@ -110,4 +110,43 @@ test('玩家的回報：只留認得的欄位、有長度和每天的上限、�
   for (let i = 0; i < REPORT_CAP.perDay; i++) addReport(exec, { ...r, text: '灌水 ' + i });
   assert.equal(addReport(exec, r), false, '今天滿了');
   assert.equal(addReport(exec, { ...r, at: NOW + 86_400, day: dayOf(NOW + 86_400) }), true, '隔天又可以');
+});
+
+test('舊的資料庫：開起來補上新欄位，舊的事件留著、新欄位是空的；再開一次也不會壞', () => {
+  const db = new DatabaseSync(':memory:');
+  const exec: Exec = (sql, ...p) => db.prepare(sql).all(...p) as Record<string, Value>[];
+  SCHEMA.forEach((s) => exec(s));
+  exec("INSERT INTO events (at, day, device, build, pf, pwa, type, case_id, score, found) VALUES (?, ?, ?, 'old', 'ios', 0, 'done', 'c01a', 70, 1)", NOW, dayOf(NOW), dev(9));
+  migrate(exec); migrate(exec);
+  const cols = exec("SELECT name FROM pragma_table_info('events')").map((r) => String(r.name));
+  for (const [name] of EXTRA_COLUMNS) assert.ok(cols.includes(name), name);
+  const s = summary(exec, null, NOW);
+  assert.equal(s.totals.dones, 1);
+  assert.deepEqual([s.learning.first.n, s.learning.retry.n, s.learning.recall.n], [0, 0, 0], '舊版的事件不算進練習的指標');
+});
+
+test('練習的指標：錯題複習 vs 一般、自己先寫有沒有想到、刻意練習；只收 0 和 1，不收字', () => {
+  const exec = fresh();
+  send(exec, pack(1, [
+    { t: 'done', c: 'c01a', at: NOW, sc: 60, f: 0, n: 1, tr: 1, rv: 0, w: 0 },
+    { t: 'trial', c: 'c02a', at: NOW + 1, sc: 70, f: 1, tr: 0, rv: 0, w: 1 },
+    { t: 'trial', c: 'c01a', at: NOW + 2, sc: 85, f: 1, tr: 0, rv: 1 },
+    { t: 'done', c: 'c03a', at: NOW + 3, sc: 80, f: 1, tr: 'yes', rv: 2, w: '主動脈剝離' },
+    { t: 'drill', dk: 'read', ok: 4, of: 6, at: NOW + 4 },
+    { t: 'drill', dk: 'read', ok: 9, of: 6, at: NOW + 5 },
+    { t: 'drill', dk: 'summary', ok: 3, of: 4, at: NOW + 6, c: 'c01a' },
+    { t: 'drill', dk: 'hack', ok: 1, of: 1, at: NOW + 7 },
+    { t: 'start', c: 'c04a', at: NOW + 8, tr: 1, rv: 1, w: 1 },
+  ]));
+  const l = summary(exec, null, NOW).learning;
+  assert.deepEqual(l.first, { n: 2, found: 1, trapped: 1 });
+  assert.deepEqual(l.retry, { n: 1, found: 1, trapped: 0 });
+  assert.deepEqual(l.recall, { n: 2, hit: 1, devices: 1 });
+  assert.deepEqual(l.drills, [{ kind: 'read', rounds: 2, devices: 1, ok: 4, total: 12 }, { kind: 'summary', rounds: 1, devices: 1, ok: 3, total: 4 }]);
+  const text = csv(exec, null, NOW);
+  assert.ok(!text.includes('主動脈'));
+  assert.ok(text.split('\n')[0].endsWith('trapped,review,recall,drill,ok,total'));
+  const start = exec("SELECT trapped, review, recall, drill FROM events WHERE type = 'start'")[0];
+  assert.deepEqual([start.trapped, start.review, start.recall, start.drill], [null, null, null, null], '只有結案和試弓收這幾欄');
+  assert.equal(exec("SELECT case_id FROM events WHERE type = 'drill' AND drill = 'summary'")[0].case_id, '', '刻意練習不記哪一位病人');
 });

@@ -1,8 +1,9 @@
 // 匿名使用統計的核心：檢查送進來的東西、存起來、算出總表。
 // 不碰網路、不認得 Cloudflare，所以測試可以直接拿 SQLite 跑（core.test.ts）。
 //
-// 存的東西只有這些：隨機的裝置代號、哪一版、手機還是電腦、哪一張委託、做到第幾段、分數、花了多久。
-// 不存 IP、不存瀏覽器的字串、不存任何文字輸入。
+// 存的東西只有這些：隨機的裝置代號、哪一版、手機還是電腦、哪一張委託、做到第幾段、分數、花了多久；
+// 2026-11-26 起多了幾個「有沒有」：掉進陷阱沒有、是不是錯題複習、下診斷前自己寫的有沒有想到正確方向，和刻意練習一輪對幾題。
+// 不存 IP、不存瀏覽器的字串、不存任何文字輸入（自由作答只送「有沒有想到」的 0 或 1，不送寫的字）。
 
 export type Value = string | number | null;
 /** 跑一句 SQL，回傳每一列 */
@@ -20,14 +21,28 @@ export const SCHEMA = [
   'CREATE INDEX IF NOT EXISTS reports_day ON reports (day)',
 ];
 
-/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉那一張。done：結案並看完回顧。trial：考完一場試弓 */
-export const TYPES = ['open', 'start', 'leave', 'drop', 'done', 'trial'] as const;
+/** 後來加的欄位。舊的資料庫沒有，開起來的時候補上（migrate）；舊版遊戲送來的事件，這幾欄是空的 */
+export const EXTRA_COLUMNS: [string, string][] = [['trapped', 'INTEGER'], ['review', 'INTEGER'], ['recall', 'INTEGER'], ['drill', 'TEXT'], ['ok', 'INTEGER'], ['total', 'INTEGER']];
+/** 建表，再把後來加的欄位補上。每次開起來都可以叫：已經有的欄位，ALTER 會失敗，略過就好 */
+export function migrate(exec: Exec) {
+  SCHEMA.forEach((sql) => exec(sql));
+  for (const [name, type] of EXTRA_COLUMNS) { try { exec(`ALTER TABLE events ADD COLUMN ${name} ${type}`); } catch { /* 已經有這一欄 */ } }
+}
+
+/** open：打開遊戲（一天一次）。start：接了一張委託。leave：做到一半回公會。drop：放掉那一張。done：結案並看完回顧。trial：考完一場試弓。drill：做完一輪刻意練習 */
+export const TYPES = ['open', 'start', 'leave', 'drop', 'done', 'trial', 'drill'] as const;
+/** 刻意練習的三種：線索解讀、問題摘要、回報的評估 */
+export const DRILL_KINDS = ['read', 'summary', 'sbar'];
 const PLATFORMS = ['ios', 'android', 'desktop', 'other'];
 const SAFETY = ['met', 'late', 'review'];
 
 export interface Row {
   at: number; day: string; device: string; build: string; pf: string; pwa: number; type: string; case_id: string;
   tier: number | null; phase: number | null; score: number | null; safety: string | null; secs: number | null; gtime: number | null; hints: number | null; found: number | null; plays: number | null;
+  /** 結案和試弓：掉進陷阱沒有、這一場是不是錯題複習、下診斷前自己寫的有沒有想到正確方向（沒寫是 null） */
+  trapped: number | null; review: number | null; recall: number | null;
+  /** 刻意練習：哪一種、這一輪對幾題、一共幾題 */
+  drill: string | null; ok: number | null; total: number | null;
 }
 
 /** 一個裝置一天最多收幾筆、全部一天最多收幾筆。超過的丟掉：擋灌水，也保護免費額度 */
@@ -36,6 +51,7 @@ export const CAP = { perDevice: 400, perDay: 50_000, perRequest: 50 };
 /** 台北時間的日期 */
 export const dayOf = (at: number) => new Date((at + 8 * 3600) * 1000).toISOString().slice(0, 10);
 const int = (x: unknown, lo: number, hi: number): number | null => (typeof x === 'number' && Number.isFinite(x) && x >= lo && x <= hi ? Math.round(x) : null);
+const bit = (x: unknown): number | null => (x === 1 ? 1 : x === 0 ? 0 : null);
 
 /** 把送進來的一包檢查過、整理成要存的列。整包不對回傳 null；個別不對的事件略過 */
 export function parse(body: unknown, now: number): Row[] | null {
@@ -50,12 +66,15 @@ export function parse(body: unknown, now: number): Row[] | null {
     const e = raw as Record<string, unknown>;
     if (typeof e.t !== 'string' || !(TYPES as readonly string[]).includes(e.t)) continue;
     const case_id = typeof e.c === 'string' && /^c\d{2}[a-z]$/.test(e.c) ? e.c : '';
-    if (e.t !== 'open' && !case_id) continue;
+    const drill = e.t === 'drill' && typeof e.dk === 'string' && DRILL_KINDS.includes(e.dk) ? e.dk : null;
+    if (e.t === 'drill' ? !drill : e.t !== 'open' && !case_id) continue;
+    const played = e.t === 'done' || e.t === 'trial', total = drill ? int(e.of, 1, 99) : null, ok = total === null ? null : int(e.ok, 0, total);
     // 離線的時候事件會先留在裝置上，所以時間用裝置記的；差太多（超過 45 天、或是未來）就用收到的時間
     const at = int(e.at, now - 45 * 86400, now + 86400) ?? now;
-    rows.push({ at, day: dayOf(at), device: b.d, build, pf, pwa: b.pwa === 1 ? 1 : 0, type: e.t, case_id: e.t === 'open' ? '' : case_id,
+    rows.push({ at, day: dayOf(at), device: b.d, build, pf, pwa: b.pwa === 1 ? 1 : 0, type: e.t, case_id: e.t === 'open' || drill ? '' : case_id,
       tier: int(e.tier, 0, 9), phase: int(e.ph, 1, 4), score: int(e.sc, 0, 100), safety: typeof e.sf === 'string' && SAFETY.includes(e.sf) ? e.sf : null,
-      secs: int(e.sec, 0, 86400), gtime: int(e.gt, 0, 86400), hints: int(e.h, 0, 99), found: e.f === 1 ? 1 : e.f === 0 ? 0 : null, plays: int(e.n, 1, 9999) });
+      secs: int(e.sec, 0, 86400), gtime: int(e.gt, 0, 86400), hints: int(e.h, 0, 99), found: e.f === 1 ? 1 : e.f === 0 ? 0 : null, plays: int(e.n, 1, 9999),
+      trapped: played ? bit(e.tr) : null, review: played ? bit(e.rv) : null, recall: played ? bit(e.w) : null, drill, ok, total });
   }
   return rows;
 }
@@ -70,8 +89,8 @@ export function add(exec: Exec, rows: Row[], now: number): number {
   for (const r of rows) {
     if (room <= 0) break;
     const before = count('SELECT COUNT(*) AS n FROM events');
-    exec('INSERT OR IGNORE INTO events (at, day, device, build, pf, pwa, type, case_id, tier, phase, score, safety, secs, gtime, hints, found, plays) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      r.at, r.day, r.device, r.build, r.pf, r.pwa, r.type, r.case_id, r.tier, r.phase, r.score, r.safety, r.secs, r.gtime, r.hints, r.found, r.plays);
+    exec('INSERT OR IGNORE INTO events (at, day, device, build, pf, pwa, type, case_id, tier, phase, score, safety, secs, gtime, hints, found, plays, trapped, review, recall, drill, ok, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      r.at, r.day, r.device, r.build, r.pf, r.pwa, r.type, r.case_id, r.tier, r.phase, r.score, r.safety, r.secs, r.gtime, r.hints, r.found, r.plays, r.trapped, r.review, r.recall, r.drill, r.ok, r.total);
     if (count('SELECT COUNT(*) AS n FROM events') > before) { saved++; room--; }
   }
   return saved;
@@ -88,6 +107,14 @@ export interface Summary {
   builds: { build: string; devices: number; last: string }[];
   /** 每個裝置結案了幾張不同的委託，分成幾組 */
   depth: { label: string; devices: number }[];
+  /** 練習有沒有在發揮作用（只算 2026-11-26 之後的版本送來的；舊版的事件沒有這幾欄，不算進來）。
+   *  first／retry：一般的結案和試弓 vs 錯題複習的重考，各有幾場、診斷對幾場、掉進陷阱幾場。
+   *  recall：下診斷前有自己寫的場次，幾場想到了正確方向。drills：每一種刻意練習做了幾輪、對幾題／一共幾題 */
+  learning: {
+    first: { n: number; found: number; trapped: number }; retry: { n: number; found: number; trapped: number };
+    recall: { n: number; hit: number; devices: number };
+    drills: { kind: string; rounds: number; devices: number; ok: number; total: number }[];
+  };
 }
 
 const num = (x: Value | undefined) => Number(x ?? 0);
@@ -110,8 +137,18 @@ export function summary(exec: Exec, days: number | null, now: number): Summary {
     FROM events WHERE day >= ? AND case_id <> '' AND type <> 'trial' GROUP BY case_id ORDER BY case_id`, from);
   const depth = one(`SELECT SUM(n = 0) AS d0, SUM(n BETWEEN 1 AND 3) AS d1, SUM(n BETWEEN 4 AND 11) AS d4, SUM(n BETWEEN 12 AND 19) AS d12, SUM(n BETWEEN 20 AND 47) AS d20, SUM(n >= 48) AS d48
     FROM (SELECT COUNT(DISTINCT CASE WHEN type = 'done' THEN case_id END) AS n FROM events WHERE day >= ? GROUP BY device)`, from);
+  const l = one(`SELECT SUM(review = 0) AS fN, SUM(review = 0 AND found = 1) AS fFound, SUM(review = 0 AND trapped = 1) AS fTrapped,
+      SUM(review = 1) AS rN, SUM(review = 1 AND found = 1) AS rFound, SUM(review = 1 AND trapped = 1) AS rTrapped,
+      SUM(recall IS NOT NULL) AS wN, SUM(recall = 1) AS wHit, COUNT(DISTINCT CASE WHEN recall IS NOT NULL THEN device END) AS wDevices
+    FROM events WHERE day >= ? AND type IN ('done', 'trial')`, from);
+  const drills = exec("SELECT drill, COUNT(*) AS rounds, COUNT(DISTINCT device) AS devices, SUM(ok) AS ok, SUM(total) AS total FROM events WHERE day >= ? AND type = 'drill' GROUP BY drill ORDER BY drill", from);
   return {
     since, until,
+    learning: {
+      first: { n: num(l.fN), found: num(l.fFound), trapped: num(l.fTrapped) }, retry: { n: num(l.rN), found: num(l.rFound), trapped: num(l.rTrapped) },
+      recall: { n: num(l.wN), hit: num(l.wHit), devices: num(l.wDevices) },
+      drills: drills.map((r) => ({ kind: String(r.drill), rounds: num(r.rounds), devices: num(r.devices), ok: num(r.ok), total: num(r.total) })),
+    },
     totals: { devices: num(t.devices), finishers: num(t.finishers), returning, installed: num(t.installed), opens: num(t.opens), starts: num(t.starts), dones: num(t.dones), leaves: num(t.leaves), drops: num(t.drops), trials: num(t.trials), trialPass: num(t.trialPass) },
     days: exec("SELECT day, COUNT(DISTINCT device) AS devices, SUM(type = 'start') AS starts, SUM(type = 'done') AS dones FROM events WHERE day >= ? GROUP BY day ORDER BY day DESC LIMIT 120", from)
       .map((r) => ({ day: String(r.day), devices: num(r.devices), starts: num(r.starts), dones: num(r.dones) })),
@@ -123,7 +160,7 @@ export function summary(exec: Exec, days: number | null, now: number): Summary {
   };
 }
 
-const COLUMNS = ['at', 'day', 'device', 'build', 'pf', 'pwa', 'type', 'case_id', 'tier', 'phase', 'score', 'safety', 'secs', 'gtime', 'hints', 'found', 'plays'];
+const COLUMNS = ['at', 'day', 'device', 'build', 'pf', 'pwa', 'type', 'case_id', 'tier', 'phase', 'score', 'safety', 'secs', 'gtime', 'hints', 'found', 'plays', ...EXTRA_COLUMNS.map(([name]) => name)];
 /** 每一筆事件一列的 CSV，給試算表或統計軟體用。最多 20 萬列 */
 export function csv(exec: Exec, days: number | null, now: number): string {
   const from = days ? dayOf(now - (days - 1) * 86400) : '0000-00-00';

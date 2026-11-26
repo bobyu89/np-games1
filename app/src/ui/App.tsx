@@ -13,7 +13,11 @@ import { validRun } from './backup.ts';
 import { withNote } from './diary.ts';
 import { keepStorage } from './pwa.ts';
 import { AFTER, echoed, eldersFor, finaleDone, NIGHT_DONE, TRIAL_SECONDS, newReads, record, recordTrial, tierOf } from './progress.ts';
-import { track, trackOpen } from './stats.ts';
+import { track, trackOpen, type StatEvent } from './stats.ts';
+import { perilOf } from '../core/perils.ts';
+import { reviewDue } from './review.ts';
+import { dayKey } from './streak.ts';
+import { formsWritten, matchWritten } from './freetext.ts';
 import { StatsPage } from './StatsPage.tsx';
 import { bindSave, startAccount, syncSoon } from './account.ts';
 import { PrivacyPage } from './PrivacyPage.tsx';
@@ -67,13 +71,19 @@ export function App() {
     const echo = trial ? null : { got: echoed({ found: !!prev?.found || now.found, concern: !!prev?.concern || now.concern }), before: echoed(prev), text: AFTER[c.id] ?? '' };
     return <Debrief c={c} session={session} seconds={seconds} hero={save.hero} echo={echo} trial={trial ? { timeUp, axes: finaleDone(save) } : undefined} fresh={trial ? [] : newReads(save, c, session)} onFinish={(takeaway) => {
       const score = scoreSession(c, session);
+      // 練習有沒有在發揮作用：掉進陷阱沒有、這一場是不是錯題複習（記之前算）、自己先寫的有沒有想到正確方向。只送 0 和 1
+      const peril = perilOf(c, session), written = session.board.written?.length ? formsWritten(c.forms, matchWritten(c.complaint, c.forms, session.board.written)) : null;
+      const bit = (b: boolean): 0 | 1 => (b ? 1 : 0);
+      const learn: Pick<StatEvent, 'tr' | 'rv' | 'w'> = { rv: bit(reviewDue(save, dayKey(Date.now())).some((r) => r.caseId === c.id)) };
+      if (peril) learn.tr = bit(peril.trapped);
+      if (written) learn.w = bit(written.includes(c.answer.truth));
       if (trial) {
         // 試弓：不寫圖鑑、不算完成委託，只留一筆成績
-        track({ t: 'trial', c: c.id, sc: Math.round(score.total), sf: score.safety, sec: seconds, gt: session.time, f: harvest(c, session).found ? 1 : 0, n: save.trials.length + 1 });
+        track({ t: 'trial', c: c.id, sc: Math.round(score.total), sf: score.safety, sec: seconds, gt: session.time, f: harvest(c, session).found ? 1 : 0, n: save.trials.length + 1, ...learn });
         const next = recordTrial(save, c, session, score, seconds, timeUp, Date.now(), takeaway);
         keep({ ...next, takeaways: takeaway ? [takeaway, ...next.takeaways.filter((t) => t !== takeaway)].slice(0, 5) : next.takeaways });
       } else {
-        track({ t: 'done', c: c.id, tier: session.tier, ph: session.phase, sc: Math.round(score.total), sf: score.safety, sec: seconds, gt: session.time, h: session.hints, f: harvest(c, session).found ? 1 : 0, n: (save.cases[c.id]?.plays ?? 0) + 1 });
+        track({ t: 'done', c: c.id, tier: session.tier, ph: session.phase, sc: Math.round(score.total), sf: score.safety, sec: seconds, gt: session.time, h: session.hints, f: harvest(c, session).found ? 1 : 0, n: (save.cases[c.id]?.plays ?? 0) + 1, ...learn });
         keep(record(save, c, session, score, seconds, takeaway));
       }
       keepRun(null); keepStorage();
