@@ -22,6 +22,7 @@ import { weakness } from './sprint.ts';
 import { StatsPage } from './StatsPage.tsx';
 import { bindSave, startAccount, syncSoon } from './account.ts';
 import { PrivacyPage } from './PrivacyPage.tsx';
+import { NotesPage } from './NotesPage.tsx';
 
 type Screen = { name: 'title' } | { name: 'hall' } | { name: 'night' } | { name: 'tide'; n: number } | { name: 'ward'; c: CaseDef; n: number; tier: 0 | 1; resume: Run | null; trial: boolean } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number; trial: boolean; timeUp: boolean };
 
@@ -47,15 +48,18 @@ export function App() {
   const [admin, setAdmin] = useState(() => location.hash === '#stats');
   // 網址後面加 #privacy 是隱私說明
   const [privacy, setPrivacy] = useState(() => location.hash === '#privacy');
+  // 網址後面加 #notes 是考前速記頁
+  const [notesOn, setNotesOn] = useState(() => location.hash === '#notes');
   useEffect(() => {
     // 同步併回來的進度：換上、存好，但不用再觸發一次同步
     bindSave(() => latest.current, (s) => { latest.current = s; setSave(s); store(s); });
     void startAccount();
     trackOpen();
-    const onHash = () => { setAdmin(location.hash === '#stats'); setPrivacy(location.hash === '#privacy'); };
+    const onHash = () => { setAdmin(location.hash === '#stats'); setPrivacy(location.hash === '#privacy'); setNotesOn(location.hash === '#notes'); };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
+  if (notesOn) return <NotesPage onClose={() => { history.replaceState(null, '', location.pathname + location.search); setNotesOn(false); }} />;
   if (privacy) return <PrivacyPage onClose={() => { history.replaceState(null, '', location.pathname + location.search); setPrivacy(false); }} />;
   if (admin) return <StatsPage onClose={() => { history.replaceState(null, '', location.pathname + location.search); setAdmin(false); }} />;
 

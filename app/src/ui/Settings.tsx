@@ -13,6 +13,7 @@ import { accountState, accountSubscribe } from './account.ts';
 import { ReportSheet } from './Report.tsx';
 import { openPrivacy } from './PrivacyPage.tsx';
 import { EXAM, countdownText, daysLeft, examShown, examSubscribe, setExamShown } from './exam.ts';
+import { SPEAK_SECONDS, setSpeakOn, speakOn, speakSubscribe } from './speak.ts';
 
 const doneOf = (s: Save) => QUESTS.filter((q) => s.cases[q.caseId]).length;
 const brief = (s: Save) => '完成 ' + doneOf(s) + '／' + QUESTS.length + ' 張委託，圖鑑寫回 ' + codexPercent(COMPLAINTS, s) + '%，' + rankOf(s);
@@ -25,6 +26,7 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
   const consent = useSyncExternalStore(statsSubscribe, statsConsent);
   const acct = useSyncExternalStore(accountSubscribe, accountState);
   const examOn = useSyncExternalStore(examSubscribe, examShown), examLeft = daysLeft();
+  const speak = useSyncExternalStore(speakSubscribe, speakOn);
   const [note, setNote] = useState<{ text: string; bad?: boolean } | null>(null);
   const [code, setCode] = useState<string | null>(null);        // 存不了檔案的時候，把內容攤開讓人複製
   const [paste, setPaste] = useState<string | null>(null);      // 貼上進度的那一格。null 是還沒打開
@@ -136,6 +138,10 @@ export function Settings({ save, onImport, onReset, onReplayIntro, onClose }: Pr
         <p className="dim">{examOn ? '現在：首頁和委託板會顯示還有幾天。' : '現在：不顯示。'}不是要考這一場的人，或是看了會緊張的人，可以關掉。</p>
         <button type="button" className="pick" onClick={() => { sfx.tap(); setExamShown(!examOn); }}>{examOn ? '不要顯示倒數' : '顯示倒數'}</button>
       </>}
+
+      <h3>先說出口</h3>
+      <p className="dim">{speak ? '現在：向醫師回報、向病人說明之前，先停 ' + SPEAK_SECONDS + ' 秒把話說一遍，再看選項。' : '現在：直接看選項。'}口試是用說的；先說再選，記得比較牢。只存在這台裝置上，不錄音。</p>
+      <button type="button" className="pick" onClick={() => { sfx.tap(); setSpeakOn(!speak); }}>{speak ? '不要先說，直接看選項' : '要先說出口'}</button>
 
       <h3>其他</h3>
       <div className="stack">

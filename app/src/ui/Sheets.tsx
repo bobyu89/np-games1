@@ -1,10 +1,11 @@
 // 蓋在畫面上的紙：診斷、回報、說明、線索、確認。
 // 看字和下診斷不扣時間，所以這些都可以慢慢想。
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { ISLANDS, elderOf } from '../data/islands.ts';
 import { shuffled } from '../core/order.ts';
 import type { Board, CaseDef, Clue, Session } from '../core/types.ts';
 import { sfx } from './sound.ts';
+import { SPEAK_SECONDS, speakOn, speakSubscribe } from './speak.ts';
 import { WRITE_LEN, WRITE_MAX, formsWritten, matchWritten, splitGuesses } from './freetext.ts';
 
 export function Sheet({ title, onClose, children, footer }: { title: string; onClose(): void; children: ReactNode; footer?: ReactNode }) {
@@ -86,9 +87,25 @@ export function BoardSheet({ c, s, onSave, onClose }: { c: CaseDef; s: Session; 
   );
 }
 
+/** 說出口：先停 30 秒把要說的話說一遍，再看選項。倒數到了不會自動跳走，按「說完了」才看選項。trial 的時候不給提示的骨架 */
+function SpeakFirst({ title, cues, onDone, onClose }: { title: string; cues: string[]; onDone(): void; onClose(): void }) {
+  const [left, setLeft] = useState(SPEAK_SECONDS);
+  useEffect(() => { const id = window.setInterval(() => setLeft((n) => Math.max(0, n - 1)), 1000); return () => window.clearInterval(id); }, []);
+  return (
+    <Sheet title={title + '：先說出口'} onClose={onClose} footer={<div className="two"><button type="button" className="act" onClick={() => { sfx.page(); onDone(); }}>跳過</button><button type="button" className="act demo" onClick={() => { sfx.page(); onDone(); }}>{left ? '說完了，看選項' : '時間到，看選項'}</button></div>}>
+      <p>口試是用說的。先不看選項，把你要說的話完整說一遍：大聲說，或在心裡說。</p>
+      <div className={'speak-timer' + (left ? '' : ' done')} role="timer" aria-live="off"><b>{left}</b><span>秒</span></div>
+      {cues.length > 0 && <><h3>說的時候要有</h3><ul>{cues.map((c) => <li key={c}>{c}</li>)}</ul></>}
+      <p className="dim">不錄音、不送出任何東西。不想每次都先說，可以在「設定」關掉。</p>
+    </Sheet>
+  );
+}
+
 /** 回報：現況和背景由你手上的線索自動組成，評估和請求由你決定 */
-export function ReportSheet({ c, s, onSend, onClose }: { c: CaseDef; s: Session; onSend(a: string, r: string[]): void; onClose(): void }) {
+export function ReportSheet({ c, s, onSend, onClose, trial = false }: { c: CaseDef; s: Session; onSend(a: string, r: string[]): void; onClose(): void; trial?: boolean }) {
   const [a, setA] = useState<string | null>(null), [r, setR] = useState<string[]>([]);
+  const [spoken, setSpoken] = useState(!useSyncExternalStore(speakSubscribe, speakOn));
+  if (!spoken) return <SpeakFirst title="向值班醫師回報" onDone={() => setSpoken(true)} onClose={onClose} cues={trial ? [] : ['S 現況：誰、什麼主訴、現在的生命徵象', 'B 背景：相關的病史、用藥、過敏', 'A 評估：你認為是什麼狀況、穩不穩定', 'R 請求：你要醫師做什麼、你自己會做什麼']} />;
   const mine = s.clues.map((id) => clueOf(c, id));
   const now = mine.filter((k) => k.kind === 'pos' && k.key && k.id !== 'c-vitals').slice(0, 4).map((k) => k.text), bg = mine.filter((k) => k.kind === 'info').slice(0, 4).map((k) => k.text);
   const v = s.vitalsSeen?.v;
@@ -108,8 +125,10 @@ export function ReportSheet({ c, s, onSend, onClose }: { c: CaseDef; s: Session;
 }
 
 /** 向病人說明：選要說的話。沒問過他擔心什麼，就不會有回應他的那一句 */
-export function ExplainSheet({ c, s, onSend, onClose }: { c: CaseDef; s: Session; onSend(ids: string[]): void; onClose(): void }) {
+export function ExplainSheet({ c, s, onSend, onClose, trial = false }: { c: CaseDef; s: Session; onSend(ids: string[]): void; onClose(): void; trial?: boolean }) {
   const [ids, setIds] = useState<string[]>([]);
+  const [spoken, setSpoken] = useState(!useSyncExternalStore(speakSubscribe, speakOn));
+  if (!spoken) return <SpeakFirst title={'向' + c.patient.name + '說明'} onDone={() => setSpoken(true)} onClose={onClose} cues={trial ? [] : ['評估的結果，用' + c.patient.pronoun + '聽得懂的話', '接下來會做什麼、要等多久', '什麼情況要馬上回來或叫人', c.patient.pronoun + '最擔心的那件事']} />;
   const opts = c.explain.filter((e) => !e.needsClue || s.clues.includes(e.needsClue));
   return (
     <Sheet title={'向' + c.patient.name + '說明'} onClose={onClose} footer={<button type="button" className="act demo" disabled={!ids.length} onClick={() => onSend(ids)}>跟{c.patient.pronoun}說</button>}>

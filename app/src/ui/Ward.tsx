@@ -112,7 +112,9 @@ export function Ward({ c, tier, hero, elders = [], takeaway, coach, trial, resum
   /** 做一個行動：規則核心算結果，這裡把事件演出來 */
   const act = (a: Action) => {
     talk.current?.finish();
-    const before = live.current, { session: next, events } = perform(c, before, a);
+    const before = live.current, { session: done, events } = perform(c, before, a);
+    // 進到新的階段：記下真實的秒數（試弓回顧的時間分配用）
+    const next = done.phase > before.phase && (before.phaseAt?.length ?? 0) < done.phase - 1 ? { ...done, phaseAt: [...(before.phaseAt ?? []), ...Array(done.phase - 1 - (before.phaseAt?.length ?? 0)).fill(elapsed())] } : done;
     const first = events[0];
     if (first?.type === 'reject') { sfx.miss(); talk.current?.say([{ who: 'sys', text: first.text }]); return; }
     sfx.tap(); buzz(8);
@@ -307,8 +309,8 @@ export function Ward({ c, tier, hero, elders = [], takeaway, coach, trial, resum
       </div>
 
       {sheet === 'board' && <BoardSheet c={c} s={session} onClose={() => setSheet(null)} onSave={(board) => { setSheet(null); act({ type: 'board', board }); }} />}
-      {sheet === 'report' && <ReportSheet c={c} s={session} onClose={() => setSheet(null)} onSend={(a, r) => { setSheet(null); act({ type: 'report', a, r }); }} />}
-      {sheet === 'explain' && <ExplainSheet c={c} s={session} onClose={() => setSheet(null)} onSend={(ids) => { setSheet(null); act({ type: 'explain', ids }); }} />}
+      {sheet === 'report' && <ReportSheet c={c} s={session} trial={trial} onClose={() => setSheet(null)} onSend={(a, r) => { setSheet(null); act({ type: 'report', a, r }); }} />}
+      {sheet === 'explain' && <ExplainSheet c={c} s={session} trial={trial} onClose={() => setSheet(null)} onSend={(ids) => { setSheet(null); act({ type: 'explain', ids }); }} />}
       {sheet === 'clues' && <CluesSheet c={c} s={session} onClose={() => setSheet(null)} />}
       {sheet === 'ask' && <AskSheet elders={elders} left={session.tier >= 1 ? Math.max(0, HINT_LIMIT - session.hints) : null} onClose={() => setSheet(null)} onAsk={(by) => { setSheet(null); act(by ? { type: 'hint', by } : { type: 'hint' }); }} />}
       {sheet === 'confirm' && <ConfirmSheet title={trial ? '要交卷了嗎？' : '要結案了嗎？'} yes={trial ? '交卷' : '結案'} no="回去補" onNo={() => setSheet(null)} onYes={() => { setSheet(null); act({ type: 'close' }); }}

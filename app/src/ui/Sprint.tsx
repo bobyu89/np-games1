@@ -2,6 +2,7 @@
 import type { Save } from './store.ts';
 import { RECENT, weakness, whyWeak, type Sprint } from './sprint.ts';
 import { sfx } from './sound.ts';
+import { openNotes } from './notes.ts';
 
 const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -27,6 +28,7 @@ export function SprintCard({ save, sprint, due, onDraw }: { save: Save; sprint: 
       </ul>
       <h4>最弱的三種主訴</h4>
       <ol className="weak">{weak.map((w) => <li key={w.complaint}><b>{w.name}</b><span className="dim">{whyWeak(w)}</span></li>)}</ol>
+      <button type="button" className="pick" onClick={() => { sfx.page(); openNotes(); }}>考前速記頁：十二種主訴的鑑別方向和重點，可以列印</button>
       <p className="dim">每一種只看最近 {RECENT} 場（委託和試弓都算）。衝刺抽題會從這三種裡抽；練過、變強了，名單就會換。</p>
     </div>
   );

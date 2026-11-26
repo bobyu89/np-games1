@@ -195,6 +195,8 @@ export interface Session {
   consults?: import('./elders.ts').Consult[];
   closedAt: number | null;
   log: LogEntry[];
+  /** 畫面記的真實秒數：第一次進到評估、診斷、檢查與處置的那一刻（試弓的時間分配用；規則核心不看，舊的對局沒有這一欄） */
+  phaseAt?: number[];
 }
 
 export type Action =

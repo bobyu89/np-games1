@@ -14,6 +14,7 @@ import { sfx } from './sound.ts';
 import { formsWritten, matchWritten } from './freetext.ts';
 import { REVIEW_GAPS, missed } from './review.ts';
 import { RECENT, whyWeak, type Weak } from './sprint.ts';
+import { SPARE, mmText, phaseSplit, timingNote } from './timing.ts';
 
 const mmss = (t: number) => Math.floor(t / 60) + ' 分 ' + String(t % 60).padStart(2, '0') + ' 秒';
 const STEPS = ['蒐集', '分析', '摘要'];
@@ -31,6 +32,7 @@ export function Debrief({ weak, c, session, seconds, hero = null, echo = null, t
   const tk = useMemo(() => takeaways(c, session, sc), [c, session, sc]);
   const tr = useMemo(() => trajectory(c, session), [c, session]);
   const written = useMemo(() => (session.board.written?.length ? matchWritten(c.complaint, c.forms, session.board.written) : null), [c, session]);
+  const split = useMemo(() => (trial ? phaseSplit(session, seconds) : null), [trial, session, seconds]);
   const again = missed({ found: session.board.likely === c.answer.truth, trapped: pr ? pr.trapped : null });
   const [step, setStep] = useState(0), [pick, setPick] = useState<string | null>(null), [mine, setMine] = useState<string | null>(null);
   const m = ms.find((k) => k.id === pick);
@@ -72,6 +74,18 @@ export function Debrief({ weak, c, session, seconds, hero = null, echo = null, t
               <div className={'safety ' + sc.safety}><b>{SAFETY_LABEL[sc.safety]}</b><span>安全行動</span></div>
             </div>
             <p className="quote">{sc.safetyNote}</p>
+            {split && <>
+              <h3>時間怎麼花的（站內 15 分鐘）</h3>
+              <div className="timing">{split.map((x) => (
+                <div key={x.key} className={'trow' + (x.reached ? '' : ' none')}>
+                  <span>{x.name}</span>
+                  <i><b className={x.sec > x.plan + 30 ? 'over' : ''} style={{ width: Math.min(100, (x.sec / 360) * 100) + '%' }} /><em style={{ left: (x.plan / 360) * 100 + '%' }} title={'建議 ' + mmText(x.plan)} /></i>
+                  <small>{x.reached ? mmText(x.sec) : '沒走到'}<br /><span className="dim">建議 {mmText(x.plan)}</span></small>
+                </div>
+              ))}</div>
+              <p>{timingNote(split, !!trial?.timeUp)}</p>
+              <p className="dim">直線是遊戲建議的時間（不是甄審的規定），另外留 {mmText(SPARE)} 回頭檢查。</p>
+            </>}
             <h3>你的想法怎麼變</h3>
             {tr.steps.length ? <ol className="path">{tr.steps.map((k, i) => <li key={i} className={k.right ? 'up' : 'down'}><b>{mmss(k.t)}</b>　{i === tr.steps.length - 1 && session.board.likely ? (trial ? '交卷時' : '結案時') : (trial ? '口試委員問你時' : '孟拓問你時')}：{k.name}</li>)}<li><b>實際上</b>　{tr.truth}</li></ol> : <p className="dim">這一場沒有留下你的判斷。實際上是{tr.truth}。</p>}
             <p className="quote">{tr.verdict}</p>
