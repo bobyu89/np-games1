@@ -100,7 +100,8 @@ export interface Summary {
   since: string | null; until: string;
   /** devices：出現過的裝置。finishers：至少結案一張的裝置。returning：在兩天以上出現過的裝置。installed：從主畫面圖示開過的裝置 */
   totals: { devices: number; finishers: number; returning: number; installed: number; opens: number; starts: number; dones: number; leaves: number; drops: number; trials: number; trialPass: number };
-  days: { day: string; devices: number; starts: number; dones: number }[];
+  /** trials、drills：試弓和刻意練習的次數（舊版端點沒有） */
+  days: { day: string; devices: number; starts: number; dones: number; trials: number; drills: number }[];
   /** starters、finishers 是裝置數。firstScore：第一次結案的平均分數。stuck：做到一半離開或放掉的時候，停在第幾段 */
   cases: { case_id: string; starts: number; dones: number; starters: number; finishers: number; firstScore: number | null; score: number | null; met: number; late: number; review: number; found: number; secs: number | null; hints: number | null; stuck: [number, number, number, number] }[];
   platforms: { pf: string; devices: number }[];
@@ -115,6 +116,8 @@ export interface Summary {
     recall: { n: number; hit: number; devices: number };
     drills: { kind: string; rounds: number; devices: number; ok: number; total: number }[];
   };
+  /** 同樣這幾個指標，照週（星期一開頭）分開，看有沒有隨時間變好。week 是那一週的星期一 */
+  weeks: { week: string; first: { n: number; found: number }; retry: { n: number; found: number }; recall: { n: number; hit: number }; drill: { ok: number; total: number } }[];
 }
 
 const num = (x: Value | undefined) => Number(x ?? 0);
@@ -150,8 +153,15 @@ export function summary(exec: Exec, days: number | null, now: number): Summary {
       drills: drills.map((r) => ({ kind: String(r.drill), rounds: num(r.rounds), devices: num(r.devices), ok: num(r.ok), total: num(r.total) })),
     },
     totals: { devices: num(t.devices), finishers: num(t.finishers), returning, installed: num(t.installed), opens: num(t.opens), starts: num(t.starts), dones: num(t.dones), leaves: num(t.leaves), drops: num(t.drops), trials: num(t.trials), trialPass: num(t.trialPass) },
-    days: exec("SELECT day, COUNT(DISTINCT device) AS devices, SUM(type = 'start') AS starts, SUM(type = 'done') AS dones FROM events WHERE day >= ? GROUP BY day ORDER BY day DESC LIMIT 120", from)
-      .map((r) => ({ day: String(r.day), devices: num(r.devices), starts: num(r.starts), dones: num(r.dones) })),
+    days: exec("SELECT day, COUNT(DISTINCT device) AS devices, SUM(type = 'start') AS starts, SUM(type = 'done') AS dones, SUM(type = 'trial') AS trials, SUM(type = 'drill') AS drills FROM events WHERE day >= ? GROUP BY day ORDER BY day DESC LIMIT 120", from)
+      .map((r) => ({ day: String(r.day), devices: num(r.devices), starts: num(r.starts), dones: num(r.dones), trials: num(r.trials), drills: num(r.drills) })),
+    weeks: exec(`SELECT date(day, '-' || ((CAST(strftime('%w', day) AS INTEGER) + 6) % 7) || ' days') AS week,
+        SUM(type IN ('done', 'trial') AND review = 0) AS fN, SUM(type IN ('done', 'trial') AND review = 0 AND found = 1) AS fFound,
+        SUM(type IN ('done', 'trial') AND review = 1) AS rN, SUM(type IN ('done', 'trial') AND review = 1 AND found = 1) AS rFound,
+        SUM(type IN ('done', 'trial') AND recall IS NOT NULL) AS wN, SUM(type IN ('done', 'trial') AND recall = 1) AS wHit,
+        SUM(CASE WHEN type = 'drill' THEN ok END) AS dOk, SUM(CASE WHEN type = 'drill' THEN total END) AS dTotal
+      FROM events WHERE day >= ? GROUP BY week ORDER BY week DESC LIMIT 26`, from).reverse()
+      .map((r) => ({ week: String(r.week), first: { n: num(r.fN), found: num(r.fFound) }, retry: { n: num(r.rN), found: num(r.rFound) }, recall: { n: num(r.wN), hit: num(r.wHit) }, drill: { ok: num(r.dOk), total: num(r.dTotal) } })),
     cases: cases.map((r) => ({ case_id: String(r.case_id), starts: num(r.starts), dones: num(r.dones), starters: num(r.starters), finishers: num(r.finishers), firstScore: avg(r.firstScore), score: avg(r.score),
       met: num(r.met), late: num(r.late), review: num(r.review), found: num(r.found), secs: avg(r.secs), hints: avg(r.hints), stuck: [num(r.s1), num(r.s2), num(r.s3), num(r.s4)] })),
     platforms: exec('SELECT pf, COUNT(DISTINCT device) AS devices FROM events WHERE day >= ? GROUP BY pf ORDER BY devices DESC, pf', from).map((r) => ({ pf: String(r.pf), devices: num(r.devices) })),
