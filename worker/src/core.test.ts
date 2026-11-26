@@ -150,3 +150,18 @@ test('練習的指標：錯題複習 vs 一般、自己先寫有沒有想到、�
   assert.deepEqual([start.trapped, start.review, start.recall, start.drill], [null, null, null, null], '只有結案和試弓收這幾欄');
   assert.equal(exec("SELECT case_id FROM events WHERE type = 'drill' AND drill = 'summary'")[0].case_id, '', '刻意練習不記哪一位病人');
 });
+
+test('照週分開：星期一開頭，跨週的分到兩週；每天多試弓和刻意練習的次數', () => {
+  const exec = fresh();
+  const wed = Date.UTC(2026, 10, 25, 4) / 1000, mon = Date.UTC(2026, 10, 23, 4) / 1000, sun = Date.UTC(2026, 10, 22, 4) / 1000;
+  send(exec, pack(1, [
+    { t: 'done', c: 'c01a', at: wed, f: 1, rv: 0, w: 1 }, { t: 'trial', c: 'c01b', at: mon, f: 0, rv: 1 },
+    { t: 'done', c: 'c01c', at: sun, f: 1, rv: 0 }, { t: 'drill', dk: 'read', ok: 5, of: 6, at: wed + 1 },
+  ]), wed + 60);
+  const s = summary(exec, null, wed + 60);
+  assert.deepEqual(s.weeks.map((w) => w.week), ['2026-11-16', '2026-11-23']);
+  assert.deepEqual(s.weeks[1], { week: '2026-11-23', first: { n: 1, found: 1 }, retry: { n: 1, found: 0 }, recall: { n: 1, hit: 1 }, drill: { ok: 5, total: 6 } });
+  assert.deepEqual(s.weeks[0].first, { n: 1, found: 1 });
+  const d = s.days.find((x) => x.day === '2026-11-25')!;
+  assert.deepEqual([d.dones, d.trials, d.drills], [1, 0, 1]);
+});

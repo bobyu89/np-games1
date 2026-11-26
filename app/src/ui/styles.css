@@ -358,8 +358,6 @@ html.admin #app { max-width: 1080px; max-height: none; height: auto; margin: 0 a
 .admin-page th, .admin-page td { text-align: left; padding: 4px 10px; border-bottom: 1px solid var(--paper-2); white-space: nowrap; }
 .admin-page th { font-weight: 700; background: var(--paper-2); }
 .admin-page td.wide { width: 40%; min-width: 120px; }
-.statbar { display: block; height: 0.7em; background: var(--paper-2); border-radius: 4px; overflow: hidden; }
-.statbar b { display: block; height: 100%; background: var(--teal); }
 .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 4px 24px; }
 .cols > div { min-width: 0; overflow-x: auto; }
 .admin-page, .admin-bar label { min-width: 0; }
@@ -408,6 +406,31 @@ html.admin #app { max-width: 1080px; max-height: none; height: auto; margin: 0 a
 .code.say { font: inherit; word-break: normal; min-height: 6.5em; }
 button.link { background: none; border: 0; padding: 0; color: var(--teal); text-decoration: underline; cursor: pointer; font: inherit; }
 .admin-page td.said { white-space: pre-wrap; min-width: 220px; }
+/* 管理頁的圖（StatsCharts.tsx） */
+.viz { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.viz figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.viz .legend { display: inline-flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.88em; color: var(--ink-soft); }
+.viz .legend i { display: inline-block; width: 12px; height: 4px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+.viz .legend .ramp { width: 90px; height: 10px; }
+.viz .legend .hatch { width: 14px; height: 10px; background: repeating-linear-gradient(135deg, var(--paper-2) 0 3px, #fffaf0 3px 6px); border: 1px solid var(--ink-soft); }
+.viz-scroll { overflow-x: auto; border: 1px solid var(--ink-soft); border-radius: 8px; background: #fffaf0; }
+.viz-box { position: relative; min-width: 560px; }
+.viz-box svg { display: block; width: 100%; height: auto; }
+.viz text.axis { font-size: 11px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.viz text.end { font-size: 12px; fill: var(--ink); }
+.viz .tip { position: absolute; top: 8px; transform: translateX(-50%); pointer-events: none; background: #fff; border: 1px solid var(--ink-soft); border-radius: 6px; padding: 4px 8px; font-size: 0.82em; display: flex; flex-direction: column; gap: 1px; white-space: nowrap; box-shadow: 1px 2px 0 rgba(0,0,0,.12); }
+.viz .tip i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.viz-table summary { cursor: pointer; color: var(--teal); font-size: 0.9em; }
+.hbars { display: flex; flex-direction: column; gap: 6px; }
+.hbar { display: grid; grid-template-columns: 4.5em 1fr 3em; align-items: center; gap: 8px; }
+.hbar i { display: block; height: 14px; }
+.hbar i b { display: block; height: 100%; border-radius: 0 4px 4px 0; min-width: 2px; }
+.hbar em { font-style: normal; font-variant-numeric: tabular-nums; }
+.admin-page table.heat td.hm { white-space: normal; min-width: 5.5em; border: 2px solid #fffaf0; vertical-align: top; }
+.admin-page table.heat td.hm span { display: block; font-weight: 700; }
+.admin-page table.heat td.hm small { font-variant-numeric: tabular-nums; }
+.admin-page table.heat td.hm.dark { color: #fff; }
+.admin-page table.heat td.hm.none { background: repeating-linear-gradient(135deg, var(--paper-2) 0 3px, #fffaf0 3px 6px); color: var(--ink-soft); }
 .admin-page.prose { max-width: 720px; margin: 0 auto; line-height: 1.7; }
 .admin-page.prose section { display: flex; flex-direction: column; gap: 6px; }
 .admin-page.prose ul { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 4px; }

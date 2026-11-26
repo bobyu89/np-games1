@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { CASES } from '../data/index.ts';
 import { STATS_URL, statsBuilt } from './stats.ts';
+import { Bars, CaseHeatmap, LineChart, SERIES } from './StatsCharts.tsx';
 
 interface CaseRow { case_id: string; starts: number; dones: number; starters: number; finishers: number; firstScore: number | null; score: number | null; met: number; late: number; review: number; found: number; secs: number | null; hints: number | null; stuck: [number, number, number, number] }
 const REPORT_KIND: Record<string, string> = { content: '內容有錯', stuck: '操作卡住', idea: '建議', other: '其他' };
@@ -10,12 +11,24 @@ const REPORT_PLACE: Record<string, string> = { title: '首頁', hall: '大廳', 
 interface Summary {
   since: string | null; until: string;
   totals: { devices: number; finishers: number; returning: number; installed: number; opens: number; starts: number; dones: number; leaves: number; drops: number; trials?: number; trialPass?: number };
-  days: { day: string; devices: number; starts: number; dones: number }[]; cases: CaseRow[];
+  days: { day: string; devices: number; starts: number; dones: number; trials?: number; drills?: number }[]; cases: CaseRow[];
   accounts?: { accounts: number; saves: number; google: number; line: number };
   platforms: { pf: string; devices: number }[]; builds: { build: string; devices: number; last: string }[]; depth: { label: string; devices: number }[];
   /** 舊版的端點沒有這一塊 */
   learning?: { first: Played; retry: Played; recall: { n: number; hit: number; devices: number }; drills: { kind: string; rounds: number; devices: number; ok: number; total: number }[] };
+  weeks?: { week: string; first: { n: number; found: number }; retry: { n: number; found: number }; recall: { n: number; hit: number }; drill: { ok: number; total: number } }[];
 }
+/** 每一天連起來：中間沒有事件的那幾天補 0，線才不會跳過去 */
+function fillDays(days: Summary['days']) {
+  if (!days.length) return [];
+  const sorted = [...days].sort((a, b) => (a.day < b.day ? -1 : 1)), out: Summary['days'] = [];
+  for (let d = new Date(sorted[0].day + 'T00:00:00Z'), end = sorted[sorted.length - 1].day; d.toISOString().slice(0, 10) <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+    const day = d.toISOString().slice(0, 10);
+    out.push(sorted.find((k) => k.day === day) ?? { day, devices: 0, starts: 0, dones: 0, trials: 0, drills: 0 });
+  }
+  return out;
+}
+const rate = (a: number, b: number) => (b ? a / b : null);
 interface Played { n: number; found: number; trapped: number }
 const DRILL_NAME: Record<string, string> = { read: '線索解讀', summary: '問題摘要', sbar: '回報的評估' };
 const PF: Record<string, string> = { ios: 'iPhone、iPad', android: 'Android', desktop: '電腦', other: '其他' };
@@ -24,7 +37,6 @@ const RANGES: [string, string][] = [['7', '最近 7 天'], ['30', '最近 30 天
 const pct = (a: number, b: number) => (b ? Math.round((a / b) * 100) + '%' : '—');
 const mins = (s: number | null) => (s === null ? '—' : Math.round(s / 60) + ' 分');
 const nameOf = (id: string) => { const c = CASES.find((k) => k.id === id); return c ? c.patient.name + '｜' + c.complaintName + '・' + (c.forms.find((f) => f.id === c.answer.truth)?.name ?? '') : id; };
-const Bar = ({ n, max }: { n: number; max: number }) => <i className="statbar"><b style={{ width: (max ? Math.round((n / max) * 100) : 0) + '%' }} /></i>;
 
 export function StatsPage({ onClose }: { onClose(): void }) {
   const [key, setKey] = useState(() => { try { return sessionStorage.getItem('mist-guild.admin') ?? ''; } catch { return ''; } });
@@ -60,7 +72,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (key && statsBuilt) void load(); }, [days]);
 
-  const t = data?.totals, maxDay = Math.max(1, ...(data?.days ?? []).map((d) => d.devices));
+  const t = data?.totals;
   return (
     <div className="admin-page">
       <div className="admin-top"><h1>歸航記｜使用統計</h1><button type="button" className="pick" onClick={onClose}>回到遊戲</button></div>
@@ -82,7 +94,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
         </div>
 
         <h2>練習有沒有在發揮作用</h2>
-        {!data.learning ? <p className="dim">端點還是舊版，還沒有這一塊。</p> : <Learning l={data.learning} />}
+        {!data.learning ? <p className="dim">端點還是舊版，還沒有這一塊。</p> : <Learning l={data.learning} weeks={data.weeks} />}
 
         <h2>玩家的回報</h2>
         {!reports ? <p className="dim">讀不到回報。</p> : !reports.length ? <p className="dim">這個範圍裡沒有回報。</p> : (
@@ -106,10 +118,16 @@ export function StatsPage({ onClose }: { onClose(): void }) {
         {!data.cases.length && <p className="dim">這段時間還沒有人接委託。</p>}
 
         <h2>每一天</h2>
-        <div className="tw"><table>
-          <thead><tr><th>日期</th><th>裝置</th><th /><th>接了幾張</th><th>結案幾張</th></tr></thead>
-          <tbody>{data.days.map((d) => <tr key={d.day}><td>{d.day}</td><td>{d.devices}</td><td className="wide"><Bar n={d.devices} max={maxDay} /></td><td>{d.starts}</td><td>{d.dones}</td></tr>)}</tbody>
-        </table></div>
+        {(() => { const ds = fillDays(data.days); return ds.length ? <LineChart title="每天有幾台裝置在玩、結案幾張" labels={ds.map((d) => d.day.slice(5).replace('-', '/'))} fmt={(v) => String(Math.round(v))}
+          lines={[{ name: '裝置', color: SERIES[0], values: ds.map((d) => d.devices) }, { name: '結案', color: SERIES[1], values: ds.map((d) => d.dones) }, ...(ds.some((d) => d.trials) ? [{ name: '試弓', color: SERIES[2], values: ds.map((d) => d.trials ?? 0) }] : [])]}
+          note="同一個單位（次數），一個 y 軸。滑過去看那一天的數字；中間沒有人玩的日子算 0。" /> : <p className="dim">這段時間沒有資料。</p>; })()}
+
+        <h2>沒結案的，停在哪一段</h2>
+        {(() => { const st = [0, 1, 2, 3].map((i) => data.cases.reduce((n, c) => n + c.stuck[i], 0)); return <Bars title={'接了 ' + t.starts + ' 張、結案 ' + t.dones + ' 張（' + pct(t.dones, t.starts) + '）；中途離開或放掉的時候停在：'} rows={PHASE.map((name, i) => ({ name, n: st[i] }))}
+          note="一張委託中途離開又回來，會算好幾次。停在問診或評估的多，可能是題目太長；停在檢查的多，可能是不知道怎麼結案。" />; })()}
+
+        <h2>哪一位最難</h2>
+        <CaseHeatmap cases={data.cases} />
 
         <div className="cols">
           <div><h2>玩得多深</h2><table><tbody>{data.depth.map((d) => <tr key={d.label}><td>{d.label}</td><td>{d.devices} 台</td></tr>)}</tbody></table></div>
@@ -123,7 +141,7 @@ export function StatsPage({ onClose }: { onClose(): void }) {
 }
 
 /** 錯題複習的重考 vs 一般的場次、自己先寫有沒有想到、刻意練習。只算新版遊戲送來的事件 */
-function Learning({ l }: { l: NonNullable<Summary['learning']> }) {
+function Learning({ l, weeks }: { l: NonNullable<Summary['learning']>; weeks?: Summary['weeks'] }) {
   const row = (name: string, p: Played) => <tr key={name}><td>{name}</td><td>{p.n}</td><td>{pct(p.found, p.n)}</td><td>{pct(p.trapped, p.n)}</td></tr>;
   return <>
     <div className="tw"><table>
@@ -136,6 +154,10 @@ function Learning({ l }: { l: NonNullable<Summary['learning']> }) {
       {l.drills.map((d) => <div key={d.kind} className="tile"><b>{pct(d.ok, d.total)}</b><span>刻意練習・{DRILL_NAME[d.kind] ?? d.kind}答對（{d.rounds} 輪，{d.devices} 台裝置）</span></div>)}
       {!l.drills.length && <div className="tile"><b>0</b><span>刻意練習的輪數</span></div>}
     </div>
+    {weeks && weeks.some((w) => w.first.n || w.retry.n || w.recall.n || w.drill.total) && <LineChart title="每週的變化（比例）" labels={weeks.map((w) => w.week.slice(5).replace('-', '/') + ' 那週')} max={1} fmt={(v) => Math.round(v * 100) + '%'}
+      lines={[{ name: '一般・診斷正確', color: SERIES[0], values: weeks.map((w) => rate(w.first.found, w.first.n)) }, { name: '重考・診斷正確', color: SERIES[1], values: weeks.map((w) => rate(w.retry.found, w.retry.n)) },
+        { name: '先寫・想到方向', color: SERIES[2], values: weeks.map((w) => rate(w.recall.hit, w.recall.n)) }, { name: '刻意練習・答對', color: SERIES[3], values: weeks.map((w) => rate(w.drill.ok, w.drill.total)) }]}
+      note="四條都是比例，同一個 y 軸（0–100%）。那一週沒有資料的就斷開。看的是方向：重考那條在一般那條上面、先寫那條往上走，才是好消息。" />}
     <p className="dim">只算 2026-11-26 之後的版本送來的；更早的事件沒有這幾欄，不算進來。這是看功能有沒有在用、方向對不對的內部指標：只有同意回傳的人、沒有對照組，不能當成研究的成效證據。</p>
   </>;
 }
