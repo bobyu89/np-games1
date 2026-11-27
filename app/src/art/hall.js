@@ -106,7 +106,7 @@ export function createHall(canvas, opts = {}) {
     if (L.failed) L = null;
     else if ((opts.focus === 'mo' || (opts.focus === 'hero' && opts.hero)) && opts.view) {
       const id = opts.focus === 'mo' ? 'mo-a' : 'hero-' + opts.hero + '-a', [hx, hy] = headOf(L.meta[id], L.img[id], ...spot(opts.focus));
-      opts.view.cx = hx; opts.view.cy = hy + opts.view.h * 0.42;
+      opts.view.cx = hx; opts.view.cy = hy + opts.view.h * 0.36;
     }
     if (base.img) base.resize(base.W, base.H);
     opts.onReady?.();
