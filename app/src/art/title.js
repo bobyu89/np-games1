@@ -71,9 +71,21 @@ const TITLE_RECT = [-30, -8, 480, 320], TITLE_SPOT = { lamp: [0.124, 0.127], her
 
 export function createTitle(canvas, opts = {}) {
   let L = opts.live ? liveFor(titleLiveIds(opts.hero)) : null;
-  const base = createBase(canvas, { back: (g) => (L && L.ready ? drawPlate(g, L.meta.title, L.img.title, L.meta.title.rect || TITLE_RECT, [X0, Y0, X1, Y1], '#35525a') : L && !L.failed ? null : drawBack(g)) }, opts.view || { w: 300, h: 250, cx: 150, cy: 152 }), ctx = base.ctx;
+  const base = createBase(canvas, { back: (g) => (L && L.ready ? drawPlate(g, L.meta.title, L.img.title, titleRect(), [X0, Y0, X1, Y1], '#35525a') : L && !L.failed ? null : drawBack(g)) }, opts.view || { w: 300, h: 250, cx: 150, cy: 152 }), ctx = base.ctx;
   if (L) L.then.then(() => { if (L.failed) L = null; if (base.img) base.resize(base.W, base.H); });
-  const spot = (k) => onPlate(L.meta.title.rect || TITLE_RECT, L.meta.title.spots?.[k] || TITLE_SPOT[k]);
+  // 背景圖要蓋滿整個畫面：畫面比預設的高或寬，就把圖放大；燈塔在左邊，所以多留左邊
+  function titleRect() {
+    if (L.meta.title.rect) return L.meta.title.rect;
+    const img = L.img.title, ar = img.naturalWidth / img.naturalHeight, S = base.S, x0 = -base.OX / S, y0 = -base.OY / S, vw = base.W / S, vh = base.H / S;
+    let h = Math.max(TITLE_RECT[3], vh * 1.04), w = h * ar;
+    if (w < vw * 1.04) { w = vw * 1.04; h = w / ar; }
+    return [Math.min(TITLE_RECT[0], x0 - (w - vw) * 0.12), y0 - (h - vh) / 2, w, h];
+  }
+  // 主角站在碼頭上，畫面窄的時候往左挪，不要走出畫面
+  const spot = (k) => {
+    const [x, y] = onPlate(titleRect(), L.meta.title.spots?.[k] || TITLE_SPOT[k]);
+    return k === 'hero' ? [Math.min(x, -base.OX / base.S + base.W / base.S - 42), y] : [x, y];
+  };
   // hero：主角是哪一位（還沒選就不畫）
   const state = { still: false, hero: opts.hero || null };
   let T = 0;
@@ -146,7 +158,7 @@ export function createTitle(canvas, opts = {}) {
         base.begin();
         if (!L.ready) { ctx.fillStyle = '#35525a'; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
         base.paste('back'); base.world();
-        const [lx, ly] = spot('lamp'), rect = L.meta.title.rect || TITLE_RECT;
+        const [lx, ly] = spot('lamp'), rect = titleRect();
         drawBeam(g, t, { x: lx, top: ly }, rect[1] + rect[3] * 0.55);
         drawFog(g, t);
         if (state.hero) { const [hx, hy] = spot('hero'), id = 'hero-' + state.hero + '-a'; drawSprite(g, L.img[id], L.meta[id], hx, hy, { sx: 0.8, sy: 0.8 * (1 + Math.sin(t * 2.1) * 0.005) }); }
