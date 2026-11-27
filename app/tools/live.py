@@ -3,7 +3,7 @@
 用法：python3 app/tools/live.py <放 PNG 的資料夾>
 檔名就是代號：room-ward.png、patient-lin-a.png、meng-b.png、hero-cheng-a.png、ma-c.png、shadow-moth.png…
   room-*      背景（不去背），寬 1280，記下邊緣的平均色（畫面比圖寬的時候拿來補）
-  其他        去背的角色和劫影。同一個角色的 a/b/c 用同一個框裁切，切換表情時才不會跳；高最多 640
+  其他        去背的角色和劫影。同一個角色的 a/b/c 用同一個框裁切，切換表情時才不會跳；高最多 640（病人 480、劫影 512）
 輸出 app/public/art/live/<代號>.webp。manifest 裡手調的欄位（width、height、foot、head、rect、spots）重跑會留著。
 """
 import json
@@ -92,13 +92,20 @@ for base, names in groups.items():
         r, btm = max(b[2] for b in boxes), max(b[3] for b in boxes)
         pad = 6
         box = (max(0, l - pad), max(0, t - pad), min(ims[names[0]].width, r + pad), min(ims[names[0]].height, btm + pad))
-        limit = 512 if base.startswith('shadow-') else 640
+        limit = 512 if base.startswith('shadow-') else 480 if base.startswith('patient-') else 640
         for n, im in ims.items():
             c = im.crop(box)
             if c.height > limit:
                 c = c.resize((round(c.width * limit / c.height), limit), Image.LANCZOS)
             webp(c, OUT / (n + '.webp'))
             entry = {'src': 'art/live/' + n + '.webp'}
+            # 頭頂：最上面那幾排不透明的像素的中間（對話泡泡和圖鑑的頭像用）；劫影不用
+            if not base.startswith('shadow-'):
+                al = c.getchannel('A')
+                top = next(y for y in range(c.height) if al.crop((0, y, c.width, y + 1)).getextrema()[1] > 200)
+                band = al.crop((0, top, c.width, min(c.height, top + max(4, c.height // 25)))).point(lambda v: 255 if v > 200 else 0)
+                l, _, r, _ = band.getbbox()
+                entry['head'] = [round((l + r) / 2), top]
             for pre, d in DEFAULT:
                 if n.startswith(pre):
                     entry.update(d)

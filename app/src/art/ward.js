@@ -437,7 +437,17 @@ export function createWard(canvas, opts = {}) {
   let L = opts.live && !opts.solo && !opts.person ? liveFor(wardLiveIds({ patient: who, scene: opts.scene, shadow: opts.shadow || 'moth', hero: opts.hero })) : null;
   const useLive = () => !!L && L.ready;
   const base = createBase(canvas, { back: (g) => (useLive() ? drawPlate(g) : L && !L.failed ? null : drawBack(g, who, place, rain)), mid: (g) => (L ? null : drawMid(g)) }, opts.view), ctx = base.ctx;
-  if (L) L.then.then(() => { if (L.failed) L = null; if (base.img) base.resize(base.W, base.H); });
+  // opts.focus：圖鑑的頭像。插圖載完之後，把 opts.view 移到那個人的頭（插圖的位置跟程式畫的不一樣）
+  if (L) L.then.then(() => {
+    if (L.failed) L = null;
+    else if (opts.focus && opts.view) {
+      const who_ = opts.focus === 'patient' ? lid('patient-').replace(/-[abc]$/, '') : opts.focus === 'cen' ? 'meng' : 'ma', id = who_ + '-a';
+      const [x, y] = spot(opts.focus === 'patient' ? 'patient' : opts.focus === 'cen' ? 'cen' : 'shen'), [hx, hy] = headOf(L.meta[id], L.img[id], opts.focus === 'cen' ? x - 34 * state.doctor : x, y);
+      opts.view.cx = hx; opts.view.cy = hy + opts.view.h * 0.42;
+    }
+    if (base.img) base.resize(base.W, base.H);
+    opts.onReady?.();
+  });
   // hero：主角是哪一位（沒有就不畫）；hide：不畫劫影、霧和燈（圖鑑的頭像用）；opts.solo：只畫劫影、opts.person：只畫病人（前導片和去背素材用）
   // beam：燈塔的燈亮了沒（只有燈塔那一間用得到）
   const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [], hero: opts.hero || null, hide: false, beam: 0, beamShown: 0 };

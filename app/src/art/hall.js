@@ -102,7 +102,15 @@ const HALL_SPOT = { mo: [0.27, 0.9], cen: [0.70, 0.89], window: [0.42, 0.87], he
 export function createHall(canvas, opts = {}) {
   let L = opts.live ? liveFor(hallLiveIds(opts.hero)) : null;
   const base = createBase(canvas, { back: (g) => (L && L.ready ? livePlate(g) : L && !L.failed ? null : drawBack(g)), mid: (g) => (L ? null : drawMid(g)) }, opts.view), ctx = base.ctx;
-  if (L) L.then.then(() => { if (L.failed) L = null; if (base.img) base.resize(base.W, base.H); });
+  if (L) L.then.then(() => {
+    if (L.failed) L = null;
+    else if ((opts.focus === 'mo' || (opts.focus === 'hero' && opts.hero)) && opts.view) {
+      const id = opts.focus === 'mo' ? 'mo-a' : 'hero-' + opts.hero + '-a', [hx, hy] = headOf(L.meta[id], L.img[id], ...spot(opts.focus));
+      opts.view.cx = hx; opts.view.cy = hy + opts.view.h * 0.42;
+    }
+    if (base.img) base.resize(base.W, base.H);
+    opts.onReady?.();
+  });
   const rectOf = () => plateRect(L.meta.hall, L.img.hall, 181, 146, 330);
   const spot = (k) => onPlate(rectOf(), L.meta.hall.spots?.[k] || HALL_SPOT[k]);
   function livePlate(g) { drawPlate(g, L.meta.hall, L.img.hall, rectOf(), [X0, Y0, X1, Y1], C.wains2); }
