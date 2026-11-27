@@ -21,7 +21,7 @@ export default defineConfig({
   build: {
     target: 'es2022',
     cssCodeSplit: false,
-    chunkSizeWarningLimit: 1500,  // 48 個病例的文字都打包在同一個檔裡（約 1.2 MB，壓縮後約三分之一）
+    chunkSizeWarningLimit: 1600,  // 49 個病例的文字都打包在主檔裡（約 1.5 MB，壓縮後約 490 KB）；值班夜、管理頁、速記頁、隱私說明是用到才下載。病例文字要拆檔得改大廳，留到口試後
     rollupOptions: { output: { entryFileNames: 'app.js', chunkFileNames: 'app-[name].js', assetFileNames: 'app[extname]' } },
   },
 });

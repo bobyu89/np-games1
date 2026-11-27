@@ -649,8 +649,13 @@ button.checkin { cursor: pointer; }
 .speak-timer b { font-size: 2.2em; color: var(--teal); }
 .speak-timer.done { border-color: var(--moss); }
 .speak-timer.done b { color: var(--moss); }
-.sprint-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; }
-.sprint-card h4 { margin: 4px 0 0; color: var(--teal); font-size: 0.95em; }
+.today-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; }
+.today-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.today-head em { font-style: normal; font-size: 0.85em; color: var(--teal); }
+.today-card .todo li small { display: block; font-size: 0.82em; color: var(--ink-soft); }
+.today-card .todo li i { font-style: normal; color: var(--moss); font-weight: 700; }
+.today-card .weak-box summary { cursor: pointer; color: var(--teal); font-weight: 700; }
+.today-card .weak-box[open] { display: flex; flex-direction: column; gap: 4px; }
 .sprint-days { list-style: none; margin: 2px 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 4px; }
 .sprint-days li { display: flex; flex-direction: column; align-items: center; padding: 2px 0; border: 2px solid var(--paper-2); border-radius: 8px; font-variant-numeric: tabular-nums; line-height: 1.15; }
 .sprint-days li small { font-size: 0.7em; color: var(--ink-soft); }
@@ -658,12 +663,12 @@ button.checkin { cursor: pointer; }
 .sprint-days li.today { border-color: var(--ink); font-weight: 700; }
 .sprint-days li.later { opacity: 0.6; }
 .sprint-days li.exam { background: var(--grain), var(--rust-2); border-color: var(--rust); font-weight: 700; }
-.sprint-card .todo { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
-.sprint-card .todo li { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.sprint-card .todo li::before { content: '□'; margin-right: 4px; }
-.sprint-card .todo li.done::before { content: ''; margin: 0; }
-.sprint-card .todo li > span { flex: 1; }
-.sprint-card .todo li.done { color: var(--ink-soft); }
+.today-card .todo { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.today-card .todo li { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.today-card .todo li::before { content: '□'; margin-right: 4px; }
+.today-card .todo li.done::before { content: ''; margin: 0; }
+.today-card .todo li > span { flex: 1; }
+.today-card .todo li.done { color: var(--ink-soft); }
 ol.weak { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 2px; }
 ol.weak li span { margin-left: 8px; }
 .traps-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; margin-bottom: 12px; }

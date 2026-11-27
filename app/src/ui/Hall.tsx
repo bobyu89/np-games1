@@ -28,7 +28,7 @@ import { DrillSheet } from './Drill.tsx';
 import { openNotes } from './notes.ts';
 import { drillCases } from './drill.ts';
 import { reviewPlan } from './review.ts';
-import { SprintCard } from './Sprint.tsx';
+import { TodayCard } from './Today.tsx';
 import { pickSprint, sprintOf } from './sprint.ts';
 import { dayKey } from './streak.ts';
 import { dailyCase, dailyDone } from './daily.ts';
@@ -268,7 +268,10 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 <button type="button" className="act demo" onClick={() => { sfx.page(); go(todo.action); }}>{todo.button}</button>
                 {pending && run && run.session.closedAt === null && <button type="button" className="skip" onClick={() => { sfx.miss(); onDropRun(); }}>{run.trial ? '不考了，放掉這一場' : '不接了，放掉這一張'}</button>}
               </div>
-              {sprint && <SprintCard save={save} sprint={sprint} due={due.length} onDraw={() => { if (!drawn) setDrawn(pickSprint(save, Math.random())); setTrialSheet(true); }} />}
+              <TodayCard save={save} trials={trialOpen(save)} sprint={sprint} daily={daily} dailyOk={dailyOk} due={due} soon={soon}
+                onDaily={() => setRedo({ c: daily, kind: 'daily' })}
+                onDraw={() => { if (!drawn) setDrawn(pickSprint(save, Math.random())); setTrialSheet(true); }}
+                onReview={(r) => { const c = caseById(r.caseId); if (r.trial) setRedo({ c, kind: 'review' }); else setReading(c); }} />
               {side && <div className="side"><span>{side.text}</span><button type="button" className="pick" onClick={() => { sfx.page(); go(side.action); }}>{side.button}</button></div>}
               <div className="map-help">
                 <p><b>地圖：一座島一種症狀。</b>島名是故事裡的地名，底下寫的是那裡的病人來看什麼（例如「胸痛 1/4」）。點有名字的島，看那裡的委託。</p>
@@ -280,23 +283,11 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
                 <button type="button" className={'quest paper' + (nightNew ? ' hint' : '')} onClick={() => { sfx.page(); onNight(); }}><i className="seal" aria-hidden="true" /><b>值班夜</b><span>門口同時有兩三位：先看誰、怎麼交代、什麼時候回頭</span><em>{nightDone(save) ? '走過了・可以再走' : '今晚'}</em></button>
                 {towerOpen(save) && <button type="button" className={'quest paper' + (towerNew ? ' hint' : '')} onClick={() => { sfx.page(); setReading(ending); }}><i className="seal" aria-hidden="true" /><b>{questName(ending, !!save.cases[FINALE_ID])}</b><span>{save.cases[FINALE_ID] ? ending.patient.name + '｜' : ''}{ending.complaintName}｜燈塔</span><em>{save.cases[FINALE_ID] ? '最佳 ' + save.cases[FINALE_ID].best + ' 分・' + SAFETY_LABEL[save.cases[FINALE_ID].safety] : '最後一張'}</em></button>}
               </>}
-              {trialOpen(save) && <>
-                <div className="quest-head">驗收{exam ? '・' + exam : ''}</div>
-                <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>試弓</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
-                <button type="button" className={'quest paper' + (dailyOk ? '' : ' hint')} onClick={() => { sfx.page(); setRedo({ c: daily, kind: 'daily' }); }}><i className="seal" aria-hidden="true" /><b>今日之劫：{daily.patient.name}（{daily.complaintName}）</b><span>今天每一位玩家都是這一位，和 Threads 的歸航記同一天</span><em>{dailyOk ? '✓ 今天完成了' : '今天'}</em></button>
-              </>}
-              {plan.length > 0 && <>
-                <div className="quest-head">錯題複習</div>
-                {due.map((r) => { const c = caseById(r.caseId); return (
-                  <button key={r.caseId} type="button" className="quest paper hint" onClick={() => { sfx.page(); if (r.trial) setRedo({ c, kind: 'review' }); else setReading(c); }}><i className="seal" aria-hidden="true" /><b>{c.patient.name}（{c.complaintName}）</b><span>{r.why.wrong ? '診斷沒有對到' : ''}{r.why.wrong && r.why.trapped ? '，也' : ''}{r.why.trapped ? '掉進了陷阱' : ''}・{r.trial ? '用試弓重考' : '重接這張委託'}</span><em>第 {r.round} 次複習</em></button>
-                ); })}
-                {!due.length && <div className="side"><span>今天沒有要複習的。下一次：{soon[0].due.slice(5).replace('-', '/')}，{soon.filter((r) => r.due === soon[0].due).length} 位。</span></div>}
-                {due.length > 0 && soon.length > 0 && <div className="side"><span>之後還有 {soon.length} 位，到期再出現。</span></div>}
-              </>}
-              {drillCases(save).length > 0 && <>
-                <div className="quest-head">刻意練習</div>
-                <button type="button" className="quest paper" onClick={() => { sfx.page(); setDrill(true); }}><i className="seal" aria-hidden="true" /><b>一次只練一個環節</b><span>線索解讀・問題摘要・回報的評估，每題馬上有回饋</span><em>不計分</em></button>
-                <button type="button" className="quest paper" onClick={() => { sfx.page(); openNotes(); }}><i className="seal" aria-hidden="true" /><b>考前速記頁</b><span>十二種主訴：鑑別方向、重點評估、陷阱、每位病人的教學重點</span><em>可列印</em></button>
+              {(trialOpen(save) || drillCases(save).length > 0) && <>
+                <div className="quest-head">練習{exam ? '・' + exam : ''}</div>
+                {trialOpen(save) && <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>試弓・連戰</b><span>抽一位病人，15 分鐘、沒有提示；或兩站連著考</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>}
+                {drillCases(save).length > 0 && <button type="button" className="quest paper" onClick={() => { sfx.page(); setDrill(true); }}><i className="seal" aria-hidden="true" /><b>刻意練習</b><span>線索解讀・問題摘要・回報的評估，一次只練一個環節</span><em>不計分</em></button>}
+                <button type="button" className="quest paper" onClick={() => { sfx.page(); openNotes(); }}><i className="seal" aria-hidden="true" /><b>考前速記頁</b><span>十二種主訴的鑑別方向、重點評估、陷阱和教學重點</span><em>可列印</em></button>
               </>}
               {finaleDone(save) && <><div className="quest-head">十二斧之試</div><div className="paper axes-card"><Axes save={save} /></div></>}
               {CANTOS.filter((k) => !k.island && cantoOpen(k.id, save)).map((k) => (

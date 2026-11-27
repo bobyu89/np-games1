@@ -1,7 +1,7 @@
 // 登入和同步的那一塊：放在「設定」裡，首頁也可以直接打開。
 import { useState, useSyncExternalStore } from 'react';
 import { sfx } from './sound.ts';
-import { openPrivacy } from './PrivacyPage.tsx';
+import { openPrivacy } from './privacy.ts';
 import { PROVIDER_NAME, accountState, accountSubscribe, clearFlash, deleteAccount, inLine, inOtherApp, signInWith, signOut, syncNow } from './account.ts';
 
 const when = (ms: number) => new Date(ms).toLocaleString('zh-TW', { hour12: false, month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react';
 import { TIDES, TIDE_DONE } from '../data/tides.ts';
 import type { CaseDef, Session } from '../core/types.ts';
 import { harvest, scoreSession } from '../core/scoring.ts';
@@ -7,7 +7,7 @@ import { Hall } from './Hall.tsx';
 import { Title } from './Title.tsx';
 import { Ward } from './Ward.tsx';
 import { Debrief } from './Debrief.tsx';
-import { Night } from './Night.tsx';
+
 import { load, loadRun, store, storeRun, wipe, type Run, type Save } from './store.ts';
 import { validRun } from './backup.ts';
 import { withNote } from './diary.ts';
@@ -23,10 +23,17 @@ import { gained } from './feats.ts';
 import { TrialBrief } from './Hall.tsx';
 import { Sheet } from './Sheets.tsx';
 import { sfx } from './sound.ts';
-import { StatsPage } from './StatsPage.tsx';
+
 import { bindSave, startAccount, syncSoon } from './account.ts';
-import { PrivacyPage } from './PrivacyPage.tsx';
-import { NotesPage } from './NotesPage.tsx';
+
+
+
+// 少數時候才用到的頁面，用到才下載：第一次打開遊戲不用等它們
+const Night = lazy(() => import('./Night.tsx').then((m) => ({ default: m.Night })));
+const StatsPage = lazy(() => import('./StatsPage.tsx').then((m) => ({ default: m.StatsPage })));
+const PrivacyPage = lazy(() => import('./PrivacyPage.tsx').then((m) => ({ default: m.PrivacyPage })));
+const NotesPage = lazy(() => import('./NotesPage.tsx').then((m) => ({ default: m.NotesPage })));
+const Wait = ({ children }: { children: ReactNode }) => <Suspense fallback={<div className="screen loading"><p className="paper">載入中……</p></div>}>{children}</Suspense>;
 
 type Screen = { name: 'title' } | { name: 'hall' } | { name: 'night' } | { name: 'tide'; n: number } | { name: 'ward'; c: CaseDef; n: number; tier: 0 | 1; resume: Run | null; trial: boolean } | { name: 'debrief'; c: CaseDef; session: Session; seconds: number; trial: boolean; timeUp: boolean; recorded?: boolean } | { name: 'relay'; c: CaseDef };
 /** 連戰：一站考完就記下成績、直接進下一站；全部考完再一站一站看回顧 */
@@ -96,9 +103,9 @@ export function App() {
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
-  if (notesOn) return <NotesPage onClose={() => { history.replaceState(null, '', location.pathname + location.search); setNotesOn(false); }} />;
-  if (privacy) return <PrivacyPage onClose={() => { history.replaceState(null, '', location.pathname + location.search); setPrivacy(false); }} />;
-  if (admin) return <StatsPage onClose={() => { history.replaceState(null, '', location.pathname + location.search); setAdmin(false); }} />;
+  if (notesOn) return <Wait><NotesPage onClose={() => { history.replaceState(null, '', location.pathname + location.search); setNotesOn(false); }} /></Wait>;
+  if (privacy) return <Wait><PrivacyPage onClose={() => { history.replaceState(null, '', location.pathname + location.search); setPrivacy(false); }} /></Wait>;
+  if (admin) return <Wait><StatsPage onClose={() => { history.replaceState(null, '', location.pathname + location.search); setAdmin(false); }} /></Wait>;
 
   if (screen.name === 'ward') {
     const { c, trial } = screen;
@@ -143,8 +150,8 @@ export function App() {
     }} />;
   }
   // 終章的值班夜：走完記一筆（和看過的故事記在一起），回到公會接下一段故事
-  if (screen.name === 'tide') { const n = screen.n; return <Night hero={save.hero} rounds={[TIDES[n]]} title="海神的風暴" banner={TIDES[n].title} onQuit={toHall} onDone={() => { if (!save.beats.includes(TIDE_DONE(n))) keep({ ...save, beats: [...save.beats, TIDE_DONE(n)] }); keepStorage(); toHall(); }} />; }
-  if (screen.name === 'night') return <Night hero={save.hero} onQuit={toHall} onDone={() => { if (!save.beats.includes(NIGHT_DONE)) keep({ ...save, beats: [...save.beats, NIGHT_DONE] }); keepStorage(); toHall(); }} />;
+  if (screen.name === 'tide') { const n = screen.n; return <Wait><Night hero={save.hero} rounds={[TIDES[n]]} title="海神的風暴" banner={TIDES[n].title} onQuit={toHall} onDone={() => { if (!save.beats.includes(TIDE_DONE(n))) keep({ ...save, beats: [...save.beats, TIDE_DONE(n)] }); keepStorage(); toHall(); }} /></Wait>; }
+  if (screen.name === 'night') return <Wait><Night hero={save.hero} onQuit={toHall} onDone={() => { if (!save.beats.includes(NIGHT_DONE)) keep({ ...save, beats: [...save.beats, NIGHT_DONE] }); keepStorage(); toHall(); }} /></Wait>;
   if (screen.name === 'title') return <Title save={save} run={run} onPlay={toHall} onImport={(s) => { keepRun(null); keep(s); }} onReset={() => { setRun(null); latest.current = wipe(); setSave(latest.current); }} />;
   return <Hall save={save} run={run} onHome={() => setScreen({ name: 'title' })} onHero={(hero) => keep({ ...save, hero })} onBeatSeen={(id) => keep({ ...save, beats: save.beats.includes(id) ? save.beats : [...save.beats, id] })}
     onStart={(c) => { keepRun(null); setRelay(null); track({ t: 'start', c: c.id, tier: tierOf(save), n: (save.cases[c.id]?.plays ?? 0) + 1 }); setScreen({ name: 'ward', c, n: Date.now(), tier: tierOf(save), resume: null, trial: false }); }}

@@ -11,7 +11,7 @@ import { setConsent, statsBuilt, statsConsent, statsSubscribe } from './stats.ts
 import { AccountPanel } from './Account.tsx';
 import { accountState, accountSubscribe } from './account.ts';
 import { ReportSheet } from './Report.tsx';
-import { openPrivacy } from './PrivacyPage.tsx';
+import { openPrivacy } from './privacy.ts';
 import { EXAM, countdownText, daysLeft, examShown, examSubscribe, setExamShown } from './exam.ts';
 import { SPEAK_SECONDS, setSpeakOn, speakOn, speakSubscribe } from './speak.ts';
 

@@ -36,3 +36,6 @@ export const PRIVACY: { title: string; lines: string[]; list?: string[] }[] = [
   { title: '關於內容', lines: ['遊戲裡的病例依文獻與臨床指引撰寫，每一個教學重點都標了出處。可以拿來練流程和思考的順序，不能取代臨床判斷，也不能當成臨床的依據。'] },
   { title: '有問題', lines: ['用遊戲裡的「回報問題」告訴我們，或是聯絡把這個遊戲介紹給你的人。這一頁改了的時候，上面的日期會跟著改。'] },
 ];
+
+/** 打開隱私說明（換網址後面那一段，App 會接手） */
+export const openPrivacy = () => { location.hash = '#privacy'; };

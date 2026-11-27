@@ -10,7 +10,8 @@
     "test": "node --test src/core/engine.test.ts src/ui/backup.test.ts src/ui/progress.test.ts src/ui/exam.test.ts src/data/options.test.ts src/core/elders.test.ts src/core/perils.test.ts src/ui/streak.test.ts src/ui/diary.test.ts src/ui/freetext.test.ts src/ui/review.test.ts src/ui/drill.test.ts src/ui/sprint.test.ts src/ui/timing.test.ts src/ui/notes.test.ts src/ui/feats.test.ts src/ui/daily.test.ts",
     "cases": "node tools/cases.ts",
     "review": "node tools/review.ts",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "e2e": "vite build && node --test --test-concurrency=1 e2e/flows.test.ts"
   },
   "dependencies": {
     "react": "^19.2.0",
@@ -22,6 +23,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "playwright": "1.63.0",
     "subset-font": "^2.9.0",
     "typescript": "^5.7.0",
     "vite": "^7.1.0"

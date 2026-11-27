@@ -18,5 +18,5 @@ export function PrivacyPage({ onClose }: { onClose(): void }) {
     </div>
   );
 }
-/** 打開隱私說明（換網址後面那一段，App 會接手） */
-export const openPrivacy = () => { location.hash = '#privacy'; };
+/** 打開隱私說明的函式放在 privacy.ts（這一頁是用到才下載的） */
+export { openPrivacy } from './privacy.ts';
