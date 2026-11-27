@@ -438,7 +438,7 @@ export const HEROES = [
 export const heroOf = (id: string | null) => HEROES.find((h) => h.id === id) ?? HEROES[0];
 /** 故事裡的 {you}、{greet}、{habit}、{own}：換成玩家選的那一位的名字、孟拓見到他說的第一句話、孟拓提醒他的習慣、他自己說的那一句 */
 export const toYou = (text: string, hero: string | null) => { const h = heroOf(hero); return text.replaceAll('{you}', h.name).replaceAll('{greet}', h.greet).replaceAll('{habit}', h.habit).replaceAll('{own}', h.own); };
-const heroShot = (id: string): Shot => ({ kind: 'hall', hero: id, view: { w: 112, h: 112, cx: 189, cy: 212 } });
+const heroShot = (id: string): Shot => ({ kind: 'hall', hero: id, view: { w: 112, h: 112, cx: 189, cy: 212 }, focus: 'hero' });
 export const heroShots = Object.fromEntries(HEROES.map((h) => [h.id, heroShot(h.id)])) as Record<string, Shot>;
 
 export interface Entry { id: string; name: string; tag: string; lines: string[]; shot: Shot; open: boolean; hint: string }
@@ -483,21 +483,21 @@ export function peopleOf(save: Save): { guild: Entry[]; elders: Entry[]; patient
   const ch = (n: number) => chapterDone(n, save);
   const guild: Entry[] = [
     { id: 'cen', name: '孟拓', tag: '明眼的・資深專科護理師', lines: ['帶你的人。話不多，問的問題都很準。她的名字借自史詩裡陪少年出海的那位長者：「導師」這個字，就是從他來的。', has(save, ['c02a', 'c02b', 'c03a', 'c03b']) ? '她的紀錄板上，每一位病人只寫三行：他說的、她看到的、還不知道的。' : '她的紀錄板上，每一位病人只寫三行。',
-      ...(ch(1) ? ['值夜的時候，她會走到窗邊看燈塔。'] : []), ...(ch(4) ? ['十五年前霧四十天沒有散的那個冬天，她是見習。'] : [])], shot: { kind: 'ward', view: face(297, 178) }, open: true, hint: '' },
+      ...(ch(1) ? ['值夜的時候，她會走到窗邊看燈塔。'] : []), ...(ch(4) ? ['十五年前霧四十天沒有散的那個冬天，她是見習。'] : [])], shot: { kind: 'ward', view: face(297, 178), focus: 'cen' }, open: true, hint: '' },
     { id: 'mo', name: '費民', tag: '記歌的・公會的檔案員', lines: ['管圖鑑的人。檔案室淹水的那一夜，他搶救到天亮。名字借自史詩裡替人記住故事的吟遊詩人；每一篇的開場，都是他唸的。', '舊索引上「一症一解」的那幾行，是他親手劃掉的。',
-      ...(has(save, CH3) ? ['最前面被拆走的那一頁，是他拆的。他沒有燒，藏了十五年。'] : []), ...(ch(5) ? ['新的圖鑑，他把那一頁訂回了最前面。'] : [])], shot: { kind: 'hall', view: face(74, 152) }, open: true, hint: '' },
+      ...(has(save, CH3) ? ['最前面被拆走的那一頁，是他拆的。他沒有燒，藏了十五年。'] : []), ...(ch(5) ? ['新的圖鑑，他把那一頁訂回了最前面。'] : [])], shot: { kind: 'hall', view: face(74, 152), focus: 'mo' }, open: true, hint: '' },
     { id: 'shen', name: '馬凱', tag: '手穩的・值班醫師', lines: ['值班鐘一響就會出現。', '他只說一句：「告訴我重點。」',
-      ...(has(save, CH4_HALF) ? ['這一句，是四十天霧之後才開始問的。問了，他就會聽完。'] : [])], shot: { kind: 'ward', doctor: true, view: face(326, 170) }, open: any, hint: '完成第一張委託之後' },
+      ...(has(save, CH4_HALF) ? ['這一句，是四十天霧之後才開始問的。問了，他就會聽完。'] : [])], shot: { kind: 'ward', doctor: true, view: face(326, 170), focus: 'shen' }, open: any, hint: '完成第一張委託之後' },
     { id: 'dong', name: '歐律克勒亞', tag: finaleDone(save) ? '守燈的・71 歲，燈塔的守燈人' : '寫舊索引的人', lines: ['孟拓的老師。十五年前的冬天，她寫出了那本「一隻劫影一行字」的索引。', ...(has(save, CH5_HALF) ? ['後來守著燈塔。那盞燈十五年沒有熄過，她也沒有下來過。'] : ['沒有人說她後來去了哪裡。']),
       ...(finaleDone(save) ? ['大霧的那一夜，她說「還撐得住」。' + (save.cases[FINALE_ID].found ? '你沒有照她的話看，也沒有照索引看。' : '那一夜的診斷，你還沒有對過。'), '她留了三行字給你。'] : [])],
-      shot: finaleDone(save) ? { kind: 'ward', patient: 'dong', scene: 'tower', view: face(92, 170) } : { kind: 'hall', view: face(87, 84, 62) }, open: has(save, CH3_HALF), hint: '第三章走到一半之後' },
+      shot: finaleDone(save) ? { kind: 'ward', patient: 'dong', scene: 'tower', view: face(92, 170), focus: 'patient' } : { kind: 'hall', view: face(87, 84, 62) }, open: has(save, CH3_HALF), hint: '第三章走到一半之後' },
   ];
   const patients: Entry[] = CASES.filter((c) => c.id !== FINALE_ID).map((c) => {
     const rec = save.cases[c.id], truth = c.forms.find((f) => f.id === c.answer.truth)!;
     return {
       id: c.id, name: c.patient.name, tag: c.patient.age + ' 歲，' + c.patient.job,
       lines: [rec?.found ? '診斷：' + truth.name + '。' : '還沒有診斷對過。', ...(rec ? [echoOf(rec, AFTER[c.id])] : [])],
-      shot: { kind: 'ward', patient: c.patient.look, scene: c.scene, view: face(92, 170) }, open: !!rec, hint: '看完' + c.patient.name + '（' + c.complaintName + '）之後',
+      shot: { kind: 'ward', patient: c.patient.look, scene: c.scene, view: face(92, 170), focus: 'patient' }, open: !!rec, hint: '看完' + c.patient.name + '（' + c.complaintName + '）之後',
     };
   });
   const voteKnown = has(save, CH3), revoted = chapterDone(5, save);
@@ -520,11 +520,11 @@ export function placesOf(save: Save): Entry[] {
   const room = (id: IslandId, lines: string[]): Entry => {
     const i = ISLANDS[id], place = i.places[0], first = caseById(questsOn(id)[0].caseId);
     return { id: place, name: PLACES[place].name, tag: i.name + '・' + CHAPTERS_ZH[i.chapter], lines: [...lines, ...i.lines.slice(-1), ...who(id)],
-      shot: { kind: 'ward', patient: i.resident ? RESIDENTS[i.resident].look : first.patient.look, scene: place }, open: been(id), hint: '在' + i.name + '完成第一張委託之後' };
+      shot: { kind: 'ward', patient: first.patient.look, scene: place }, open: been(id), hint: '在' + i.name + '完成第一張委託之後' };
   };
   return [
     { id: 'hall', name: '公會大廳', tag: '伊塔洛斯', lines: ['委託板、費民的櫃台、看得到燈塔的拱窗。每一張委託從這裡開始，也回到這裡。'], shot: { kind: 'hall' }, open: true, hint: '' },
-    { id: 'ward', name: PLACES.ward.name, tag: '伊塔洛斯・第一章', lines: ['大廳旁邊那扇門。一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。', ...who('main')], shot: { kind: 'ward', patient: 'r-lan' }, open: any, hint: '完成第一張委託之後' },
+    { id: 'ward', name: PLACES.ward.name, tag: '伊塔洛斯・第一章', lines: ['大廳旁邊那扇門。一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。', ...who('main')], shot: { kind: 'ward', patient: 'lin' }, open: any, hint: '完成第一張委託之後' },
     { id: 'dock', name: PLACES.dock.name, tag: '每一座島都有・出診', lines: ['船一靠岸，走不到公會的人就先扶進這裡。每一座島的碼頭邊，都有這樣一間。', '出診的時候，孟拓會把值班鐘一起帶來，掛在樑上。'], shot: { kind: 'ward', patient: 'zhou', scene: 'dock' }, open: !!save.cases.c01d, hint: '完成「靠岸的那天早上」之後' },
     room('wind', ['借的是斯克里亞魚市診間的格局：帆坊的人沒空過海，公會就在帆坊旁邊擺了一張床。']),
     room('tide', ['斯克里亞的魚市天沒亮就開，不舒服的人也不肯搭船。公會在魚市口留了一間診間。', '窗外就是魚市的棚子。那隻貓，在這裡待得最久。']),

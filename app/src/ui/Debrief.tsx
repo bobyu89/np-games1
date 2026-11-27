@@ -173,7 +173,7 @@ export function Debrief({ gains, relay, weak, c, session, seconds, hero = null, 
               <div className="leaf gains">
                 <b>這一場的收穫</b>
                 {gains.stars.map((x) => <p key={x.complaint}><span className="stars">{starText(x.stars)}</span> {x.shadow}（{x.name}）：{STAR_NAME[x.from]} → <b>{STAR_NAME[x.stars]}</b></p>)}
-                {gains.badges.map((b) => <p key={b.id}><span className="badge-mark" aria-hidden="true">◆</span> 新的勳章：<b>{b.name}</b><span className="dim">　{b.how}</span></p>)}
+                {gains.badges.map((b) => <p key={b.id} className="gain-badge"><img src={'art/badges/' + b.id + '.webp'} width={56} height={56} decoding="async" alt="" />新的勳章：<b>{b.name}</b><span className="dim">　{b.how}</span></p>)}
                 <p className="dim">熟練星看每一種主訴最近 5 場；勳章收在圖鑑的「勳章」頁。</p>
               </div>
             )}

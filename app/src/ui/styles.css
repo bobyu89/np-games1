@@ -630,11 +630,17 @@ button.checkin { cursor: pointer; }
 .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
 .badge { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; opacity: 0.6; }
 .badge.on { opacity: 1; box-shadow: 2px 3px 0 var(--ink); }
-.badge i { font-style: normal; font-size: 1.3em; color: var(--ink-soft); }
-.badge.on i { color: #9a7410; }
+.badge img { width: 72px; height: 72px; align-self: center; filter: grayscale(1) opacity(0.45); }
+.badge.on img { filter: none; }
 .badge span { font-size: 0.85em; color: var(--ink-soft); }
 .badge em { font-style: normal; font-size: 0.8em; color: var(--teal); }
-.leaf.gains .badge-mark { color: #9a7410; }
+.gain-badge { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gain-badge img { width: 56px; height: 56px; flex: none; }
+.codex-art { display: block; width: 100%; max-width: 280px; height: auto; margin: 0 auto 6px; border-radius: var(--r-a); border: 2px solid var(--ink); }
+.art-list { display: flex; flex-direction: column; gap: 10px; }
+.art-list figure { margin: 0; }
+.art-list img { display: block; width: 100%; height: auto; border-radius: var(--r-a); border: 2px solid var(--ink); background: var(--paper-2); }
+.art-list figcaption { font-size: 0.9em; margin-top: 3px; }
 .relay-gap { min-height: 100%; }
 .timing { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
 .trow { display: grid; grid-template-columns: 6.5em 1fr 5.2em; align-items: center; gap: 8px; }

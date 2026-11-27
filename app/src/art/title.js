@@ -2,10 +2,11 @@
 // 碼頭上掛著四盞燈，主角（選了才有）站在那裡看著燈塔。
 import { C, K, TAU, rect, rrect, ell, shape, oval, wline, dot, fillRect, star, createBase } from './sketch.js';
 import { drawCat, drawHero } from './cast.js';
+import { liveFor, drawSprite, drawPlate, onPlate } from './live.js';
 
 const X0 = -320, X1 = 620, Y0 = -220, Y1 = 520;
 const SEA_Y = 178, QUAY_Y = 236;
-const TOWER = { x: 78, top: 62 };            // 燈塔的燈室
+const TOWER0 = { x: 78, top: 62 };            // 燈塔的燈室
 const LAMPS = [34, 92, 150, 208];            // 碼頭的四盞燈：一個主訴，四個可能的診斷
 const NIGHT = '#35525a', NIGHT2 = '#2b4350', HILL = '#2c4a43', HILL2 = '#243d3a', SEA = '#3f6a70', SEA2 = '#335960';
 
@@ -63,13 +64,21 @@ function drawBack(g) {
   shape(g, rect(-34, QUAY_Y - 20, 26, 22), { fill: C.wood, lw: 1.3 }); wline(g, [[-34, QUAY_Y - 9], [-8, QUAY_Y - 9]], C.wood2, 1.2); wline(g, [[-21, QUAY_Y - 20], [-21, QUAY_Y + 2]], C.wood2, 1.2);
 }
 
+/** 標題畫面要換成插圖，需要哪幾張：碼頭（空的）、主角（選了才要） */
+export function titleLiveIds(hero) { return hero ? ['title', 'hero-' + hero + '-a'] : ['title']; }
+// 插圖版：背景圖往右挪一點，讓左邊的燈塔在手機上也看得到；燈室和主角站的地方是背景圖上的比例
+const TITLE_RECT = [-30, -8, 480, 320], TITLE_SPOT = { lamp: [0.124, 0.127], hero: [0.62, 0.88] };
+
 export function createTitle(canvas, opts = {}) {
-  const base = createBase(canvas, { back: drawBack }, opts.view || { w: 300, h: 250, cx: 150, cy: 152 }), ctx = base.ctx;
+  let L = opts.live ? liveFor(titleLiveIds(opts.hero)) : null;
+  const base = createBase(canvas, { back: (g) => (L && L.ready ? drawPlate(g, L.meta.title, L.img.title, L.meta.title.rect || TITLE_RECT, [X0, Y0, X1, Y1], '#35525a') : L && !L.failed ? null : drawBack(g)) }, opts.view || { w: 300, h: 250, cx: 150, cy: 152 }), ctx = base.ctx;
+  if (L) L.then.then(() => { if (L.failed) L = null; if (base.img) base.resize(base.W, base.H); });
+  const spot = (k) => onPlate(L.meta.title.rect || TITLE_RECT, L.meta.title.spots?.[k] || TITLE_SPOT[k]);
   // hero：主角是哪一位（還沒選就不畫）
   const state = { still: false, hero: opts.hero || null };
   let T = 0;
 
-  function drawBeam(g, t) {
+  function drawBeam(g, t, TOWER = TOWER0, seaY = 196) {
     // 燈塔的光：慢慢掃過去，掃到正面的時候最亮
     const dir = Math.sin(t * 0.45), a = 0.1 + 0.2 * (1 - Math.abs(dir)), len = 330, spread = 0.11, ang = -0.12 + dir * 1.05;
     const p = (k) => [TOWER.x + Math.cos(ang + k) * len, TOWER.top + Math.sin(ang + k) * len * 0.5];
@@ -80,7 +89,7 @@ export function createTitle(canvas, opts = {}) {
     g.globalAlpha = 0.3 + 0.2 * Math.sin(t * 2.3); dot(g, TOWER.x, TOWER.top + 1, 13, C.glow);
     g.globalAlpha = 1; dot(g, TOWER.x, TOWER.top + 1, 3.2, '#fff6cf');
     // 海面上的倒影
-    for (let i = 0; i < 5; i++) { g.globalAlpha = (0.5 - i * 0.08) * (0.6 + 0.4 * Math.sin(t * 2 + i * 1.7)); wline(g, [[TOWER.x - 9 + i * 1.5, 196 + i * 7], [TOWER.x + 9 - i * 1.5, 196 + i * 7]], C.glow, 1.6, { amp: 0.3, seed: 9300 + i, boil: true }); }
+    for (let i = 0; i < 5; i++) { g.globalAlpha = (0.5 - i * 0.08) * (0.6 + 0.4 * Math.sin(t * 2 + i * 1.7)); wline(g, [[TOWER.x - 9 + i * 1.5, seaY + i * 7], [TOWER.x + 9 - i * 1.5, seaY + i * 7]], C.glow, 1.6, { amp: 0.3, seed: 9300 + i, boil: true }); }
     g.globalAlpha = 1;
   }
 
@@ -133,6 +142,16 @@ export function createTitle(canvas, opts = {}) {
     render() {
       if (!base.img) return;
       const t = state.still ? 0 : T, g = ctx;
+      if (L) {
+        base.begin();
+        if (!L.ready) { ctx.fillStyle = '#35525a'; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
+        base.paste('back'); base.world();
+        const [lx, ly] = spot('lamp'), rect = L.meta.title.rect || TITLE_RECT;
+        drawBeam(g, t, { x: lx, top: ly }, rect[1] + rect[3] * 0.55);
+        drawFog(g, t);
+        if (state.hero) { const [hx, hy] = spot('hero'), id = 'hero-' + state.hero + '-a'; drawSprite(g, L.img[id], L.meta[id], hx, hy, { sx: 0.8, sy: 0.8 * (1 + Math.sin(t * 2.1) * 0.005) }); }
+        return;
+      }
       base.begin(); base.paste('back'); base.world();
       K.seed = 9200;
       drawBeam(g, t);
