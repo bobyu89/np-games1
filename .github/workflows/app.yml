@@ -45,6 +45,10 @@ jobs:
           git diff --exit-code -- ../docs/review || { echo "::error::病例改過了，docs/review 沒有跟著重新產生。請跑 npm run review 再提交。"; exit 1; }
       - name: 型別檢查和建置
         run: npm run build
+      - name: 用瀏覽器走一遍新的流程（今天卡、今日之劫、錯題複習、連戰、速記頁）
+        run: |
+          npx playwright install --with-deps chromium
+          npm run e2e
 
   worker:
     name: 後端的測試

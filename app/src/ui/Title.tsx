@@ -14,7 +14,7 @@ import { applyUpdate, pwaState, pwaSubscribe } from './pwa.ts';
 import { accountState, accountSubscribe, cameBack } from './account.ts';
 import { WELCOME } from './world.ts';
 import { ReportSheet } from './Report.tsx';
-import { openPrivacy } from './PrivacyPage.tsx';
+import { openPrivacy } from './privacy.ts';
 import { EXAM, countdownText, daysLeft, examShown, examSubscribe } from './exam.ts';
 
 interface Props { save: Save; run: Run | null; onPlay(): void; onImport(s: Save): void; onReset(): void }
