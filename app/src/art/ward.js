@@ -3,6 +3,7 @@
 import { C, K, TAU, hash, clamp, smooth, ell, rect, rrect, prep, trace, shape, oval, wline, limb, dot, leaf, fillRect, star, createBase } from './sketch.js';
 import { eye, drawCat, drawCen, drawShen, drawHero } from './cast.js';
 import { X0, X1, Y0, Y1, FLOOR_Y, ROOMS, bigLeaf, rainFall } from './rooms.js';
+import { liveFor, drawSprite, headOf, sizeOf } from './live.js';
 
 const LIN = { x: 90, y: 219 }, CEN = { x: 298, y: 264 }, SHEN = { x: 322, y: 268 }, MOTH = { x: 178, y: 88 }, HERO = { x: 207, y: 297 };
 const BIG = 1.14, MOTH_BIG = 1.28;   // 人物比家具大一點，表情在手機上才看得清楚
@@ -411,17 +412,32 @@ function drawProps(g, who) {
 
 /** 外島的診間借哪一間的畫 */
 const ROOM_ART = { wind: 'market', sun: 'archive', boar: 'yard', whirl: 'yard', lotus: 'quiet', circe: 'quiet', shade: 'quiet' };
+/** 場景的名字（ward、dock-rain、wind…）→ 畫的是哪一間（ward、dock、market…），和是不是雨天 */
+export function placeOf(scene) {
+  const asked = String(scene || 'ward'), rain = asked.endsWith('-rain'), named = ROOM_ART[asked.replace('-rain', '')] ?? asked.replace('-rain', '');
+  return { place: named === 'dock' || ROOMS[named] ? named : 'ward', rain };
+}
+/** 病室要換成插圖，需要哪幾張（live-manifest.js 的代號）：房間、病人三張、孟拓三張、馬凱三張、劫影、主角兩張 */
+export function wardLiveIds(o = {}) {
+  const who = PATIENTS[o.patient] ? o.patient : 'lin', { place } = placeOf(o.scene);
+  const ids = ['room-' + place, ...['a', 'b', 'c'].map((k) => 'patient-' + who + '-' + k), ...['a', 'b', 'c'].map((k) => 'meng-' + k), ...['a', 'b', 'c'].map((k) => 'ma-' + k), 'shadow-' + (o.shadow || 'moth')];
+  if (o.hero) ids.push('hero-' + o.hero + '-a', 'hero-' + o.hero + '-b');
+  return ids;
+}
 export function createWard(canvas, opts = {}) {
   // 病人長什麼樣子：一張表，一位病人一行。新的病人加一行就好
   const who = PATIENTS[opts.patient] ? opts.patient : 'lin', LOOK = PATIENTS[who];
   const calm = !!LOOK.calm, woman = !!LOOK.woman, pony = !!LOOK.pony, fast = !!LOOK.fast;
   // 在哪裡：地方（ward 公會的病室、dock 碼頭的貨棧，其他見 rooms.js），後面加 -rain 是下雨天
   // 外島的診間還沒有自己的畫：先借同一章大島那一間（ROOM_ART）
-  const asked = String(opts.scene || 'ward'), rain = asked.endsWith('-rain'), named = ROOM_ART[asked.replace('-rain', '')] ?? asked.replace('-rain', '');
-  const place = named === 'dock' || ROOMS[named] ? named : 'ward', dock = place === 'dock', room = ROOMS[place] || null;
+  const { place, rain } = placeOf(opts.scene), dock = place === 'dock', room = ROOMS[place] || null;
   // 公會的診間都掛公會的旗子；窗台上有沒有貓、吊燈旁邊有沒有螢火蟲，看地方
   const guild = !dock && place !== 'tower', cat = ['ward', 'market', 'archive', 'quiet'].includes(place), flies = place === 'ward' || place === 'quiet';
-  const base = createBase(canvas, { back: (g) => drawBack(g, who, place, rain), mid: drawMid }, opts.view), ctx = base.ctx;
+  // 插圖：opts.live 是 true 的時候，所有要的圖都到齊才用（liveFor 會檢查）；載完之前畫空白，載不到就改回程式畫
+  let L = opts.live && !opts.solo && !opts.person ? liveFor(wardLiveIds({ patient: who, scene: opts.scene, shadow: opts.shadow || 'moth', hero: opts.hero })) : null;
+  const useLive = () => !!L && L.ready;
+  const base = createBase(canvas, { back: (g) => (useLive() ? drawPlate(g) : L && !L.failed ? null : drawBack(g, who, place, rain)), mid: (g) => (L ? null : drawMid(g)) }, opts.view), ctx = base.ctx;
+  if (L) L.then.then(() => { if (L.failed) L = null; if (base.img) base.resize(base.W, base.H); });
   // hero：主角是哪一位（沒有就不畫）；hide：不畫劫影、霧和燈（圖鑑的頭像用）；opts.solo：只畫劫影、opts.person：只畫病人（前導片和去背素材用）
   // beam：燈塔的燈亮了沒（只有燈塔那一間用得到）
   const state = { veil: 1, veilShown: 1, bell: 0, shake: 0, slump: 0, slumpShown: 0, still: false, talker: null, nod: 0, flinch: 0, wince: 0, doctor: 0, doctorShown: 0, lights: [], hero: opts.hero || null, hide: false, beam: 0, beamShown: 0 };
@@ -435,6 +451,46 @@ export function createWard(canvas, opts = {}) {
   // 病人變差時，從畫面邊緣湧進來的霧
   const EDGE = [{ x: 16, y: 124, r: 26 }, { x: 132, y: 18, r: 27 }, { x: 350, y: 132, r: 25 }, { x: 18, y: 26, r: 26 }, { x: 346, y: 34, r: 24 }, { x: 236, y: 132, r: 17 }, { x: 22, y: 286, r: 24 }, { x: 346, y: 284, r: 22 }];
 
+
+  // ── 插圖 ──
+  const LID = L ? wardLiveIds({ patient: who, scene: opts.scene, shadow: opts.shadow || 'moth', hero: opts.hero }) : [];
+  const lid = (k) => LID.find((id) => id.startsWith(k));
+  const SPOT = { patient: [118, 252], cen: [CEN.x, CEN.y], shen: [SHEN.x, SHEN.y], hero: [HERO.x, HERO.y], shadow: [MOTH.x, MOTH.y] };
+  const spot = (k) => (L && L.meta[LID[0]].spots?.[k]) || SPOT[k];
+  // 房間：背景整片先塗房間邊緣的顏色，再把圖貼在 rect（場景座標）；沒寫 rect 就以畫面中心為準、高 290
+  function drawPlate(g) {
+    const id = LID[0], meta = L.meta[id], img = L.img[id];
+    fillRect(g, X0, Y0, X1 - X0, Y1 - Y0, meta.fill || C.wains2);
+    const h = 290, w = h * img.naturalWidth / img.naturalHeight, [x, y, rw, rh] = meta.rect || [181 - w / 2, 146 - h / 2, w, h];
+    g.drawImage(img, x, y, rw, rh);
+  }
+  // 說話：嘴巴開合（a、b 兩張輪流）
+  const flap = (t) => Math.floor(t / 0.16) % 2 === 1;
+  function liveSprite(g, base_, k, x, y, o) { const id = base_ + '-' + k; drawSprite(g, L.img[id], L.meta[id], x, y, o); }
+  // 病人：呼吸；說話換 b；變差的時候疊上 c
+  function drawLivePatient(g, t) {
+    const [x, y] = spot('patient'), id = lid('patient-').replace(/-[abc]$/, ''), slump = state.slumpShown, wince = state.wince;
+    const breath = 1 + Math.sin(t * (fast ? 5.2 : 2.5)) * (fast ? 0.009 : 0.006), o = { sy: breath, rot: wince * -0.012 };
+    liveSprite(g, id, state.talker === 'lin' && flap(t) ? 'b' : 'a', x, y, { ...o, alpha: 1 - slump });
+    if (slump > 0.01) liveSprite(g, id, 'c', x, y, { ...o, alpha: slump });
+  }
+  function drawLivePerson(g, t, name, x, y, talking, extra = {}) {
+    const breath = 1 + Math.sin(t * 2.1 + x) * 0.005;
+    liveSprite(g, name, talking && flap(t) ? 'b' : 'a', x, y, { sy: breath, ...extra });
+  }
+  function drawLiveMoth(g, t) {
+    const flinch = state.flinch, [mx, my] = spot('shadow');
+    const x = mx + Math.sin(t * 0.7) * 3 + flinch * (8 + Math.sin(t * 60) * 2), y = my + Math.sin(t * 1.3) * 3.2 - flinch * 7;
+    const [px, py] = spot('patient');
+    g.globalAlpha = 0.35 + 0.25 * Math.sin(t * 2.5);
+    const tx = px - 21, ty = py - 67;
+    for (let i = 1; i < 9; i++) { const k = i / 9, qx = x + (tx - x) * k + Math.sin(k * 9 + t * 2) * 4, qy = y + 14 + (ty - y - 14) * k; dot(g, qx, qy, 1.5 - k * 0.5, C.cream); }
+    g.globalAlpha = 1;
+    const id = lid('shadow-'), meta = L.meta[id], img = L.img[id], { h } = sizeOf(meta, img);
+    // 劫影的圖以中間為準；霧濃的時候淡一點，霧散了才看得清楚
+    drawSprite(g, img, { ...meta, foot: meta.foot || [img.naturalWidth / 2, img.naturalHeight / 2] }, x, y, { sx: 1 + Math.sin(t * 1.7) * 0.02, sy: 1 + Math.sin(t * 1.7 + 1) * 0.02, alpha: 1 - smooth(0.55, 0.95, state.veilShown) * 0.85 });
+    return { x, y: y + h * 0.1 };
+  }
 
   // ── 會動的東西 ──
   // 碼頭的窗口：雲、海浪、一艘靠岸的船、海鷗
@@ -1019,6 +1075,7 @@ export function createWard(canvas, opts = {}) {
     // person：只畫病人（床上的上半身），背景透明（前導片和素材用）
     if (opts.person) { base.begin(); ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); base.world(); drawLin(g, t); return; }
     const sx = state.still ? 0 : (hash(K.boil, Math.floor(T * 30)) - 0.5) * state.shake * 10, sy = state.still ? 0 : (hash(K.boil + 9, Math.floor(T * 30)) - 0.5) * state.shake * 10;
+    if (L) { renderLive(g, t, sx, sy); return; }
     base.begin(); base.paste('back', sx, sy); base.world(sx, sy);
     K.seed = 50; drawWindowLife(g, t);
     if (cat) drawCat(g, t, 40, place === 'quiet' ? 104 : 101);
@@ -1046,6 +1103,32 @@ export function createWard(canvas, opts = {}) {
     g.globalAlpha = 1; base.grain();
   }
 
+  // 插圖版：背景一張、病人、主角、劫影和霧、燈、孟拓和馬凱，最後一樣是霧從四周湧進來和紙紋
+  function renderLive(g, t, sx, sy) {
+    base.begin();
+    if (!L.ready) { ctx.fillStyle = C.wains2; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
+    base.paste('back', sx, sy); base.world(sx, sy);
+    drawLivePatient(g, t);
+    if (state.hero) { const [x, y] = spot('hero'); drawLivePerson(g, t, 'hero-' + state.hero, x, y, state.talker === 'hero'); }
+    if (!state.hide) { const m = drawLiveMoth(g, t); drawFog(g, t, m); drawLights(g, t, m); }
+    const d = state.doctorShown, [cx, cy] = spot('cen'), [hx, hy] = spot('shen');
+    drawLivePerson(g, t, 'meng', cx - 34 * d, cy, state.talker === 'cen', { alpha: 1 - state.nod * 0.9 });
+    if (state.nod > 0.01) liveSprite(g, 'meng', 'c', cx - 34 * d, cy, { alpha: state.nod });
+    if (d > 0.02) {
+      const walking = d < 0.97, step = walking && Math.floor(t / 0.22) % 2 === 1;
+      if (walking) liveSprite(g, 'ma', step ? 'c' : 'a', hx + (1 - d) * 70, hy - (step ? 1.5 : 0), {});
+      else drawLivePerson(g, t, 'ma', hx, hy, state.talker === 'shen');
+    }
+    drawParticles(g);
+    const bad = state.slumpShown;
+    if (bad > 0.02) {
+      EDGE.forEach((e, i) => { g.globalAlpha = clamp(bad * 1.2) * 0.93; puff(g, e.x + Math.sin(t * 0.6 + i) * 3, e.y + Math.cos(t * 0.5 + i) * 2, e.r * (0.4 + 0.6 * bad), 20 + i, t); });
+      base.tint('rgba(70, 60, 96, ' + (bad * 0.13).toFixed(3) + ')');
+    }
+    if (rain) base.tint('rgba(60, 80, 96, 0.10)');
+    g.globalAlpha = 1; base.grain();
+  }
+
   function burst(n, key) {
     if (state.still) return;
     for (let i = 0; i < n; i++) {
@@ -1059,6 +1142,13 @@ export function createWard(canvas, opts = {}) {
     /** 角色頭頂的位置，給對話泡泡和標籤用（CSS 像素） */
     anchor(who) {
       const d = state.doctorShown;
+      if (L && L.ready) {
+        const head = (name, k, x, y) => { const id = name + '-' + k; return headOf(L.meta[id], L.img[id], x, y); };
+        const [px, py] = spot('patient'), [cx, cy] = spot('cen'), [hx, hy] = spot('shen'), [ex, ey] = spot('hero');
+        const pid = lid('patient-').replace(/-[abc]$/, '');
+        const p = who === 'lin' ? head(pid, 'a', px, py) : who === 'cen' ? head('meng', 'a', cx - 34 * d, cy) : who === 'shen' ? head('ma', 'a', hx, hy) : who === 'hero' && state.hero ? head('hero-' + state.hero, 'a', ex, ey) : null;
+        return p && base.css(p[0], p[1]);
+      }
       const p = who === 'lin' ? [LIN.x + 1, LIN.y - 84 * BIG] : who === 'cen' ? [CEN.x - 1 - 34 * d, CEN.y - 128 * BIG] : who === 'shen' ? [SHEN.x - 1, SHEN.y - 150] : who === 'hero' && state.hero ? [HERO.x - 1, HERO.y - 124] : null;
       return p && base.css(p[0], p[1]);
     },
