@@ -37,15 +37,15 @@ sprites: {
   },
   "patient-lin-a": {
     "src": "art/live/patient-lin-a.webp",
-    "width": 182
+    "width": 152
   },
   "patient-lin-b": {
     "src": "art/live/patient-lin-b.webp",
-    "width": 182
+    "width": 152
   },
   "patient-lin-c": {
     "src": "art/live/patient-lin-c.webp",
-    "width": 182
+    "width": 152
   },
   "room-ward": {
     "src": "art/live/room-ward.webp",

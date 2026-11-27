@@ -18,7 +18,7 @@ OUT = ROOT / 'app/public/art/live'
 MANIFEST = ROOT / 'app/src/art/live-manifest.js'
 MARK_A, MARK_B = '// ── sprites 開始（art/live.py 產生）──', '// ── sprites 結束 ──'
 # 沒有手調之前的預設大小（場景單位，跟程式畫的一樣大）
-DEFAULT = [('patient-', {'width': 200}), ('meng-', {'height': 150}), ('ma-', {'height': 152}), ('hero-', {'height': 128}), ('mo-', {'height': 120}), ('shadow-', {'height': 92})]
+DEFAULT = [('patient-', {'width': 152}), ('meng-', {'height': 150}), ('ma-', {'height': 152}), ('hero-', {'height': 128}), ('mo-', {'height': 120}), ('shadow-', {'height': 70})]
 KEEP = ['width', 'height', 'foot', 'head', 'rect', 'spots']
 
 

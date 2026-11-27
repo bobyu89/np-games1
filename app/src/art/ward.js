@@ -455,7 +455,7 @@ export function createWard(canvas, opts = {}) {
   // ── 插圖 ──
   const LID = L ? wardLiveIds({ patient: who, scene: opts.scene, shadow: opts.shadow || 'moth', hero: opts.hero }) : [];
   const lid = (k) => LID.find((id) => id.startsWith(k));
-  const SPOT = { patient: [104, 262], cen: [CEN.x + 4, CEN.y + 4], shen: [SHEN.x + 6, SHEN.y + 4], hero: [HERO.x - 4, HERO.y + 2], shadow: [206, 64] };
+  const SPOT = { patient: [96, 250], cen: [CEN.x + 4, CEN.y + 4], shen: [SHEN.x + 6, SHEN.y + 4], hero: [HERO.x - 4, HERO.y + 2], shadow: [206, 64] };
   const spot = (k) => (L && L.meta[LID[0]].spots?.[k]) || SPOT[k];
   // 房間：背景整片先塗房間邊緣的顏色，再把圖貼在 rect（場景座標）；沒寫 rect 就以畫面中心為準、高 290
   function drawPlate(g) {
