@@ -19,7 +19,7 @@
 // 管理密碼是 Worker 的 secret：ADMIN_KEY。沒有設定的時候，總表一律不給看。
 // 登入要另外設定 GOOGLE_CLIENT_ID／GOOGLE_CLIENT_SECRET、LINE_CHANNEL_ID／LINE_CHANNEL_SECRET；哪一家沒設定，那一家就不會出現。
 import { DurableObject } from 'cloudflare:workers';
-import { migrate, add, addReport, csv, listReports, parse, parseReport, summary, type Exec, type Report, type Row, type Value } from './core.ts';
+import { migrate, add, addReport, csv, listReports, parse, parseReport, peer, summary, type Exec, type Report, type Row, type Value } from './core.ts';
 import { daily, type DailyEnv } from './daily.ts';
 import { ACCOUNT_SCHEMA, LIMIT, PROVIDERS, accountId, begin, checkClaims, checkSave, counts, finish, isProvider, pepperOf, random, readSave, remove, sha256, signIn, signOut, who, writeSave, type Provider } from './accounts.ts';
 
@@ -45,6 +45,7 @@ export class Stats extends DurableObject<Env> {
   summary(days: number | null) { return summary(this.exec, days, now()); }
   csv(days: number | null) { return csv(this.exec, days, now()); }
   addReport(r: Report) { return addReport(this.exec, r); }
+  peer(caseId: string, day: string | null) { return peer(this.exec, caseId, day); }
   reports(days: number | null) { return listReports(this.exec, days, now()); }
 }
 
@@ -135,6 +136,12 @@ export default {
       const r = parseReport(body, now());
       if (!r) return text('格式不對。', 400);
       return (await env.STATS.get(env.STATS.idFromName('main')).addReport(r)) ? reply(null, 204) : text('今天收到的回報太多了，請明天再試。', 429);
+    }
+    // 同梯的燈：一位病人的匿名彙總（不用登入、不收任何東西）。快取十分鐘
+    if (req.method === 'GET' && path === '/peer') {
+      const c = url.searchParams.get('c') ?? '', d = url.searchParams.get('day');
+      if (!/^c\d{2}[a-z]$/.test(c) || (d !== null && !/^\d{4}-\d{2}-\d{2}$/.test(d))) return text('格式不對。', 400);
+      return reply(JSON.stringify(await env.STATS.get(env.STATS.idFromName('main')).peer(c, d)), 200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=600' });
     }
     if (req.method === 'GET' && (path === '/stats' || path === '/export.csv' || path === '/reports')) {
       if (!env.ADMIN_KEY) return text('還沒有設定管理密碼（ADMIN_KEY）。', 503);

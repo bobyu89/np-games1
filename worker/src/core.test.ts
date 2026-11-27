@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
-import { CAP, EXTRA_COLUMNS, REPORT_CAP, SCHEMA, add, migrate, addReport, csv, dayOf, listReports, parse, parseReport, summary, type Exec, type Value } from './core.ts';
+import { CAP, EXTRA_COLUMNS, PEER_MIN, REPORT_CAP, SCHEMA, add, migrate, peer, addReport, csv, dayOf, listReports, parse, parseReport, summary, type Exec, type Value } from './core.ts';
 
 const NOW = Date.UTC(2026, 10, 12, 4, 0, 0) / 1000;   // 台北時間 2026-11-12 中午
 function fresh(): Exec {
@@ -164,4 +164,15 @@ test('照週分開：星期一開頭，跨週的分到兩週；每天多試弓�
   assert.deepEqual(s.weeks[0].first, { n: 1, found: 1 });
   const d = s.days.find((x) => x.day === '2026-11-25')!;
   assert.deepEqual([d.dones, d.trials, d.drills], [1, 0, 1]);
+});
+
+test('同梯的燈：一位病人少於 10 場不給；結案和試弓都算；可以只看某一天', () => {
+  const exec = fresh();
+  const ev = (i: number, at: number, f: 0 | 1, t = 'done') => ({ t, c: 'c01a', at: at + i, f });
+  send(exec, pack(1, Array.from({ length: PEER_MIN - 1 }, (_, i) => ev(i, NOW - 86400, i % 3 ? 1 : 0))), NOW);
+  assert.deepEqual(peer(exec, 'c01a', null), { all: null, today: null });
+  send(exec, pack(2, [ev(0, NOW, 1, 'trial'), { t: 'start', c: 'c01a', at: NOW + 5 }, { t: 'done', c: 'c02a', at: NOW + 6, f: 1 }]), NOW);
+  const p = peer(exec, 'c01a', dayOf(NOW));
+  assert.deepEqual(p.all, { n: PEER_MIN, found: 7 });
+  assert.equal(p.today, null, '今天只有一場，不給');
 });

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "check": "tsc --noEmit",
-    "test": "node --test src/core/engine.test.ts src/ui/backup.test.ts src/ui/progress.test.ts src/ui/exam.test.ts src/data/options.test.ts src/core/elders.test.ts src/core/perils.test.ts src/ui/streak.test.ts src/ui/diary.test.ts src/ui/freetext.test.ts src/ui/review.test.ts src/ui/drill.test.ts src/ui/sprint.test.ts src/ui/timing.test.ts src/ui/notes.test.ts",
+    "test": "node --test src/core/engine.test.ts src/ui/backup.test.ts src/ui/progress.test.ts src/ui/exam.test.ts src/data/options.test.ts src/core/elders.test.ts src/core/perils.test.ts src/ui/streak.test.ts src/ui/diary.test.ts src/ui/freetext.test.ts src/ui/review.test.ts src/ui/drill.test.ts src/ui/sprint.test.ts src/ui/timing.test.ts src/ui/notes.test.ts src/ui/feats.test.ts src/ui/daily.test.ts",
     "cases": "node tools/cases.ts",
     "review": "node tools/review.ts",
     "preview": "vite preview"

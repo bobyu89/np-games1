@@ -170,6 +170,18 @@ export function summary(exec: Exec, days: number | null, now: number): Summary {
   };
 }
 
+/** 同梯的燈：某一位病人，回傳統計的玩家裡有幾場、幾場診斷對（結案和試弓都算）。少於 PEER_MIN 場就不給，太少的數字不能比，也比較容易對回某個人 */
+export const PEER_MIN = 10;
+export interface Peer { n: number; found: number }
+export function peer(exec: Exec, caseId: string, day: string | null): { all: Peer | null; today: Peer | null } {
+  const q = (extra: string, ...p: Value[]) => {
+    const r = exec(`SELECT COUNT(*) AS n, SUM(found = 1) AS found FROM events WHERE case_id = ? AND type IN ('done', 'trial') AND found IS NOT NULL${extra}`, caseId, ...p)[0] ?? {};
+    const n = num(r.n);
+    return n >= PEER_MIN ? { n, found: num(r.found) } : null;
+  };
+  return { all: q(''), today: day ? q(' AND day = ?', day) : null };
+}
+
 const COLUMNS = ['at', 'day', 'device', 'build', 'pf', 'pwa', 'type', 'case_id', 'tier', 'phase', 'score', 'safety', 'secs', 'gtime', 'hints', 'found', 'plays', ...EXTRA_COLUMNS.map(([name]) => name)];
 /** 每一筆事件一列的 CSV，給試算表或統計軟體用。最多 20 萬列 */
 export function csv(exec: Exec, days: number | null, now: number): string {

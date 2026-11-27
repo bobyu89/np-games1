@@ -1,5 +1,5 @@
 // 關後回顧：蒐集 → 分析 → 摘要。學習發生在這裡。
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { consultQuestion } from '../core/elders.ts';
 import { perilOf } from '../core/perils.ts';
 import { GAP_NAME } from '../data/islands.ts';
@@ -15,14 +15,19 @@ import { formsWritten, matchWritten } from './freetext.ts';
 import { REVIEW_GAPS, missed } from './review.ts';
 import { RECENT, whyWeak, type Weak } from './sprint.ts';
 import { SPARE, mmText, phaseSplit, timingNote } from './timing.ts';
+import { STAR_NAME, starText, type Badge } from './feats.ts';
+import { fetchPeer, type Peer } from './peer.ts';
+import { dailyCase } from './daily.ts';
+import { dayKey } from './streak.ts';
 
 const mmss = (t: number) => Math.floor(t / 60) + ' 分 ' + String(t % 60).padStart(2, '0') + ' 秒';
 const STEPS = ['蒐集', '分析', '摘要'];
 
 /** trial：這一場是試弓。timeUp：時間到自動交卷的 */
-interface Props { weak?: Weak[]; c: CaseDef; session: Session; seconds: number; hero?: string | null; echo?: { got: boolean; before: boolean; text: string } | null; trial?: { timeUp: boolean; axes?: boolean }; fresh: { text: string; form: string; dir: 1 | -1 }[]; onFinish(takeaway: string | null): void }
+/** gains：這一場之後升了星的劫影、新的勳章。relay：連戰還有幾站的回顧沒看 */
+interface Props { gains?: { stars: { complaint: string; name: string; shadow: string; stars: number; from: number }[]; badges: Badge[] } | null; relay?: { left: number }; weak?: Weak[]; c: CaseDef; session: Session; seconds: number; hero?: string | null; echo?: { got: boolean; before: boolean; text: string } | null; trial?: { timeUp: boolean; axes?: boolean }; fresh: { text: string; form: string; dir: 1 | -1 }[]; onFinish(takeaway: string | null): void }
 
-export function Debrief({ weak, c, session, seconds, hero = null, echo = null, trial, fresh, onFinish }: Props) {
+export function Debrief({ gains, relay, weak, c, session, seconds, hero = null, echo = null, trial, fresh, onFinish }: Props) {
   const cq = useMemo(() => (trial ? null : consultQuestion(session)), [session, trial]);
   const [cqPick, setCqPick] = useState<string | null>(null);
   const me = heroOf(hero);
@@ -32,6 +37,10 @@ export function Debrief({ weak, c, session, seconds, hero = null, echo = null, t
   const tk = useMemo(() => takeaways(c, session, sc), [c, session, sc]);
   const tr = useMemo(() => trajectory(c, session), [c, session]);
   const written = useMemo(() => (session.board.written?.length ? matchWritten(c.complaint, c.forms, session.board.written) : null), [c, session]);
+  // 同梯的燈：回傳統計的玩家裡，這一位幾場、幾場診斷對；今天是今日之劫的話，另外看今天
+  const today = dayKey(Date.now()), isDaily = dailyCase(today).id === c.id;
+  const [peer, setPeer] = useState<{ all: Peer | null; today: Peer | null } | null>(null);
+  useEffect(() => { let on = true; void fetchPeer(c.id, isDaily ? today : null).then((p) => { if (on) setPeer(p); }); return () => { on = false; }; }, [c.id, isDaily, today]);
   const split = useMemo(() => (trial ? phaseSplit(session, seconds) : null), [trial, session, seconds]);
   const again = missed({ found: session.board.likely === c.answer.truth, trapped: pr ? pr.trapped : null });
   const [step, setStep] = useState(0), [pick, setPick] = useState<string | null>(null), [mine, setMine] = useState<string | null>(null);
@@ -89,6 +98,14 @@ export function Debrief({ weak, c, session, seconds, hero = null, echo = null, t
             <h3>你的想法怎麼變</h3>
             {tr.steps.length ? <ol className="path">{tr.steps.map((k, i) => <li key={i} className={k.right ? 'up' : 'down'}><b>{mmss(k.t)}</b>　{i === tr.steps.length - 1 && session.board.likely ? (trial ? '交卷時' : '結案時') : (trial ? '口試委員問你時' : '孟拓問你時')}：{k.name}</li>)}<li><b>實際上</b>　{tr.truth}</li></ol> : <p className="dim">這一場沒有留下你的判斷。實際上是{tr.truth}。</p>}
             <p className="quote">{tr.verdict}</p>
+            {peer?.all && (
+              <div className="leaf peer">
+                <b>同梯的燈</b>
+                <p>回傳統計的玩家裡，{c.patient.name}這一位有 <b>{Math.round((100 * peer.all.found) / peer.all.n)}%</b> 的場次診斷對（{peer.all.n} 場）。你這一場{session.board.likely === c.answer.truth ? '對了' : '沒有對到'}。</p>
+                {isDaily && peer.today && <p>今日之劫：今天 {peer.today.n} 場，{Math.round((100 * peer.today.found) / peer.today.n)}% 診斷對。</p>}
+                <p className="dim">只算選了「可以回傳」的人，匿名、不排名。少於 10 場的病人不顯示。</p>
+              </div>
+            )}
             {written && <>
               <h3>下診斷之前，你先寫的</h3>
               <ul className="path">{written.map((w) => <li key={w.text} className={w.forms.includes(c.answer.truth) ? 'up' : 'none'}>{w.text}{w.forms.length ? ' → ' + w.forms.map((id) => formOf(c, id)!.name).join('、') : ''}</li>)}</ul>
@@ -152,6 +169,14 @@ export function Debrief({ weak, c, session, seconds, hero = null, echo = null, t
               <h3>這一關寫回圖鑑的</h3>
               {fresh.length ? <ul className="path">{fresh.map((r, i) => <li key={i} className={r.dir > 0 ? 'up' : 'down'}>{r.dir > 0 ? '＋' : '－'} {r.text} → {formOf(c, r.form)!.name}</li>)}</ul> : <p className="dim">這一次沒有新的線索寫回去。解讀對的線索才會留下來。</p>}
             </>}
+            {gains && (gains.stars.length > 0 || gains.badges.length > 0) && (
+              <div className="leaf gains">
+                <b>這一場的收穫</b>
+                {gains.stars.map((x) => <p key={x.complaint}><span className="stars">{starText(x.stars)}</span> {x.shadow}（{x.name}）：{STAR_NAME[x.from]} → <b>{STAR_NAME[x.stars]}</b></p>)}
+                {gains.badges.map((b) => <p key={b.id}><span className="badge-mark" aria-hidden="true">◆</span> 新的勳章：<b>{b.name}</b><span className="dim">　{b.how}</span></p>)}
+                <p className="dim">熟練星看每一種主訴最近 5 場；勳章收在圖鑑的「勳章」頁。</p>
+              </div>
+            )}
             {weak && weak.length > 0 && (
               <div className="leaf">
                 <b>算進這一場之後，你最弱的三種主訴</b>
@@ -169,7 +194,7 @@ export function Debrief({ weak, c, session, seconds, hero = null, echo = null, t
       <div className="acts two">
         {step > 0 ? <button type="button" className="act" onClick={() => go(step - 1)}>上一步</button> : <span />}
         {step < 2 ? <button type="button" className="act demo" onClick={() => go(step + 1)}>下一步</button>
-          : <button type="button" className="act demo" onClick={() => { sfx.done(); onFinish(mine); }}>{mine ? '帶回公會' : '不選，回公會'}</button>}
+          : <button type="button" className="act demo" onClick={() => { sfx.done(); onFinish(mine); }}>{relay?.left ? '看下一站的回顧' : mine ? '帶回公會' : '不選，回公會'}</button>}
       </div>
     </div>
   );
