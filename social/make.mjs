@@ -7,7 +7,9 @@
 //      接著那座島還沒發過的病人一天一位（閱題卡：病人是誰、三行情境、進門前想的三件事）。圖是 gNN.jpg。
 // 內容只用閱題卡上本來就給玩家看的，不含診斷。口試倒數拿掉了（研究主持人 2026-11-22：之後用英雄旅程發文，不用管口試）。
 //
-// 用法（在專案的根目錄）：node social/make.mjs <歸航記的第一天 YYYY-MM-DD>
+// 用法（在專案的根目錄）：node social/make.mjs <歸航記的第一天 YYYY-MM-DD> [--from <YYYY-MM-DD>]
+//   --from：這一天之前的歸航記已經發出去了，圖和文字照 schedule.json 原樣留著，只重畫這一天（含）之後的。
+//   2026-11-28 起的圖卡是第二版（v2）：底圖是 social/art/base.jpg（作者用 ChatGPT 生成、挑過的），字疊在紙卡上，劫影用 app/public/art/shadows 的插圖。
 // 需要 playwright（不在專案的相依套件裡，要另外裝）：圖是用遊戲自己的畫（app/src/art）在瀏覽器裡畫出來再截下來的。
 // 改了第一天、病例的閱題卡或版型，就重跑一次，把產生的檔一起提交。
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
@@ -21,11 +23,15 @@ import { ODYSSEY } from '../trailer/composition.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), APP = resolve(here, '../app'), ART = join(APP, 'src/art'), FONT = join(APP, 'node_modules/@expo-google-fonts/lxgw-wenkai-tc');
 const OUT = join(APP, 'public/social'), CUT = resolve(here, '../assets/cutouts'), START = process.argv[2];
+const FROM = process.argv[3] === '--from' ? process.argv[4] : null;
+if (process.argv[3] && !/^\d{4}-\d{2}-\d{2}$/.test(FROM ?? '')) { console.error('用法：node social/make.mjs <第一天> --from <YYYY-MM-DD>'); process.exit(2); }
+const BASE = join(here, 'art/base.jpg'), SHADOW_ART = join(APP, 'public/art/shadows');
 if (!/^\d{4}-\d{2}-\d{2}$/.test(START ?? '')) { console.error('用法：node social/make.mjs <歸航記的第一天 YYYY-MM-DD>'); process.exit(2); }
 export const LINK = 'https://mist-guild.shiftguard-navicare.workers.dev';
 
 // 已經發過的每日一案（2026-11-13 到 11-22），原樣留著
-const OLD = JSON.parse(readFileSync(join(here, 'schedule.json'), 'utf8')).filter((d) => d.head === undefined && d.date && d.date <= '2026-11-22');
+const PREV = JSON.parse(readFileSync(join(here, 'schedule.json'), 'utf8'));
+const OLD = PREV.filter((d) => d.head === undefined && d.date && d.date <= '2026-11-22');
 const POSTED = new Set(OLD.map((d) => d.id));
 const caseData = (c) => ({ id: c.id, complaint: c.complaintName, name: c.patient.name, look: c.patient.look, scene: c.scene, shadow: c.shadow.look, lines: c.reading.lines, prompts: c.reading.prompts });
 const NUM = '一二三四五六七八九十', numZh = (n) => (n <= 10 ? NUM[n - 1] : '十' + NUM[n - 11]);
@@ -77,6 +83,65 @@ const html = (c, no, cd) => `<!doctype html><meta charset="utf-8"><style>${CSS}<
     s.state.veil = 1; s.resize(el.clientWidth, el.clientHeight);
     let t = 7.3; for (let k = 0; k < 60; k++) { t += 0.03; s.update(t, 0.03); } s.render(); window.done = true;
   </script></body>`;
+// 第二版：底圖 social/art/base.jpg（1080×1350，上面是霧港，下面一大張空白紙卡）。字寫在紙卡裡，網址和說明寫在紙卡下面的深綠色上。
+// 紙卡在 540×675 的座標大約是 x 20–520、y 250–622；字多的時候整張字一起縮小（--k），直到放得進去
+const CSS2 = `
+  @font-face { font-family: WK; font-weight: 400; src: url(/f400.ttf); } @font-face { font-family: WK; font-weight: 700; src: url(/f700.ttf); }
+  * { box-sizing: border-box; margin: 0; }
+  :root { --ink: #2c2a25; --ochre: #dba941; --rust: #b4532b; --teal: #3f7570; --on: #efe6cf; --on-soft: #c9d3c0; --k: 1; }
+  body { width: 540px; height: 675px; background: url(/base.jpg) center / 540px 675px no-repeat; font-family: WK, serif; color: var(--ink); position: relative; overflow: hidden; }
+  .top { position: absolute; left: 22px; right: 22px; top: 18px; display: flex; justify-content: space-between; align-items: center; }
+  .tag { background: var(--ochre); border: 2px solid var(--ink); border-radius: 13px 17px 12px 19px / 17px 12px 19px 13px; padding: 1px 13px; font-weight: 700; font-size: 16px; box-shadow: 2px 3px 0 rgba(0,0,0,.45); transform: rotate(-1deg); }
+  .tag.cd { background: var(--rust); color: var(--on); transform: rotate(1.2deg); font-size: 15px; }
+  .medal { position: absolute; width: 132px; height: 132px; left: 50%; top: 178px; margin-left: -66px; border-radius: 50%; border: 3px solid var(--ink); box-shadow: 3px 4px 0 rgba(0,0,0,.4); object-fit: cover; background: #33443a; }
+  .medal.big { width: 150px; height: 150px; margin-left: -75px; top: 160px; }
+  .box { position: absolute; left: 44px; right: 44px; top: 318px; bottom: 66px; display: flex; flex-direction: column; gap: calc(9px * var(--k)); font-size: calc(16px * var(--k)); line-height: 1.5; }
+  .box.lo { top: 320px; }
+  h1 { font-size: calc(23px * var(--k)); font-weight: 700; line-height: 1.25; text-align: center; }
+  h1 small { display: inline-block; font-size: calc(14px * var(--k)); font-weight: 400; color: var(--teal); border: 1.5px solid var(--teal); border-radius: 9px; padding: 0 8px; margin-left: 6px; vertical-align: 3px; }
+  .lines { color: #3b382f; }
+  .ask b { display: block; color: var(--rust); font-size: calc(15px * var(--k)); letter-spacing: 0.04em; }
+  .ask ol { padding-left: 1.35em; font-size: calc(15px * var(--k)); }
+  .kick { margin-top: auto; text-align: center; color: var(--teal); font-size: calc(14.5px * var(--k)); }
+  .rule { border: 0; border-top: 1.5px dashed rgba(44,42,37,.35); }
+  .foot { position: absolute; left: 0; right: 0; bottom: 9px; display: flex; flex-direction: column; gap: 1px; align-items: center; }
+  .url { color: var(--on); font-size: 15px; font-weight: 700; } .note { color: var(--on-soft); font-size: 11.5px; }
+  .pts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; } .pts figure { text-align: center; font-size: calc(13px * var(--k)); } .pts img { width: 100%; aspect-ratio: 1; object-fit: contain; display: block; }
+`;
+// 字太多就整張縮小，最小 0.72 倍；還是放不下，會在 make 那一步報錯
+const FIT = `<script>
+  window.fit = () => { const b = document.querySelector('.box'); let k = 1;
+    while (b.scrollHeight > b.clientHeight + 1 && k > 0.72) { k -= 0.02; document.documentElement.style.setProperty('--k', k); }
+    return b.scrollHeight <= b.clientHeight + 1; };
+</script>`;
+const foot2 = `<div class="foot"><span class="url">${LINK.replace('https://', '')}</span><span class="note">病例依文獻與臨床指引撰寫，僅供練習，不能取代臨床判斷・插圖以 ChatGPT 生成</span></div>`;
+const html2 = (c, no, cd) => `<!doctype html><meta charset="utf-8"><style>${CSS2}</style>${FIT}<body>
+  <div class="top"><span class="tag">歸航記 ${pad(no)}</span>${cd ? `<span class="tag cd">${cd}</span>` : ''}</div>
+  <img class="medal" src="/shadow/${c.shadow}.webp" alt="" />
+  <div class="box">
+    <h1>${esc(c.lines[0].replace(/。$/, ''))}<small>主訴：${esc(c.complaint)}</small></h1>
+    <div class="lines">${c.lines.slice(1).map(esc).join('')}</div>
+    <hr class="rule" />
+    <div class="ask"><b>進門之前，先想三件事</b><ol>${c.prompts.map((p) => '<li>' + esc(p) + '</li>').join('')}</ol></div>
+    <p class="kick">完整的問診、評估和回顧在《歸航記》</p>
+  </div>
+  ${foot2}</body>`;
+const introHtml2 = (p, no) => `<!doctype html><meta charset="utf-8"><style>${CSS2}
+  .myth { color: #4a463b; text-align: center; }
+  h1 b { color: var(--rust); }
+  .trap b { color: var(--rust); }
+</style>${FIT}<body>
+  <div class="top"><span class="tag">歸航記 ${pad(no)}</span><span class="tag cd">第${numZh(p.n)}劫・${esc(p.peril)}</span></div>
+  <img class="medal big" src="/shadow/${p.look}.webp" alt="" />
+  <div class="box lo">
+    <p class="myth">《奧德賽》裡：${esc(p.short)}</p>
+    <h1>在霧海裡，這一劫是「<b>${esc(p.complaint)}</b>」</h1>
+    <p class="trap"><b>最容易掉進去的陷阱：</b>${esc(p.trap)}</p>
+    <hr class="rule" />
+    <div class="ask"><b>${esc(p.island)}的病人，接下來幾天一位一位來</b><div class="pts">${p.patients.map((c) => `<figure><img src="/cut/patient-${c.id}.png" /><figcaption>${esc(c.name)}</figcaption></figure>`).join('')}</div></div>
+  </div>
+  ${foot2}</body>`;
+
 export const HEAD = (no) => '【歸航記 ' + pad(no);
 export const caption = (c, no, cd) => [
   HEAD(no) + '｜' + cd + '】',
@@ -177,18 +242,33 @@ const PLAN = PERIL_DATA.flatMap((p) => [{ intro: p }, ...p.patients.map((c, j) =
 const browser = await chromium.launch(), schedule = [...OLD, LAUNCH, AI_BUILD];
 for (let i = 0; i < PLAN.length; i++) {
   const no = i + 1, x = PLAN[i], date = dayOf(i), file = 'g' + pad(no) + '.jpg';
+  // 已經發出去的：圖和文字照舊（日程裡同一天、同一個 id 的那一則）
+  if (FROM && iso(date) < FROM) {
+    const id = x.intro ? 'peril-' + x.intro.n : x.c.id, kept = PREV.find((d) => d.date === iso(date) && d.id === id);
+    if (!kept || !existsSync(join(OUT, file))) { console.error(iso(date) + ' 已經發過，但日程或圖對不上（' + id + '）'); process.exit(1); }
+    schedule.push(kept); continue;
+  }
   const page = await browser.newPage({ viewport: { width: 540, height: 675 }, deviceScaleFactor: 2 });
   page.on('pageerror', (e) => { console.error('畫面錯誤', no, e.message); process.exitCode = 1; });
   await page.route('http://daily.test/**', (route) => {
     const u = new URL(route.request().url());
-    if (u.pathname === '/') return route.fulfill({ contentType: 'text/html', body: x.intro ? introHtml(x.intro, no) : html(x.c, no, x.label) });
+    if (u.pathname === '/') return route.fulfill({ contentType: 'text/html', body: x.intro ? (FROM ? introHtml2 : introHtml)(x.intro, no) : (FROM ? html2 : html)(x.c, no, x.label) });
+    if (u.pathname === '/base.jpg') return route.fulfill({ contentType: 'image/jpeg', body: readFileSync(BASE) });
+    if (u.pathname.startsWith('/shadow/')) { const f = join(SHADOW_ART, u.pathname.slice(8)); return existsSync(f) ? route.fulfill({ contentType: 'image/webp', body: readFileSync(f) }) : route.fulfill({ status: 404, body: 'no' }); }
     if (u.pathname === '/f400.ttf') return route.fulfill({ contentType: 'font/ttf', body: readFileSync(join(FONT, '400Regular/LXGWWenKaiTC_400Regular.ttf')) });
     if (u.pathname === '/f700.ttf') return route.fulfill({ contentType: 'font/ttf', body: readFileSync(join(FONT, '700Bold/LXGWWenKaiTC_700Bold.ttf')) });
     if (u.pathname.startsWith('/cut/')) { const f = join(CUT, u.pathname.slice(5)); return existsSync(f) ? route.fulfill({ contentType: 'image/png', body: readFileSync(f) }) : route.fulfill({ status: 404, body: 'no' }); }
     const f = join(ART, u.pathname.replace('/art/', '/'));
     return existsSync(f) ? route.fulfill({ contentType: 'text/javascript', body: readFileSync(f) }) : route.fulfill({ status: 404, body: 'no' });
   });
-  await page.goto('http://daily.test/'); await page.waitForFunction('window.done === true', null, { timeout: 30000 }); await page.waitForTimeout(200);
+  await page.goto('http://daily.test/');
+  if (FROM) {
+    await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); });
+    if (!(await page.evaluate(() => window.fit()))) { console.error('歸航記 ' + no + ' 的字縮到最小還是放不下'); process.exitCode = 1; }
+    const broken = await page.evaluate(() => [...document.images].filter((i) => !i.naturalWidth).map((i) => i.src));
+    if (broken.length) { console.error('歸航記 ' + no + ' 少了圖：' + broken.join(', ')); process.exitCode = 1; }
+  } else { await page.waitForFunction('window.done === true', null, { timeout: 30000 }); }
+  await page.waitForTimeout(200);
   const h = await page.evaluate(() => document.body.scrollHeight);
   if (h > 675) { console.error('歸航記 ' + no + ' 的字放不下（' + h + '）'); process.exitCode = 1; }
   await page.screenshot({ path: join(OUT, file), type: 'jpeg', quality: 84 }); await page.close();

@@ -13,7 +13,7 @@
 
 | 檔 | 做什麼 |
 |---|---|
-| `make.mjs` | 產生歸航記的圖（`app/public/social/gNN.jpg`）和文字（`schedule.json`）：`node social/make.mjs 2026-11-23`（歸航記第一天）。已經發過的每日一案 01–10 照原樣留著。圖是用遊戲自己的畫在瀏覽器裡畫出來的 |
+| `make.mjs` | 產生歸航記的圖（`app/public/social/gNN.jpg`）和文字（`schedule.json`）：`node social/make.mjs 2026-11-23 --from 2026-11-28`（歸航記第一天；`--from` 那一天之前已經發出去的圖和文字照原樣留著）。已經發過的每日一案 01–10 照原樣留著。2026-11-28 起是第二版圖卡：底圖 `social/art/base.jpg`、劫影插圖 `app/public/art/shadows/`（作者用 ChatGPT 生成、挑過的；`app/tools/art.py` 從原圖轉出來），字疊在紙卡上；之前的 g01–g05 是用遊戲自己的畫在瀏覽器裡畫的 |
 | `schedule.json` | 哪一天發哪一則、文字是什麼、圖在哪裡。產生的，不要手改 |
 | `core.mjs` | 把某一天那一則發到 Threads 的流程。兩邊共用：Cloudflare 的定時器、GitHub 的排程 |
 | `post.mjs` | GitHub 那一邊的入口（後備排程、手動跑、試跑） |

@@ -418,6 +418,17 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
           })()}
           {tab === 'world' && <>
             {WORLD.paragraphs.map((t) => <p key={t}>{t}</p>)}
+            <h3>公會的人</h3>
+            <div className="art-list">{([['meng', '孟拓', '資深專科護理師。青綠的外套、赭黃的圍巾，紀錄板不離手。'], ['ma', '馬凱', '值班醫師。病人等不了的時候，敲值班鐘，他會馬上來。'], ['fei', '費民', '管檔案室和圖鑑。檔案室淹水之後，舊的值班日誌是一頁一頁晾乾的。']] as const).map(([k, name, line]) => (
+              <figure key={k}><img src={'art/people/' + k + '.webp'} width={960} height={640} loading="lazy" decoding="async" alt={name + '的設定稿'} /><figcaption><b>{name}</b>　{line}</figcaption></figure>
+            ))}</div>
+            <h3>霧港和霧海</h3>
+            <div className="art-list">
+              <figure><img src="art/scenes/hall.webp" width={1280} height={720} loading="lazy" decoding="async" alt="公會大廳的插圖" /><figcaption><b>公會大廳</b>　委託貼在板子上，值班鐘掛在樑上。</figcaption></figure>
+              <figure><img src="art/scenes/ward.webp" width={1280} height={720} loading="lazy" decoding="async" alt="病室的插圖" /><figcaption><b>病室</b>　劫影浮在病人身邊；要抓著它問、一直看，它才會現出原形。</figcaption></figure>
+              <figure><img src="art/scenes/chart.webp" width={1280} height={720} loading="lazy" decoding="async" alt="霧海群島的航海圖" /><figcaption><b>霧海群島</b>　本島伊塔洛斯和十一座外島，一座島一種劫影。</figcaption></figure>
+            </div>
+            <p className="dim">插圖是作者用 ChatGPT 生成、一張一張挑過的；遊戲裡會動的人物和場景，是用程式畫的。</p>
             <h3>看過的故事</h3>
             {save.beats.length ? <div className="stack">{BEATS.filter((b) => save.beats.includes(b.id)).map((b) => <button key={b.id} type="button" className="pick" onClick={() => { sfx.page(); setStory(b); }}>{b.title}</button>)}</div> : <p className="dim">還沒有。</p>}
             <h3>舊檔案</h3>
@@ -449,7 +460,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <ul className="star-list">{stars.map((x) => <li key={x.complaint}><span className="stars" aria-label={x.stars + ' 顆星'}>{starText(x.stars)}</span><b>{x.shadow}</b><span>{x.name}</span><em>{STAR_NAME[x.stars]}</em></li>)}</ul>
             <h3>勳章（{BADGES.filter((b) => b.earned(save)).length}／{BADGES.length}）</h3>
             <p className="dim">勳章獎勵的是好的臨床習慣，不是場次或分數。</p>
-            <div className="badges">{BADGES.map((b) => { const ok = b.earned(save); return <div key={b.id} className={'badge paper' + (ok ? ' on' : '')}><i aria-hidden="true">{ok ? '◆' : '◇'}</i><b>{b.name}</b><span>{b.how}</span><em>{ok ? '拿到了' : '還沒'}</em></div>; })}</div>
+            <div className="badges">{BADGES.map((b) => { const ok = b.earned(save); return <div key={b.id} className={'badge paper' + (ok ? ' on' : '')}><img src={'art/badges/' + b.id + '.webp'} width={256} height={256} loading="lazy" decoding="async" alt="" /><b>{b.name}</b><span>{b.how}</span><em>{ok ? '拿到了' : '還沒'}</em></div>; })}</div>
           </>}
           {tab === 'shadow' && <>
             <TrapRecordCard save={save} />
@@ -458,6 +469,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             const page = codexOf(m, save);
             return (
               <div key={m.id} className="codex">
+                {m.shadow.look && <img className="codex-art" src={'art/shadows/' + m.shadow.look + '.webp'} width={512} height={512} loading="lazy" decoding="async" alt={m.shadow.name + '的插圖'} />}
                 <div className="codex-top"><b>{m.shadow.name}</b><span>{m.name}的劫影</span><em>寫回 {page.percent}%</em></div>
                 <i className="bar"><b style={{ width: page.percent + '%' }} /></i>
                 <p>{m.shadow.lore}</p>
