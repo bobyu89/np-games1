@@ -520,11 +520,11 @@ export function placesOf(save: Save): Entry[] {
   const room = (id: IslandId, lines: string[]): Entry => {
     const i = ISLANDS[id], place = i.places[0], first = caseById(questsOn(id)[0].caseId);
     return { id: place, name: PLACES[place].name, tag: i.name + '・' + CHAPTERS_ZH[i.chapter], lines: [...lines, ...i.lines.slice(-1), ...who(id)],
-      shot: { kind: 'ward', patient: i.resident ? RESIDENTS[i.resident].look : first.patient.look, scene: place }, open: been(id), hint: '在' + i.name + '完成第一張委託之後' };
+      shot: { kind: 'ward', patient: first.patient.look, scene: place }, open: been(id), hint: '在' + i.name + '完成第一張委託之後' };
   };
   return [
     { id: 'hall', name: '公會大廳', tag: '伊塔洛斯', lines: ['委託板、費民的櫃台、看得到燈塔的拱窗。每一張委託從這裡開始，也回到這裡。'], shot: { kind: 'hall' }, open: true, hint: '' },
-    { id: 'ward', name: PLACES.ward.name, tag: '伊塔洛斯・第一章', lines: ['大廳旁邊那扇門。一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。', ...who('main')], shot: { kind: 'ward', patient: 'r-lan' }, open: any, hint: '完成第一張委託之後' },
+    { id: 'ward', name: PLACES.ward.name, tag: '伊塔洛斯・第一章', lines: ['大廳旁邊那扇門。一張床、一張桌子、一口值班鐘。窗台上那隻貓不屬於任何人。', '下雨天，窗外的樹會安靜下來。', ...who('main')], shot: { kind: 'ward', patient: 'lin' }, open: any, hint: '完成第一張委託之後' },
     { id: 'dock', name: PLACES.dock.name, tag: '每一座島都有・出診', lines: ['船一靠岸，走不到公會的人就先扶進這裡。每一座島的碼頭邊，都有這樣一間。', '出診的時候，孟拓會把值班鐘一起帶來，掛在樑上。'], shot: { kind: 'ward', patient: 'zhou', scene: 'dock' }, open: !!save.cases.c01d, hint: '完成「靠岸的那天早上」之後' },
     room('wind', ['借的是斯克里亞魚市診間的格局：帆坊的人沒空過海，公會就在帆坊旁邊擺了一張床。']),
     room('tide', ['斯克里亞的魚市天沒亮就開，不舒服的人也不肯搭船。公會在魚市口留了一間診間。', '窗外就是魚市的棚子。那隻貓，在這裡待得最久。']),
