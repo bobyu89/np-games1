@@ -455,13 +455,17 @@ export function createWard(canvas, opts = {}) {
   // ── 插圖 ──
   const LID = L ? wardLiveIds({ patient: who, scene: opts.scene, shadow: opts.shadow || 'moth', hero: opts.hero }) : [];
   const lid = (k) => LID.find((id) => id.startsWith(k));
-  const SPOT = { patient: [118, 252], cen: [CEN.x, CEN.y], shen: [SHEN.x, SHEN.y], hero: [HERO.x, HERO.y], shadow: [MOTH.x, MOTH.y] };
+  const SPOT = { patient: [104, 262], cen: [CEN.x + 4, CEN.y + 4], shen: [SHEN.x + 6, SHEN.y + 4], hero: [HERO.x - 4, HERO.y + 2], shadow: [206, 64] };
   const spot = (k) => (L && L.meta[LID[0]].spots?.[k]) || SPOT[k];
   // 房間：背景整片先塗房間邊緣的顏色，再把圖貼在 rect（場景座標）；沒寫 rect 就以畫面中心為準、高 290
   function drawPlate(g) {
     const id = LID[0], meta = L.meta[id], img = L.img[id];
     fillRect(g, X0, Y0, X1 - X0, Y1 - Y0, meta.fill || C.wains2);
-    const h = 290, w = h * img.naturalWidth / img.naturalHeight, [x, y, rw, rh] = meta.rect || [181 - w / 2, 146 - h / 2, w, h];
+    const h = 330, w = h * img.naturalWidth / img.naturalHeight, [x, y, rw, rh] = meta.rect || [181 - w / 2, 146 - h / 2, w, h];
+    // 畫面比圖寬的時候，把圖最左、最右的一條拉長補上，看起來像房間延伸出去
+    const iw = img.naturalWidth, ih = img.naturalHeight, edge = Math.round(iw * 0.01);
+    g.drawImage(img, 0, 0, edge, ih, X0, y, x - X0 + 0.5, rh);
+    g.drawImage(img, iw - edge, 0, edge, ih, x + rw - 0.5, y, X1 - x - rw, rh);
     g.drawImage(img, x, y, rw, rh);
   }
   // 說話：嘴巴開合（a、b 兩張輪流）
@@ -483,7 +487,7 @@ export function createWard(canvas, opts = {}) {
     const x = mx + Math.sin(t * 0.7) * 3 + flinch * (8 + Math.sin(t * 60) * 2), y = my + Math.sin(t * 1.3) * 3.2 - flinch * 7;
     const [px, py] = spot('patient');
     g.globalAlpha = 0.35 + 0.25 * Math.sin(t * 2.5);
-    const tx = px - 21, ty = py - 67;
+    const pid = lid('patient-'), pm = L.meta[pid], pz = sizeOf(pm, L.img[pid]), tx = px - pz.w * 0.18, ty = py - pz.h * 0.62;
     for (let i = 1; i < 9; i++) { const k = i / 9, qx = x + (tx - x) * k + Math.sin(k * 9 + t * 2) * 4, qy = y + 14 + (ty - y - 14) * k; dot(g, qx, qy, 1.5 - k * 0.5, C.cream); }
     g.globalAlpha = 1;
     const id = lid('shadow-'), meta = L.meta[id], img = L.img[id], { h } = sizeOf(meta, img);
@@ -1126,7 +1130,7 @@ export function createWard(canvas, opts = {}) {
       base.tint('rgba(70, 60, 96, ' + (bad * 0.13).toFixed(3) + ')');
     }
     if (rain) base.tint('rgba(60, 80, 96, 0.10)');
-    g.globalAlpha = 1; base.grain();
+    g.globalAlpha = 1;   // 插圖本身就有紙紋，不再疊程式的雜訊
   }
 
   function burst(n, key) {

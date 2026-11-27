@@ -10,7 +10,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageChops, ImageFilter
 
 SRC = Path(sys.argv[1])
 ROOT = Path(__file__).resolve().parents[2]
@@ -35,6 +35,14 @@ def write_manifest(sprites):
         '// 會動的畫面的插圖清單。app/tools/live.py <資料夾> 會改寫下面那一段（位置、大小這些手調的欄位會留著）。\n'
         '// 空的時候，所有場景都照舊用程式畫。\n'
         'export default {\n' + MARK_A + '\nsprites: ' + body + ',\n' + MARK_B + '\n};\n', encoding='utf-8')
+
+
+def clean(im):
+    """去背沒去乾淨的半透明殘影：離實心的地方超過 10 像素的半透明像素清掉（實心的小東西，像頭上的驚嘆線，照留）"""
+    a = im.getchannel('A')
+    solid = a.point(lambda v: 255 if v >= 200 else 0).filter(ImageFilter.MaxFilter(21))
+    im.putalpha(ImageChops.multiply(a, solid))
+    return im
 
 
 def webp(im, path, quality=84):
@@ -69,7 +77,7 @@ for name, f in files.items():
     groups.setdefault(re.sub(r'-[abc]$', '', name), []).append(name)
 bad = []
 for base, names in groups.items():
-    ims = {n: Image.open(files[n]).convert('RGBA') for n in names}
+    ims = {n: clean(Image.open(files[n]).convert('RGBA')) for n in names}
     sizes = {im.size for im in ims.values()}
     if len(sizes) > 1:
         bad.append(base + '：同一組的圖大小不一樣 ' + str(sizes)); continue
