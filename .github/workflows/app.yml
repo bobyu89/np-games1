@@ -46,8 +46,10 @@ jobs:
       - name: 型別檢查和建置
         run: npm run build
       - name: 用瀏覽器走一遍新的流程（今天卡、今日之劫、錯題複習、連戰、速記頁）
+        # 只下載瀏覽器，不用 --with-deps：那會先跑 apt-get update，執行環境裡的微軟套件來源壞掉（403）時整步失敗。
+        # GitHub 的 ubuntu 執行環境本來就裝了 Chrome 需要的系統套件
         run: |
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
           npm run e2e
 
   worker:
