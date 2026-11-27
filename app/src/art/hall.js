@@ -1,6 +1,7 @@
 // 公會大廳：委託板、費民的櫃台、看得到霧港和燈塔的窗。
 import { C, K, TAU, rect, rrect, prep, trace, shape, oval, wline, dot, leaf, fillRect, createBase } from './sketch.js';
 import { drawCat, drawCen, drawMo, drawHero, drawShen } from './cast.js';
+import { liveFor, drawSprite, headOf, plateRect, drawPlate, onPlate } from './live.js';
 
 const X0 = -220, X1 = 580, Y0 = -120, Y1 = 420;
 const FLOOR_Y = 196;
@@ -89,8 +90,25 @@ function drawMid(g) {
   shape(g, [[136, 187], [138, 180], [144, 177], [150, 180], [152, 187]], { fill: C.brass, lw: 1.2 }); dot(g, 144, 175.6, 1.6, C.wood2);
 }
 
+/** 大廳要換成插圖，需要哪幾張：大廳（空的）、費民和櫃台、孟拓、馬凱、主角 */
+export function hallLiveIds(hero) {
+  const ids = ['hall', 'mo-a', 'mo-b', 'meng-a', 'meng-b', 'ma-a', 'ma-b', 'ma-c'];
+  if (hero) ids.push('hero-' + hero + '-a', 'hero-' + hero + '-b');
+  return ids;
+}
+// 插圖版的位置：背景圖上的比例（0 到 1）
+const HALL_SPOT = { mo: [0.27, 0.9], cen: [0.70, 0.89], window: [0.42, 0.87], hero: [0.53, 0.97], shen: [0.80, 0.9], paper: [0.728, 0.335], tower: [0.367, 0.21] };
+
 export function createHall(canvas, opts = {}) {
-  const base = createBase(canvas, { back: drawBack, mid: drawMid }, opts.view), ctx = base.ctx;
+  let L = opts.live ? liveFor(hallLiveIds(opts.hero)) : null;
+  const base = createBase(canvas, { back: (g) => (L && L.ready ? livePlate(g) : L && !L.failed ? null : drawBack(g)), mid: (g) => (L ? null : drawMid(g)) }, opts.view), ctx = base.ctx;
+  if (L) L.then.then(() => { if (L.failed) L = null; if (base.img) base.resize(base.W, base.H); });
+  const rectOf = () => plateRect(L.meta.hall, L.img.hall, 181, 146, 330);
+  const spot = (k) => onPlate(rectOf(), L.meta.hall.spots?.[k] || HALL_SPOT[k]);
+  function livePlate(g) { drawPlate(g, L.meta.hall, L.img.hall, rectOf(), [X0, Y0, X1, Y1], C.wains2); }
+  const flap = (t) => Math.floor(t / 0.16) % 2 === 1;
+  const put = (g, name, k, x, y, o = {}) => { const id = name + '-' + k; drawSprite(g, L.img[id], L.meta[id], x, y, o); };
+  const person = (g, t, name, x, y, talking, o = {}) => put(g, name, talking && flap(t) ? 'b' : 'a', x, y, { sy: 1 + Math.sin(t * 2.1 + x) * 0.005, ...o });
   // glow：委託板上那張可以接的委託有沒有在發亮
   // hero：主角是哪一位（沒有就不畫）
   // fx：故事演到這一句的時候，場景要跟著做什麼（空白分開，可以好幾個）：
@@ -174,6 +192,62 @@ export function createHall(canvas, opts = {}) {
     g.globalAlpha = 1;
   }
 
+  // 疊在最上面的：天色暗下來、值班夜的霧、那一頁勘誤（程式畫和插圖版共用）
+  function drawOverlays(g, t) {
+    // 講以前的事：整個大廳暗下來
+    if (shown.dusk > 0.02) { base.tint('rgba(26, 36, 54, ' + (0.46 * shown.dusk).toFixed(3) + ')'); base.world(); }
+    // 值班夜：霧貼著地板和牆邊漫進來
+    if (shown.fog > 0.02) {
+      [[10, 250, 44, 15, 5], [330, 236, 40, 14, 4], [150, 300, 60, 16, 7], [356, 120, 30, 20, 3], [0, 130, 26, 18, 3.5], [240, 286, 46, 13, 6]].forEach(([x, y, rx, ry, sp], i) => {
+        const dx = state.still ? 0 : Math.sin(t * 0.25 + i * 1.9) * sp * 3;
+        g.globalAlpha = shown.fog * (0.34 + 0.08 * Math.sin(t * 0.6 + i)); oval(g, x + dx, y, rx, ry, { fill: C.fog, stroke: null, seed: 9000 + i }); oval(g, x + dx + rx * 0.5, y - ry * 0.45, rx * 0.6, ry * 0.8, { fill: C.fog, stroke: null, seed: 9010 + i });
+      });
+      g.globalAlpha = 1;
+    }
+    // 那一頁勘誤：十一個名字，第十二行是空的
+    if (shown.page > 0.02) {
+      const p = shown.page, bob = state.still ? 0 : Math.sin(t * 1.3) * 1.6;
+      g.save(); g.globalAlpha = Math.min(1, p * 1.3); g.translate(PAGE.x, PAGE.y + (1 - p) * 26 + bob); g.rotate(-0.04 + (1 - p) * 0.18);
+      g.globalAlpha *= 0.3; dot(g, 0, 0, 62, C.glow); g.globalAlpha = Math.min(1, p * 1.3);
+      K.seed = 8800;
+      shape(g, rect(-36, -48, 72, 96), { fill: C.paper, lw: 1.5, amp: 0.5 });
+      shape(g, [[-36, 30], [-30, 34], [-22, 29], [-36, 40]], { fill: C.paperLine, stroke: null });   // 泡過水的一角
+      wline(g, [[-12, -39], [12, -39]], C.rust, 2.2, { amp: 0.3 }); wline(g, [[-9, -35.5], [9, -35.5]], C.rust, 1, { amp: 0.2 });
+      for (let i = 0; i < 11; i++) wline(g, [[-27, -27 + i * 5.6], [-27 + 22 + ((i * 7) % 5) * 5, -27 + i * 5.6]], C.ink, 1, { amp: 0.25, seed: 8810 + i });
+      const y12 = -27 + 11 * 5.6;
+      if (shown.page12 > 0.02) { g.globalAlpha = Math.min(1, p) * shown.page12 * (0.55 + 0.25 * Math.sin(t * 2.4)); shape(g, rrect(-30, y12 - 3.4, 60, 7, 2.5), { fill: C.glow, stroke: C.ochre, lw: 1.2, amp: 0.2, double: false }); }
+      g.restore(); g.globalAlpha = 1;
+    }
+  }
+
+  // 插圖版：背景、委託板上那張發亮的、燈塔熄燈、費民、馬凱、孟拓、主角，最後疊上同樣的效果
+  function renderLive(g, t) {
+    base.begin();
+    if (!L.ready) { ctx.fillStyle = C.wains2; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
+    base.paste('back'); base.world();
+    const [px, py] = spot('paper'), gl = state.glow, pulse = 0.5 + 0.5 * Math.sin(t * 3.4);
+    if (gl > 0.02) {
+      g.globalAlpha = (0.22 + 0.16 * pulse) * gl; dot(g, px, py, 26, C.glow); g.globalAlpha = 1;
+      for (let i = 0; i < 6; i++) { const a = (i / 6) * TAU + (K.boil % 2) * 0.26; g.globalAlpha = gl; wline(g, [[px + Math.cos(a) * 22, py + Math.sin(a) * 24], [px + Math.cos(a) * 27, py + Math.sin(a) * 29]], C.ochre, 1.3, { amp: 0 }); }
+      g.globalAlpha = 1;
+    }
+    const [tx, ty] = spot('tower');
+    g.globalAlpha = (0.35 + 0.25 * Math.sin(t * 3.1)) * (1 - shown.dark); dot(g, tx, ty, 3.4, C.glow);
+    if (shown.dark > 0.02) { g.globalAlpha = shown.dark * 0.85; dot(g, tx, ty, 3, C.coat2); }
+    g.globalAlpha = 1;
+    const [mx, my] = spot('mo'); put(g, 'mo', state.talker === 'mo' && flap(t) ? 'b' : 'a', mx, my);
+    const [sx, sy] = spot('shen');
+    if (shown.shen > 0.02) {
+      const walking = shown.shen < 0.96 && !state.still, step = walking && Math.floor(t / 0.22) % 2 === 1, x = sx + (1 - shown.shen) * 46;
+      if (walking) put(g, 'ma', step ? 'c' : 'a', x, sy - (step ? 1.5 : 0), { alpha: Math.min(1, shown.shen * 1.4) });
+      else person(g, t, 'ma', x, sy, state.talker === 'shen');
+    }
+    const [cx0, cy0] = spot('cen'), [wx, wy] = spot('window'), w = shown.window;
+    person(g, t, 'meng', cx0 + (wx - cx0) * w, cy0 + (wy - cy0) * w, state.talker === 'cen');
+    if (state.hero) { const [hx, hy] = spot('hero'); person(g, t, 'hero-' + state.hero, hx, hy, state.talker === 'you'); }
+    drawOverlays(g, t);
+  }
+
   return {
     state, resize: base.resize,
     update(t, dt = 0.016) {
@@ -184,6 +258,7 @@ export function createHall(canvas, opts = {}) {
     render() {
       if (!base.img) return;
       const t = state.still ? 0 : T, g = ctx;
+      if (L) { renderLive(g, t); return; }
       base.begin(); base.paste('back'); base.world();
       K.seed = 50; drawWindowLife(g, t);
       drawWallLife(g, t);
@@ -196,33 +271,16 @@ export function createHall(canvas, opts = {}) {
       if (state.hero) drawHero(g, t, { x: HERO.x, y: HERO.y, look: state.hero, talking: state.talker === 'you', scale: 1.1 });
       drawFront(g, t);
       g.globalAlpha = 1;
-      // 講以前的事：整個大廳暗下來
-      if (shown.dusk > 0.02) { base.tint('rgba(26, 36, 54, ' + (0.46 * shown.dusk).toFixed(3) + ')'); base.world(); }
-      // 值班夜：霧貼著地板和牆邊漫進來
-      if (shown.fog > 0.02) {
-        [[10, 250, 44, 15, 5], [330, 236, 40, 14, 4], [150, 300, 60, 16, 7], [356, 120, 30, 20, 3], [0, 130, 26, 18, 3.5], [240, 286, 46, 13, 6]].forEach(([x, y, rx, ry, sp], i) => {
-          const dx = state.still ? 0 : Math.sin(t * 0.25 + i * 1.9) * sp * 3;
-          g.globalAlpha = shown.fog * (0.34 + 0.08 * Math.sin(t * 0.6 + i)); oval(g, x + dx, y, rx, ry, { fill: C.fog, stroke: null, seed: 9000 + i }); oval(g, x + dx + rx * 0.5, y - ry * 0.45, rx * 0.6, ry * 0.8, { fill: C.fog, stroke: null, seed: 9010 + i });
-        });
-        g.globalAlpha = 1;
-      }
-      // 那一頁勘誤：十一個名字，第十二行是空的
-      if (shown.page > 0.02) {
-        const p = shown.page, bob = state.still ? 0 : Math.sin(t * 1.3) * 1.6;
-        g.save(); g.globalAlpha = Math.min(1, p * 1.3); g.translate(PAGE.x, PAGE.y + (1 - p) * 26 + bob); g.rotate(-0.04 + (1 - p) * 0.18);
-        g.globalAlpha *= 0.3; dot(g, 0, 0, 62, C.glow); g.globalAlpha = Math.min(1, p * 1.3);
-        K.seed = 8800;
-        shape(g, rect(-36, -48, 72, 96), { fill: C.paper, lw: 1.5, amp: 0.5 });
-        shape(g, [[-36, 30], [-30, 34], [-22, 29], [-36, 40]], { fill: C.paperLine, stroke: null });   // 泡過水的一角
-        wline(g, [[-12, -39], [12, -39]], C.rust, 2.2, { amp: 0.3 }); wline(g, [[-9, -35.5], [9, -35.5]], C.rust, 1, { amp: 0.2 });
-        for (let i = 0; i < 11; i++) wline(g, [[-27, -27 + i * 5.6], [-27 + 22 + ((i * 7) % 5) * 5, -27 + i * 5.6]], C.ink, 1, { amp: 0.25, seed: 8810 + i });
-        const y12 = -27 + 11 * 5.6;
-        if (shown.page12 > 0.02) { g.globalAlpha = Math.min(1, p) * shown.page12 * (0.55 + 0.25 * Math.sin(t * 2.4)); shape(g, rrect(-30, y12 - 3.4, 60, 7, 2.5), { fill: C.glow, stroke: C.ochre, lw: 1.2, amp: 0.2, double: false }); }
-        g.restore(); g.globalAlpha = 1;
-      }
+      drawOverlays(g, t);
       base.grain();
     },
     anchor(who) {
+      if (L && L.ready) {
+        const head = (name, x, y) => headOf(L.meta[name + '-a'], L.img[name + '-a'], x, y);
+        const [cx0, cy0] = spot('cen'), [wx, wy] = spot('window'), w = shown.window;
+        const q = who === 'cen' ? head('meng', cx0 + (wx - cx0) * w, cy0 + (wy - cy0) * w) : who === 'shen' ? head('ma', ...spot('shen')) : who === 'mo' ? head('mo', ...spot('mo')) : who === 'board' ? (([x, y]) => [x, y - 26])(spot('paper')) : null;
+        return q && base.css(q[0], q[1]);
+      }
       const p = who === 'cen' ? [CEN.x + (CEN_WINDOW.x - CEN.x) * shown.window - 1, CEN.y - 146] : who === 'shen' ? [SHEN.x, SHEN.y - 150] : who === 'mo' ? [MO.x, MO.y - 84] : who === 'board' ? [PAPER.x, PAPER.y - 30] : null;
       return p && base.css(p[0], p[1]);
     },

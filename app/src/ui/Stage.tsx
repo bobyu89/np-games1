@@ -24,7 +24,7 @@ export function Stage({ kind, patient, scene, shadow, hero, label, stage, onFram
   cb.current = onFrame;
   useEffect(() => {
     const el = canvas.current!, box = frame.current!;
-    const s = (kind === 'ward' ? createWard(el, { patient, scene, shadow, hero, live: true }) : kind === 'title' ? createTitle(el, { hero }) : createHall(el, { hero })) as unknown as StageHandle;
+    const s = (kind === 'ward' ? createWard(el, { patient, scene, shadow, hero, live: true }) : kind === 'title' ? createTitle(el, { hero, live: true }) : createHall(el, { hero, live: true })) as unknown as StageHandle;
     s.state.still = still();
     stage.current = s;
     const fit = () => s.resize(box.clientWidth, box.clientHeight);

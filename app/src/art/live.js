@@ -58,3 +58,25 @@ export function headOf(meta, img, x, y) {
   const { s } = sizeOf(meta, img), [fx, fy] = meta.foot || [img.naturalWidth / 2, img.naturalHeight], [hx, hy] = meta.head || [img.naturalWidth / 2, 0];
   return [x + (hx - fx) * s, y + (hy - fy) * s];
 }
+
+/** 背景圖在場景座標裡的位置：以 (cx, cy) 為中心、高 h；manifest 寫了 rect 就照 rect */
+export function plateRect(meta, img, cx, cy, h) {
+  const w = h * img.naturalWidth / img.naturalHeight;
+  return meta.rect || [cx - w / 2, cy - h / 2, w, h];
+}
+
+/** 畫背景：整片先塗邊緣的平均色，畫面比圖寬的時候把圖最左、最右的一條拉長補上，再貼圖。box 是要塗滿的範圍 [x0, y0, x1, y1] */
+export function drawPlate(g, meta, img, rect, box, fill) {
+  const [x, y, rw, rh] = rect, [x0, y0, x1, y1] = box, iw = img.naturalWidth, ih = img.naturalHeight, edge = Math.max(1, Math.round(iw * 0.01));
+  const eh = Math.max(1, Math.round(ih * 0.01));
+  g.fillStyle = meta.fill || fill; g.fillRect(x0, y0, x1 - x0, y1 - y0);
+  // 上下：最上、最下一條拉長；左右：最左、最右一條拉長（四個角用邊緣的平均色）
+  g.drawImage(img, 0, 0, iw, eh, x, y0, rw, y - y0 + 0.5);
+  g.drawImage(img, 0, ih - eh, iw, eh, x, y + rh - 0.5, rw, y1 - y - rh);
+  g.drawImage(img, 0, 0, edge, ih, x0, y, x - x0 + 0.5, rh);
+  g.drawImage(img, iw - edge, 0, edge, ih, x + rw - 0.5, y, x1 - x - rw, rh);
+  g.drawImage(img, x, y, rw, rh);
+}
+
+/** 背景圖上的一點（0 到 1 的比例）→ 場景座標 */
+export const onPlate = (rect, [fx, fy]) => [rect[0] + fx * rect[2], rect[1] + fy * rect[3]];

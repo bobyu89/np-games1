@@ -2,7 +2,7 @@
 
 用法：python3 app/tools/live.py <放 PNG 的資料夾>
 檔名就是代號：room-ward.png、patient-lin-a.png、meng-b.png、hero-cheng-a.png、ma-c.png、shadow-moth.png…
-  room-*      背景（不去背），寬 1600，記下邊緣的平均色（畫面比圖寬的時候拿來補）
+  room-*      背景（不去背），寬 1280，記下邊緣的平均色（畫面比圖寬的時候拿來補）
   其他        去背的角色和劫影。同一個角色的 a/b/c 用同一個框裁切，切換表情時才不會跳；高最多 640
 輸出 app/public/art/live/<代號>.webp。manifest 裡手調的欄位（width、height、foot、head、rect、spots）重跑會留著。
 """
@@ -18,7 +18,7 @@ OUT = ROOT / 'app/public/art/live'
 MANIFEST = ROOT / 'app/src/art/live-manifest.js'
 MARK_A, MARK_B = '// ── sprites 開始（art/live.py 產生）──', '// ── sprites 結束 ──'
 # 沒有手調之前的預設大小（場景單位，跟程式畫的一樣大）
-DEFAULT = [('patient-', {'width': 152}), ('meng-', {'height': 150}), ('ma-', {'height': 152}), ('hero-', {'height': 128}), ('mo-', {'height': 120}), ('shadow-', {'height': 70})]
+DEFAULT = [('patient-', {'width': 152}), ('meng-', {'height': 150}), ('ma-', {'height': 152}), ('hero-', {'height': 128}), ('mo-', {'height': 134}), ('shadow-', {'height': 70})]
 KEEP = ['width', 'height', 'foot', 'head', 'rect', 'spots']
 
 
@@ -62,9 +62,9 @@ for name, f in files.items():
     if not name.startswith('room-') and name not in ('hall', 'title'):
         continue
     im = Image.open(f).convert('RGB')
-    if im.width > 1600:
-        im = im.resize((1600, round(im.height * 1600 / im.width)), Image.LANCZOS)
-    webp(im, OUT / (name + '.webp'), 80)
+    if im.width > 1280:
+        im = im.resize((1280, round(im.height * 1280 / im.width)), Image.LANCZOS)
+    webp(im, OUT / (name + '.webp'), 78)
     edge = [im.getpixel((x, y)) for x in range(0, im.width, 16) for y in (0, im.height - 1)] + [im.getpixel((x, y)) for y in range(0, im.height, 16) for x in (0, im.width - 1)]
     avg = tuple(sum(c[i] for c in edge) // len(edge) for i in range(3))
     sprites[name] = {'src': 'art/live/' + name + '.webp', 'fill': '#%02x%02x%02x' % avg}

@@ -3,7 +3,7 @@
 import { C, K, TAU, hash, clamp, smooth, ell, rect, rrect, prep, trace, shape, oval, wline, limb, dot, leaf, fillRect, star, createBase } from './sketch.js';
 import { eye, drawCat, drawCen, drawShen, drawHero } from './cast.js';
 import { X0, X1, Y0, Y1, FLOOR_Y, ROOMS, bigLeaf, rainFall } from './rooms.js';
-import { liveFor, drawSprite, headOf, sizeOf } from './live.js';
+import { liveFor, drawSprite, headOf, sizeOf, plateRect, drawPlate as drawPlateImg } from './live.js';
 
 const LIN = { x: 90, y: 219 }, CEN = { x: 298, y: 264 }, SHEN = { x: 322, y: 268 }, MOTH = { x: 178, y: 88 }, HERO = { x: 207, y: 297 };
 const BIG = 1.14, MOTH_BIG = 1.28;   // 人物比家具大一點，表情在手機上才看得清楚
@@ -460,13 +460,7 @@ export function createWard(canvas, opts = {}) {
   // 房間：背景整片先塗房間邊緣的顏色，再把圖貼在 rect（場景座標）；沒寫 rect 就以畫面中心為準、高 290
   function drawPlate(g) {
     const id = LID[0], meta = L.meta[id], img = L.img[id];
-    fillRect(g, X0, Y0, X1 - X0, Y1 - Y0, meta.fill || C.wains2);
-    const h = 330, w = h * img.naturalWidth / img.naturalHeight, [x, y, rw, rh] = meta.rect || [181 - w / 2, 146 - h / 2, w, h];
-    // 畫面比圖寬的時候，把圖最左、最右的一條拉長補上，看起來像房間延伸出去
-    const iw = img.naturalWidth, ih = img.naturalHeight, edge = Math.round(iw * 0.01);
-    g.drawImage(img, 0, 0, edge, ih, X0, y, x - X0 + 0.5, rh);
-    g.drawImage(img, iw - edge, 0, edge, ih, x + rw - 0.5, y, X1 - x - rw, rh);
-    g.drawImage(img, x, y, rw, rh);
+    drawPlateImg(g, meta, img, plateRect(meta, img, 181, 146, 330), [X0, Y0, X1, Y1], C.wains2);
   }
   // 說話：嘴巴開合（a、b 兩張輪流）
   const flap = (t) => Math.floor(t / 0.16) % 2 === 1;
