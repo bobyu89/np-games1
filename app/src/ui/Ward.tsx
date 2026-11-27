@@ -43,12 +43,12 @@ function Forms({ c, onPick }: { c: CaseDef; onPick(id: string): void }) {
 
 /** resume：上次做到一半的那一場。onProgress：每做一個行動就交出去存，中途離開回來可以接著做。coach：第一張委託，孟拓一步一步帶 */
 /** trial：試弓。照真的時間倒數 15 分鐘、沒有提示、不告訴你線索判讀得對不對、劫影和燈都收起來；時間到自動交卷 */
-interface Props { c: CaseDef; tier: 0 | 1; hero: string | null; elders?: string[]; takeaway: string | null; coach?: boolean; trial?: boolean; resume?: { session: Session; seconds: number } | null; onProgress?(s: Session, seconds: number): void; onDone(s: Session, seconds: number, timeUp: boolean): void; onQuit(): void }
+interface Props { c: CaseDef; tier: 0 | 1; hero: string | null; elders?: string[]; takeaway: string | null; coach?: boolean; trial?: boolean; /** 結案之後那一顆按鈕的字（連戰：進下一站） */ doneLabel?: string; resume?: { session: Session; seconds: number } | null; onProgress?(s: Session, seconds: number): void; onDone(s: Session, seconds: number, timeUp: boolean): void; onQuit(): void }
 /** 接著做的時候，翻到做到一半的那一頁 */
 const tabFor = (c: CaseDef, s: Session): Tab => (s.phase === 2 ? 'exam' : s.phase === 3 ? 'dx' : s.phase === 4 ? 'plan'
   : (['open', 'cc', 'hx', 'ros'] as QuestionGroup[]).find((g) => c.questions.some((q) => q.group === g && !s.asked.includes(q.id))) ?? 'ros');
 
-export function Ward({ c, tier, hero, elders = [], takeaway, coach, trial, resume, onProgress, onDone, onQuit }: Props) {
+export function Ward({ c, tier, hero, elders = [], takeaway, coach, trial, doneLabel, resume, onProgress, onDone, onQuit }: Props) {
   const [session, setSession] = useState(() => resume?.session ?? createSession(c, trial ? 1 : tier));
   const [, tick] = useState(0);   // 試煉的倒數：每半秒重畫一次
   const warned = useRef(false), timeUp = useRef(false), ended = useRef<number | null>(null);
@@ -234,7 +234,7 @@ export function Ward({ c, tier, hero, elders = [], takeaway, coach, trial, resum
         <Talk ref={talk} patient={who} mentor={trial ? '口試委員' : undefined} onSpeaker={(w) => { speaker.current = w; }} more />
         <div className="panel">
           {closed ? (
-            <div className="acts one"><button type="button" className="act demo" onClick={finish}>{trial ? '看成績和回顧' : '看這一關的回顧'}</button></div>
+            <div className="acts one"><button type="button" className="act demo" onClick={finish}>{doneLabel ?? (trial ? '看成績和回顧' : '看這一關的回顧')}</button></div>
           ) : reading ? (
             <div className="ask-read">
               <p><b>「{reading.text}」</b></p>

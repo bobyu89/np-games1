@@ -5,7 +5,7 @@ import { ISLANDS, type IslandId } from '../data/islands.ts';
 import { sfx } from './sound.ts';
 
 /** marks：這座島的每一劫，過了沒有 */
-export interface ChartIsle { id: IslandId; open: boolean; done: number; total: number; fresh: boolean; marks: boolean[]; /** 這座島的症狀（白話），寫在島名底下 */ tag?: string }
+export interface ChartIsle { id: IslandId; open: boolean; done: number; total: number; fresh: boolean; marks: boolean[]; /** 這座島的症狀（白話），寫在島名底下 */ tag?: string; /** 熟練星（這座島的劫影；0 到 3） */ stars?: number }
 
 /** 用島的位置算一條固定的海岸線：同一座島每次畫出來都一樣 */
 function coast(id: string, x: number, y: number, r: number): string {
@@ -64,6 +64,7 @@ export function SeaChart({ isles, picked, boat, home = false, onPick }: { isles:
               {!i.open && <ellipse cx={s.x} cy={s.y} rx={s.r * 1.9} ry={s.r * 1.4} fill="url(#chart-fog)" />}
               <text x={s.x} y={s.y - 4} textAnchor="middle" className={'name' + (s.r < 50 ? ' small' : '')}>{i.open ? s.name : '？？？'}</text>
               <text x={s.x} y={s.y + 26} textAnchor="middle" className="sub">{i.open ? (i.tag ? i.tag + ' ' : '') + (i.total ? i.done + '／' + i.total : '') : '霧'}</text>
+              {i.open && i.stars !== undefined && i.stars > 0 && <text x={s.x} y={s.y + 56} textAnchor="middle" className="sub stars">{'★'.repeat(i.stars) + '☆'.repeat(3 - i.stars)}</text>}
               {i.open && i.marks.map((ok, n) => { const x = s.x - (i.marks.length - 1) * 9 + n * 18, y = s.y + s.r * 0.82 + 14; return <path key={n} d={`M${x},${y - 7} L${x + 6},${y} L${x},${y + 7} L${x - 6},${y}Z`} className={'peril' + (ok ? ' ok' : '')} />; })}
               {i.fresh && i.open && <circle cx={s.x + s.r * 0.9} cy={s.y - s.r * 0.6} r="11" className="seal" />}
             </g>

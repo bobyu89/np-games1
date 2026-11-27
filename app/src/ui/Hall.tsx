@@ -31,11 +31,13 @@ import { reviewPlan } from './review.ts';
 import { SprintCard } from './Sprint.tsx';
 import { pickSprint, sprintOf } from './sprint.ts';
 import { dayKey } from './streak.ts';
+import { dailyCase, dailyDone } from './daily.ts';
+import { BADGES, STAR_NAME, starText, starsAll } from './feats.ts';
 
 const CHAPTERS: Record<number, string> = { 1: '第一章', 2: '第二章', 3: '第三章', 4: '第四章', 5: '第五章' };
 
 /** run：上次沒結案的那一張委託 */
-interface Props { save: Save; run: Run | null; onHome(): void; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onTrial(c: CaseDef): void; /** 終章的值班夜 */ onNight(): void; onTide(n: number): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void; /** 航海日誌：某一天自己寫的一句 */ onNote(day: string, text: string): void }
+interface Props { save: Save; run: Run | null; onHome(): void; onHero(id: string): void; onBeatSeen(id: string): void; onStart(c: CaseDef): void; onTrial(c: CaseDef): void; /** 連戰：兩站連著考 */ onRelay(c1: CaseDef, c2: CaseDef): void; /** 終章的值班夜 */ onNight(): void; onTide(n: number): void; onResume(): void; onDropRun(): void; onImport(s: Save): void; onReset(): void; /** 航海日誌：某一天自己寫的一句 */ onNote(day: string, text: string): void }
 
 /** 圖鑑裡的一張卡：遇到了、去過了才看得到 */
 function Card({ e, wide }: { e: Entry; wide?: boolean }) {
@@ -68,7 +70,7 @@ function CantoBody({ k, save }: { k: Canto; save: Save }) {
 }
 /** 十二斧之試：一種劫影一把斧頭，在它的試弓裡及格一次就亮 */
 /** 試弓進場之前的閱題頁 */
-function TrialBrief({ c }: { c: CaseDef }) {
+export function TrialBrief({ c }: { c: CaseDef }) {
   return (
     <>
       <p className="dim">正式考試在門口有 2 分鐘讀這一頁。這裡不計時：準備好了再進場，進場才開始倒數。</p>
@@ -104,13 +106,14 @@ function HeroCards({ picked, onPick, action }: { picked: string | null; onPick(i
   );
 }
 
-export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, onNight, onTide, onResume, onDropRun, onImport, onReset, onNote }: Props) {
+export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, onRelay, onNight, onTide, onResume, onDropRun, onImport, onReset, onNote }: Props) {
   // 航海圖：哪幾座島去過了、每座島結了幾張。巡診船停在現在走到的那一章的島
   const isles: ChartIsle[] = (Object.keys(ISLANDS) as IslandId[]).map((id) => {
     const ch = ISLANDS[id].chapter, qs = questsOn(id);
     const marks = COMPLAINTS.filter((m) => islandOf({ complaint: m.id }) === id).map((m) => perilsPassed(m.id, save) > 0);
     const tag = COMPLAINTS.filter((m) => islandOf({ complaint: m.id }) === id).map((m) => m.name).join('、');
-    return { id, open: chapterOpen(ch, save), done: qs.filter((q) => save.cases[q.caseId]).length, total: qs.length, fresh: qs.some((q) => unlocked(q, save) && !save.cases[q.caseId]), marks, tag };
+    const here = COMPLAINTS.filter((m) => islandOf({ complaint: m.id }) === id).map((m) => starsAll(save).find((x) => x.complaint === m.id)!.stars);
+    return { id, open: chapterOpen(ch, save), done: qs.filter((q) => save.cases[q.caseId]).length, total: qs.length, fresh: qs.some((q) => unlocked(q, save) && !save.cases[q.caseId]), marks, tag, stars: here.length ? Math.min(...here) : undefined };
   });
   const boat = ([...isles].reverse().find((i) => i.open && i.done < i.total) ?? isles[0]).id;
   const [isle, setIsle] = useState<IslandId>(boat);
@@ -126,13 +129,15 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
   const [codex, setCodex] = useState(false);
   const [cal, setCal] = useState(false);   // 打卡日曆
   const [diary, setDiary] = useState(false);   // 航海日誌
-  const [tab, setTab] = useState<'shadow' | 'epic' | 'people' | 'places' | 'world'>('shadow');
+  const [tab, setTab] = useState<'shadow' | 'badges' | 'epic' | 'people' | 'places' | 'world'>('shadow');
   const [soundOn, setSoundOn] = useState(sound.on);
   const [settings, setSettings] = useState(false);
   const [story, setStory] = useState<Beat | null>(null);   // 從圖鑑重看的那一段故事
   const [trialSheet, setTrialSheet] = useState(false);     // 試弓：先看規則，再抽題、閱題
   const [drawn, setDrawn] = useState<CaseDef | null>(null); // 抽到的那一位。抽了就不能重抽
-  const [redo, setRedo] = useState<CaseDef | null>(null);   // 錯題複習：用試弓重考的那一位（不是抽的，關掉就放回去）
+  const [redo, setRedo] = useState<{ c: CaseDef; kind: 'review' | 'daily' } | null>(null);   // 錯題複習、今日之劫：指定的那一位用試弓考（不是抽的，關掉就放回去）
+  const [drawn2, setDrawn2] = useState<CaseDef | null>(null);   // 連戰的第二站
+  const stars = starsAll(save), daily = dailyCase(dayKey(Date.now())), dailyOk = dailyDone(save, dayKey(Date.now()));
   const [drill, setDrill] = useState(false);   // 刻意練習
   const today = dayKey(Date.now()), plan = reviewPlan(save), due = plan.filter((r) => r.due <= today), soon = plan.filter((r) => r.due > today);
   const examOn = useSyncExternalStore(examSubscribe, examShown);
@@ -278,11 +283,12 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
               {trialOpen(save) && <>
                 <div className="quest-head">驗收{exam ? '・' + exam : ''}</div>
                 <button type="button" className="quest paper" onClick={() => { sfx.page(); setTrialSheet(true); }}><i className="seal" aria-hidden="true" /><b>試弓</b><span>抽一位病人，15 分鐘倒數，沒有提示</span><em>{save.trials.length ? '最高 ' + Math.max(...save.trials.map((t) => t.score)) + ' 分・考過 ' + save.trials.length + ' 次' : '還沒考過'}</em></button>
+                <button type="button" className={'quest paper' + (dailyOk ? '' : ' hint')} onClick={() => { sfx.page(); setRedo({ c: daily, kind: 'daily' }); }}><i className="seal" aria-hidden="true" /><b>今日之劫：{daily.patient.name}（{daily.complaintName}）</b><span>今天每一位玩家都是這一位，和 Threads 的歸航記同一天</span><em>{dailyOk ? '✓ 今天完成了' : '今天'}</em></button>
               </>}
               {plan.length > 0 && <>
                 <div className="quest-head">錯題複習</div>
                 {due.map((r) => { const c = caseById(r.caseId); return (
-                  <button key={r.caseId} type="button" className="quest paper hint" onClick={() => { sfx.page(); if (r.trial) setRedo(c); else setReading(c); }}><i className="seal" aria-hidden="true" /><b>{c.patient.name}（{c.complaintName}）</b><span>{r.why.wrong ? '診斷沒有對到' : ''}{r.why.wrong && r.why.trapped ? '，也' : ''}{r.why.trapped ? '掉進了陷阱' : ''}・{r.trial ? '用試弓重考' : '重接這張委託'}</span><em>第 {r.round} 次複習</em></button>
+                  <button key={r.caseId} type="button" className="quest paper hint" onClick={() => { sfx.page(); if (r.trial) setRedo({ c, kind: 'review' }); else setReading(c); }}><i className="seal" aria-hidden="true" /><b>{c.patient.name}（{c.complaintName}）</b><span>{r.why.wrong ? '診斷沒有對到' : ''}{r.why.wrong && r.why.trapped ? '，也' : ''}{r.why.trapped ? '掉進了陷阱' : ''}・{r.trial ? '用試弓重考' : '重接這張委託'}</span><em>第 {r.round} 次複習</em></button>
                 ); })}
                 {!due.length && <div className="side"><span>今天沒有要複習的。下一次：{soon[0].due.slice(5).replace('-', '/')}，{soon.filter((r) => r.due === soon[0].due).length} 位。</span></div>}
                 {due.length > 0 && soon.length > 0 && <div className="side"><span>之後還有 {soon.length} 位，到期再出現。</span></div>}
@@ -340,7 +346,12 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
         </Sheet>
       )}
       {trialSheet && !drawn && (
-        <Sheet title="試弓" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { sfx.page(); setDrawn(pickTrial(save, Math.random())); }}>抽題</button>}>
+        <Sheet title="試弓" onClose={() => setTrialSheet(false)} footer={<div className="two"><button type="button" className="act" onClick={() => {
+          // 連戰：抽兩位不同主訴的病人
+          sfx.page(); const a = pickTrial(save, Math.random()); let b = pickTrial(save, Math.random());
+          for (let i = 0; i < 50 && b.complaint === a.complaint; i++) b = pickTrial(save, Math.random());
+          setDrawn(a); setDrawn2(b);
+        }}>連戰：兩站</button><button type="button" className="act demo" onClick={() => { sfx.page(); setDrawn(pickTrial(save, Math.random())); setDrawn2(null); }}>抽題</button></div>}>
           <p>照甄審口試的條件，完整走一次。</p>
           <ul>
             <li><b>用抽的。</b>四十八位病人都可能出，包括你還沒遇過的。抽了就不能重抽。</li>
@@ -348,6 +359,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
             <li><b>沒有提示。</b>孟拓不在；線索判讀得對不對，當下不會告訴你；劫影和四盞燈都收起來。</li>
             <li><b>交卷之後才有成績和回顧。</b>{TRIAL_PASS} 分及格（115 年度甄審的規定）。</li>
             <li>不會寫進圖鑑，也不算完成委託。之後在委託板遇到同一位病人，會覺得眼熟，這沒有關係。</li>
+            <li><b>連戰。</b>兩站連著考，不同主訴、中間不休息；回顧等兩站都考完再一起看。練的是換站之後馬上切換。</li>
             {finaleDone(save) && <li><b>十二斧之試。</b>在一種劫影的試弓裡及格一次，那一把斧頭就亮；還沒亮的那幾種，比較容易抽到。現在亮了 {axesLit(save).length}／12 把。</li>}
           </ul>
           <p className="dim">遊戲的分數是訓練用的，不代表正式甄審的成績。病例依文獻與臨床指引撰寫，僅供練習，不能取代臨床判斷。</p>
@@ -358,14 +370,14 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
         </Sheet>
       )}
       {trialSheet && drawn && (
-        <Sheet title="試弓：閱題" onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { const c = drawn; setDrawn(null); setTrialSheet(false); onTrial(c); }}>進場，開始倒數</button>}>
+        <Sheet title={drawn2 ? '連戰・第 1 站：閱題' : '試弓：閱題'} onClose={() => setTrialSheet(false)} footer={<button type="button" className="act demo" onClick={() => { const c = drawn, c2 = drawn2; setDrawn(null); setDrawn2(null); setTrialSheet(false); if (c2) onRelay(c, c2); else onTrial(c); }}>進場，開始倒數</button>}>
           <TrialBrief c={drawn} />
         </Sheet>
       )}
       {redo && (
-        <Sheet title="錯題複習：閱題" onClose={() => setRedo(null)} footer={<button type="button" className="act demo" onClick={() => { const c = redo; setRedo(null); onTrial(c); }}>進場，開始倒數</button>}>
-          <p className="dim">上次這一位沒有過關。隔了幾天再考一次，規則和試弓一樣：15 分鐘、沒有提示。</p>
-          <TrialBrief c={redo} />
+        <Sheet title={(redo.kind === 'daily' ? '今日之劫' : '錯題複習') + '：閱題'} onClose={() => setRedo(null)} footer={<button type="button" className="act demo" onClick={() => { const c = redo.c; setRedo(null); onTrial(c); }}>進場，開始倒數</button>}>
+          <p className="dim">{redo.kind === 'daily' ? '今天每一位玩家都是這一位，和 Threads 今天的「歸航記」同一位。規則和試弓一樣：15 分鐘、沒有提示；考完可以看今天大家的診斷正確率。' : '上次這一位沒有過關。隔了幾天再考一次，規則和試弓一樣：15 分鐘、沒有提示。'}</p>
+          <TrialBrief c={redo.c} />
         </Sheet>
       )}
       {drill && <DrillSheet save={save} onClose={() => setDrill(false)} />}
@@ -396,7 +408,7 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
       {codex && (
         <Sheet title="圖鑑" onClose={() => setCodex(false)}>
           <div className="steps five" role="tablist">
-            {([['shadow', '劫影'], ['epic', '史詩'], ['people', '人物'], ['places', '場景'], ['world', '公會']] as const).map(([id, name]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => { sfx.tap(); setTab(id); }}>{name}</button>)}
+            {([['shadow', '劫影'], ['badges', '勳章'], ['epic', '史詩'], ['people', '人物'], ['places', '場景'], ['world', '公會']] as const).map(([id, name]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'on' : ''} onClick={() => { sfx.tap(); setTab(id); }}>{name}</button>)}
           </div>
           {tab === 'people' && (() => {
             const { guild, elders, patients } = peopleOf(save);
@@ -439,6 +451,14 @@ export function Hall({ save, run, onHome, onHero, onBeatSeen, onStart, onTrial, 
           {tab === 'places' && <>
             <p className="dim">去過的地方會記在這裡。一座島一間公會的診間，在那座島結過一張委託才會打開；出診的委託，會帶你到公會以外的地方。</p>
             <div className="album">{placesOf(save).map((e) => <Card key={e.id} e={e} wide />)}</div>
+          </>}
+          {tab === 'badges' && <>
+            <h3>劫影的熟練度</h3>
+            <p className="dim">每一種主訴看最近 5 場：見習＝練過；熟練＝3 場以上、掌握度 0.6 以上；精通＝5 場、掌握度 0.8 以上（掌握度：診斷對 50%、沒掉陷阱 30%、分數 20%）。</p>
+            <ul className="star-list">{stars.map((x) => <li key={x.complaint}><span className="stars" aria-label={x.stars + ' 顆星'}>{starText(x.stars)}</span><b>{x.shadow}</b><span>{x.name}</span><em>{STAR_NAME[x.stars]}</em></li>)}</ul>
+            <h3>勳章（{BADGES.filter((b) => b.earned(save)).length}／{BADGES.length}）</h3>
+            <p className="dim">勳章獎勵的是好的臨床習慣，不是場次或分數。</p>
+            <div className="badges">{BADGES.map((b) => { const ok = b.earned(save); return <div key={b.id} className={'badge paper' + (ok ? ' on' : '')}><i aria-hidden="true">{ok ? '◆' : '◇'}</i><b>{b.name}</b><span>{b.how}</span><em>{ok ? '拿到了' : '還沒'}</em></div>; })}</div>
           </>}
           {tab === 'shadow' && <>
             <TrapRecordCard save={save} />

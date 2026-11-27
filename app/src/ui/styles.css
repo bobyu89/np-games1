@@ -621,6 +621,21 @@ button.checkin { cursor: pointer; }
   .notes-page { font-size: 10.5pt; }
   .note-sec { break-inside: avoid-page; }
 }
+.stars { color: #9a7410; letter-spacing: 1px; }
+.chart text.sub.stars { fill: #9a7410; font-size: 30px; stroke-width: 5px; }
+.star-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 3px; }
+.star-list li { display: grid; grid-template-columns: 4.2em 1fr 1fr auto; gap: 8px; align-items: baseline; }
+.star-list li span:not(.stars) { color: var(--ink-soft); font-size: 0.9em; }
+.star-list li em { font-style: normal; font-size: 0.85em; color: var(--teal); }
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.badge { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; opacity: 0.6; }
+.badge.on { opacity: 1; box-shadow: 2px 3px 0 var(--ink); }
+.badge i { font-style: normal; font-size: 1.3em; color: var(--ink-soft); }
+.badge.on i { color: #9a7410; }
+.badge span { font-size: 0.85em; color: var(--ink-soft); }
+.badge em { font-style: normal; font-size: 0.8em; color: var(--teal); }
+.leaf.gains .badge-mark { color: #9a7410; }
+.relay-gap { min-height: 100%; }
 .timing { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
 .trow { display: grid; grid-template-columns: 6.5em 1fr 5.2em; align-items: center; gap: 8px; }
 .trow > span { font-weight: 700; }
