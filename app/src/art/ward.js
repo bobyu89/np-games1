@@ -3,7 +3,7 @@
 import { C, K, TAU, hash, clamp, smooth, ell, rect, rrect, prep, trace, shape, oval, wline, limb, dot, leaf, fillRect, star, createBase } from './sketch.js';
 import { eye, drawCat, drawCen, drawShen, drawHero } from './cast.js';
 import { X0, X1, Y0, Y1, FLOOR_Y, ROOMS, bigLeaf, rainFall } from './rooms.js';
-import { liveFor, drawSprite, headOf, sizeOf, plateRect, drawPlate as drawPlateImg } from './live.js';
+import { liveFor, drawSprite, headOf, sizeOf, plateRect, hasSprite, drawPlate as drawPlateImg } from './live.js';
 
 const LIN = { x: 90, y: 219 }, CEN = { x: 298, y: 264 }, SHEN = { x: 322, y: 268 }, MOTH = { x: 178, y: 88 }, HERO = { x: 207, y: 297 };
 const BIG = 1.14, MOTH_BIG = 1.28;   // 人物比家具大一點，表情在手機上才看得清楚
@@ -418,9 +418,13 @@ export function placeOf(scene) {
   return { place: named === 'dock' || ROOMS[named] ? named : 'ward', rain };
 }
 /** 病室要換成插圖，需要哪幾張（live-manifest.js 的代號）：房間、病人三張、孟拓三張、馬凱三張、劫影、主角兩張 */
+//   o.stand：只畫房間和一個站著的人（圖鑑的長老、常駐的人用），例如 'elder-nie'
+//   只有一張的病人（值班夜的那幾位只出現在不會動的小圖）：b、c 沒有就用 a
 export function wardLiveIds(o = {}) {
   const who = PATIENTS[o.patient] ? o.patient : 'lin', { place } = placeOf(o.scene);
-  const ids = ['room-' + place, ...['a', 'b', 'c'].map((k) => 'patient-' + who + '-' + k), ...['a', 'b', 'c'].map((k) => 'meng-' + k), ...['a', 'b', 'c'].map((k) => 'ma-' + k), 'shadow-' + (o.shadow || 'moth')];
+  if (o.stand) return ['room-' + place, o.stand];
+  const pat = ['a', 'b', 'c'].map((k) => 'patient-' + who + '-' + k).filter((id, i) => i === 0 || hasSprite(id));
+  const ids = ['room-' + place, ...pat, ...['a', 'b', 'c'].map((k) => 'meng-' + k), ...['a', 'b', 'c'].map((k) => 'ma-' + k), 'shadow-' + (o.shadow || 'moth')];
   if (o.hero) ids.push('hero-' + o.hero + '-a', 'hero-' + o.hero + '-b');
   return ids;
 }
@@ -434,13 +438,16 @@ export function createWard(canvas, opts = {}) {
   // 公會的診間都掛公會的旗子；窗台上有沒有貓、吊燈旁邊有沒有螢火蟲，看地方
   const guild = !dock && place !== 'tower', cat = ['ward', 'market', 'archive', 'quiet'].includes(place), flies = place === 'ward' || place === 'quiet';
   // 插圖：opts.live 是 true 的時候，所有要的圖都到齊才用（liveFor 會檢查）；載完之前畫空白，載不到就改回程式畫
-  let L = opts.live && !opts.solo && !opts.person ? liveFor(wardLiveIds({ patient: who, scene: opts.scene, shadow: opts.shadow || 'moth', hero: opts.hero })) : null;
+  let L = opts.live && !opts.solo && !opts.person ? liveFor(wardLiveIds({ patient: who, scene: opts.scene, shadow: opts.shadow || 'moth', hero: opts.hero, stand: opts.stand })) : null;
   const useLive = () => !!L && L.ready;
   const base = createBase(canvas, { back: (g) => (useLive() ? drawPlate(g) : L && !L.failed ? null : drawBack(g, who, place, rain)), mid: (g) => (L ? null : drawMid(g)) }, opts.view), ctx = base.ctx;
   // opts.focus：圖鑑的頭像。插圖載完之後，把 opts.view 移到那個人的頭（插圖的位置跟程式畫的不一樣）
   if (L) L.then.then(() => {
     if (L.failed) L = null;
-    else if (opts.focus && opts.view) {
+    else if (opts.focus === 'stand' && opts.stand && opts.view) {
+      const [hx, hy] = headOf(L.meta[opts.stand], L.img[opts.stand], ...spot('stand'));
+      opts.view.cx = hx; opts.view.cy = hy + opts.view.h * 0.36;
+    } else if (opts.focus && opts.view) {
       const who_ = opts.focus === 'patient' ? lid('patient-').replace(/-[abc]$/, '') : opts.focus === 'cen' ? 'meng' : 'ma', id = who_ + '-a';
       const [x, y] = spot(opts.focus === 'patient' ? 'patient' : opts.focus === 'cen' ? 'cen' : 'shen'), [hx, hy] = headOf(L.meta[id], L.img[id], opts.focus === 'cen' ? x - 34 * state.doctor : x, y);
       opts.view.cx = hx; opts.view.cy = hy + opts.view.h * 0.42;
@@ -463,9 +470,9 @@ export function createWard(canvas, opts = {}) {
 
 
   // ── 插圖 ──
-  const LID = L ? wardLiveIds({ patient: who, scene: opts.scene, shadow: opts.shadow || 'moth', hero: opts.hero }) : [];
+  const LID = L ? wardLiveIds({ patient: who, scene: opts.scene, shadow: opts.shadow || 'moth', hero: opts.hero, stand: opts.stand }) : [];
   const lid = (k) => LID.find((id) => id.startsWith(k));
-  const SPOT = { patient: [96, 250], cen: [CEN.x + 4, CEN.y + 4], shen: [SHEN.x + 6, SHEN.y + 4], hero: [HERO.x - 4, HERO.y + 2], shadow: [206, 64] };
+  const SPOT = { stand: [181, 266], patient: [96, 250], cen: [CEN.x + 4, CEN.y + 4], shen: [SHEN.x + 6, SHEN.y + 4], hero: [HERO.x - 4, HERO.y + 2], shadow: [206, 64] };
   const spot = (k) => (L && L.meta[LID[0]].spots?.[k]) || SPOT[k];
   // 房間：背景整片先塗房間邊緣的顏色，再把圖貼在 rect（場景座標）；沒寫 rect 就以畫面中心為準、高 290
   function drawPlate(g) {
@@ -474,7 +481,7 @@ export function createWard(canvas, opts = {}) {
   }
   // 說話：嘴巴開合（a、b 兩張輪流）
   const flap = (t) => Math.floor(t / 0.16) % 2 === 1;
-  function liveSprite(g, base_, k, x, y, o) { const id = base_ + '-' + k; drawSprite(g, L.img[id], L.meta[id], x, y, o); }
+  function liveSprite(g, base_, k, x, y, o) { const id = L.img[base_ + '-' + k] ? base_ + '-' + k : base_ + '-a'; drawSprite(g, L.img[id], L.meta[id], x, y, o); }
   // 病人：呼吸；說話換 b；變差的時候疊上 c
   function drawLivePatient(g, t) {
     const [x, y] = spot('patient'), id = lid('patient-').replace(/-[abc]$/, ''), slump = state.slumpShown, wince = state.wince;
@@ -1116,6 +1123,7 @@ export function createWard(canvas, opts = {}) {
     base.begin();
     if (!L.ready) { ctx.fillStyle = C.wains2; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
     base.paste('back', sx, sy); base.world(sx, sy);
+    if (opts.stand) { const [x, y] = spot('stand'); drawSprite(g, L.img[opts.stand], L.meta[opts.stand], x, y); g.globalAlpha = 1; return; }
     drawLivePatient(g, t);
     if (state.hero) { const [x, y] = spot('hero'); drawLivePerson(g, t, 'hero-' + state.hero, x, y, state.talker === 'hero'); }
     if (!state.hide) { const m = drawLiveMoth(g, t); drawFog(g, t, m); drawLights(g, t, m); }

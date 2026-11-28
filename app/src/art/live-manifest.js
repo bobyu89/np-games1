@@ -3,6 +3,46 @@
 export default {
 // ── sprites 開始（art/live.py 產生）──
 sprites: {
+  "elder-chu": {
+    "src": "art/live/elder-chu.webp",
+    "head": [
+      132,
+      3
+    ],
+    "height": 148
+  },
+  "elder-ge": {
+    "src": "art/live/elder-ge.webp",
+    "head": [
+      185,
+      3
+    ],
+    "height": 148
+  },
+  "elder-guan": {
+    "src": "art/live/elder-guan.webp",
+    "head": [
+      206,
+      3
+    ],
+    "height": 148
+  },
+  "elder-lu": {
+    "src": "art/live/elder-lu.webp",
+    "head": [
+      157,
+      3
+    ],
+    "height": 148
+  },
+  "elder-nie": {
+    "src": "art/live/elder-nie.webp",
+    "head": [
+      174,
+      3
+    ],
+    "height": 148
+  },
   "hall": {
     "src": "art/live/hall.webp",
     "fill": "#946236"
@@ -1079,6 +1119,62 @@ sprites: {
       44
     ]
   },
+  "patient-n1-a": {
+    "src": "art/live/patient-n1-a.webp",
+    "head": [
+      195,
+      4
+    ],
+    "width": 152
+  },
+  "patient-n2-a": {
+    "src": "art/live/patient-n2-a.webp",
+    "head": [
+      210,
+      4
+    ],
+    "width": 152
+  },
+  "patient-n3-a": {
+    "src": "art/live/patient-n3-a.webp",
+    "head": [
+      192,
+      3
+    ],
+    "width": 152
+  },
+  "patient-n4-a": {
+    "src": "art/live/patient-n4-a.webp",
+    "head": [
+      200,
+      5
+    ],
+    "width": 152
+  },
+  "patient-n5-a": {
+    "src": "art/live/patient-n5-a.webp",
+    "head": [
+      208,
+      4
+    ],
+    "width": 152
+  },
+  "patient-n6-a": {
+    "src": "art/live/patient-n6-a.webp",
+    "head": [
+      138,
+      4
+    ],
+    "width": 152
+  },
+  "patient-n7-a": {
+    "src": "art/live/patient-n7-a.webp",
+    "head": [
+      188,
+      4
+    ],
+    "width": 152
+  },
   "patient-pu-a": {
     "src": "art/live/patient-pu-a.webp",
     "width": 152,
@@ -1342,6 +1438,46 @@ sprites: {
       168,
       56
     ]
+  },
+  "resident-duo": {
+    "src": "art/live/resident-duo.webp",
+    "head": [
+      186,
+      3
+    ],
+    "height": 146
+  },
+  "resident-lan": {
+    "src": "art/live/resident-lan.webp",
+    "head": [
+      204,
+      3
+    ],
+    "height": 146
+  },
+  "resident-lu": {
+    "src": "art/live/resident-lu.webp",
+    "head": [
+      200,
+      3
+    ],
+    "height": 146
+  },
+  "resident-luan": {
+    "src": "art/live/resident-luan.webp",
+    "head": [
+      141,
+      3
+    ],
+    "height": 146
+  },
+  "resident-xi": {
+    "src": "art/live/resident-xi.webp",
+    "head": [
+      142,
+      3
+    ],
+    "height": 146
   },
   "room-archive": {
     "src": "art/live/room-archive.webp",
