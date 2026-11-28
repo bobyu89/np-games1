@@ -17,6 +17,11 @@ test('病室要的圖：房間、病人三張、孟拓三張、馬凱三張、�
   assert.deepEqual(placeOf('wind-rain'), { place: 'market', rain: true });
   assert.equal(wardLiveIds({ patient: 'c07a', scene: 'boar' })[0], 'room-yard');
   assert.equal(wardLiveIds({ patient: 'nobody' })[1], 'patient-lin-a');
+  // 長老、常駐的人：只要房間和那一張
+  assert.deepEqual(wardLiveIds({ patient: 'e-lu', scene: 'market', stand: 'elder-lu' }), ['room-market', 'elder-lu']);
+  // 只有一張的病人（值班夜）：b、c 沒有就不要求
+  const night = wardLiveIds({ patient: 'n1' });
+  if ((MANIFEST.sprites as Record<string, unknown>)['patient-n1-a']) assert.deepEqual(night.filter((id) => id.startsWith('patient-')), ['patient-n1-a']);
 });
 
 test('圖不齊就不用：照舊程式畫', () => {

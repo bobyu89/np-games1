@@ -74,7 +74,7 @@ export function Night({ hero, onDone, onQuit, rounds = NIGHT, title = '值班夜
             <div className="quests">
               {round.arrivals.map((a) => (
                 <div key={a.id} className="card arrival">
-                  <Portrait shot={{ kind: 'ward', patient: a.look, view: { w: 104, h: 104, cx: 92, cy: 170 } }} label={a.name} />
+                  <Portrait shot={{ kind: 'ward', patient: a.look, view: { w: 104, h: 104, cx: 92, cy: 170 }, focus: 'patient' }} label={a.name} />
                   <div>
                     <b>{a.name}</b><span>{a.tag}</span>
                     <p className="says">{a.says}</p>

@@ -6,6 +6,9 @@ import MANIFEST from './live-manifest.js';
 const SPRITES = MANIFEST.sprites || {};
 const cache = new Map();
 
+/** 這一張圖有沒有 */
+export const hasSprite = (id) => !!SPRITES[id];
+
 /** 這幾張圖是不是都有 */
 export function hasLive(ids) { return ids.length > 0 && ids.every((id) => !!SPRITES[id]); }
 

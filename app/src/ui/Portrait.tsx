@@ -16,7 +16,9 @@ export interface Shot {
   lit?: boolean;
   view?: { w: number; h: number; cx: number; cy: number };
   /** 頭像對準誰（插圖版的人站的位置跟程式畫的不一樣，載完之後由場景自己把框移過去） */
-  focus?: 'patient' | 'cen' | 'shen' | 'mo' | 'hero';
+  focus?: 'patient' | 'cen' | 'shen' | 'mo' | 'hero' | 'stand';
+  /** 只畫房間和一個站著的人（插圖的代號，例如 elder-nie）；插圖不齊就照舊畫 patient */
+  stand?: string;
 }
 interface Still { state: Record<string, unknown>; resize(w: number, h: number): void; update(t: number, dt: number): void; render(): void }
 
@@ -25,7 +27,7 @@ export function Portrait({ shot, label, locked, wide }: { shot: Shot; label: str
   useEffect(() => {
     const el = ref.current!;
     const view = shot.view && { ...shot.view }, onReady = () => draw();
-    const s = (shot.kind === 'ward' ? createWard(el, { patient: shot.patient, scene: shot.scene, hero: shot.hero, view, live: true, focus: shot.focus, onReady }) : createHall(el, { hero: shot.hero, view, live: true, focus: shot.focus, onReady })) as unknown as Still;
+    const s = (shot.kind === 'ward' ? createWard(el, { patient: shot.patient, scene: shot.scene, hero: shot.hero, view, live: true, focus: shot.focus, stand: shot.stand, onReady }) : createHall(el, { hero: shot.hero, view, live: true, focus: shot.focus, onReady })) as unknown as Still;
     s.state.still = true; s.state.hide = true; s.state.glow = 0; s.state.doctor = shot.doctor ? 1 : 0; s.state.beam = shot.lit ? 1 : 0;
     const draw = () => { if (!el.clientWidth) return; s.resize(el.clientWidth, el.clientHeight); s.update(0, 1); s.render(); };
     draw();
